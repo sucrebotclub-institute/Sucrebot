@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Cronómetro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <!-- CSS compartido -->
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  
+  <!-- CSS específico de CRONOMETRO -->
+  <style>
+    :root {
+      --cyan: #63b3ed; --cyan-dim: #3182ce; --blue: #2b6cb0;
+      --text: #e4eaf4; --muted: #8a96b0; --border: rgba(99,179,237,0.12);
+      --sucre-blue: #2b6cb0;
+      --bg: #ffffff; --surface: #1e3a5f; --surface2: #2c5282;
+      --border2: rgba(255,255,255,0.15);
+      --accent: #63b3ed; --accent2: #ff6b35;
+      --green: #00ff88; --red: #ff3b3b;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --font-body: 'DM Sans', sans-serif;
+    }
+    body { background: #ffffff !important; color: #e4eaf4 !important; }
+
+    /* ── CRONÓMETRO ── */
+    .crono-wrapper { max-width: 960px; margin: 0 auto; padding: 28px 20px 60px; }
+    .crono-section-title { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #2c5282; margin-bottom: 24px; border-bottom: 1px solid rgba(43,108,176,0.2); padding-bottom: 10px; }
+    .crono-layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+    
+    .evento-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; background: linear-gradient(135deg, #2b6cb0 0%, #1e3a5f 100%); border: 1px solid rgba(99,179,237,0.3); border-left: 4px solid #63b3ed; border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 16px rgba(43,108,176,0.25), 0 0 0 1px rgba(99,179,237,0.1); transition: all 0.3s; }
+    .evento-row:hover { box-shadow: 0 6px 24px rgba(43,108,176,0.35), 0 0 0 1px rgba(99,179,237,0.2); transform: translateY(-1px); }
+    .evento-row label { font-size: 0.68rem; color: rgba(255,255,255,0.65); font-family: var(--font-mono); letter-spacing: 0.15em; white-space: nowrap; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .evento-row label::before { content: '⚡'; font-size: 1.1rem; }
+    .evento-row select { flex: 1; background: rgba(255,255,255,0.95); border: 2px solid rgba(99,179,237,0.2); color: #2c5282; font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; padding: 12px 16px; border-radius: 10px; outline: none; cursor: pointer; transition: all 0.2s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+    .evento-row select:hover { border-color: rgba(99,179,237,0.5); background: #ffffff; }
+    .evento-row select:focus { border-color: #63b3ed; background: #ffffff; box-shadow: 0 0 0 3px rgba(99,179,237,0.15), inset 0 1px 3px rgba(0,0,0,0.1); }
+    
+    .participante-strip { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+    .participante-strip .p-robot { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .participante-strip .p-inst { font-size: 0.8rem; color: var(--muted); }
+    .participante-strip .p-badge { font-family: var(--font-mono); font-size: 0.7rem; background: rgba(99,179,237,0.1); color: var(--accent); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(99,179,237,0.2); }
+    .participante-strip.empty { border-left-color: var(--muted); }
+    .participante-strip.empty .p-robot { color: var(--muted); font-weight: 400; }
+    
+    .crono-display { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 20px; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
+    .crono-display::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0; transition: opacity 0.3s; }
+    .crono-display.running::after { opacity: 1; animation: scanline 2s linear infinite; }
+    @keyframes scanline { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+    #cronometro { font-family: var(--font-display); font-size: 5.5rem; letter-spacing: 0.04em; color: var(--text); line-height: 1; transition: color 0.3s; }
+    .crono-display.running #cronometro { color: var(--accent); }
+    .crono-display.stopped #cronometro { color: var(--accent2); }
+    .crono-status { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em; color: var(--muted); margin-top: 8px; }
+    
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .btn { border: 1px solid var(--border2); background: var(--surface); color: var(--text); font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; padding: 12px 8px; border-radius: 8px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+    .btn:hover { background: var(--surface2); }
+    .btn:active { transform: scale(0.97); }
+    .btn.start { border-color: rgba(0,255,136,0.4); color: var(--green); }
+    .btn.start:hover { background: rgba(0,255,136,0.08); }
+    .btn.stop { border-color: rgba(255,59,59,0.4); color: var(--red); }
+    .btn.stop:hover { background: rgba(255,59,59,0.08); }
+    .btn.reset { border-color: rgba(255,107,53,0.4); color: var(--accent2); }
+    .btn.reset:hover { background: rgba(255,107,53,0.08); }
+    
+    .ronda-config { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .ronda-config-title { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; color: var(--muted); white-space: nowrap; }
+    .ronda-control { display: flex; align-items: center; gap: 8px; }
+    .ronda-control label { font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono); white-space: nowrap; }
+    .ronda-control input { width: 52px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600; padding: 6px 10px; border-radius: 6px; outline: none; text-align: center; }
+    .ronda-control input:focus { border-color: var(--accent); }
+    .ronda-status { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    .ronda-badge { font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(99,179,237,0.3); background: rgba(99,179,237,0.08); color: var(--accent); white-space: nowrap; }
+    .intento-badge { font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,107,53,0.3); background: rgba(255,107,53,0.08); color: var(--accent2); white-space: nowrap; }
+    
+    .intentos-log { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; display: none; }
+    .intentos-log-title { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+    .intento-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+    .intento-row:last-child { border-bottom: none; }
+    .intento-label { color: var(--muted); font-family: var(--font-mono); font-size: 0.75rem; }
+    .intento-tiempo { color: var(--text); font-family: var(--font-mono); font-weight: 600; }
+    .intento-mejor { color: var(--green); }
+    
+    .btn-saltar { width: 100%; margin-top: 8px; background: rgba(99,179,237,0.06); border: 1px solid rgba(99,179,237,0.25); color: var(--accent); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; padding: 12px; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+    .btn-saltar:hover { background: rgba(99,179,237,0.13); }
+    
+    .competidos-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; position: sticky; top: 20px; max-height: 85vh; overflow-y: auto; }
+    .competidos-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .competidos-title { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; color: var(--muted); }
+    .competidos-count { font-family: var(--font-mono); font-size: 0.68rem; background: rgba(99,179,237,0.1); color: var(--accent); border: 1px solid rgba(99,179,237,0.2); padding: 3px 10px; border-radius: 20px; }
+    .competido-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .competido-item:last-child { border-bottom: none; }
+    .competido-num { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); min-width: 24px; flex-shrink: 0; }
+    .competido-info { flex: 1; min-width: 0; }
+    .competido-robot { font-size: 0.85rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .competido-tiempo { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); }
+    .competido-del { background: none; border: 1px solid rgba(255,59,59,0.25); color: rgba(255,59,59,0.5); font-size: 0.7rem; padding: 3px 7px; border-radius: 5px; cursor: pointer; transition: all 0.15s; }
+    .competido-del:hover { background: rgba(255,59,59,0.1); border-color: var(--red); color: var(--red); }
+    .competido-sel { background: rgba(99,179,237,0.08); border: 1px solid rgba(99,179,237,0.3); color: var(--accent); font-size: 0.75rem; padding: 3px 8px; border-radius: 5px; cursor: pointer; transition: all 0.15s; }
+    .competido-sel:hover { background: rgba(99,179,237,0.18); }
+    
+    .btn-siguiente { width: 100%; margin-top: 12px; background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.35); color: var(--green); font-family: var(--font-body); font-size: 0.92rem; font-weight: 600; padding: 14px; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+    .btn-siguiente:hover { background: rgba(0,255,136,0.15); }
+    
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid rgba(0,255,136,0.4); color: var(--green); font-family: var(--font-mono); font-size: 0.8rem; padding: 12px 24px; border-radius: 30px; transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    
+    @media (max-width: 680px) { 
+      .crono-wrapper { padding: 20px 10px 40px; max-width: 100%; }
+      .crono-layout { grid-template-columns: 1fr; gap: 20px; }
+      .crono-section-title { font-size: 1.5rem; text-align: center; }
+      .evento-row { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 16px; }
+      .evento-row label { width: 100%; justify-content: center; }
+      .evento-row select { width: 100%; }
+      #cronometro { font-size: 3.5rem; }
+      .btn-row { grid-template-columns: 1fr; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COMPONENTES COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CONTENIDO ÚNICO DEL CRONÓMETRO
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="crono-wrapper">
+  <h1 class="crono-section-title">CRONÓMETRO</h1>
+
+  <div class="crono-layout">
+    <div>
+      <!-- Selección de categoría -->
+      <div class="evento-row">
+        <label>CATEGORÍA</label>
+        <select id="select-categoria">
+          <option value="">— Selecciona una categoría —</option>
+          <option value="seguidor-velocidad-sin-turbina">Seguidor velocidad sin turbina</option>
+          <option value="seguidor-velocidad-con-turbina">Seguidor velocidad con turbina</option>
+          <option value="robot-laberinto">Robot laberinto</option>
+          <option value="robot-balancin">Robot Balancín</option>
+          <option value="robot-trepador">Robot trepador</option>
+          <option value="seguidor-destreza">Seguidor destreza</option>
+          <option value="drones">Drones</option>
+          <option value="insectos">Insectos</option>
+        </select>
+      </div>
+
+      <!-- Participante actual -->
+      <div class="participante-strip empty" id="participante-strip">
+        <div>
+          <div class="p-robot">Ningún participante seleccionado</div>
+          <div class="p-inst">Selecciona una categoría y un participante</div>
+        </div>
+        <div class="p-badge">—</div>
+      </div>
+
+      <!-- Cronómetro -->
+      <div class="crono-display" id="crono-display">
+        <div id="cronometro">00:00:00</div>
+        <div class="crono-status" id="crono-status">DETENIDO</div>
+      </div>
+
+      <!-- Botones -->
+      <div class="btn-row">
+        <button class="btn start" onclick="iniciarCrono()">▶ Iniciar</button>
+        <button class="btn stop" onclick="detenerCrono()">⏸ Detener</button>
+        <button class="btn reset" onclick="reiniciarCrono()">↻ Reiniciar</button>
+      </div>
+
+      <!-- Configuración de ronda -->
+      <div class="ronda-config">
+        <div class="ronda-config-title">CONFIGURACIÓN</div>
+        <div class="ronda-control">
+          <label>Ronda:</label>
+          <input type="number" id="input-ronda" value="1" min="1" />
+        </div>
+        <div class="ronda-control">
+          <label>Intento:</label>
+          <input type="number" id="input-intento" value="1" min="1" max="3" />
+        </div>
+        <div class="ronda-status">
+          <span class="ronda-badge" id="badge-ronda">Ronda 1</span>
+          <span class="intento-badge" id="badge-intento">Intento 1</span>
+        </div>
+      </div>
+
+      <!-- Botón saltar participante -->
+      <button class="btn-saltar" onclick="saltarParticipante()">⏭ Saltar participante (no competir)</button>
+    </div>
+
+    <!-- Panel derecho: Competidos -->
+    <div class="competidos-card">
+      <div class="competidos-header">
+        <div class="competidos-title">COMPETIDOS</div>
+        <div class="competidos-count" id="competidos-count">0</div>
+      </div>
+      <div id="competidos-lista">
+        <p class="competidos-empty">Ningún participante ha competido aún</p>
+      </div>
+      <button class="btn-siguiente" onclick="siguienteParticipante()">➜ Siguiente participante</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS ESPECÍFICOS DEL CRONÓMETRO
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script>
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxc-nLopIe6C5Rh0O22oEwCwgYZfk68PTl2YzZTZarNdmazdL0z2g7jm-XUjhH_oIGkzw/exec';
+  
+  let cronoInterval = null;
+  let cronoInicio = null;
+  let categoriaActual = null;
+  let participanteActual = null;
+  let competidos = [];
+
+  // Sincronizar inputs con badges
+  document.getElementById('input-ronda').addEventListener('input', function() {
+    document.getElementById('badge-ronda').textContent = `Ronda ${this.value}`;
+  });
+  document.getElementById('input-intento').addEventListener('input', function() {
+    document.getElementById('badge-intento').textContent = `Intento ${this.value}`;
+  });
+
+  // Selección de categoría
+  document.getElementById('select-categoria').addEventListener('change', function() {
+    categoriaActual = this.value;
+    if (categoriaActual) {
+      cargarParticipantes();
+    }
+  });
+
+  async function cargarParticipantes() {
+    try {
+      const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const lista = await r.json();
+      
+      // Filtrar solo aprobados de esta categoría
+      // TODO: Implementar filtrado por categoría cuando esté disponible en GAS
+      showToast('Participantes cargados - Selecciona uno desde el escáner');
+    } catch (error) {
+      showToast('Error al cargar participantes: ' + error.message);
+    }
+  }
+
+  function iniciarCrono() {
+    if (!participanteActual) {
+      showToast('Selecciona un participante primero');
+      return;
+    }
+
+    if (!cronoInterval) {
+      cronoInicio = Date.now();
+      cronoInterval = setInterval(actualizarCronometro, 10);
+      document.getElementById('crono-display').classList.add('running');
+      document.getElementById('crono-status').textContent = 'EN MARCHA';
+    }
+  }
+
+  function detenerCrono() {
+    if (cronoInterval) {
+      clearInterval(cronoInterval);
+      cronoInterval = null;
+      document.getElementById('crono-display').classList.remove('running');
+      document.getElementById('crono-display').classList.add('stopped');
+      document.getElementById('crono-status').textContent = 'DETENIDO';
+      
+      // Guardar tiempo
+      const tiempo = document.getElementById('cronometro').textContent;
+      guardarTiempo(tiempo);
+    }
+  }
+
+  function reiniciarCrono() {
+    if (cronoInterval) clearInterval(cronoInterval);
+    cronoInterval = null;
+    cronoInicio = null;
+    document.getElementById('cronometro').textContent = '00:00:00';
+    document.getElementById('crono-display').classList.remove('running', 'stopped');
+    document.getElementById('crono-status').textContent = 'DETENIDO';
+  }
+
+  function actualizarCronometro() {
+    if (!cronoInicio) return;
+    
+    const transcurrido = Date.now() - cronoInicio;
+    const centesimas = Math.floor((transcurrido % 1000) / 10);
+    const segundos = Math.floor((transcurrido / 1000) % 60);
+    const minutos = Math.floor(transcurrido / 60000);
+    
+    const tiempo = String(minutos).padStart(2, '0') + ':' +
+                   String(segundos).padStart(2, '0') + ':' +
+                   String(centesimas).padStart(2, '0');
+    
+    document.getElementById('cronometro').textContent = tiempo;
+  }
+
+  async function guardarTiempo(tiempo) {
+    if (!participanteActual || !categoriaActual) return;
+    
+    const ronda = document.getElementById('input-ronda').value;
+    const intento = document.getElementById('input-intento').value;
+    
+    try {
+      const qs = new URLSearchParams({
+        action: 'guardarTiempo',
+        id: participanteActual.id,
+        tiempo: tiempo,
+        ronda: ronda,
+        intento: intento,
+        categoria: categoriaActual
+      }).toString();
+      
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const data = await r.json();
+      
+      if (data.success) {
+        showToast('✓ Tiempo guardado: ' + tiempo);
+        agregarACompetidos(participanteActual, tiempo);
+      } else {
+        showToast('Error al guardar: ' + (data.error || 'Desconocido'));
+      }
+    } catch (error) {
+      showToast('Error: ' + error.message);
+    }
+  }
+
+  function agregarACompetidos(participante, tiempo) {
+    competidos.push({ ...participante, tiempo });
+    actualizarListaCompetidos();
+  }
+
+  function actualizarListaCompetidos() {
+    const container = document.getElementById('competidos-lista');
+    const count = document.getElementById('competidos-count');
+    
+    count.textContent = competidos.length;
+    
+    if (competidos.length === 0) {
+      container.innerHTML = '<p class="competidos-empty">Ningún participante ha competido aún</p>';
+      return;
+    }
+    
+    container.innerHTML = competidos.map((c, i) => `
+      <div class="competido-item">
+        <div class="competido-num">${i + 1}</div>
+        <div class="competido-info">
+          <div class="competido-robot">${c.robot || '—'}</div>
+          <div class="competido-tiempo">${c.tiempo}</div>
+        </div>
+        <button class="competido-sel" onclick="seleccionarCompetido(${i})">↻</button>
+      </div>
+    `).join('');
+  }
+
+  function seleccionarCompetido(index) {
+    participanteActual = competidos[index];
+    actualizarStripParticipante();
+    showToast('Participante seleccionado nuevamente');
+  }
+
+  function actualizarStripParticipante() {
+    const strip = document.getElementById('participante-strip');
+    if (!participanteActual) {
+      strip.classList.add('empty');
+      strip.innerHTML = `
+        <div>
+          <div class="p-robot">Ningún participante seleccionado</div>
+          <div class="p-inst">Selecciona una categoría y un participante</div>
+        </div>
+        <div class="p-badge">—</div>
+      `;
+      return;
+    }
+    
+    strip.classList.remove('empty');
+    strip.innerHTML = `
+      <div>
+        <div class="p-robot">${participanteActual.robot || '—'}</div>
+        <div class="p-inst">${participanteActual.institucion || '—'}</div>
+      </div>
+      <div class="p-badge">${participanteActual.categoria || '—'}</div>
+    `;
+  }
+
+  function saltarParticipante() {
+    showToast('⏭ Participante saltado');
+    siguienteParticipante();
+  }
+
+  function siguienteParticipante() {
+    reiniciarCrono();
+    // TODO: Implementar cola automática de participantes
+    showToast('➜ Listo para el siguiente');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // Verificar autenticación staff
+  document.addEventListener('componentsLoaded', function() {
+    const savedUser = localStorage.getItem('sucrebot_user');
+    if (!savedUser) {
+      window.location.href = '../INICIO/';
+    }
+  });
+</script>
+
+</body>
+</html>
