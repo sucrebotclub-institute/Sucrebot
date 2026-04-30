@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Mi Registro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <!-- CSS compartido -->
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  
+  <!-- CSS específico de MI-REGISTRO -->
+  <style>
+    :root {
+      --cyan: #5bc8f0; --sucre-blue: #1a5ca8; --sucre-dark: #1a3a6e;
+      --green: #00ff88; --red: #ff3b3b; --yellow: #ffd966;
+      --font-mono: 'DM Mono', monospace; --font-body: 'Exo 2', sans-serif;
+      --surface2: #1a1a26;
+    }
+
+    body { background: #ffffff !important; color: #1a1a2e !important; }
+    main { min-height: calc(100vh - 174px); background: #f4f7fb; }
+
+    /* ── CONTENIDO ── */
+    .wrapper { max-width: 680px; margin: 0 auto; padding: 40px 20px 60px; }
+
+    /* Pantalla login */
+    .login-screen { text-align: center; padding: 60px 20px; }
+    .login-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 3px; color: var(--sucre-dark); margin-bottom: 12px; }
+    .login-screen p { font-size: 14px; color: #7a7a8c; margin-bottom: 32px; }
+    .btn-google { display: inline-flex; align-items: center; gap: 10px; background: var(--sucre-blue); color: #ffffff; border: none; padding: 14px 28px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .btn-google:hover { background: var(--sucre-dark); }
+
+    /* Pantalla no encontrado */
+    .not-found { text-align: center; padding: 60px 20px; }
+    .not-found h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: var(--sucre-dark); margin-bottom: 12px; }
+    .not-found p { font-size: 14px; color: #7a7a8c; margin-bottom: 24px; }
+    .not-found a { color: var(--sucre-blue); font-weight: 600; text-decoration: none; }
+    .not-found a:hover { text-decoration: underline; }
+
+    /* Ficha */
+    .ficha { background: var(--sucre-blue); border-radius: 20px; box-shadow: 0 4px 24px rgba(26,92,168,0.30); overflow: hidden; }
+    .ficha-header { background: var(--sucre-dark); padding: 28px 32px; }
+    .ficha-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; }
+    .ficha-robot { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 2px; color: #ffffff; line-height: 1; margin-bottom: 10px; }
+    .ficha-estado { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; padding: 5px 14px; border-radius: 20px; }
+    .estado-aprobado { background: #ffffff; color: var(--sucre-blue); }
+    .estado-pendiente { background: rgba(255,235,59,0.25); color: #ffeb3b; border: 1px solid rgba(255,235,59,0.5); }
+    .estado-nocumple { background: rgba(220,50,50,0.2); color: #ff6b6b; border: 1px solid rgba(220,50,50,0.5); }
+
+    .ficha-body { padding: 28px 32px; background: var(--sucre-blue); }
+    .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+    .ficha-campo { display: flex; flex-direction: column; gap: 4px; }
+    .ficha-campo span { font-size: 0.65rem; color: rgba(255,255,255,0.7); font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+    .ficha-campo strong { font-size: 0.92rem; color: #ffffff; font-weight: 700; }
+
+    /* QR */
+    .ficha-qr { text-align: center; padding: 24px; background: rgba(0,0,0,0.15); border-radius: 14px; margin-bottom: 24px; }
+    .ficha-qr-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.8); text-transform: uppercase; margin-bottom: 16px; }
+    .ficha-qr img { width: 200px; height: 200px; border-radius: 10px; border: 3px solid rgba(255,255,255,0.3); }
+    .ficha-qr-nota { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 10px; font-family: var(--font-mono); }
+
+    /* Aviso pendiente */
+    .ficha-pendiente-aviso { background: rgba(255,200,0,0.15); border: 1px solid rgba(255,200,0,0.4); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+    .ficha-pendiente-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .ficha-pendiente-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
+    .ficha-pendiente-aviso strong { font-weight: 700; color: #ffeb3b; }
+
+    /* Aviso no cumple */
+    .ficha-nocumple-aviso { background: rgba(220,50,50,0.15); border: 1px solid rgba(220,50,50,0.4); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+    .ficha-nocumple-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .ficha-nocumple-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
+    .ficha-nocumple-aviso strong { font-weight: 700; color: #ff6b6b; }
+
+    /* Formulario edición */
+    .ficha-form { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 24px; }
+    .ficha-form-title { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-bottom: 18px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-field label { font-size: 0.68rem; color: rgba(255,255,255,0.7); font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+    .form-field input, .form-field select { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.88rem; padding: 10px 14px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.2s; }
+    .form-field input::placeholder { color: rgba(255,255,255,0.4); }
+    .form-field input:focus, .form-field select:focus { border-color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.3); }
+    .form-field-full { grid-column: 1 / -1; }
+
+    /* Aviso comprobante */
+    .comprobante-aviso { background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+    .comprobante-aviso svg { width: 16px; height: 16px; flex-shrink: 0; color: rgba(255,255,255,0.6); }
+    .comprobante-aviso span { font-size: 0.8rem; color: rgba(255,255,255,0.8); font-family: var(--font-mono); line-height: 1.4; }
+    .comprobante-aviso a { color: #ffeb3b; font-weight: 600; text-decoration: none; }
+    .comprobante-aviso a:hover { text-decoration: underline; }
+
+    .btn-guardar { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 14px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; margin-top: 8px; }
+    .btn-guardar:hover { background: var(--sucre-dark); border-color: rgba(255,255,255,0.5); }
+    .btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid rgba(0,255,136,0.4); color: var(--green); font-family: var(--font-mono); font-size: 0.8rem; padding: 12px 24px; border-radius: 30px; transition: transform 0.3s ease; z-index: 9999; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      .wrapper { padding: 24px 12px 40px; }
+      .ficha-header { padding: 20px; }
+      .ficha-body { padding: 20px; }
+      .ficha-grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .ficha-robot { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COMPONENTES COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CONTENIDO ÚNICO DE MI-REGISTRO
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div id="g_id_onload"
+     data-client_id="14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse"
+     data-auto_prompt="false">
+</div>
+
+<main>
+  <div class="wrapper">
+
+    <!-- PANTALLA: debe iniciar sesión -->
+    <div id="screen-login" class="login-screen">
+      <h2>MI REGISTRO</h2>
+      <p>Inicia sesión con el correo con el que te registraste para ver tu ficha y estado de aprobación.</p>
+      <button class="btn-google" onclick="iniciarLogin()">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continuar con Google
+      </button>
+    </div>
+
+    <!-- PANTALLA: cargando -->
+    <div id="screen-loading" style="display:none;text-align:center;padding:60px 20px;">
+      <p style="font-family:var(--font-mono);font-size:0.85rem;color:#8a96b0;letter-spacing:0.1em;">BUSCANDO TU REGISTRO...</p>
+    </div>
+
+    <!-- PANTALLA: no encontrado -->
+    <div id="screen-notfound" class="not-found" style="display:none;">
+      <h2>NO ENCONTRAMOS TU REGISTRO</h2>
+      <p>El correo con el que iniciaste sesión no tiene ningún registro en SucreBot 2026.</p>
+      <p style="margin-top:8px;">¿Todavía no te registraste? <a href="https://sucrebotclub-institute.github.io/Sucrebot/REGISTRO/">Regístrate aquí →</a></p>
+    </div>
+
+    <!-- PANTALLA: ficha -->
+    <div id="screen-ficha" style="display:none;">
+      <div class="ficha">
+
+        <div class="ficha-header">
+          <div class="ficha-label">MI REGISTRO — SUCREBOT 2026</div>
+          <div class="ficha-robot" id="f-robot">—</div>
+          <div id="f-estado-badge" class="ficha-estado estado-pendiente">⏳ Pendiente de aprobación</div>
+        </div>
+
+        <div class="ficha-body">
+
+          <div class="ficha-grid">
+            <div class="ficha-campo"><span>Categoría</span><strong id="f-categoria">—</strong></div>
+            <div class="ficha-campo"><span>Institución</span><strong id="f-institucion">—</strong></div>
+            <div class="ficha-campo"><span>Ciudad</span><strong id="f-ciudad">—</strong></div>
+            <div class="ficha-campo"><span>Correo</span><strong id="f-correo">—</strong></div>
+            <div class="ficha-campo"><span>Participante</span><strong id="f-nombre">—</strong></div>
+            <div class="ficha-campo"><span>Contacto</span><strong id="f-contacto">—</strong></div>
+          </div>
+
+          <!-- QR — solo si aprobado -->
+          <div class="ficha-qr" id="ficha-qr-section" style="display:none;">
+            <div class="ficha-qr-label">TU CÓDIGO QR DE ACCESO</div>
+            <img id="f-qr-img" src="" alt="QR de acceso" />
+            <p class="ficha-qr-nota">Presenta este QR el día del evento para acceder a la competencia.</p>
+          </div>
+
+          <!-- Sección pendiente: aviso + formulario -->
+          <div id="ficha-pendiente-section" style="display:none;">
+
+            <div class="ficha-pendiente-aviso" id="aviso-pendiente">
+              <span class="aviso-icon">⏳</span>
+              <p>Tu registro está <strong>pendiente de revisión</strong> por el staff. Si necesitas corregir algún dato, puedes editarlo a continuación. Al guardar, tu registro volverá a revisión.</p>
+            </div>
+
+            <div class="ficha-nocumple-aviso" id="aviso-nocumple" style="display:none;">
+              <span class="aviso-icon">✖</span>
+              <p>Tu registro <strong>no cumple con los requisitos</strong> de la competencia. Por favor revisa y corrige la información a continuación, o contacta al staff en <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></p>
+            </div>
+
+            <div class="ficha-form">
+              <div class="ficha-form-title">✏️ EDITAR MI REGISTRO</div>
+              <div class="form-grid">
+
+                <div class="form-field">
+                  <label>Nombre del Robot</label>
+                  <input type="text" id="edit-robot" placeholder="Nombre del robot" />
+                </div>
+
+                <div class="form-field">
+                  <label>Categoría</label>
+                  <select id="edit-categoria">
+                    <option value="">— Selecciona —</option>
+                    <option value="Seguidor velocidad sin turbina">Seguidor velocidad sin turbina</option>
+                    <option value="Seguidor velocidad con turbina">Seguidor velocidad con turbina</option>
+                    <option value="Robot laberinto">Robot laberinto</option>
+                    <option value="Robot Balancín">Robot Balancín</option>
+                    <option value="Robot trepador">Robot trepador</option>
+                    <option value="Seguidor destreza">Seguidor destreza</option>
+                    <option value="Drones">Drones</option>
+                    <option value="Insectos">Insectos</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label>Institución</label>
+                  <input type="text" id="edit-institucion" placeholder="Nombre de tu institución" />
+                </div>
+
+                <div class="form-field">
+                  <label>Ciudad</label>
+                  <input type="text" id="edit-ciudad" placeholder="Ciudad" />
+                </div>
+
+                <div class="form-field">
+                  <label>Nombre del Participante</label>
+                  <input type="text" id="edit-nombre" placeholder="Tu nombre completo" />
+                </div>
+
+                <div class="form-field">
+                  <label>Teléfono / WhatsApp</label>
+                  <input type="text" id="edit-contacto" placeholder="0987654321" />
+                </div>
+
+                <!-- Aviso comprobante — no editable desde web -->
+                <div class="form-field form-field-full">
+                  <label>Comprobante de Pago</label>
+                  <div class="comprobante-aviso">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>Para cambiar el comprobante de pago escríbenos a <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></span>
+                  </div>
+                </div>
+
+              </div>
+              <button class="btn-guardar" id="btn-guardar" onclick="guardarCambios()">💾 Guardar cambios</button>
+            </div>
+
+          </div><!-- /ficha-pendiente-section -->
+
+        </div><!-- /ficha-body -->
+      </div><!-- /ficha -->
+    </div><!-- /screen-ficha -->
+
+  </div>
+  <div class="toast" id="toast"></div>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS ESPECÍFICOS DE MI-REGISTRO
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script>
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxc-nLopIe6C5Rh0O22oEwCwgYZfk68PTl2YzZTZarNdmazdL0z2g7jm-XUjhH_oIGkzw/exec';
+  
+  let participanteActual = null;
+
+  function iniciarLogin() {
+    google.accounts.id.prompt();
+  }
+
+  // Al cargar componentes, verificar sesión
+  document.addEventListener('componentsLoaded', function() {
+    const savedUser = localStorage.getItem('sucrebot_user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        buscarParticipante(userData.email);
+      } catch (e) {
+        console.error('Error al leer sesión:', e);
+      }
+    }
+  });
+
+  async function buscarParticipante(correo) {
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('screen-loading').style.display = 'block';
+    document.getElementById('screen-notfound').style.display = 'none';
+    document.getElementById('screen-ficha').style.display = 'none';
+
+    try {
+      const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const lista = await r.json();
+
+      const p = lista.find(x => x.correo && x.correo.toLowerCase() === correo.toLowerCase());
+
+      if (!p) {
+        document.getElementById('screen-loading').style.display = 'none';
+        document.getElementById('screen-notfound').style.display = 'block';
+        return;
+      }
+
+      participanteActual = p;
+      mostrarFicha(p);
+    } catch (error) {
+      console.error('Error al buscar participante:', error);
+      document.getElementById('screen-loading').style.display = 'none';
+      document.getElementById('screen-notfound').style.display = 'block';
+    }
+  }
+
+  function mostrarFicha(p) {
+    document.getElementById('screen-loading').style.display = 'none';
+    document.getElementById('screen-ficha').style.display = 'block';
+
+    // Datos principales
+    document.getElementById('f-robot').textContent = p.robot || '—';
+    document.getElementById('f-categoria').textContent = p.categoria || '—';
+    document.getElementById('f-institucion').textContent = p.institucion || '—';
+    document.getElementById('f-ciudad').textContent = p.ciudad || '—';
+    document.getElementById('f-correo').textContent = p.correo || '—';
+    document.getElementById('f-nombre').textContent = p.nombre || '—';
+    document.getElementById('f-contacto').textContent = p.contacto || '—';
+
+    const aprobado = p.aprobado === true || p.aprobado === 'true';
+    const nocumple = p.aprobado === 'nocumple';
+
+    const badge = document.getElementById('f-estado-badge');
+    const qrSection = document.getElementById('ficha-qr-section');
+    const pendienteSection = document.getElementById('ficha-pendiente-section');
+    const avisoPendiente = document.getElementById('aviso-pendiente');
+    const avisoNocumple = document.getElementById('aviso-nocumple');
+
+    if (aprobado) {
+      // APROBADO
+      badge.className = 'ficha-estado estado-aprobado';
+      badge.textContent = '✅ Aprobado';
+      qrSection.style.display = 'block';
+      pendienteSection.style.display = 'none';
+
+      const textoQR = `SUCREBOT 2026 | Robot: ${p.robot} | Categoria: ${p.categoria} | Institucion: ${p.institucion} | Ciudad: ${p.ciudad} | Participante: ${p.nombre} | ID: ${p.id}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(textoQR)}`;
+      document.getElementById('f-qr-img').src = qrUrl;
+    } else if (nocumple) {
+      // NO CUMPLE
+      badge.className = 'ficha-estado estado-nocumple';
+      badge.textContent = '✖ No cumple requisitos';
+      qrSection.style.display = 'none';
+      pendienteSection.style.display = 'block';
+      avisoPendiente.style.display = 'none';
+      avisoNocumple.style.display = 'flex';
+      cargarFormulario(p);
+    } else {
+      // PENDIENTE
+      badge.className = 'ficha-estado estado-pendiente';
+      badge.textContent = '⏳ Pendiente de aprobación';
+      qrSection.style.display = 'none';
+      pendienteSection.style.display = 'block';
+      avisoPendiente.style.display = 'flex';
+      avisoNocumple.style.display = 'none';
+      cargarFormulario(p);
+    }
+  }
+
+  function cargarFormulario(p) {
+    document.getElementById('edit-robot').value = p.robot || '';
+    document.getElementById('edit-categoria').value = p.categoria || '';
+    document.getElementById('edit-institucion').value = p.institucion || '';
+    document.getElementById('edit-ciudad').value = p.ciudad || '';
+    document.getElementById('edit-nombre').value = p.nombre || '';
+    document.getElementById('edit-contacto').value = p.contacto || '';
+  }
+
+  async function guardarCambios() {
+    if (!participanteActual) return;
+
+    const btn = document.getElementById('btn-guardar');
+    btn.disabled = true;
+    btn.textContent = '⏳ Guardando...';
+
+    const datos = {
+      action: 'updateParticipante',
+      id: participanteActual.id,
+      robot: document.getElementById('edit-robot').value.trim(),
+      categoria: document.getElementById('edit-categoria').value,
+      institucion: document.getElementById('edit-institucion').value.trim(),
+      ciudad: document.getElementById('edit-ciudad').value.trim(),
+      nombre: document.getElementById('edit-nombre').value.trim(),
+      contacto: document.getElementById('edit-contacto').value.trim()
+    };
+
+    try {
+      const qs = new URLSearchParams(datos).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const result = await r.json();
+
+      if (result.success) {
+        showToast('✅ Cambios guardados correctamente');
+        participanteActual = { ...participanteActual, ...datos };
+        mostrarFicha(participanteActual);
+      } else {
+        throw new Error(result.error || 'Error al guardar');
+      }
+    } catch (error) {
+      showToast('❌ Error al guardar: ' + error.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💾 Guardar cambios';
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+</script>
+
+</body>
+</html>
