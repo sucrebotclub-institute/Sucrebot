@@ -1,16 +1,14 @@
-/**
- * SucreBot - Sistema de Autenticación
- * Maneja login con Google y permisos de usuario
- */
+// ═══════════════════════════════════════════════════════════════
+// AUTENTICACIÓN GOOGLE OAUTH + GESTIÓN DE SESIÓN
+// Archivo: /shared/js/auth.js
+// ═══════════════════════════════════════════════════════════════
 
 const STAFF_EMAILS = [
   'ftipantocta@tecnologicosucre.edu.ec',
   'sucrebotclub@tecnologicosucre.edu.ec'
 ];
 
-/**
- * Decodifica un JWT token
- */
+// ── FUNCIÓN: Parsear JWT de Google
 function parseJwt(token) {
   const base64Url = token.split('.')[1];
   const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -23,113 +21,133 @@ function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-/**
- * Callback de Google Sign-In
- */
+// ── FUNCIÓN: Callback de Google Sign-In
 function handleCredentialResponse(response) {
   const userData = parseJwt(response.credential);
   activarSesion(userData);
 }
 
-/**
- * Activa la sesión del usuario
- */
+// ── FUNCIÓN: Activar sesión del usuario
 function activarSesion(data) {
-  // Guardar en sessionStorage
-  sessionStorage.setItem('sucrebot_user', JSON.stringify(data));
+  // ✅ CAMBIO CRÍTICO: localStorage en lugar de sessionStorage
+  localStorage.setItem('sucrebot_user', JSON.stringify(data));
   
-  // Ocultar botón de login
-  document.getElementById('btnLogin').style.display = 'none';
-  
-  // Mostrar info de usuario
+  // Actualizar UI
+  const btnLogin = document.getElementById('btnLogin');
   const userInfo = document.getElementById('userInfo');
-  userInfo.classList.add('visible');
+  const userName = document.getElementById('userName');
+  const userAvatar = document.getElementById('userAvatar');
   
-  // Actualizar nombre y avatar
-  document.getElementById('userName').textContent = data.name || data.email;
-  if (data.picture) {
-    document.getElementById('userAvatar').src = data.picture;
-  }
+  if (btnLogin) btnLogin.style.display = 'none';
+  if (userInfo) userInfo.classList.add('visible');
+  if (userName) userName.textContent = data.name || data.email;
+  if (userAvatar && data.picture) userAvatar.src = data.picture;
   
-  // Mostrar menús según permisos
-  if (STAFF_EMAILS.includes(data.email)) {
-    // Usuario es staff
-    document.getElementById('navStaff').style.display = 'flex';
+  // Verificar si es staff
+  const isStaff = STAFF_EMAILS.includes(data.email);
+  
+  // Mostrar/ocultar menús según rol
+  const navStaff = document.getElementById('navStaff');
+  const navPartDropdown = document.getElementById('navPartDropdown');
+  const navPartLink = document.getElementById('navPartLink');
+  
+  if (isStaff) {
+    if (navStaff) navStaff.style.display = 'block';
+    if (navPartLink) navPartLink.style.display = 'none';
+    if (navPartDropdown) navPartDropdown.style.display = 'none';
   } else {
-    // Usuario normal
-    document.getElementById('navPartLink').style.display = 'none';
-    document.getElementById('navPartDropdown').style.display = 'flex';
+    if (navStaff) navStaff.style.display = 'none';
+    if (navPartLink) navPartLink.style.display = 'none';
+    if (navPartDropdown) navPartDropdown.style.display = 'block';
   }
 }
 
-/**
- * Cerrar sesión
- */
+// ── FUNCIÓN: Cerrar sesión
 function cerrarSesion() {
-  // Limpiar sessionStorage
-  sessionStorage.removeItem('sucrebot_user');
+  // ✅ CAMBIO CRÍTICO: localStorage en lugar de sessionStorage
+  localStorage.removeItem('sucrebot_user');
   
-  // Mostrar botón de login
-  document.getElementById('btnLogin').style.display = 'flex';
+  // Actualizar UI
+  const btnLogin = document.getElementById('btnLogin');
+  const userInfo = document.getElementById('userInfo');
   
-  // Ocultar info de usuario
-  document.getElementById('userInfo').classList.remove('visible');
+  if (btnLogin) btnLogin.style.display = 'flex';
+  if (userInfo) userInfo.classList.remove('visible');
   
-  // Resetear menús
-  document.getElementById('navStaff').style.display = 'none';
-  document.getElementById('navPartLink').style.display = 'block';
-  document.getElementById('navPartDropdown').style.display = 'none';
+  // Ocultar menús de staff/participante
+  const navStaff = document.getElementById('navStaff');
+  const navPartDropdown = document.getElementById('navPartDropdown');
+  const navPartLink = document.getElementById('navPartLink');
   
-  // Deshabilitar auto-select de Google
-  if (typeof google !== 'undefined' && google.accounts) {
-    google.accounts.id.disableAutoSelect();
-  }
+  if (navStaff) navStaff.style.display = 'none';
+  if (navPartDropdown) navPartDropdown.style.display = 'none';
+  if (navPartLink) navPartLink.style.display = 'block';
+  
+  // Recargar la página para limpiar completamente
+  window.location.reload();
 }
 
-/**
- * Iniciar proceso de login
- */
-function iniciarLogin() {
-  if (typeof google === 'undefined' || !google.accounts) {
-    console.error('Google Sign-In no está cargado');
-    return;
-  }
+// ── INICIALIZACIÓN: Restaurar sesión si existe
+document.addEventListener('componentsLoaded', function() {
+  // ✅ CAMBIO CRÍTICO: localStorage en lugar de sessionStorage
+  const savedUser = localStorage.getItem('sucrebot_user');
   
-  google.accounts.id.initialize({
-    client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
-    callback: handleCredentialResponse,
-    use_fedcm_for_prompt: false
-  });
-  
-  google.accounts.id.prompt((notification) => {
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      // Si no se muestra el prompt, renderizar botón
-      document.getElementById('btnLogin').innerHTML = '';
-      google.accounts.id.renderButton(
-        document.getElementById('btnLogin'),
-        {
-          theme: 'filled_blue',
-          size: 'medium',
-          text: 'signin_with',
-          shape: 'rectangular'
-        }
-      );
-    }
-  });
-}
-
-/**
- * Restaurar sesión al cargar la página
- */
-window.addEventListener('load', () => {
-  const savedUser = sessionStorage.getItem('sucrebot_user');
   if (savedUser) {
     try {
       const userData = JSON.parse(savedUser);
       activarSesion(userData);
-    } catch (error) {
-      console.error('Error al restaurar sesión:', error);
-      sessionStorage.removeItem('sucrebot_user');
+    } catch (e) {
+      console.error('Error al restaurar sesión:', e);
+      localStorage.removeItem('sucrebot_user');
     }
+  }
+  
+  // Inicializar Google Sign-In
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.initialize({
+      client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
+      callback: handleCredentialResponse
+    });
+    
+    const btnLogin = document.getElementById('btnLogin');
+    if (btnLogin && !savedUser) {
+      google.accounts.id.renderButton(btnLogin, {
+        theme: 'outline',
+        size: 'medium',
+        text: 'signin_with',
+        locale: 'es'
+      });
+    }
+  }
+});
+
+// ── NAVEGACIÓN DEL DROPDOWN (Eventos → SucreBot 2026)
+document.addEventListener('componentsLoaded', function() {
+  const btnSucrebot = document.getElementById('btnSucrebot');
+  const menuSucrebot = document.getElementById('menuSucrebot');
+  
+  if (btnSucrebot && menuSucrebot) {
+    let timeoutId;
+    
+    btnSucrebot.addEventListener('mouseenter', function() {
+      clearTimeout(timeoutId);
+      menuSucrebot.classList.add('open');
+    });
+    
+    btnSucrebot.addEventListener('mouseleave', function() {
+      timeoutId = setTimeout(() => {
+        if (!menuSucrebot.matches(':hover')) {
+          menuSucrebot.classList.remove('open');
+        }
+      }, 200);
+    });
+    
+    menuSucrebot.addEventListener('mouseenter', function() {
+      clearTimeout(timeoutId);
+    });
+    
+    menuSucrebot.addEventListener('mouseleave', function() {
+      menuSucrebot.classList.remove('open');
+    });
   }
 });
