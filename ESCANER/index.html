@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Escáner QR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <!-- CSS compartido -->
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  
+  <!-- CSS específico de ESC-NER -->
+  <style>
+    :root {
+      --cyan: #5bc8f0; --blue: #1a5ca8; --sucre-blue: #1a5ca8;
+      --bg: #f0f4f8; --surface: #ffffff; --surface2: #e8eef5;
+      --border-dark: rgba(26,92,168,0.12);
+      --accent: #0e7fc2; --accent2: #ff6b35;
+      --green: #12a05c; --red: #d93025;
+      --text-dark: #1a2035; --muted-dark: #5a6478;
+      --font-mono: 'DM Mono', monospace;
+    }
+    body { background: var(--bg) !important; color: var(--text-dark) !important; }
+
+    /* ── ESCÁNER ── */
+    .wrapper { max-width: 480px; margin: 0 auto; padding: 32px 16px 80px; }
+    .page-title { display: flex; align-items: center; gap: 12px; padding: 0 0 20px; border-bottom: 1px solid var(--border-dark); margin-bottom: 24px; }
+    .page-title h2 { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.06em; color: var(--sucre-blue); line-height: 1; }
+    .page-title .sub { font-size: 0.68rem; color: var(--muted-dark); font-family: var(--font-mono); letter-spacing: 0.1em; margin-top: 4px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted-dark); margin-left: auto; transition: background 0.3s; }
+    .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .scanner-card { background: #1a5ca8; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+    .card-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.7); margin-bottom: 12px; }
+    #qr-reader { width: 100%; border-radius: 10px; overflow: hidden; background: #0d2a4a; min-height: 260px; }
+    #qr-reader video { border-radius: 10px; }
+    .btn-scan { width: 100%; margin-top: 12px; background: #0d2a4a; border: 1px solid rgba(255,255,255,0.2); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 600; padding: 14px; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+    .btn-scan:hover { background: #0f3460; }
+    .btn-scan.active { background: rgba(255,59,59,0.18); border-color: rgba(255,100,100,0.5); color: #ffaaaa; }
+    .result-card { background: #1a5ca8; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(26,92,168,0.2); transition: border-color 0.3s; }
+    .result-card.success { border-color: #7fffbc; }
+    .result-card.warning { border-color: #ffd60a; }
+    .result-card.error   { border-color: #ff8080; }
+    .result-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .result-robot  { font-size: 1.15rem; font-weight: 700; color: #ffffff; }
+    .result-nombre { font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .result-badge { font-family: var(--font-mono); font-size: 0.68rem; padding: 4px 10px; border-radius: 20px; border: 1px solid; white-space: nowrap; }
+    .result-badge.ok  { background: rgba(0,255,136,0.15); color: #7fffbc; border-color: rgba(0,255,136,0.4); }
+    .result-badge.dup { background: rgba(255,214,10,0.15); color: #ffd60a; border-color: rgba(255,214,10,0.4); }
+    .result-badge.err { background: rgba(255,100,100,0.15); color: #ff8080; border-color: rgba(255,100,100,0.4); }
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .result-field-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+    .result-field-val { font-size: 0.88rem; color: rgba(255,255,255,0.9); font-weight: 600; }
+    .cat-pill { display: inline-block; background: rgba(255,255,255,0.15); color: #ffffff; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.25); }
+    .btn-enviar { width: 100%; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 600; padding: 12px; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+    .btn-enviar:hover { background: rgba(255,255,255,0.2); }
+    .btn-enviar.inactivo { opacity: 0.5; cursor: not-allowed; }
+    .hist-card { background: #1a5ca8; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+    .hist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .hist-count { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; background: rgba(255,255,255,0.15); color: #ffffff; padding: 4px 12px; border-radius: 20px; }
+    #historial { max-height: 300px; overflow-y: auto; }
+    .hist-item { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+    .hist-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .hist-robot { font-size: 0.9rem; font-weight: 600; color: #ffffff; }
+    .hist-time { font-family: var(--font-mono); font-size: 0.65rem; color: rgba(255,255,255,0.6); }
+    .hist-nombre { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+    .empty-hist { text-align: center; padding: 24px; color: rgba(255,255,255,0.5); font-size: 0.82rem; }
+    .toast { position: fixed; bottom: 30px; right: 30px; background: rgba(26,28,46,0.95); backdrop-filter: blur(12px); color: #00ff88; border: 1.5px solid rgba(0,255,136,0.4); padding: 14px 20px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 99999; opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COMPONENTES COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CONTENIDO ÚNICO DEL ESCÁNER QR
+     ═══════════════════════════════════════════════════════════════ -->
+
+<main>
+  <div class="wrapper">
+    <div class="page-title">
+      <div>
+        <h2>Escáner QR</h2>
+        <div class="sub">MESA DE CONTROL · SUCREBOT 2026</div>
+      </div>
+      <div class="status-dot" id="status-dot"></div>
+    </div>
+    
+    <div class="scanner-card">
+      <div class="card-label">ESCÁNER QR</div>
+      <div id="qr-reader" style="position:relative;min-height:260px;background:#0d2a4a;border-radius:10px;overflow:hidden;">
+        <video id="qr-video" style="width:100%;display:none;border-radius:10px;" playsinline></video>
+        <div id="qr-placeholder" style="display:flex;align-items:center;justify-content:center;height:260px;color:#7a7a8c;font-size:0.85rem;font-family:'DM Mono',monospace;letter-spacing:0.08em;flex-direction:column;gap:10px;">
+          <span style="font-size:2rem;">📷</span><span>PRESIONA ACTIVAR CÁMARA</span>
+        </div>
+      </div>
+      <button class="btn-scan" id="btn-scan" onclick="toggleScanner()">📷 Activar cámara</button>
+    </div>
+    
+    <div class="result-card idle" id="result-card">
+      <div class="result-top">
+        <div>
+          <div class="result-robot" id="res-robot">Sin escanear</div>
+          <div class="result-nombre" id="res-nombre">Apunta la cámara a un QR</div>
+        </div>
+        <span class="result-badge" id="res-badge">—</span>
+      </div>
+      <div class="result-grid" id="res-grid" style="display:none">
+        <div class="result-field"><div class="result-field-label">INSTITUCIÓN</div><div class="result-field-val" id="res-inst">—</div></div>
+        <div class="result-field"><div class="result-field-label">CIUDAD</div><div class="result-field-val" id="res-ciudad">—</div></div>
+        <div class="result-field" style="grid-column:span 2"><div class="result-field-label">CATEGORÍA</div><div><span class="cat-pill" id="res-cat">—</span></div></div>
+      </div>
+      <button class="btn-enviar inactivo" id="btn-enviar" onclick="enviarAlAdmin()">⚡ Enviar al cronómetro</button>
+    </div>
+    
+    <div class="hist-card">
+      <div class="hist-header">
+        <div class="card-label" style="margin:0">ESCANEADOS HOY</div>
+        <span class="hist-count" id="hist-count">0</span>
+      </div>
+      <div id="historial"><p class="empty-hist">Ningún QR escaneado aún</p></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS ESPECÍFICOS DEL ESCÁNER
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+<script>
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxc-nLopIe6C5Rh0O22oEwCwgYZfk68PTl2YzZTZarNdmazdL0z2g7jm-XUjhH_oIGkzw/exec';
+  
+  let codeReader = null;
+  let scanning = false;
+  let lastScanned = null;
+  let historial = [];
+
+  async function toggleScanner() {
+    if (!scanning) {
+      await startScanner();
+    } else {
+      stopScanner();
+    }
+  }
+
+  async function startScanner() {
+    const video = document.getElementById('qr-video');
+    const placeholder = document.getElementById('qr-placeholder');
+    const btn = document.getElementById('btn-scan');
+    const statusDot = document.getElementById('status-dot');
+
+    try {
+      if (!codeReader) {
+        codeReader = new ZXing.BrowserQRCodeReader();
+      }
+
+      const devices = await codeReader.listVideoInputDevices();
+      if (!devices || devices.length === 0) {
+        showToast('No se encontró ninguna cámara', true);
+        return;
+      }
+
+      const selectedDevice = devices[0];
+      placeholder.style.display = 'none';
+      video.style.display = 'block';
+      btn.textContent = '🔴 Detener cámara';
+      btn.classList.add('active');
+      statusDot.classList.add('online');
+      scanning = true;
+
+      codeReader.decodeFromVideoDevice(selectedDevice.deviceId, video, (result, err) => {
+        if (result) {
+          procesarQR(result.text);
+        }
+      });
+    } catch (error) {
+      showToast('Error al acceder a la cámara: ' + error.message, true);
+      stopScanner();
+    }
+  }
+
+  function stopScanner() {
+    const video = document.getElementById('qr-video');
+    const placeholder = document.getElementById('qr-placeholder');
+    const btn = document.getElementById('btn-scan');
+    const statusDot = document.getElementById('status-dot');
+
+    if (codeReader) {
+      codeReader.reset();
+    }
+
+    video.style.display = 'none';
+    placeholder.style.display = 'flex';
+    btn.textContent = '📷 Activar cámara';
+    btn.classList.remove('active');
+    statusDot.classList.remove('online');
+    scanning = false;
+  }
+
+  function procesarQR(texto) {
+    const ahora = Date.now();
+    if (lastScanned && (ahora - lastScanned.time < 3000)) {
+      if (lastScanned.text === texto) {
+        return;
+      }
+    }
+
+    lastScanned = { text: texto, time: ahora };
+
+    const partes = texto.split(' | ');
+    if (partes.length < 6) {
+      mostrarResultado({ error: 'QR inválido', texto });
+      return;
+    }
+
+    const data = {
+      robot: partes[1]?.replace('Robot: ', '').trim(),
+      categoria: partes[2]?.replace('Categoria: ', '').trim(),
+      institucion: partes[3]?.replace('Institucion: ', '').trim(),
+      ciudad: partes[4]?.replace('Ciudad: ', '').trim(),
+      nombre: partes[5]?.replace('Participante: ', '').trim(),
+      id: partes[6]?.replace('ID: ', '').trim()
+    };
+
+    const duplicado = historial.some(h => h.id === data.id);
+    data.duplicado = duplicado;
+
+    mostrarResultado(data);
+    agregarAlHistorial(data);
+  }
+
+  function mostrarResultado(data) {
+    const card = document.getElementById('result-card');
+    const robot = document.getElementById('res-robot');
+    const nombre = document.getElementById('res-nombre');
+    const badge = document.getElementById('res-badge');
+    const grid = document.getElementById('res-grid');
+    const btnEnviar = document.getElementById('btn-enviar');
+
+    if (data.error) {
+      card.className = 'result-card error';
+      robot.textContent = 'Error';
+      nombre.textContent = data.error;
+      badge.textContent = '✖ ERROR';
+      badge.className = 'result-badge err';
+      grid.style.display = 'none';
+      btnEnviar.classList.add('inactivo');
+      showToast('QR inválido o no reconocido', true);
+      return;
+    }
+
+    card.className = data.duplicado ? 'result-card warning' : 'result-card success';
+    robot.textContent = data.robot || 'Sin nombre';
+    nombre.textContent = data.nombre || 'Sin participante';
+    badge.textContent = data.duplicado ? '⚠ DUPLICADO' : '✓ VÁLIDO';
+    badge.className = data.duplicado ? 'result-badge dup' : 'result-badge ok';
+
+    document.getElementById('res-inst').textContent = data.institucion || '—';
+    document.getElementById('res-ciudad').textContent = data.ciudad || '—';
+    document.getElementById('res-cat').textContent = data.categoria || '—';
+    grid.style.display = 'grid';
+    btnEnviar.classList.remove('inactivo');
+    btnEnviar.dataset.id = data.id;
+
+    showToast(data.duplicado ? '⚠ QR ya escaneado anteriormente' : '✓ QR escaneado correctamente');
+  }
+
+  function agregarAlHistorial(data) {
+    if (historial.some(h => h.id === data.id)) return;
+
+    historial.unshift(data);
+    if (historial.length > 20) historial.pop();
+
+    const div = document.getElementById('historial');
+    const count = document.getElementById('hist-count');
+
+    count.textContent = historial.length;
+
+    const hora = new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
+    const item = document.createElement('div');
+    item.className = 'hist-item';
+    item.innerHTML = `
+      <div class="hist-item-top">
+        <div class="hist-robot">${data.robot || 'Sin nombre'}</div>
+        <div class="hist-time">${hora}</div>
+      </div>
+      <div class="hist-nombre">${data.nombre || 'Sin participante'}</div>
+    `;
+
+    if (div.querySelector('.empty-hist')) {
+      div.innerHTML = '';
+    }
+    div.insertBefore(item, div.firstChild);
+  }
+
+  async function enviarAlAdmin() {
+    const btn = document.getElementById('btn-enviar');
+    if (btn.classList.contains('inactivo')) return;
+
+    const id = btn.dataset.id;
+    if (!id) return;
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Enviando...';
+
+    try {
+      const qs = new URLSearchParams({ action: 'setActivo', id }).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const data = await r.json();
+
+      if (data.success) {
+        showToast('✓ Enviado al cronómetro correctamente');
+        btn.textContent = '✓ Enviado';
+        setTimeout(() => {
+          btn.textContent = '⚡ Enviar al cronómetro';
+          btn.disabled = false;
+        }, 2000);
+      } else {
+        throw new Error(data.error || 'Error desconocido');
+      }
+    } catch (error) {
+      showToast('Error al enviar: ' + error.message, true);
+      btn.textContent = '⚡ Enviar al cronómetro';
+      btn.disabled = false;
+    }
+  }
+
+  function showToast(msg, error = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.borderColor = error ? 'rgba(255,59,59,0.4)' : 'rgba(0,255,136,0.4)';
+    t.style.color = error ? '#ff3b3b' : '#00ff88';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+</script>
+
+</body>
+</html>
