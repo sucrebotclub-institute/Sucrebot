@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Participantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init('647agTJlgkG1SEqVa');</script>
+  
+  <!-- CSS compartido -->
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  
+  <!-- CSS específico de PARTICIPANTES_REGISTRADOS -->
+  <style>
+    /* Mantener fondo blanco como el original */
+    body {
+      background: #ffffff !important;
+      color: #1a1a2e !important;
+    }
+    main { min-height: calc(100vh - 174px); background: #ffffff; }
+
+    /* ── ESTILOS PARTICIPANTES ── */
+    .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+    .page-hero { padding: 40px 0 32px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 32px; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
+    .page-hero-content { flex: 1; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
+    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+    .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .page-hero-line { flex: 0 0 40px; height: 3px; background: #1a5ca8; border-radius: 2px; }
+    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; line-height: 1; }
+    .page-hero h2 span { color: #1a5ca8; }
+    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
+
+    /* ── ROBOT CAMPEÓN ANIMADO ── */
+    .robot-champion-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+    .glow-effect { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 220px; height: 220px; background: radial-gradient(circle, rgba(26,92,168,0.15) 0%, transparent 70%); border-radius: 50%; animation: glow-pulse 3s ease-in-out infinite; pointer-events: none; z-index: -1; }
+    @keyframes glow-pulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.5} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:0.8} }
+    .robot-champion { width: 180px; height: auto; filter: drop-shadow(0 8px 24px rgba(26,92,168,0.4)); animation: float-robot 4s ease-in-out infinite; z-index: 1; }
+    @keyframes float-robot { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-16px) rotate(2deg)} }
+    .crown-icon { position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-12deg); font-size: 48px; z-index: 2; animation: crown-bounce 2s ease-in-out infinite; filter: drop-shadow(0 4px 12px rgba(255,215,0,0.6)); }
+    @keyframes crown-bounce { 0%,100%{transform:translateX(-50%) rotate(-12deg) translateY(0)} 50%{transform:translateX(-50%) rotate(-12deg) translateY(-8px)} }
+
+    /* ── CONTROLES ── */
+    .controles { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .controles-left { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .filtro-categoria { background: #f5f7fa; border: 1.5px solid #d0d6e0; color: #2a3f5f; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 8px; outline: none; cursor: pointer; transition: all 0.2s; }
+    .filtro-categoria:focus { border-color: #1a5ca8; background: #ffffff; }
+    .filtro-categoria option { background: #ffffff; color: #2a3f5f; }
+    .busqueda-input { background: #f5f7fa; border: 1.5px solid #d0d6e0; color: #2a3f5f; font-family: 'Exo 2', sans-serif; font-size: 13px; padding: 8px 14px; border-radius: 8px; outline: none; width: 280px; transition: all 0.2s; }
+    .busqueda-input:focus { border-color: #1a5ca8; background: #ffffff; }
+    .busqueda-input::placeholder { color: rgba(42,63,95,0.5); }
+    .btn-refrescar { background: #1a5ca8; border: none; color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+    .btn-refrescar:hover { background: #0f3d75; transform: translateY(-1px); }
+    .btn-refrescar:active { transform: translateY(0); }
+
+    /* ── TABLA ── */
+    .tabla-participantes { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 2px 12px rgba(26,92,168,0.1); }
+    .tabla-participantes thead { background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; }
+    .tabla-participantes th { padding: 16px; text-align: left; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.1); }
+    .tabla-participantes th:first-child { border-radius: 12px 0 0 0; }
+    .tabla-participantes th:last-child { border-radius: 0 12px 0 0; }
+    .tabla-participantes tbody tr { background: #ffffff; transition: all 0.2s; cursor: pointer; }
+    .tabla-participantes tbody tr:nth-child(even) { background: #f8f9fb; }
+    .tabla-participantes tbody tr:hover { background: #e8f0ff; transform: scale(1.005); box-shadow: 0 4px 12px rgba(26,92,168,0.15); }
+    .tabla-participantes td { padding: 14px 16px; font-size: 13px; color: #2a3f5f; border-bottom: 1px solid #e8ebf0; font-family: 'Exo 2', sans-serif; }
+    .tabla-participantes tbody tr:last-child td { border-bottom: none; }
+    .tabla-participantes tbody tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+    .tabla-participantes tbody tr:last-child td:last-child { border-radius: 0 0 12px 0; }
+    .categoria-badge { display: inline-block; background: #e8f0ff; color: #1a5ca8; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; letter-spacing: 0.5px; }
+    .estado-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 12px; letter-spacing: 0.5px; }
+    .estado-badge.aprobado { background: #d4f4dd; color: #0d7d2d; }
+    .estado-badge.pendiente { background: #fff4e0; color: #c27803; }
+    .estado-badge.nocumple { background: #ffe0e0; color: #c41e3a; }
+    .estado-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .vacio-msg { text-align: center; padding: 60px 20px; color: #7a7a8c; font-size: 14px; }
+
+    /* ── MODAL REVISAR ── */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-overlay.show { display: flex; }
+    .modal-card { background: #ffffff; border-radius: 16px; width: 90%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.4); position: relative; }
+    .modal-header { background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; padding: 20px 24px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+    .modal-close { background: none; border: none; color: #ffffff; font-size: 28px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+    .modal-close:hover { opacity: 1; }
+    .modal-body { padding: 28px 24px; }
+    .modal-section { margin-bottom: 24px; }
+    .modal-section-title { font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #1a5ca8; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #e8f0ff; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-field { display: flex; flex-direction: column; gap: 4px; }
+    .modal-field-label { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #7a7a8c; }
+    .modal-field-value { font-size: 14px; color: #2a3f5f; font-weight: 600; }
+    .modal-comprobante { text-align: center; margin-top: 16px; }
+    .modal-comprobante img { max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); margin-bottom: 12px; }
+    .modal-comprobante a { display: inline-block; background: #1a5ca8; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; }
+    .modal-comprobante a:hover { background: #0f3d75; transform: translateY(-1px); }
+    .modal-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .modal-btn { flex: 1; min-width: 140px; padding: 12px 20px; border: none; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+    .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .modal-btn-eliminar { background: #ffe0e0; color: #c41e3a; }
+    .modal-btn-eliminar:hover:not(:disabled) { background: #ffcccc; transform: translateY(-2px); }
+    .modal-btn-aprobar { background: #d4f4dd; color: #0d7d2d; }
+    .modal-btn-aprobar:hover:not(:disabled) { background: #c0edd0; transform: translateY(-2px); }
+    .modal-btn-reenviar { background: #e8f0ff; color: #1a5ca8; }
+    .modal-btn-reenviar:hover:not(:disabled) { background: #d0e2ff; transform: translateY(-2px); }
+    .modal-btn-desaprobar { background: #fff4e0; color: #c27803; }
+    .modal-btn-desaprobar:hover:not(:disabled) { background: #ffe8c0; transform: translateY(-2px); }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 30px; right: 30px; background: rgba(26,28,46,0.95); backdrop-filter: blur(12px); color: #00ff88; border: 1.5px solid rgba(0,255,136,0.4); padding: 14px 20px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 99999; opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    @media (max-width: 768px) {
+      .page-hero { grid-template-columns: 1fr; gap: 24px; }
+      .robot-champion-wrapper { width: 160px; height: 160px; margin: 0 auto; }
+      .robot-champion { width: 140px; }
+      .crown-icon { font-size: 38px; }
+      .controles { flex-direction: column; align-items: stretch; }
+      .controles-left { flex-direction: column; }
+      .busqueda-input { width: 100%; }
+      .tabla-participantes { font-size: 11px; }
+      .tabla-participantes th, .tabla-participantes td { padding: 10px 8px; }
+      .modal-grid { grid-template-columns: 1fr; }
+      .modal-actions { flex-direction: column; }
+      .modal-btn { min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COMPONENTES COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CONTENIDO ÚNICO DE PARTICIPANTES_REGISTRADOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<main>
+  <div class="wrapper">
+    <div class="page-hero">
+      <div class="page-hero-content">
+        <div class="page-hero-badge">
+          <div class="page-hero-badge-dot"></div>
+          SucreBot 2026 · Torneo de Robótica
+        </div>
+        <h2>PARTICIPANTES <span>REGISTRADOS</span></h2>
+        <div class="page-hero-sub">
+          <div class="page-hero-line"></div>
+          <p>LISTADO DE PARTICIPANTES DEL TORNEO SUCREBOT 2026</p>
+        </div>
+      </div>
+      <div class="robot-champion-wrapper">
+        <div class="glow-effect"></div>
+        <div class="crown-icon">👑</div>
+        <img src="robot-champion.png" alt="Robot Campeón" class="robot-champion" />
+      </div>
+    </div>
+
+    <div class="controles">
+      <div class="controles-left">
+        <select id="filtro-categoria" class="filtro-categoria">
+          <option value="">🏆 Todas las categorías</option>
+          <option value="Seguidor velocidad sin turbina">Seguidor velocidad sin turbina</option>
+          <option value="Seguidor velocidad con turbina">Seguidor velocidad con turbina</option>
+          <option value="Robot laberinto">Robot laberinto</option>
+          <option value="Robot Balancín">Robot Balancín</option>
+          <option value="Robot trepador">Robot trepador</option>
+          <option value="Seguidor destreza">Seguidor destreza</option>
+          <option value="Drones">Drones</option>
+          <option value="Insectos">Insectos</option>
+        </select>
+        <input type="text" id="busqueda-input" class="busqueda-input" placeholder="🔍 Buscar por nombre, robot o institución..." />
+      </div>
+      <button class="btn-refrescar" onclick="refrescarLista()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+        Refrescar
+      </button>
+    </div>
+
+    <table class="tabla-participantes">
+      <thead>
+        <tr>
+          <th>Robot</th>
+          <th>Categoría</th>
+          <th>Nombre</th>
+          <th>Institución</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-participantes">
+        <tr><td colspan="5" class="vacio-msg">Cargando participantes...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- MODAL REVISAR -->
+<div id="modal-revisar" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>REVISIÓN DE PARTICIPANTE</h3>
+      <button class="modal-close" onclick="cerrarModalRevisar()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">🤖 Datos del Robot</div>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <div class="modal-field-label">Nombre del Robot</div>
+            <div class="modal-field-value" id="rev-robot">—</div>
+          </div>
+          <div class="modal-field">
+            <div class="modal-field-label">Categoría</div>
+            <div class="modal-field-value" id="rev-categoria">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">👤 Datos del Participante</div>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <div class="modal-field-label">Nombre Completo</div>
+            <div class="modal-field-value" id="rev-nombre">—</div>
+          </div>
+          <div class="modal-field">
+            <div class="modal-field-label">Institución</div>
+            <div class="modal-field-value" id="rev-institucion">—</div>
+          </div>
+          <div class="modal-field">
+            <div class="modal-field-label">Ciudad</div>
+            <div class="modal-field-value" id="rev-ciudad">—</div>
+          </div>
+          <div class="modal-field">
+            <div class="modal-field-label">Correo Electrónico</div>
+            <div class="modal-field-value" id="rev-correo">—</div>
+          </div>
+          <div class="modal-field">
+            <div class="modal-field-label">Teléfono de Contacto</div>
+            <div class="modal-field-value" id="rev-contacto">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">📎 Comprobante de Pago</div>
+        <div class="modal-comprobante">
+          <img id="rev-comprobante" src="" alt="Comprobante" style="display:none;" />
+          <a id="rev-comprobante-link" href="" target="_blank" style="display:none;">📥 Ver comprobante completo</a>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">⚙ Acciones</div>
+        <div class="modal-actions">
+          <button id="btn-eliminar" class="modal-btn modal-btn-eliminar" onclick="noCumpleRequisitos()">✖ No cumple con los requisitos</button>
+          <button id="btn-aprobar" class="modal-btn modal-btn-aprobar" onclick="aprobarParticipante()">✔ Aprobar y enviar QR</button>
+          <button id="btn-reenviar" class="modal-btn modal-btn-reenviar" onclick="reenviarQR()" style="display:none;">📧 Reenviar QR por email</button>
+          <button id="btn-desaprobar" class="modal-btn modal-btn-desaprobar" onclick="desaprobarParticipante()" style="display:none;">↩ Marcar como no aprobado</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FOOTER COMPARTIDO
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div data-include="../shared/components/footer.html"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS ESPECÍFICOS DE PARTICIPANTES_REGISTRADOS
+     ═══════════════════════════════════════════════════════════════ -->
+
+<script>
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxc-nLopIe6C5Rh0O22oEwCwgYZfk68PTl2YzZTZarNdmazdL0z2g7jm-XUjhH_oIGkzw/exec';
+
+  async function gasGet(params) {
+    const qs=new URLSearchParams(params).toString();
+    const r=await fetch(GAS_URL+'?'+qs,{redirect:'follow'});
+    return r.json();
+  }
+
+  function getEstado(p) {
+    if(p.aprobado===true||p.aprobado==='true') return 'aprobado';
+    if(p.aprobado==='nocumple') return 'nocumple';
+    return 'pendiente';
+  }
+
+  function cargarListaLocal() {
+    const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
+    const tbody=document.getElementById('tbody-participantes');
+    const filtro=document.getElementById('filtro-categoria').value;
+    const busqueda=document.getElementById('busqueda-input').value.toLowerCase();
+    let arr=lista.filter(p=>{
+      if(filtro&&p.categoria!==filtro) return false;
+      if(busqueda) {
+        const txt=(p.nombre||'').toLowerCase()+(p.robot||'').toLowerCase()+(p.institucion||'').toLowerCase();
+        if(!txt.includes(busqueda)) return false;
+      }
+      return true;
+    });
+    tbody.innerHTML='';
+    if(!arr.length) {
+      tbody.innerHTML='<tr><td colspan="5" class="vacio-msg">No se encontraron participantes</td></tr>';
+      return;
+    }
+    arr.forEach(p=>{
+      const tr=document.createElement('tr');
+      const estado=getEstado(p);
+      const estadoHTML=estado==='aprobado'?'<span class="estado-badge aprobado">Aprobado</span>':
+                       estado==='nocumple'?'<span class="estado-badge nocumple">No cumple</span>':
+                       '<span class="estado-badge pendiente">Pendiente</span>';
+      tr.innerHTML=`
+        <td><strong>${p.robot||'—'}</strong></td>
+        <td><span class="categoria-badge">${p.categoria||'—'}</span></td>
+        <td>${p.nombre||'—'}</td>
+        <td>${p.institucion||'—'}</td>
+        <td>${estadoHTML}</td>
+      `;
+      tr.addEventListener('click',()=>abrirModalRevisar(p));
+      tbody.appendChild(tr);
+    });
+  }
+
+  function refrescarLista() {
+    gasGet({action:'getParticipantes'}).then(arr=>{
+      if(Array.isArray(arr)&&arr.length>0&&arr[0].id){
+        localStorage.setItem('participantes',JSON.stringify(arr));
+        cargarListaLocal();
+        showToast('✅ Lista actualizada');
+      }
+    }).catch(e=>showToast('Error al refrescar: '+(e.message||JSON.stringify(e)),true));
+  }
+
+  let participanteEnRevision=null;
+  function abrirModalRevisar(p) {
+    participanteEnRevision = p;
+    const estado = getEstado(p);
+    document.getElementById('rev-robot').textContent       = p.robot      || '—';
+    document.getElementById('rev-categoria').textContent   = p.categoria  || '—';
+    document.getElementById('rev-nombre').textContent      = p.nombre     || '—';
+    document.getElementById('rev-institucion').textContent = p.institucion || '—';
+    document.getElementById('rev-ciudad').textContent      = p.ciudad     || '—';
+    document.getElementById('rev-correo').textContent      = p.correo     || '—';
+    document.getElementById('rev-contacto').textContent    = p.contacto   || '—';
+    const imgEl=document.getElementById('rev-comprobante'), linkEl=document.getElementById('rev-comprobante-link');
+    if (p.archivoUrl) { imgEl.src=p.archivoUrl; imgEl.style.display='block'; linkEl.href=p.archivoUrl; linkEl.style.display='inline-block'; }
+    else { imgEl.style.display='none'; linkEl.style.display='none'; }
+    const btnEliminar=document.getElementById('btn-eliminar'), btnAprobar=document.getElementById('btn-aprobar');
+    const btnReenviar=document.getElementById('btn-reenviar'), btnDesaprobar=document.getElementById('btn-desaprobar');
+    if (estado === 'aprobado') {
+      btnEliminar.style.display='none'; btnAprobar.style.display='none';
+      btnReenviar.style.display='block'; btnReenviar.textContent='📧 Reenviar QR por email'; btnReenviar.disabled=false;
+      btnDesaprobar.style.display='block'; btnDesaprobar.textContent='↩ Marcar como no aprobado'; btnDesaprobar.disabled=false;
+    } else {
+      btnEliminar.style.display='block'; btnEliminar.textContent='✖ No cumple con los requisitos'; btnEliminar.disabled=false;
+      btnAprobar.style.display='block'; btnAprobar.textContent='✔ Aprobar y enviar QR'; btnAprobar.disabled=false; btnAprobar.style.opacity='1';
+      btnReenviar.style.display='none'; btnDesaprobar.style.display='none';
+    }
+    document.getElementById('modal-revisar').classList.add('show');
+  }
+
+  function cerrarModalRevisar() { participanteEnRevision=null; document.getElementById('modal-revisar').classList.remove('show'); }
+
+  async function noCumpleRequisitos() {
+    if (!participanteEnRevision) return;
+    const btn=document.getElementById('btn-eliminar'); btn.disabled=true; btn.textContent='⏳ Procesando...';
+    try {
+      await gasGet({ action:'noCumpleRequisitos', id:participanteEnRevision.id });
+      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
+      const idx=lista.findIndex(x=>x.id===participanteEnRevision.id);
+      if(idx>=0) lista[idx].aprobado='nocumple';
+      localStorage.setItem('participantes',JSON.stringify(lista));
+      cerrarModalRevisar(); cargarListaLocal(); showToast('✖ Marcado como no cumple requisitos');
+    } catch(e) { btn.disabled=false; btn.textContent='✖ No cumple con los requisitos'; showToast('Error: '+(e.message||JSON.stringify(e)),true); }
+  }
+
+  async function aprobarParticipante() {
+    if (!participanteEnRevision) return;
+    const p=participanteEnRevision, btn=document.getElementById('btn-aprobar');
+    btn.disabled=true; btn.textContent='⏳ Aprobando...';
+    try {
+      await gasGet({ action:'aprobarParticipante', id:p.id });
+      const textoQR='SUCREBOT 2026 | Robot: '+p.robot+' | Categoria: '+p.categoria+' | Institucion: '+p.institucion+' | Ciudad: '+p.ciudad+' | Participante: '+p.nombre+' | ID: '+p.id;
+      const qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data='+encodeURIComponent(textoQR);
+      await emailjs.send('service_t1tb15d','template_s9ap2wh',{correo_destino:p.correo,nombre:p.nombre,nombre_robot:p.robot,institucion:p.institucion,categoria:p.categoria,ciudad:p.ciudad,qr_image:qrUrl,name:'SucreBot 2026',email:'sucrebotclub@tecnologicosucre.edu.ec'});
+      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
+      const idx=lista.findIndex(x=>x.id===p.id);
+      if(idx>=0) lista[idx].aprobado=true;
+      localStorage.setItem('participantes',JSON.stringify(lista));
+      cerrarModalRevisar(); cargarListaLocal(); showToast('✔ Aprobado — QR enviado por email');
+    } catch(e) { btn.disabled=false; btn.textContent='✔ Aprobar y enviar QR'; showToast('Error: '+(e.text||e.message||JSON.stringify(e)),true); }
+  }
+
+  async function reenviarQR() {
+    if (!participanteEnRevision) return;
+    const p=participanteEnRevision, btn=document.getElementById('btn-reenviar');
+    btn.disabled=true; btn.textContent='⏳ Enviando...';
+    try {
+      const textoQR='SUCREBOT 2026 | Robot: '+p.robot+' | Categoria: '+p.categoria+' | Institucion: '+p.institucion+' | Ciudad: '+p.ciudad+' | Participante: '+p.nombre+' | ID: '+p.id;
+      const qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data='+encodeURIComponent(textoQR);
+      await emailjs.send('service_t1tb15d','template_s9ap2wh',{correo_destino:p.correo,nombre:p.nombre,nombre_robot:p.robot,institucion:p.institucion,categoria:p.categoria,ciudad:p.ciudad,qr_image:qrUrl,name:'SucreBot 2026',email:'sucrebotclub@tecnologicosucre.edu.ec'});
+      cerrarModalRevisar(); showToast('📧 QR reenviado a '+p.correo);
+    } catch(e) { btn.disabled=false; btn.textContent='📧 Reenviar QR por email'; showToast('Error al reenviar: '+(e.text||e.message||JSON.stringify(e)),true); }
+  }
+
+  async function desaprobarParticipante() {
+    if (!participanteEnRevision) return;
+    const btn=document.getElementById('btn-desaprobar'); btn.disabled=true; btn.textContent='⏳ Procesando...';
+    try {
+      await gasGet({ action:'desaprobarParticipante', id:participanteEnRevision.id });
+      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
+      const idx=lista.findIndex(x=>x.id===participanteEnRevision.id);
+      if(idx>=0) lista[idx].aprobado=false;
+      localStorage.setItem('participantes',JSON.stringify(lista));
+      cerrarModalRevisar(); cargarListaLocal(); showToast('↩ Participante marcado como pendiente');
+    } catch(e) { btn.disabled=false; btn.textContent='↩ Marcar como no aprobado'; showToast('Error: '+(e.message||JSON.stringify(e)),true); }
+  }
+
+  document.addEventListener('click',e=>{ if(e.target===document.getElementById('modal-revisar')) cerrarModalRevisar(); });
+
+  function showToast(msg,error=false) {
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.style.borderColor=error?'rgba(255,59,59,0.4)':'rgba(0,255,136,0.4)'; t.style.color=error?'#ff3b3b':'#00ff88';
+    t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500);
+  }
+
+  document.getElementById('filtro-categoria').addEventListener('change',cargarListaLocal);
+  document.getElementById('busqueda-input').addEventListener('input',cargarListaLocal);
+
+  cargarListaLocal();
+  gasGet({ action:'getParticipantes' }).then(arr=>{
+    if(Array.isArray(arr)&&arr.length>0&&arr[0].id){ localStorage.setItem('participantes',JSON.stringify(arr)); cargarListaLocal(); }
+  }).catch(()=>{});
+</script>
+
+</body>
+</html>
