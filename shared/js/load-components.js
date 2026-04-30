@@ -59,3 +59,59 @@ if (document.readyState === 'loading') {
 } else {
   loadComponents();
 }
+// ══════════════════════════════════════════════════════════════
+// MENÚ MÓVIL - Toggle hamburguesa
+// ══════════════════════════════════════════════════════════════
+
+document.addEventListener('componentsLoaded', function() {
+  const menuToggle = document.getElementById('menuToggle');
+  const nav = document.querySelector('nav');
+  
+  if (menuToggle && nav) {
+    // Toggle del menú principal
+    menuToggle.addEventListener('click', function() {
+      this.classList.toggle('active');
+      nav.classList.toggle('active');
+    });
+    
+    // Cerrar menú al hacer clic fuera
+    document.addEventListener('click', function(e) {
+      if (!nav.contains(e.target) && !menuToggle.contains(e.target)) {
+        menuToggle.classList.remove('active');
+        nav.classList.remove('active');
+      }
+    });
+    
+    // Manejar dropdowns en móvil
+    const dropdownToggles = nav.querySelectorAll('.nav-dropdown > a');
+    dropdownToggles.forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+          const menu = this.nextElementSibling;
+          
+          // Cerrar otros dropdowns
+          document.querySelectorAll('.dropdown-menu').forEach(m => {
+            if (m !== menu) m.classList.remove('open');
+          });
+          
+          menu.classList.toggle('open');
+        }
+      });
+    });
+    
+    // Manejar sub-dropdown (SucreBot 2026)
+    const btnSucrebot = document.getElementById('btnSucrebot');
+    const menuSucrebot = document.getElementById('menuSucrebot');
+    
+    if (btnSucrebot && menuSucrebot) {
+      btnSucrebot.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+          e.stopPropagation();
+          menuSucrebot.classList.toggle('open');
+        }
+      });
+    }
+  }
+});
