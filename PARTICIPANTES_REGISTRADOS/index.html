@@ -382,12 +382,15 @@
     tbody.innerHTML = filtrados.map(p => {
       let estadoClass = 'pendiente';
       let estadoTexto = 'Pendiente';
-      if (p.aprobado === true || p.aprobado === 'aprobado') {
+      if (p.aprobado === 'APROBADO') {
         estadoClass = 'aprobado';
         estadoTexto = 'Aprobado';
-      } else if (p.aprobado === 'nocumple') {
+      } else if (p.aprobado === 'NO CUMPLE') {
         estadoClass = 'nocumple';
         estadoTexto = 'No cumple';
+      } else {
+        estadoClass = 'pendiente';
+        estadoTexto = 'En revisión';
       }
       
       return `
@@ -450,7 +453,7 @@
     }
     
     participanteEnRevision = p;
-    const estado = (p.aprobado === true || p.aprobado === 'aprobado') ? 'aprobado' : 'pendiente';
+    const estado = (p.aprobado === 'APROBADO') ? 'aprobado' : 'pendiente';
     
     document.getElementById('rev-nombre').textContent = p.nombre || '—';
     document.getElementById('rev-robot').textContent = p.robot || '—';
