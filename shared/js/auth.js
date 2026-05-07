@@ -8,6 +8,9 @@ const STAFF_EMAILS = [
   'sucrebotclub@tecnologicosucre.edu.ec'
 ];
 
+// ✅ EXPORTAR COMO VARIABLE GLOBAL para que otros archivos puedan acceder
+window.STAFF_EMAILS = STAFF_EMAILS;
+
 // ── FUNCIÓN: Parsear JWT de Google
 function parseJwt(token) {
   const base64Url = token.split('.')[1];
