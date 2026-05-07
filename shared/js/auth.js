@@ -89,7 +89,7 @@ function cerrarSesion() {
 
 // ── INICIALIZACIÓN: Restaurar sesión si existe
 document.addEventListener('componentsLoaded', function() {
-  // ✅ CAMBIO CRÍTICO: localStorage en lugar de sessionStorage
+  // ✅ Restaurar sesión guardada
   const savedUser = localStorage.getItem('sucrebot_user');
   
   if (savedUser) {
@@ -102,52 +102,26 @@ document.addEventListener('componentsLoaded', function() {
     }
   }
   
-  // Inicializar Google Sign-In
+  // ✅ Inicializar Google Sign-In DESPUÉS de cargar componentes
   if (typeof google !== 'undefined' && google.accounts) {
     google.accounts.id.initialize({
       client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
-      callback: handleCredentialResponse
+      callback: handleCredentialResponse,
+      auto_select: false
     });
     
+    // Renderizar botón solo si no hay sesión activa
     const btnLogin = document.getElementById('btnLogin');
     if (btnLogin && !savedUser) {
       google.accounts.id.renderButton(btnLogin, {
         theme: 'outline',
         size: 'medium',
         text: 'signin_with',
-        locale: 'es'
+        locale: 'es',
+        width: 200
       });
     }
-  }
-});
-
-// ── NAVEGACIÓN DEL DROPDOWN (Eventos → SucreBot 2026)
-document.addEventListener('componentsLoaded', function() {
-  const btnSucrebot = document.getElementById('btnSucrebot');
-  const menuSucrebot = document.getElementById('menuSucrebot');
-  
-  if (btnSucrebot && menuSucrebot) {
-    let timeoutId;
-    
-    btnSucrebot.addEventListener('mouseenter', function() {
-      clearTimeout(timeoutId);
-      menuSucrebot.classList.add('open');
-    });
-    
-    btnSucrebot.addEventListener('mouseleave', function() {
-      timeoutId = setTimeout(() => {
-        if (!menuSucrebot.matches(':hover')) {
-          menuSucrebot.classList.remove('open');
-        }
-      }, 200);
-    });
-    
-    menuSucrebot.addEventListener('mouseenter', function() {
-      clearTimeout(timeoutId);
-    });
-    
-    menuSucrebot.addEventListener('mouseleave', function() {
-      menuSucrebot.classList.remove('open');
-    });
+  } else {
+    console.error('Google Sign-In SDK no está cargado');
   }
 });
