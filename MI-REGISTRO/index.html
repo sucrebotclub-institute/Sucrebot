@@ -416,14 +416,11 @@
     };
 
     try {
-      const r = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
-      });
+      const qs = new URLSearchParams(datos).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
       const result = await r.json();
 
-      if (result.ok) {
+      if (result.success || result.ok) {
         showToast('✅ Cambios guardados correctamente');
         setTimeout(() => location.reload(), 1500);
       } else {
