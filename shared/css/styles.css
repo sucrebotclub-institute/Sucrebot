@@ -204,10 +204,10 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     flex-shrink: 0;
   }
   
-  /* Dropdown menu móvil */
+ /* Dropdown menu móvil */
   .dropdown-menu {
     position: fixed;
-    top: 110px;
+    top: 165px !important;  /* top-bar + header + nav */
     left: 0;
     right: 0;
     min-width: 100%;
@@ -215,9 +215,9 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     border: none;
     border-top: 3px solid var(--sucre-blue);
     border-bottom: 2px solid var(--sucre-blue);
-    max-height: 400px;
+    max-height: calc(100vh - 165px);
     overflow-y: auto;
-    z-index: 1001;
+    z-index: 999;
   }
   .dropdown-menu a {
     padding: 14px 20px;
@@ -236,39 +236,32 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     padding: 12px 20px 12px 40px;
     font-size: 13px;
   }
-  /* Fix para sub-dropdown de SucreBot en móvil */
-  @media (max-width: 768px) {
-    #wrapSucrebot {
-      display: block !important;
-      position: relative !important;
-    }
-    
-    #btnSucrebot {
-      display: flex !important;
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-    }
-    
-    #menuSucrebot {
-      position: static !important;
-      display: none;
-      width: 100%;
-      background: rgba(0,0,0,0.4) !important;
-      border: none !important;
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-    
-    #menuSucrebot.open {
-      display: block !important;
-    }
-    
-    #menuSucrebot a {
-      padding-left: 40px !important;
-      background: rgba(0,0,0,0.25);
-    }
+ /* Fix específico para menuEventos y sub-dropdown */
+  #menuEventos {
+    top: 165px !important;
+  }
+  
+  #wrapSucrebot {
+    display: block;
+    position: relative;
+  }
+  
+  #menuSucrebot {
+    position: static !important;
+    display: none;
+    width: 100%;
+    background: rgba(0,0,0,0.4) !important;
+    border: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  #menuSucrebot.open {
+    display: block !important;
+  }
+  
+  #menuSucrebot a {
+    padding-left: 40px !important;
   }
   /* Hero móvil */
   .hero {
