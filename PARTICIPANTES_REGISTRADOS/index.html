@@ -175,8 +175,20 @@
       .controles { flex-direction: column; align-items: stretch; }
       .controles-left { flex-direction: column; width: 100%; }
       .filtro-categoria, .busqueda-input, .btn-refrescar { width: 100%; }
-      .tabla-participantes { font-size: 11px; }
-      .tabla-participantes th, .tabla-participantes td { padding: 10px 8px; }
+      
+      /* Wrapper con scroll horizontal para la tabla */
+      .tabla-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 16px;
+      }
+      
+      .tabla-participantes { 
+        min-width: 700px; /* Ancho mínimo para que todas las columnas se vean bien */
+        font-size: 12px; 
+      }
+      .tabla-participantes th, .tabla-participantes td { padding: 12px 10px; }
       .modal-grid { grid-template-columns: 1fr; }
       .modal-actions { grid-template-columns: 1fr; }
       .participantes-container { padding: 24px 16px; border-radius: 16px; }
@@ -236,22 +248,24 @@
         </button>
       </div>
 
-      <table class="tabla-participantes">
-        <thead>
-          <tr>
-            <th>ROBOT</th>
-            <th>CATEGORÍA</th>
-            <th>NOMBRE</th>
-            <th>INSTITUCIÓN</th>
-            <th>ESTADO</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-body">
-          <tr>
-            <td colspan="5" class="vacio-msg">Cargando participantes...</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="tabla-wrapper">
+        <table class="tabla-participantes">
+          <thead>
+            <tr>
+              <th>ROBOT</th>
+              <th>CATEGORÍA</th>
+              <th>NOMBRE</th>
+              <th>INSTITUCIÓN</th>
+              <th>ESTADO</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-body">
+            <tr>
+              <td colspan="5" class="vacio-msg">Cargando participantes...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </main>
