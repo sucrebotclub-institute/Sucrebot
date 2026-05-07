@@ -427,14 +427,24 @@
   let participanteEnRevision = null;
 
   function abrirModalRevisar(p) {
-    // Verificar si el usuario es staff
-    const userEmail = localStorage.getItem('userEmail');
-    const STAFF_EMAILS = [
-      'dj.rodriguezmorales1@tecnologicosucre.edu.ec',
-      'sucrebotclub@tecnologicosucre.edu.ec'
-    ];
+    // Verificar si el usuario es staff usando el array global de auth.js
+    const savedUser = localStorage.getItem('sucrebot_user');
     
-    if (!userEmail || !STAFF_EMAILS.includes(userEmail)) {
+    if (!savedUser) {
+      showToast('⚠️ Debes iniciar sesión para revisar participantes', true);
+      return;
+    }
+    
+    let userData;
+    try {
+      userData = JSON.parse(savedUser);
+    } catch (e) {
+      showToast('⚠️ Error al verificar sesión', true);
+      return;
+    }
+    
+    // Usar el array STAFF_EMAILS global exportado desde auth.js
+    if (!window.STAFF_EMAILS || !window.STAFF_EMAILS.includes(userData.email)) {
       showToast('⚠️ Solo el personal autorizado puede revisar participantes', true);
       return;
     }
