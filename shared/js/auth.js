@@ -86,6 +86,7 @@ function cerrarSesion() {
   // Recargar la página para limpiar completamente
   window.location.reload();
 }
+
 // ── FUNCIÓN: Iniciar login con botón personalizado
 function iniciarLogin() {
   if (typeof google !== 'undefined' && google.accounts) {
@@ -99,6 +100,7 @@ function iniciarLogin() {
     console.error('Google Sign-In no está disponible');
   }
 }
+
 // ── INICIALIZACIÓN: Restaurar sesión si existe
 document.addEventListener('componentsLoaded', function() {
   // ✅ Restaurar sesión guardada
@@ -122,15 +124,8 @@ document.addEventListener('componentsLoaded', function() {
       auto_select: false
     });
     
-    // ✅ Inicializar Google Sign-In DESPUÉS de cargar componentes
-  if (typeof google !== 'undefined' && google.accounts) {
-    google.accounts.id.initialize({
-      client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
-      callback: handleCredentialResponse,
-      auto_select: false
-    });
-    
     // NO renderizamos el botón - usamos el botón personalizado
   } else {
     console.error('Google Sign-In SDK no está cargado');
   }
+});
