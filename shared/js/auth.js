@@ -110,18 +110,15 @@ document.addEventListener('componentsLoaded', function() {
       auto_select: false
     });
     
-    // Renderizar botón solo si no hay sesión activa
-    const btnLogin = document.getElementById('btnLogin');
-    if (btnLogin && !savedUser) {
-      google.accounts.id.renderButton(btnLogin, {
-        theme: 'outline',
-        size: 'medium',
-        text: 'signin_with',
-        locale: 'es',
-        width: 200
-      });
-    }
+    // ✅ Inicializar Google Sign-In DESPUÉS de cargar componentes
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.initialize({
+      client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
+      callback: handleCredentialResponse,
+      auto_select: false
+    });
+    
+    // NO renderizamos el botón - usamos el botón personalizado
   } else {
     console.error('Google Sign-In SDK no está cargado');
   }
-});
