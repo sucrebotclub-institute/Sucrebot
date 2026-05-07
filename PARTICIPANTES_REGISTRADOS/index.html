@@ -150,16 +150,16 @@
     .modal-comprobante-link { display: inline-block; margin-top: 12px; color: #1a5ca8; font-size: 13px; font-weight: 600; text-decoration: none; transition: color 0.2s; }
     .modal-comprobante-link:hover { color: #0f3d75; text-decoration: underline; }
     .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
-    .modal-btn { font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .modal-btn-eliminar { background: #ffe0e0; color: #c41e3a; }
-    .modal-btn-eliminar:hover { background: #ffcccc; transform: translateY(-1px); }
-    .modal-btn-aprobar { background: #d4f4dd; color: #0d7d2d; }
-    .modal-btn-aprobar:hover { background: #c0f0cc; transform: translateY(-1px); }
-    .modal-btn-reenviar { background: #e8f0ff; color: #1a5ca8; }
-    .modal-btn-reenviar:hover { background: #d0e4ff; transform: translateY(-1px); }
-    .modal-btn-desaprobar { background: #fff4e0; color: #c27803; }
-    .modal-btn-desaprobar:hover { background: #ffe8c0; transform: translateY(-1px); }
-    .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .modal-btn { font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 800; padding: 16px 24px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+    .modal-btn-eliminar { background: linear-gradient(135deg, #ff3b3b 0%, #c41e3a 100%); color: #ffffff; border: 2px solid rgba(255,255,255,0.3); }
+    .modal-btn-eliminar:hover { background: linear-gradient(135deg, #ff5555 0%, #d92845 100%); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(196,30,58,0.4); }
+    .modal-btn-aprobar { background: linear-gradient(135deg, #00d95f 0%, #00a046 100%); color: #ffffff; border: 2px solid rgba(255,255,255,0.3); }
+    .modal-btn-aprobar:hover { background: linear-gradient(135deg, #00ff6f 0%, #00c054 100%); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(0,160,70,0.4); }
+    .modal-btn-reenviar { background: linear-gradient(135deg, #5bc8f0 0%, #1a5ca8 100%); color: #ffffff; border: 2px solid rgba(255,255,255,0.3); }
+    .modal-btn-reenviar:hover { background: linear-gradient(135deg, #6dd8ff 0%, #2470c0 100%); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(26,92,168,0.4); }
+    .modal-btn-desaprobar { background: linear-gradient(135deg, #ffd966 0%, #c27803 100%); color: #2a1a00; border: 2px solid rgba(255,255,255,0.3); }
+    .modal-btn-desaprobar:hover { background: linear-gradient(135deg, #ffe680 0%, #d88a10 100%); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(194,120,3,0.4); }
+    .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
     /* ── TOAST ── */
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border: 2px solid rgba(0,255,136,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
@@ -657,13 +657,26 @@
   document.getElementById('filtro-categoria').addEventListener('change', cargarListaLocal);
   document.getElementById('busqueda-input').addEventListener('input', cargarListaLocal);
 
-  cargarListaLocal();
+  // Mostrar mensaje de carga inicial
+  const tbody = document.getElementById('tabla-body');
+  tbody.innerHTML = '<tr><td colspan="5" class="vacio-msg" style="padding: 40px; text-align: center; color: #8a96b0; font-family: var(--font-mono); letter-spacing: 0.1em;">⏳ CARGANDO PARTICIPANTES...</td></tr>';
+
+  // Siempre consultar el servidor al cargar la página
   gasGet({ action: 'getParticipantes' }).then(arr => {
     if (Array.isArray(arr) && arr.length > 0 && arr[0].id) {
       localStorage.setItem('participantes', JSON.stringify(arr));
       cargarListaLocal();
+    } else {
+      // Si no hay participantes, limpiar la tabla
+      localStorage.setItem('participantes', JSON.stringify([]));
+      cargarListaLocal();
     }
-  }).catch(() => {});
+  }).catch(e => {
+    console.error('Error al cargar participantes:', e);
+    // Si falla, intentar usar el caché local
+    cargarListaLocal();
+    showToast('⚠️ Error al cargar datos del servidor. Mostrando caché local.', true);
+  });
 </script>
 
 </body>
