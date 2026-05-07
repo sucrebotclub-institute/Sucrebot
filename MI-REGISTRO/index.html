@@ -73,6 +73,7 @@
     .ficha-nocumple-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
     .ficha-nocumple-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
     .ficha-nocumple-aviso strong { font-weight: 700; color: #ff6b6b; }
+    .ficha-nocumple-aviso .razon-texto { display: block; margin: 8px 0; padding: 8px 12px; background: rgba(0,0,0,0.2); border-left: 3px solid #ff6b6b; border-radius: 4px; font-style: italic; }
 
     /* Formulario edición */
     .ficha-form { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 24px; }
@@ -194,7 +195,7 @@
 
             <div class="ficha-nocumple-aviso" id="aviso-nocumple" style="display:none;">
               <span class="aviso-icon">✖</span>
-              <p>Tu registro <strong>no cumple con los requisitos</strong> de la competencia. Por favor revisa y corrige la información a continuación, o contacta al staff en <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></p>
+              <p>Tu registro <strong>no cumple con los requisitos</strong> de la competencia.<span id="razon-rechazo-container"></span> Por favor revisa y corrige la información a continuación, o contacta al staff en <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></p>
             </div>
 
             <div class="ficha-form">
@@ -276,7 +277,7 @@
      ═══════════════════════════════════════════════════════════════ -->
 
 <script>
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxc-nLopIe6C5Rh0O22oEwCwgYZfk68PTl2YzZTZarNdmazdL0z2g7jm-XUjhH_oIGkzw/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycby4HMXfdQvH_Q2Pky3dL6fJF80pnXNWTUOLawwJgM_bQjQPgOC0By9XRQ1nZdRcE8ihwA/exec';
   
   let participanteActual = null;
 
@@ -365,6 +366,15 @@
       pendienteSection.style.display = 'block';
       avisoPendiente.style.display = 'none';
       avisoNocumple.style.display = 'flex';
+      
+      // Mostrar razón del rechazo si existe
+      const razonContainer = document.getElementById('razon-rechazo-container');
+      if (p.razonRechazo && p.razonRechazo.trim()) {
+        razonContainer.innerHTML = `<span class="razon-texto"><strong>Razón:</strong> ${p.razonRechazo}</span>`;
+      } else {
+        razonContainer.innerHTML = '';
+      }
+      
       cargarFormulario(p);
     } else {
       // PENDIENTE
@@ -395,7 +405,7 @@
     btn.textContent = '⏳ Guardando...';
 
     const datos = {
-      action: 'updateParticipante',
+      action: 'actualizarParticipante',
       id: participanteActual.id,
       robot: document.getElementById('edit-robot').value.trim(),
       categoria: document.getElementById('edit-categoria').value,
@@ -406,20 +416,21 @@
     };
 
     try {
-      const qs = new URLSearchParams(datos).toString();
-      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const r = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
       const result = await r.json();
 
-      if (result.success) {
+      if (result.ok) {
         showToast('✅ Cambios guardados correctamente');
-        participanteActual = { ...participanteActual, ...datos };
-        mostrarFicha(participanteActual);
+        setTimeout(() => location.reload(), 1500);
       } else {
         throw new Error(result.error || 'Error al guardar');
       }
     } catch (error) {
       showToast('❌ Error al guardar: ' + error.message);
-    } finally {
       btn.disabled = false;
       btn.textContent = '💾 Guardar cambios';
     }
