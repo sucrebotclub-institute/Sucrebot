@@ -427,6 +427,18 @@
   let participanteEnRevision = null;
 
   function abrirModalRevisar(p) {
+    // Verificar si el usuario es staff
+    const userEmail = localStorage.getItem('userEmail');
+    const STAFF_EMAILS = [
+      'dj.rodriguezmorales1@tecnologicosucre.edu.ec',
+      'sucrebotclub@tecnologicosucre.edu.ec'
+    ];
+    
+    if (!userEmail || !STAFF_EMAILS.includes(userEmail)) {
+      showToast('⚠️ Solo el personal autorizado puede revisar participantes', true);
+      return;
+    }
+    
     participanteEnRevision = p;
     const estado = (p.aprobado === true || p.aprobado === 'aprobado') ? 'aprobado' : 'pendiente';
     
