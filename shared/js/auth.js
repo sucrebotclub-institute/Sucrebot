@@ -86,7 +86,19 @@ function cerrarSesion() {
   // Recargar la página para limpiar completamente
   window.location.reload();
 }
-
+// ── FUNCIÓN: Iniciar login con botón personalizado
+function iniciarLogin() {
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        // Si el prompt no se muestra, abrir ventana de selección de cuenta
+        google.accounts.id.prompt();
+      }
+    });
+  } else {
+    console.error('Google Sign-In no está disponible');
+  }
+}
 // ── INICIALIZACIÓN: Restaurar sesión si existe
 document.addEventListener('componentsLoaded', function() {
   // ✅ Restaurar sesión guardada
