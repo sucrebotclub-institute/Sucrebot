@@ -509,15 +509,32 @@
 
   async function noCumpleRequisitos() {
     if (!participanteEnRevision) return;
+    
+    // Pedir la razón del rechazo
+    const razon = prompt('Por favor, indica la razón por la que no cumple con los requisitos:\n\n(Esto se mostrará al participante para que pueda corregir su registro)');
+    
+    if (!razon || razon.trim() === '') {
+      showToast('⚠️ Debes especificar una razón', true);
+      return;
+    }
+    
     const btn = document.getElementById('btn-eliminar');
     btn.disabled = true;
     btn.textContent = '⏳ Procesando...';
     
     try {
-      await gasGet({ action: 'noCumpleRequisitos', id: participanteEnRevision.id });
+      await gasGet({ 
+        action: 'noCumpleRequisitos', 
+        id: participanteEnRevision.id,
+        razon: razon.trim()
+      });
+      
       const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
       const idx = lista.findIndex(x => x.id === participanteEnRevision.id);
-      if (idx >= 0) lista[idx].aprobado = 'nocumple';
+      if (idx >= 0) {
+        lista[idx].aprobado = 'nocumple';
+        lista[idx].razonRechazo = razon.trim();
+      }
       localStorage.setItem('participantes', JSON.stringify(lista));
       cerrarModalRevisar();
       cargarListaLocal();
