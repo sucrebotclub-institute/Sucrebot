@@ -365,31 +365,3 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     font-size: 11px;
   }
 }
-// ══════════════════════════════════════════════════════════════
-// FIX PARA POSICIONAR DROPDOWNS DEBAJO DEL NAV EN MÓVIL
-// ══════════════════════════════════════════════════════════════
-
-document.addEventListener('componentsLoaded', function() {
-  if (window.innerWidth <= 768) {
-    const nav = document.querySelector('nav');
-    const dropdowns = document.querySelectorAll('.dropdown-menu');
-    
-    function posicionarDropdowns() {
-      if (nav) {
-        const navRect = nav.getBoundingClientRect();
-        const navBottom = navRect.bottom;
-        
-        dropdowns.forEach(dropdown => {
-          dropdown.style.top = navBottom + 'px';
-        });
-      }
-    }
-    
-    // Posicionar al cargar
-    posicionarDropdowns();
-    
-    // Reposicionar al hacer scroll
-    window.addEventListener('scroll', posicionarDropdowns);
-    window.addEventListener('resize', posicionarDropdowns);
-  }
-});
