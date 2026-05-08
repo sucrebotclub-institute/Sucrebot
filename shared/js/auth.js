@@ -32,7 +32,6 @@ function handleCredentialResponse(response) {
 
 // ── FUNCIÓN: Activar sesión del usuario
 function activarSesion(data) {
-  // ✅ CAMBIO CRÍTICO: localStorage en lugar de sessionStorage
   localStorage.setItem('sucrebot_user', JSON.stringify(data));
   
   // Actualizar UI
@@ -67,8 +66,12 @@ function activarSesion(data) {
 
 // ── FUNCIÓN: Cerrar sesión
 function cerrarSesion() {
-  // ✅ CAMBIO CRÍTICO: localStorage en lugar de sessionStorage
   localStorage.removeItem('sucrebot_user');
+  
+  // Revocar credenciales de Google
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+    google.accounts.id.disableAutoSelect();
+  }
   
   // Actualizar UI
   const btnLogin = document.getElementById('btnLogin');
@@ -92,7 +95,7 @@ function cerrarSesion() {
 
 // ── FUNCIÓN: Iniciar login con botón personalizado
 function iniciarLogin() {
-  if (typeof google !== 'undefined' && google.accounts) {
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
         // Si el prompt no se muestra, abrir ventana de selección de cuenta
@@ -101,12 +104,13 @@ function iniciarLogin() {
     });
   } else {
     console.error('Google Sign-In no está disponible');
+    alert('Error: Google Sign-In no está disponible. Por favor recarga la página.');
   }
 }
 
 // ── INICIALIZACIÓN: Restaurar sesión si existe
 document.addEventListener('componentsLoaded', function() {
-  // ✅ Restaurar sesión guardada
+  // Restaurar sesión guardada
   const savedUser = localStorage.getItem('sucrebot_user');
   
   if (savedUser) {
@@ -119,15 +123,14 @@ document.addEventListener('componentsLoaded', function() {
     }
   }
   
-  // ✅ Inicializar Google Sign-In DESPUÉS de cargar componentes
-  if (typeof google !== 'undefined' && google.accounts) {
+  // Inicializar Google Sign-In DESPUÉS de cargar componentes
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.initialize({
       client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
       callback: handleCredentialResponse,
-      auto_select: false
+      auto_select: false,
+      cancel_on_tap_outside: false
     });
-    
-    // NO renderizamos el botón - usamos el botón personalizado
   } else {
     console.error('Google Sign-In SDK no está cargado');
   }
