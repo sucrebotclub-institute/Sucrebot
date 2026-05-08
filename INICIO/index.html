@@ -1,873 +1,109 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SucreBot — Pantalla en Vivo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Club de Robótica Sucre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="../js/config.js"></script>
-  <style>
-    :root {
-      --bg:      #07070f;
-      --surface: #10101a;
-      --surface2:#16162a;
-      --border:  rgba(255,255,255,0.07);
-      --accent:  #1a5ca8;
-      --accent2: #ff6b35;
-      --green:   #00ff88;
-      --red:     #ff3b3b;
-      --gold:    #FFD700;
-      --silver:  #C0C0C0;
-      --bronze:  #CD7F32;
-      --text:    #f0f0f5;
-      --muted:   #6a6a80;
-      --font-display: 'Exo 2', sans-serif;
-      --font-mono:    'Exo 2', sans-serif;
-      --font-body:    'Exo 2', sans-serif;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body {
-      width: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      overflow-x: hidden;
-    }
-
-    body {
-      overflow-y: auto;
-    }
-
-    /* Grid background */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(26,92,168,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(26,92,168,0.025) 1px, transparent 1px);
-      background-size: 60px 60px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Glow top */
-    body::after {
-      content: '';
-      position: fixed;
-      top: -120px; left: 50%;
-      transform: translateX(-50%);
-      width: 800px; height: 300px;
-      background: radial-gradient(ellipse, rgba(26,92,168,0.12) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── PANTALLA WRAPPER ── */
-    .pantalla-wrapper {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── PANTALLA TOOLBAR ── */
-    .pantalla-bar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      padding: 10px 48px;
-      position: relative;
-      z-index: 2;
-      background: rgba(7,7,15,0.6);
-      border-bottom: 1px solid rgba(26,92,168,0.08);
-    }
-
-    .btn-fullscreen {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      color: var(--accent);
-      background: rgba(26,92,168,0.07);
-      border: 1px solid rgba(26,92,168,0.25);
-      padding: 8px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-fullscreen:hover {
-      background: rgba(26,92,168,0.14);
-      border-color: var(--accent);
-      box-shadow: 0 0 12px rgba(26,92,168,0.15);
-    }
-    .btn-fullscreen svg {
-      width: 15px; height: 15px;
-      flex-shrink: 0;
-    }
-
-    /* ── ESC HINT ── */
-    .esc-hint {
-      position: fixed;
-      top: 18px;
-      right: 18px;
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      background: rgba(16,16,26,0.85);
-      border: 1px solid var(--border);
-      padding: 6px 13px;
-      border-radius: 6px;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.4s;
-      pointer-events: none;
-    }
-    .esc-hint.show { opacity: 1; }
-
-    /* ── SCREEN ── */
-    .screen {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      padding: 28px 48px 20px;
-      min-height: calc(100vh - 200px);
-    }
-
-    /* ── FULLSCREEN MODE ── */
-    body.pantalla-fullscreen .sticky-header,
-    body.pantalla-fullscreen #shared-footer,
-    body.pantalla-fullscreen .pantalla-bar {
-      display: none !important;
-    }
-    body.pantalla-fullscreen .screen {
-      min-height: 100vh;
-      padding-top: 28px;
-    }
-    body.pantalla-fullscreen {
-      overflow: hidden;
-    }
-
-    /* ── HEADER ── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid rgba(26,92,168,0.15);
-      flex-shrink: 0;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-    .header-left img {
-      width: 56px;
-      filter: drop-shadow(0 0 12px rgba(26,92,168,0.4));
-    }
-    .header-title {
-      font-family: var(--font-display);
-      font-size: 3rem;
-      letter-spacing: 0.06em;
-      color: var(--accent);
-      line-height: 1;
-      text-shadow: 0 0 30px rgba(26,92,168,0.35);
-    }
-    .header-sub {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--muted);
-      letter-spacing: 0.14em;
-      margin-top: 2px;
-    }
-    .header-right {
-      text-align: right;
-    }
-    .ronda-label {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      letter-spacing: 0.08em;
-      color: var(--text);
-      line-height: 1;
-    }
-    .cat-label {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--accent2);
-      letter-spacing: 0.1em;
-      margin-top: 4px;
-    }
-
-    /* ── LIVE BADGE ── */
-    .live-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      color: var(--green);
-      background: rgba(0,255,136,0.08);
-      border: 1px solid rgba(0,255,136,0.25);
-      padding: 5px 12px;
-      border-radius: 20px;
-      margin-bottom: 4px;
-    }
-    .live-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: blink 1.2s ease-in-out infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
-    /* ── CATEGORÍAS TABS ── */
-    .cat-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      flex-shrink: 0;
-    }
-    .cat-tab {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.08em;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .cat-tab.tiene-datos {
-      border-color: rgba(26,92,168,0.3);
-      color: var(--accent);
-    }
-    .cat-tab.active {
-      background: var(--accent);
-      color: var(--bg);
-      border-color: var(--accent);
-      font-weight: 600;
-    }
-    .cat-tab:hover {
-      border-color: var(--accent);
-    }
-
-    /* ── TABLA ── */
-    .tabla-wrap {
-      flex: 1;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead tr {
-      background: var(--surface2);
-    }
-    thead th {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      padding: 10px 18px;
-      text-align: left;
-      border-bottom: 1px solid rgba(26,92,168,0.12);
-    }
-    thead th.c { text-align: center; }
-
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      transition: background 0.3s;
-    }
-    tbody tr:last-child { border-bottom: none; }
-
-    tr.pos-1 { background: rgba(255,215,0,0.05); }
-    tr.pos-2 { background: rgba(192,192,192,0.04); }
-    tr.pos-3 { background: rgba(205,127,50,0.04); }
-
-    td {
-      padding: 12px 18px;
-      vertical-align: middle;
-    }
-
-    .td-pos { width: 72px; text-align: center; }
-    .pos-circle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      font-family: var(--font-display);
-      font-size: 1.4rem;
-      letter-spacing: 0.02em;
-    }
-    .pc-1 { background: rgba(255,215,0,0.15); color: var(--gold);   border: 2px solid rgba(255,215,0,0.4);   box-shadow: 0 0 16px rgba(255,215,0,0.2); }
-    .pc-2 { background: rgba(192,192,192,0.12); color: var(--silver); border: 2px solid rgba(192,192,192,0.35); }
-    .pc-3 { background: rgba(205,127,50,0.12); color: var(--bronze); border: 2px solid rgba(205,127,50,0.35); }
-    .pc-n { background: rgba(255,255,255,0.04); color: var(--muted);  border: 1px solid var(--border); }
-
-    .td-robot { min-width: 200px; }
-    .robot-name {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: 0.01em;
-      line-height: 1.2;
-    }
-    .robot-inst {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 2px;
-      font-family: var(--font-mono);
-    }
-
-    .td-mejor { text-align: center; min-width: 150px; }
-    .tiempo-valor {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      letter-spacing: 0.06em;
-      color: var(--green);
-      text-shadow: 0 0 20px rgba(0,255,136,0.3);
-    }
-    tr.pos-1 .tiempo-valor {
-      font-size: 2.2rem;
-      text-shadow: 0 0 30px rgba(0,255,136,0.5);
-    }
-
-    .td-intentos { min-width: 260px; }
-    .chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .chip {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-    .chip.mejor {
-      background: rgba(0,255,136,0.1);
-      border-color: rgba(0,255,136,0.3);
-      color: var(--green);
-      font-weight: 600;
-    }
-
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 14px;
-      margin-top: 14px;
-      border-top: 1px solid rgba(26,92,168,0.1);
-      flex-shrink: 0;
-    }
-    .footer-left {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-    }
-    .footer-hora {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--accent);
-      letter-spacing: 0.1em;
-    }
-
-    .live-crono {
-      position: fixed;
-      bottom: 80px;
-      right: 48px;
-      background: rgba(16,16,26,0.95);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(0,255,136,0.3);
-      border-radius: 12px;
-      padding: 16px 20px;
-      box-shadow: 0 8px 32px rgba(0,255,136,0.2);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.3s;
-      pointer-events: none;
-      z-index: 100;
-    }
-    .live-crono.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .live-crono-label {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-    }
-    .live-crono-robot {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--accent);
-      font-family: var(--font-mono);
-    }
-    .live-crono-tiempo {
-      font-family: var(--font-display);
-      font-size: 1.8rem;
-      color: var(--green);
-      letter-spacing: 0.06em;
-      margin-top: 4px;
-      text-shadow: 0 0 16px rgba(0,255,136,0.4);
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      min-height: 300px;
-      gap: 16px;
-    }
-    .empty-icon { font-size: 4rem; opacity: 0.3; }
-    .empty-text {
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-    }
-
-    /* ── MOBILE ADJUSTMENTS ── */
-    @media (max-width: 768px) {
-      .pantalla-bar {
-        padding: 8px 20px;
-      }
-      
-      .screen {
-        padding: 20px 16px;
-      }
-
-      .header {
-        flex-direction: column;
-        gap: 16px;
-        text-align: center;
-      }
-
-      .header-left {
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .header-left img {
-        width: 48px;
-      }
-
-      .header-title {
-        font-size: 2rem;
-      }
-
-      .header-sub {
-        font-size: 0.65rem;
-      }
-
-      .header-right {
-        text-align: center;
-      }
-
-      .ronda-label {
-        font-size: 1.5rem;
-      }
-
-      .cat-tabs {
-        gap: 8px;
-      }
-
-      .cat-tab {
-        font-size: 0.62rem;
-        padding: 6px 12px;
-      }
-
-      .tabla-wrap {
-        overflow-x: auto;
-      }
-
-      table {
-        min-width: 700px;
-      }
-
-      thead th {
-        font-size: 0.65rem;
-        padding: 8px 12px;
-      }
-
-      td {
-        padding: 10px 12px;
-      }
-
-      .pos-circle {
-        width: 38px;
-        height: 38px;
-        font-size: 1.2rem;
-      }
-
-      .robot-name {
-        font-size: 1.1rem;
-      }
-
-      .robot-inst {
-        font-size: 0.68rem;
-      }
-
-      .tiempo-valor {
-        font-size: 1.6rem;
-      }
-
-      tr.pos-1 .tiempo-valor {
-        font-size: 1.8rem;
-      }
-
-      .chip {
-        font-size: 0.65rem;
-        padding: 3px 8px;
-      }
-
-      .footer {
-        flex-direction: column;
-        gap: 8px;
-        text-align: center;
-      }
-
-      .footer-left {
-        font-size: 0.6rem;
-      }
-
-      .footer-hora {
-        font-size: 0.7rem;
-      }
-
-      .live-crono {
-        bottom: 60px;
-        right: 16px;
-        padding: 12px 16px;
-      }
-
-      .live-crono-tiempo {
-        font-size: 1.5rem;
-      }
-
-      .btn-fullscreen {
-        font-size: 0.65rem;
-        padding: 6px 14px;
-      }
-
-      .btn-fullscreen svg {
-        width: 13px;
-        height: 13px;
-      }
-    }
-  </style>
 </head>
 <body>
 
-<div class="pantalla-wrapper">
-  <!-- Componentes compartidos -->
-  <div class="sticky-header">
-    <div data-include="../shared/components/topbar.html"></div>
-    <div data-include="../shared/components/header.html"></div>
-    <div data-include="../shared/components/nav.html"></div>
-  </div>
-
-  <!-- Barra con botón de pantalla completa -->
-  <div class="pantalla-bar" id="pantalla-bar">
-    <button class="btn-fullscreen" onclick="entrarPantalla()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-      </svg>
-      PANTALLA COMPLETA
-    </button>
-  </div>
-
-  <!-- Hint ESC -->
-  <div class="esc-hint" id="esc-hint">ESC — SALIR DE PANTALLA COMPLETA</div>
-
-  <div class="screen">
-    <div class="header">
-      <div class="header-left">
-        <img src="sucrebot-celeste-sin_fondo.png" alt="SucreBot">
-        <div>
-          <div class="header-title">SUCREBOT</div>
-          <div class="header-sub">CLUB DE ROBOTICA SUCRE</div>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="live-badge"><span class="live-dot"></span>EN VIVO</div>
-        <div class="ronda-label" id="tv-ronda">RONDA 1</div>
-        <div class="cat-label" id="tv-cat">—</div>
-      </div>
-    </div>
-
-    <div class="cat-tabs" id="cat-tabs"></div>
-
-    <div class="tabla-wrap" id="tv-tabla-wrap">
-      <div class="empty-state">
-        <div class="empty-icon">🏁</div>
-        <div class="empty-text">CARGANDO RESULTADOS...</div>
-      </div>
-    </div>
-
-    <div class="footer">
-      <div class="footer-left">INSTITUTO SUPERIOR UNIVERSITARIO SUCRE • TORNEO DE ROBÓTICA 2026</div>
-      <div class="footer-hora" id="tv-hora">00:00:00</div>
-    </div>
-  </div>
-
-  <!-- Live cronómetro -->
-  <div class="live-crono" id="live-crono">
-    <div class="live-crono-label">COMPITIENDO AHORA</div>
-    <div class="live-crono-robot" id="lc-robot">—</div>
-    <div class="live-crono-tiempo" id="lc-tiempo">00:00.00</div>
-  </div>
-
-  <!-- Footer compartido -->
-  <div id="shared-footer" data-include="../shared/components/footer.html"></div>
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
 </div>
 
-<script src="../shared/js/auth.js"></script>
+<section class="hero" id="inicio">
+  <div class="hero-grid"></div>
+  <div class="hero-blob1"></div>
+  <div class="hero-blob2"></div>
+  
+  <div class="hero-content">
+    <div class="hero-tag">
+      <div class="hero-tag-dot"></div>
+      Club de Robótica — Campus Sucre · UPS
+    </div>
+    <h1 class="hero-title">Bienvenido al<br><span class="hl">SUCREBOT</span></h1>
+    <p class="hero-sub">Innovación, tecnología y robótica<br>para transformar el futuro desde la UPS.</p>
+    <div>
+      <button class="btn-primary" onclick="document.getElementById('sobre').scrollIntoView({behavior:'smooth'})">Conocer más</button>
+      <button class="btn-ghost" onclick="document.getElementById('eventos').scrollIntoView({behavior:'smooth'})">Ver eventos</button>
+    </div>
+    <div class="hero-dots">
+      <div class="dot on"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+  
+  <div class="hero-right">
+    <div class="hero-logo-big">
+      <img src="../shared/images/sucrebot-celeste-sin_fondo.png" alt="SucreBot" />
+    </div>
+    <div class="hero-label">Club de Robótica</div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num">12+</div><div class="stat-lbl">Eventos</div></div>
+  <div class="stat"><div class="stat-num">48</div><div class="stat-lbl">Miembros</div></div>
+  <div class="stat"><div class="stat-num">5</div><div class="stat-lbl">Torneos</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-lbl">Proyectos</div></div>
+</div>
+
+<div class="sec-head" id="sobre">
+  <h2>Explora el mundo del <span>SucreBot</span></h2>
+</div>
+<div style="width:64px;height:2px;background:var(--cyan);margin:12px auto 36px;border-radius:1px;"></div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-icon">🤖</div>
+    <h3>Robótica</h3>
+    <p>Diseño y construcción de robots autónomos y de competencia.</p>
+  </div>
+  <div class="card">
+    <div class="card-icon">🏆</div>
+    <h3>Competencias</h3>
+    <p>Participamos en torneos nacionales e internacionales.</p>
+  </div>
+  <div class="card">
+    <div class="card-icon">💻</div>
+    <h3>Programación</h3>
+    <p>Talleres de código, inteligencia artificial y electrónica.</p>
+  </div>
+  <div class="card">
+    <div class="card-icon">👥</div>
+    <h3>Comunidad</h3>
+    <p>Únete al equipo de estudiantes innovadores de la UPS.</p>
+  </div>
+  <div class="card">
+    <div class="card-icon">📊</div>
+    <h3>Resultados</h3>
+    <p>Cronómetros, rondas y clasificaciones de cada evento.</p>
+  </div>
+</div>
+
+<div class="about-strip" id="institucion">
+  <div class="ab-logo">
+    <img src="../shared/images/sucrebot-celeste-sin_fondo.png" alt="SucreBot" />
+  </div>
+  <div class="ab-text">
+    <h3>¿Quiénes somos?</h3>
+    <p>El SucreBot es el Club de Robótica del Campus Universitario Sucre de la Universidad Politécnica Salesiana. Somos un espacio de innovación donde estudiantes apasionados por la tecnología desarrollan proyectos, participan en competencias y construyen el futuro con sus propias manos.</p>
+  </div>
+</div>
+
+<div data-include="../shared/components/footer.html"></div>
+
 <script src="../shared/js/load-components.js"></script>
-<script>
-  // ── Pantalla completa ──
-  function entrarPantalla() {
-    document.body.classList.add('pantalla-fullscreen');
-    const hint = document.getElementById('esc-hint');
-    hint.classList.add('show');
-    setTimeout(() => hint.classList.remove('show'), 3000);
-  }
-
-  function salirPantalla() {
-    document.body.classList.remove('pantalla-fullscreen');
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') salirPantalla();
-  });
-
-  // ── Lógica en vivo ──
-  const GAS_URL = CONFIG.GAS_URL();
-
-  const RUTAS_NOMBRE = {
-    'seguidor-velocidad-sin-turbina': 'Seguidor velocidad sin turbina',
-    'seguidor-velocidad-con-turbina': 'Seguidor velocidad con turbina',
-    'robot-laberinto': 'Robot laberinto',
-    'robot-balancin': 'Robot Balancín',
-    'robot-trepador': 'Robot trepador',
-    'seguidor-destreza': 'Seguidor destreza',
-    'drones': 'Drones',
-    'insectos': 'Insectos'
-  };
-
-  function parseTime(t) {
-    if (!t || t === '—') return Infinity;
-    const p = t.split(':').map(Number);
-    return p[0] * 60 + p[1] + p[2] / 100;
-  }
-
-  function hora() {
-    return new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }
-
-  setInterval(() => { document.getElementById('tv-hora').textContent = hora(); }, 1000);
-  document.getElementById('tv-hora').textContent = hora();
-
-  let todosEstados = {};
-  let todosActivos = {};
-  let categoriaActiva = null;
-  let autoRotarTimer = null;
-  let rutasConDatos = [];
-
-  const TIEMPO_ROTACION = 10000;
-
-  function iniciarAutoRotar() {
-    if (autoRotarTimer) clearInterval(autoRotarTimer);
-    autoRotarTimer = setInterval(() => {
-      const activas = rutasConDatos;
-      if (activas.length <= 1) return;
-      const idx = activas.indexOf(categoriaActiva);
-      const siguiente = activas[(idx + 1) % activas.length];
-      seleccionarCategoria(siguiente);
-    }, TIEMPO_ROTACION);
-  }
-
-  function seleccionarCategoria(ruta) {
-    categoriaActiva = ruta;
-    document.querySelectorAll('.cat-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.ruta === ruta);
-    });
-    const datos = todosEstados[ruta];
-    if (datos && datos.estado) {
-      renderizarTabla(datos.estado, ruta);
-    } else {
-      mostrarVacio();
-    }
-    actualizarLiveCrono(ruta);
-  }
-
-  function actualizarLiveCrono(ruta) {
-    const lc = document.getElementById('live-crono');
-    const activo = todosActivos[ruta];
-    if (!activo || !activo.raw) { lc.classList.remove('show'); return; }
-    try {
-      const p = JSON.parse(activo.raw);
-      if (!p || !p.id) { lc.classList.remove('show'); return; }
-      document.getElementById('lc-robot').textContent = p.robot || '—';
-      lc.classList.add('show');
-    } catch(e) { lc.classList.remove('show'); }
-  }
-
-  function renderTabs() {
-    const container = document.getElementById('cat-tabs');
-    const rutas = Object.keys(RUTAS_NOMBRE);
-    container.innerHTML = rutas.map(ruta => {
-      const tieneDatos = todosEstados[ruta] &&
-        todosEstados[ruta].estado &&
-        todosEstados[ruta].estado.rondasData;
-      const tieneParticipantes = tieneDatos && Object.values(todosEstados[ruta].estado.rondasData)
-        .some(r => r.clasificados && r.clasificados.some(c => c.tiempo && c.tiempo !== '—'));
-      return `<button class="cat-tab ${tieneParticipantes ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
-        data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">
-        ${RUTAS_NOMBRE[ruta]}
-      </button>`;
-    }).join('');
-    rutasConDatos = rutas.filter(ruta =>
-      todosEstados[ruta] &&
-      todosEstados[ruta].estado &&
-      Object.values(todosEstados[ruta].estado.rondasData || {})
-        .some(r => r.clasificados && r.clasificados.some(c => c.tiempo && c.tiempo !== '—'))
-    );
-  }
-
-  function seleccionarManual(ruta) {
-    if (autoRotarTimer) clearInterval(autoRotarTimer);
-    seleccionarCategoria(ruta);
-    setTimeout(iniciarAutoRotar, 20000);
-  }
-
-  function mostrarVacio() {
-    document.getElementById('tv-tabla-wrap').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🏁</div>
-        <div class="empty-text">ESPERANDO RESULTADOS...</div>
-      </div>`;
-  }
-
-  function renderizarTabla(estado, ruta) {
-    if (!estado || !estado.rondasData) { mostrarVacio(); return; }
-
-    const rondas = Object.values(estado.rondasData);
-    const clasificados = rondas.flatMap(r => r.clasificados || [])
-      .reduce((acc, c) => {
-        if (!acc[c.id]) acc[c.id] = { ...c, intentos: [] };
-        if (c.tiempo && c.tiempo !== '—') acc[c.id].intentos.push(c.tiempo);
-        return acc;
-      }, {});
-
-    const lista = Object.values(clasificados)
-      .map(c => ({
-        ...c,
-        mejor: c.intentos.length ? c.intentos.reduce((a, b) => parseTime(a) < parseTime(b) ? a : b) : '—'
-      }))
-      .filter(c => c.mejor !== '—')
-      .sort((a, b) => parseTime(a.mejor) - parseTime(b.mejor));
-
-    if (!lista.length) { mostrarVacio(); return; }
-
-    document.getElementById('tv-ronda').textContent = `RONDA ${estado.rondaActual || 1}`;
-    document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[ruta] || ruta;
-
-    const html = `
-      <table>
-        <thead>
-          <tr>
-            <th class="c">POS</th>
-            <th>ROBOT</th>
-            <th class="c">MEJOR TIEMPO</th>
-            <th>INTENTOS</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${lista.map((c, i) => `
-            <tr class="pos-${i + 1}">
-              <td class="td-pos">
-                <div class="pos-circle pc-${i < 3 ? i + 1 : 'n'}">${i + 1}</div>
-              </td>
-              <td class="td-robot">
-                <div class="robot-name">${c.robot || '—'}</div>
-                <div class="robot-inst">${c.institucion || '—'}</div>
-              </td>
-              <td class="td-mejor">
-                <div class="tiempo-valor">${c.mejor}</div>
-              </td>
-              <td class="td-intentos">
-                <div class="chips">
-                  ${c.intentos.map(t => `<span class="chip ${t === c.mejor ? 'mejor' : ''}">${t}</span>`).join('')}
-                </div>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-    document.getElementById('tv-tabla-wrap').innerHTML = html;
-  }
-
-  async function cargarDatos() {
-    try {
-      const rutas = Object.keys(RUTAS_NOMBRE);
-      await Promise.all(rutas.map(async ruta => {
-        const qs = new URLSearchParams({ action: 'getEstado', ruta }).toString();
-        const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
-        const data = await r.json();
-        todosEstados[ruta] = data;
-
-        const qs2 = new URLSearchParams({ action: 'getActivo', ruta }).toString();
-        const r2 = await fetch(GAS_URL + '?' + qs2, { redirect: 'follow' });
-        const data2 = await r2.json();
-        todosActivos[ruta] = data2;
-      }));
-
-      renderTabs();
-
-      if (!categoriaActiva) {
-        const primera = rutasConDatos[0] || Object.keys(RUTAS_NOMBRE)[0];
-        seleccionarCategoria(primera);
-        iniciarAutoRotar();
-      } else {
-        seleccionarCategoria(categoriaActiva);
-      }
-    } catch (error) {
-      console.error('Error al cargar datos:', error);
-    }
-  }
-
-  cargarDatos();
-  setInterval(cargarDatos, 5000);
-</script>
+<script src="../shared/js/auth.js"></script>
 
 </body>
 </html>
