@@ -44,37 +44,28 @@
       --font-body:    'DM Sans', sans-serif;
     }
 
-    /* Grid background */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
-      background-size: 60px 60px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Glow top */
-    body::after {
-      content: '';
-      position: fixed;
-      top: -120px; left: 50%;
-      transform: translateX(-50%);
-      width: 800px; height: 300px;
-      background: radial-gradient(ellipse, rgba(0,212,255,0.12) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
     .screen {
       position: relative;
       z-index: 1;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
-      padding: 28px 48px 20px;
+      min-height: calc(100vh - 200px);
+      padding: 0 48px 40px;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    
+    .screen::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 300px;
+      background: radial-gradient(ellipse, rgba(0,212,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: -1;
     }
 
     /* ── HEADER INTERNO DE LA PÁGINA ── */
