@@ -165,39 +165,62 @@
       font-family: var(--font-mono);
       font-size: 0.7rem;
       letter-spacing: 0.1em;
-      padding: 8px 16px;
-      background: #f5f7fa;
-      border: 1px solid #d0d4da;
-      border-radius: 6px;
-      color: #555e70;
+      padding: 10px 18px;
+      background: #ffffff;
+      border: 2px solid #e0e6ed;
+      border-radius: 8px;
+      color: #4a5568;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s;
+      font-weight: 500;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
     .cat-tab:hover {
-      background: #e8f4f8;
-      border-color: #5bc8f0;
+      background: #f8fafc;
+      border-color: #90dcff;
       color: #1a5ca8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(91, 200, 240, 0.15);
     }
     .cat-tab.active {
-      background: linear-gradient(135deg, #1a5ca8, #2474cc);
+      background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%);
       border-color: #1a5ca8;
       color: #ffffff;
       font-weight: 600;
+      box-shadow: 0 4px 12px rgba(26, 92, 168, 0.3);
+      transform: translateY(-2px);
     }
     .cat-tab.tiene-datos {
       position: relative;
+      padding-right: 28px;
     }
     .cat-tab.tiene-datos::before {
       content: '';
       position: absolute;
-      top: 6px; right: 6px;
-      width: 6px; height: 6px;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      width: 8px; 
+      height: 8px;
       border-radius: 50%;
       background: #5bc8f0;
-      box-shadow: 0 0 6px #5bc8f0;
+      box-shadow: 0 0 8px #5bc8f0;
+      animation: pulse-dot 2s ease-in-out infinite;
     }
     .cat-tab.active.tiene-datos::before {
       background: #90dcff;
+      box-shadow: 0 0 10px #90dcff;
+    }
+    
+    @keyframes pulse-dot {
+      0%, 100% { 
+        opacity: 1; 
+        transform: translateY(-50%) scale(1);
+      }
+      50% { 
+        opacity: 0.6; 
+        transform: translateY(-50%) scale(1.2);
+      }
     }
 
     /* ── LIVE CRONO (participante actual) ── */
