@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Mis Certificados</title>
+  <title>SucreBot — Mi Registro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -11,85 +11,104 @@
   <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <script src="../shared/js/config.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
-  <!-- CSS específico de MIS-CERTIFICADOS -->
+  <!-- CSS específico de MI-REGISTRO -->
   <style>
-    body {
-      background: #f4f7fb !important;
-      color: #1a1a2e !important;
+    :root {
+      --cyan: #5bc8f0; --sucre-blue: #1a5ca8; --sucre-dark: #1a3a6e;
+      --green: #00ff88; --red: #ff3b3b; --yellow: #ffd966;
+      --font-mono: 'DM Mono', monospace; --font-body: 'Exo 2', sans-serif;
+      --surface2: #1a1a26;
     }
+
+    body { background: #ffffff !important; color: #1a1a2e !important; }
     main { min-height: calc(100vh - 174px); background: #f4f7fb; }
 
-    /* ── WRAPPER ── */
-    .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
-    
-    /* ── PAGE HERO ── */
-    .page-hero { padding: 40px 0 32px; border-bottom: 1px solid rgba(26,92,168,0.15); margin-bottom: 32px; }
-    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
-    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
-    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
-    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; line-height: 1; }
-    .page-hero h2 span { color: #1a5ca8; }
-    .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-    .page-hero-line { flex: 0 0 40px; height: 3px; background: #1a5ca8; border-radius: 2px; }
-    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
+    /* ── CONTENIDO ── */
+    .wrapper { max-width: 680px; margin: 0 auto; padding: 40px 20px 60px; }
 
-    /* ── MENSAJE SIN SESIÓN ── */
-    .sin-sesion-container { max-width: 600px; margin: 0 auto; }
-    .sin-sesion-card { background: linear-gradient(135deg, #2a5a9e 0%, #1a4580 50%, #0f3566 100%); border-radius: 20px; padding: 60px 40px; text-align: center; box-shadow: 0 12px 40px rgba(26,92,168,0.35); }
-    .sin-sesion-icon { font-size: 72px; margin-bottom: 24px; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
-    .sin-sesion-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: #ffffff; margin-bottom: 12px; }
-    .sin-sesion-subtitle { font-size: 15px; color: rgba(255,255,255,0.9); margin-bottom: 32px; line-height: 1.6; }
-    .btn-ir-login { display: inline-flex; align-items: center; gap: 10px; background: #5bc8f0; color: #0f3566; font-family: 'Exo 2', sans-serif; font-size: 16px; font-weight: 700; padding: 16px 32px; border-radius: 12px; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
-    .btn-ir-login:hover { background: #90dcff; transform: translateY(-2px); box-shadow: 0 6px 24px rgba(91,200,240,0.4); }
-    .sin-sesion-nota { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 24px; font-style: italic; }
+    /* Pantalla login */
+    .login-screen { text-align: center; padding: 60px 20px; }
+    .login-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 3px; color: var(--sucre-dark); margin-bottom: 12px; }
+    .login-screen p { font-size: 14px; color: #7a7a8c; margin-bottom: 32px; }
+    .btn-google { display: inline-flex; align-items: center; gap: 10px; background: var(--sucre-blue); color: #ffffff; border: none; padding: 14px 28px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .btn-google:hover { background: var(--sucre-dark); }
 
-    /* ── CONTENEDOR CERTIFICADOS ── */
-    .certificados-container { background: #ffffff; border-radius: 20px; padding: 36px 32px; box-shadow: 0 4px 24px rgba(26,92,168,0.1); }
+    /* Pantalla no encontrado */
+    .not-found { text-align: center; padding: 60px 20px; }
+    .not-found h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: var(--sucre-dark); margin-bottom: 12px; }
+    .not-found p { font-size: 14px; color: #7a7a8c; margin-bottom: 24px; }
+    .not-found a { color: var(--sucre-blue); font-weight: 600; text-decoration: none; }
+    .not-found a:hover { text-decoration: underline; }
 
-    /* ── LISTA CERTIFICADOS ── */
-    .certificados-titulo { font-family: 'Exo 2', sans-serif; font-size: 18px; font-weight: 700; color: #1a3a6e; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #e8f0ff; }
-    .certificados-grid { display: grid; gap: 20px; }
-    .certificado-card { background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); border: 2px solid #e8f0ff; border-radius: 16px; padding: 24px; transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden; }
-    .certificado-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(26,92,168,0.2); border-color: #1a5ca8; }
-    .certificado-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; }
-    .certificado-tipo { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; letter-spacing: 1px; padding: 6px 14px; border-radius: 8px; }
-    .certificado-tipo.participacion { background: #e8f4ff; color: #1a5ca8; }
-    .certificado-tipo.primer { background: #ffd700; color: #8b6914; }
-    .certificado-tipo.segundo { background: #c0c0c0; color: #4a4a4a; }
-    .certificado-tipo.tercer { background: #cd7f32; color: #ffffff; }
-    .certificado-codigo { font-family: 'DM Mono', monospace; font-size: 11px; color: #7a7a8c; background: #f4f7fb; padding: 4px 10px; border-radius: 6px; }
-    .certificado-info { margin-bottom: 20px; }
-    .certificado-evento { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; color: #1a3a6e; margin-bottom: 8px; }
-    .certificado-detalles { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; font-size: 13px; }
-    .certificado-label { color: #7a7a8c; font-weight: 600; }
-    .certificado-value { color: #2a3f5f; font-weight: 700; }
-    .certificado-actions { display: flex; gap: 12px; }
-    .btn-descargar { flex: 1; background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; border: none; padding: 12px 20px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-descargar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.4); }
+    /* Ficha */
+    .ficha { background: var(--sucre-blue); border-radius: 20px; box-shadow: 0 4px 24px rgba(26,92,168,0.30); overflow: hidden; }
+    .ficha-header { background: var(--sucre-dark); padding: 28px 32px; }
+    .ficha-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; }
+    .ficha-robot { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 2px; color: #ffffff; line-height: 1; margin-bottom: 10px; }
+    .ficha-estado { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; padding: 5px 14px; border-radius: 20px; }
+    .estado-aprobado { background: #00ff88; color: #ffffff; }
+    .estado-pendiente { background: rgba(255,235,59,0.25); color: #ffeb3b; border: 1px solid rgba(255,235,59,0.5); }
+    .estado-nocumple { background: rgba(220,50,50,0.2); color: #ff6b6b; border: 1px solid rgba(220,50,50,0.5); }
 
-    .vacio-msg { text-align: center; padding: 60px 20px; color: #7a7a8c; font-size: 14px; }
-    .vacio-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; }
+    .ficha-body { padding: 28px 32px; background: var(--sucre-blue); }
+    .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+    .ficha-campo { display: flex; flex-direction: column; gap: 4px; }
+    .ficha-campo span { font-size: 0.65rem; color: rgba(255,255,255,0.7); font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+    .ficha-campo strong { font-size: 0.92rem; color: #ffffff; font-weight: 700; }
 
-    /* ── TOAST ── */
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border: 2px solid rgba(0,255,136,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast.error { color: #ff3b3b; border-color: rgba(255,59,59,0.4); }
+    /* QR */
+    .ficha-qr { text-align: center; padding: 24px; background: rgba(0,0,0,0.15); border-radius: 14px; margin-bottom: 24px; }
+    .ficha-qr-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.8); text-transform: uppercase; margin-bottom: 16px; }
+    .ficha-qr img { width: 200px; height: 200px; border-radius: 10px; border: 3px solid rgba(255,255,255,0.3); }
+    .ficha-qr-nota { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 10px; font-family: var(--font-mono); }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .login-screen { padding: 40px 24px; }
-      .certificados-container { padding: 24px 16px; }
-      .user-info { flex-direction: column; text-align: center; }
-      .certificado-card-header { flex-direction: column; gap: 12px; }
-      .certificado-detalles { grid-template-columns: 1fr; }
-      .certificado-label::after { content: ': '; }
+    /* Aviso pendiente */
+    .ficha-pendiente-aviso { background: rgba(255,200,0,0.15); border: 1px solid rgba(255,200,0,0.4); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+    .ficha-pendiente-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .ficha-pendiente-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
+    .ficha-pendiente-aviso strong { font-weight: 700; color: #ffeb3b; }
+
+    /* Aviso no cumple */
+    .ficha-nocumple-aviso { background: rgba(220,50,50,0.15); border: 1px solid rgba(220,50,50,0.4); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+    .ficha-nocumple-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .ficha-nocumple-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
+    .ficha-nocumple-aviso strong { font-weight: 700; color: #ff6b6b; }
+    .ficha-nocumple-aviso .razon-texto { display: block; margin: 8px 0; padding: 8px 12px; background: rgba(0,0,0,0.2); border-left: 3px solid #ff6b6b; border-radius: 4px; font-style: italic; }
+
+    /* Formulario edición */
+    .ficha-form { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 24px; }
+    .ficha-form-title { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-bottom: 18px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-field label { font-size: 0.68rem; color: rgba(255,255,255,0.7); font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+    .form-field input, .form-field select { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.88rem; padding: 10px 14px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.2s; }
+    .form-field input::placeholder { color: rgba(255,255,255,0.4); }
+    .form-field input:focus, .form-field select:focus { border-color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.3); }
+    .form-field-full { grid-column: 1 / -1; }
+
+    /* Aviso comprobante */
+    .comprobante-aviso { background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+    .comprobante-aviso svg { width: 16px; height: 16px; flex-shrink: 0; color: rgba(255,255,255,0.6); }
+    .comprobante-aviso span { font-size: 0.8rem; color: rgba(255,255,255,0.8); font-family: var(--font-mono); line-height: 1.4; }
+    .comprobante-aviso a { color: #ffeb3b; font-weight: 600; text-decoration: none; }
+    .comprobante-aviso a:hover { text-decoration: underline; }
+
+    .btn-guardar { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 14px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; margin-top: 8px; }
+    .btn-guardar:hover { background: var(--sucre-dark); border-color: rgba(255,255,255,0.5); }
+    .btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid rgba(0,255,136,0.4); color: var(--green); font-family: var(--font-mono); font-size: 0.8rem; padding: 12px 24px; border-radius: 30px; transition: transform 0.3s ease; z-index: 9999; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      .wrapper { padding: 24px 12px 40px; }
+      .ficha-header { padding: 20px; }
+      .ficha-body { padding: 20px; }
+      .ficha-grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .ficha-robot { font-size: 1.6rem; }
     }
-
-    /* ── PLANTILLA CERTIFICADO (OCULTA) ── */
-    #certificado-template { position: absolute; left: -9999px; top: -9999px; width: 1200px; height: 900px; }
   </style>
 </head>
 <body>
@@ -105,67 +124,167 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     CONTENIDO ÚNICO DE MIS-CERTIFICADOS
+     CONTENIDO ÚNICO DE MI-REGISTRO
      ═══════════════════════════════════════════════════════════════ -->
+
+<div id="g_id_onload"
+     data-client_id="14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse"
+     data-auto_prompt="false">
+</div>
 
 <main>
   <div class="wrapper">
-    <div class="page-hero">
-      <div class="page-hero-badge">
-        <div class="page-hero-badge-dot"></div>
-        SUCREBOT 2026 · CERTIFICADOS
-      </div>
-      <h2>MIS <span>CERTIFICADOS</span></h2>
-      <div class="page-hero-sub">
-        <div class="page-hero-line"></div>
-        <p>CONSULTA Y DESCARGA TUS CERTIFICADOS DE PARTICIPACIÓN</p>
-      </div>
+
+    <!-- PANTALLA: debe iniciar sesión -->
+    <div id="screen-login" class="login-screen">
+      <h2>MI REGISTRO</h2>
+      <p>Inicia sesión con el correo con el que te registraste para ver tu ficha y estado de aprobación.</p>
+      <button class="btn-google" onclick="iniciarLogin()">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continuar con Google
+      </button>
     </div>
 
-    <!-- MENSAJE SIN SESIÓN -->
-    <div id="sin-sesion" class="sin-sesion-container" style="display:none;">
-      <div class="sin-sesion-card">
-        <div class="sin-sesion-icon">🔒</div>
-        <h3 class="sin-sesion-title">SESIÓN REQUERIDA</h3>
-        <p class="sin-sesion-subtitle">Para ver tus certificados, primero debes iniciar sesión en el sistema SucreBot.</p>
-        <a href="../MI-REGISTRO/" class="btn-ir-login">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
-          </svg>
-          Ir a iniciar sesión
-        </a>
-        <p class="sin-sesion-nota">También puedes iniciar sesión usando el botón "INICIAR SESIÓN" en la parte superior de la página.</p>
-      </div>
+    <!-- PANTALLA: cargando -->
+    <div id="screen-loading" style="display:none;text-align:center;padding:60px 20px;">
+      <p style="font-family:var(--font-mono);font-size:0.85rem;color:#8a96b0;letter-spacing:0.1em;">BUSCANDO TU REGISTRO...</p>
     </div>
 
-    <!-- CONTENEDOR CERTIFICADOS -->
-    <div id="certificados-container" class="certificados-container" style="display:none;">
-      <div class="certificados-titulo">📜 Tus Certificados</div>
-      <div class="certificados-grid" id="certificados-lista">
-        <div class="vacio-msg">
-          <div class="vacio-icon">⏳</div>
-          Cargando certificados...
+    <!-- PANTALLA: no encontrado -->
+    <div id="screen-notfound" class="not-found" style="display:none;">
+      <h2>NO ENCONTRAMOS TU REGISTRO</h2>
+      <p>El correo con el que iniciaste sesión no tiene ningún registro en SucreBot 2026.</p>
+      <p style="margin-top:8px;">¿Todavía no te registraste? <a href="https://sucrebotclub-institute.github.io/Sucrebot/REGISTRO/">Regístrate aquí →</a></p>
+    </div>
+
+    <!-- PANTALLA: ficha -->
+    <div id="screen-ficha" style="display:none;">
+      <div class="ficha">
+
+        <div class="ficha-header">
+          <div class="ficha-label">MI REGISTRO — SUCREBOT 2026</div>
+          <div class="ficha-robot" id="f-robot">—</div>
+          <div id="f-estado-badge" class="ficha-estado estado-pendiente">⏳ Pendiente de aprobación</div>
         </div>
-      </div>
-    </div>
+
+        <div class="ficha-body">
+
+          <div class="ficha-grid">
+            <div class="ficha-campo"><span>Categoría</span><strong id="f-categoria">—</strong></div>
+            <div class="ficha-campo"><span>Institución</span><strong id="f-institucion">—</strong></div>
+            <div class="ficha-campo"><span>Ciudad</span><strong id="f-ciudad">—</strong></div>
+            <div class="ficha-campo"><span>Correo</span><strong id="f-correo">—</strong></div>
+            <div class="ficha-campo"><span>Participante</span><strong id="f-nombre">—</strong></div>
+            <div class="ficha-campo"><span>Contacto</span><strong id="f-contacto">—</strong></div>
+          </div>
+
+          <!-- QR — solo si aprobado -->
+          <div class="ficha-qr" id="ficha-qr-section" style="display:none;">
+            <div class="ficha-qr-label">TU CÓDIGO QR DE ACCESO</div>
+            <img id="f-qr-img" src="" alt="QR de acceso" />
+            <p class="ficha-qr-nota">Presenta este QR el día del evento para acceder a la competencia.</p>
+          </div>
+
+          <!-- Sección pendiente: aviso + formulario -->
+          <div id="ficha-pendiente-section" style="display:none;">
+
+            <div class="ficha-pendiente-aviso" id="aviso-pendiente">
+              <span class="aviso-icon">⏳</span>
+              <p>Tu registro está <strong>pendiente de revisión</strong> por el staff. Si necesitas corregir algún dato, puedes editarlo a continuación. Al guardar, tu registro volverá a revisión.</p>
+            </div>
+
+            <div class="ficha-nocumple-aviso" id="aviso-nocumple" style="display:none;">
+              <span class="aviso-icon">✖</span>
+              <p>Tu registro <strong>no cumple con los requisitos</strong> de la competencia.<span id="razon-rechazo-container"></span> Por favor revisa y corrige la información a continuación, o contacta al staff en <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></p>
+            </div>
+
+            <div class="ficha-form">
+              <div class="ficha-form-title">✏️ EDITAR MI REGISTRO</div>
+              <div class="form-grid">
+
+                <div class="form-field">
+                  <label>Nombre del Robot</label>
+                  <input type="text" id="edit-robot" placeholder="Nombre del robot" />
+                </div>
+
+                <div class="form-field">
+                  <label>Categoría</label>
+                  <select id="edit-categoria">
+                    <option value="">— Selecciona —</option>
+                    <option value="Seguidor velocidad sin turbina">Seguidor velocidad sin turbina</option>
+                    <option value="Seguidor velocidad con turbina">Seguidor velocidad con turbina</option>
+                    <option value="Robot laberinto">Robot laberinto</option>
+                    <option value="Robot Balancín">Robot Balancín</option>
+                    <option value="Robot trepador">Robot trepador</option>
+                    <option value="Seguidor destreza">Seguidor destreza</option>
+                    <option value="Drones">Drones</option>
+                    <option value="Insectos">Insectos</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label>Institución</label>
+                  <input type="text" id="edit-institucion" placeholder="Nombre de tu institución" />
+                </div>
+
+                <div class="form-field">
+                  <label>Ciudad</label>
+                  <input type="text" id="edit-ciudad" placeholder="Ciudad" />
+                </div>
+
+                <div class="form-field">
+                  <label>Nombre del Participante</label>
+                  <input type="text" id="edit-nombre" placeholder="Tu nombre completo" />
+                </div>
+
+                <div class="form-field">
+                  <label>Teléfono / WhatsApp</label>
+                  <input type="text" id="edit-contacto" placeholder="0987654321" />
+                </div>
+
+                <!-- Aviso comprobante — no editable desde web -->
+                <div class="form-field form-field-full">
+                  <label>Comprobante de Pago</label>
+                  <div class="comprobante-aviso">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>Para cambiar el comprobante de pago escríbenos a <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></span>
+                  </div>
+                </div>
+
+              </div>
+              <button class="btn-guardar" id="btn-guardar" onclick="guardarCambios()">💾 Guardar cambios</button>
+            </div>
+
+          </div><!-- /ficha-pendiente-section -->
+
+        </div><!-- /ficha-body -->
+      </div><!-- /ficha -->
+    </div><!-- /screen-ficha -->
+
   </div>
+  <div class="toast" id="toast"></div>
 </main>
 
-<div data-include="../shared/components/footer.html"></div>
-
-<div class="toast" id="toast"></div>
-
-<!-- PLANTILLA CERTIFICADO OCULTA (para generar PDF) -->
-<div id="certificado-template">
-  <!-- Aquí irá el diseño del certificado para convertir a PDF -->
-</div>
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
 
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS ESPECÍFICOS DE MI-REGISTRO
+     ═══════════════════════════════════════════════════════════════ -->
+
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  let userEmail = '';
+  
+  let participanteActual = null;
+
+  function iniciarLogin() {
+    google.accounts.id.prompt();
+  }
 
   // Al cargar componentes, verificar sesión
   document.addEventListener('componentsLoaded', function() {
@@ -173,110 +292,152 @@
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
-        userEmail = userData.email;
-        document.getElementById('certificados-container').style.display = 'block';
-        cargarCertificados();
+        buscarParticipante(userData.email);
       } catch (e) {
         console.error('Error al leer sesión:', e);
-        document.getElementById('sin-sesion').style.display = 'block';
       }
-    } else {
-      document.getElementById('sin-sesion').style.display = 'block';
     }
   });
 
-  async function cargarCertificados() {
-    const lista = document.getElementById('certificados-lista');
-    lista.innerHTML = '<div class="vacio-msg"><div class="vacio-icon">⏳</div>Cargando certificados...</div>';
-    
+  async function buscarParticipante(correo) {
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('screen-loading').style.display = 'block';
+    document.getElementById('screen-notfound').style.display = 'none';
+    document.getElementById('screen-ficha').style.display = 'none';
+
     try {
-      const response = await fetch(GAS_URL + '?action=obtenerCertificados&correo=' + encodeURIComponent(userEmail));
-      const certificados = await response.json();
-      
-      if (!Array.isArray(certificados) || certificados.length === 0) {
-        lista.innerHTML = `
-          <div class="vacio-msg">
-            <div class="vacio-icon">📭</div>
-            No tienes certificados registrados aún.<br>
-            Los certificados se generan después del evento.
-          </div>
-        `;
+      const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const lista = await r.json();
+
+      const p = lista.find(x => x.correo && x.correo.toLowerCase() === correo.toLowerCase());
+
+      if (!p) {
+        document.getElementById('screen-loading').style.display = 'none';
+        document.getElementById('screen-notfound').style.display = 'block';
         return;
       }
-      
-      lista.innerHTML = certificados.map(cert => {
-        let tipoClass = 'participacion';
-        let tipoTexto = '🏅 PARTICIPACIÓN';
-        
-        if (cert.tipo_certificado === '1er') {
-          tipoClass = 'primer';
-          tipoTexto = '🥇 PRIMER LUGAR';
-        } else if (cert.tipo_certificado === '2do') {
-          tipoClass = 'segundo';
-          tipoTexto = '🥈 SEGUNDO LUGAR';
-        } else if (cert.tipo_certificado === '3er') {
-          tipoClass = 'tercer';
-          tipoTexto = '🥉 TERCER LUGAR';
-        }
-        
-        return `
-          <div class="certificado-card">
-            <div class="certificado-card-header">
-              <span class="certificado-tipo ${tipoClass}">${tipoTexto}</span>
-              <span class="certificado-codigo">${cert.codigo_verificacion || '—'}</span>
-            </div>
-            <div class="certificado-info">
-              <div class="certificado-evento">${cert.evento || 'SucreBot 2026'}</div>
-              <div class="certificado-detalles">
-                <span class="certificado-label">Categoría</span>
-                <span class="certificado-value">${cert.categoria || '—'}</span>
-                <span class="certificado-label">Institución</span>
-                <span class="certificado-value">${cert.institucion || '—'}</span>
-                <span class="certificado-label">Fecha del evento</span>
-                <span class="certificado-value">${cert.fecha_evento || '—'}</span>
-                <span class="certificado-label">Generado el</span>
-                <span class="certificado-value">${cert.fecha_generacion || '—'}</span>
-              </div>
-            </div>
-            <div class="certificado-actions">
-              <button class="btn-descargar" onclick='descargarCertificado(${JSON.stringify(cert).replace(/'/g, "&apos;")})'>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                </svg>
-                Descargar PDF
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-      
-    } catch (e) {
-      console.error('Error al cargar certificados:', e);
-      lista.innerHTML = `
-        <div class="vacio-msg">
-          <div class="vacio-icon">⚠️</div>
-          Error al cargar certificados.<br>
-          Intenta nuevamente más tarde.
-        </div>
-      `;
-      showToast('Error al cargar certificados: ' + e.message, true);
+
+      participanteActual = p;
+      mostrarFicha(p);
+    } catch (error) {
+      console.error('Error al buscar participante:', error);
+      document.getElementById('screen-loading').style.display = 'none';
+      document.getElementById('screen-notfound').style.display = 'block';
     }
   }
 
-  function descargarCertificado(cert) {
-    showToast('🎨 Generando certificado en PDF...');
-    
-    // Aquí implementaremos la generación del PDF
-    // Por ahora solo mostramos un mensaje
-    setTimeout(() => {
-      showToast('✅ Certificado generado (función en desarrollo)');
-    }, 1500);
+  function mostrarFicha(p) {
+    document.getElementById('screen-loading').style.display = 'none';
+    document.getElementById('screen-ficha').style.display = 'block';
+
+    // Datos principales
+    document.getElementById('f-robot').textContent = p.robot || '—';
+    document.getElementById('f-categoria').textContent = p.categoria || '—';
+    document.getElementById('f-institucion').textContent = p.institucion || '—';
+    document.getElementById('f-ciudad').textContent = p.ciudad || '—';
+    document.getElementById('f-correo').textContent = p.correo || '—';
+    document.getElementById('f-nombre').textContent = p.nombre || '—';
+    document.getElementById('f-contacto').textContent = p.contacto || '—';
+
+    const aprobado = p.aprobado === 'APROBADO' || p.aprobado === true || p.aprobado === 'true';
+    const nocumple = p.aprobado === 'NO CUMPLE' || p.aprobado === 'NOCUMPLE' || p.aprobado === 'nocumple';
+
+    const badge = document.getElementById('f-estado-badge');
+    const qrSection = document.getElementById('ficha-qr-section');
+    const pendienteSection = document.getElementById('ficha-pendiente-section');
+    const avisoPendiente = document.getElementById('aviso-pendiente');
+    const avisoNocumple = document.getElementById('aviso-nocumple');
+
+    if (aprobado) {
+      // APROBADO
+      badge.className = 'ficha-estado estado-aprobado';
+      badge.textContent = '✅ Aprobado';
+      qrSection.style.display = 'block';
+      pendienteSection.style.display = 'none';
+
+      const textoQR = `SUCREBOT 2026 | Robot: ${p.robot} | Categoria: ${p.categoria} | Institucion: ${p.institucion} | Ciudad: ${p.ciudad} | Participante: ${p.nombre} | ID: ${p.id}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(textoQR)}`;
+      document.getElementById('f-qr-img').src = qrUrl;
+    } else if (nocumple) {
+      // NO CUMPLE
+      badge.className = 'ficha-estado estado-nocumple';
+      badge.textContent = '✖ No cumple requisitos';
+      qrSection.style.display = 'none';
+      pendienteSection.style.display = 'block';
+      avisoPendiente.style.display = 'none';
+      avisoNocumple.style.display = 'flex';
+      
+      // Mostrar razón del rechazo si existe
+      const razonContainer = document.getElementById('razon-rechazo-container');
+      if (p.razonRechazo && p.razonRechazo.trim()) {
+        razonContainer.innerHTML = `<span class="razon-texto"><strong>Razón:</strong> ${p.razonRechazo}</span>`;
+      } else {
+        razonContainer.innerHTML = '';
+      }
+      
+      cargarFormulario(p);
+    } else {
+      // PENDIENTE
+      badge.className = 'ficha-estado estado-pendiente';
+      badge.textContent = '⏳ Pendiente de aprobación';
+      qrSection.style.display = 'none';
+      pendienteSection.style.display = 'block';
+      avisoPendiente.style.display = 'flex';
+      avisoNocumple.style.display = 'none';
+      cargarFormulario(p);
+    }
   }
 
-  function showToast(msg, error = false) {
+  function cargarFormulario(p) {
+    document.getElementById('edit-robot').value = p.robot || '';
+    document.getElementById('edit-categoria').value = p.categoria || '';
+    document.getElementById('edit-institucion').value = p.institucion || '';
+    document.getElementById('edit-ciudad').value = p.ciudad || '';
+    document.getElementById('edit-nombre').value = p.nombre || '';
+    document.getElementById('edit-contacto').value = p.contacto || '';
+  }
+
+  async function guardarCambios() {
+    if (!participanteActual) return;
+
+    const btn = document.getElementById('btn-guardar');
+    btn.disabled = true;
+    btn.textContent = '⏳ Guardando...';
+
+    const datos = {
+      action: 'actualizarParticipante',
+      id: participanteActual.id,
+      robot: document.getElementById('edit-robot').value.trim(),
+      categoria: document.getElementById('edit-categoria').value,
+      institucion: document.getElementById('edit-institucion').value.trim(),
+      ciudad: document.getElementById('edit-ciudad').value.trim(),
+      nombre: document.getElementById('edit-nombre').value.trim(),
+      contacto: document.getElementById('edit-contacto').value.trim()
+    };
+
+    try {
+      const qs = new URLSearchParams(datos).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const result = await r.json();
+
+      if (result.ok) {
+        showToast('✅ Cambios guardados correctamente');
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        throw new Error(result.error || 'Error desconocido');
+      }
+    } catch (error) {
+      console.error('Error completo:', error);
+      showToast('❌ Error al guardar: ' + error.message);
+      btn.disabled = false;
+      btn.textContent = '💾 Guardar cambios';
+    }
+  }
+
+  function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
-    t.className = 'toast' + (error ? ' error' : '');
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
   }
