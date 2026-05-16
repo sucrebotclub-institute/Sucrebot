@@ -12,9 +12,15 @@ const STAFF_EMAILS = [
 window.STAFF_EMAILS = STAFF_EMAILS;
 
 let googleOAuthReady = false;
+let loginInProgress = false;
 
 // ── FUNCIÓN: Iniciar login con botón personalizado (GLOBAL)
 window.iniciarLogin = function() {
+  if (loginInProgress) {
+    console.warn('⏳ Login ya en progreso, espera...');
+    return;
+  }
+  
   if (!googleOAuthReady) {
     console.warn('⏳ Google OAuth aún no está listo, esperando...');
     setTimeout(window.iniciarLogin, 500);
@@ -22,9 +28,11 @@ window.iniciarLogin = function() {
   }
   
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+    loginInProgress = true;
     google.accounts.id.prompt((notification) => {
+      loginInProgress = false;
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        google.accounts.id.prompt();
+        console.log('Popup no mostrado, reintentando...');
       }
     });
   } else {
