@@ -36,16 +36,16 @@
     .page-hero-line { flex: 0 0 40px; height: 3px; background: #1a5ca8; border-radius: 2px; }
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
 
-    /* ── PANTALLA LOGIN ── */
-    .login-screen { background: linear-gradient(135deg, #2a5a9e 0%, #1a4580 50%, #0f3566 100%); border-radius: 20px; padding: 60px 40px; text-align: center; box-shadow: 0 12px 40px rgba(26,92,168,0.35); max-width: 480px; margin: 0 auto; }
-    .login-icon { font-size: 72px; margin-bottom: 24px; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
-    .login-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: #ffffff; margin-bottom: 12px; }
-    .login-subtitle { font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 32px; line-height: 1.6; }
-    .btn-google { background: #ffffff; color: #1a3a6e; font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 700; padding: 14px 32px; border: none; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
-    .btn-google:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.3); }
-    .btn-google img { width: 20px; height: 20px; }
-
     /* ── CONTENEDOR CERTIFICADOS ── */
+    .certificados-container { background: #ffffff; border-radius: 20px; padding: 36px 32px; box-shadow: 0 4px 24px rgba(26,92,168,0.1); }
+    
+    /* ── MODAL LOGIN ── */
+    .modal-login-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-login-overlay.show { display: flex; }
+    .modal-login-card { background: linear-gradient(135deg, #2a5a9e 0%, #1a4580 50%, #0f3566 100%); border-radius: 20px; padding: 60px 40px; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,0.4); max-width: 480px; width: 90%; }
+    .modal-login-icon { font-size: 72px; margin-bottom: 24px; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
+    .modal-login-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: #ffffff; margin-bottom: 12px; }
+    .modal-login-subtitle { font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 32px; line-height: 1.6; }
     .certificados-container { background: #ffffff; border-radius: 20px; padding: 36px 32px; box-shadow: 0 4px 24px rgba(26,92,168,0.1); }
     .user-info { display: flex; align-items: center; gap: 16px; padding: 20px; background: linear-gradient(135deg, #e8f4ff 0%, #d4e8ff 100%); border-radius: 12px; margin-bottom: 32px; border-left: 4px solid #1a5ca8; }
     .user-avatar { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #1a5ca8; }
@@ -120,15 +120,7 @@
       </div>
     </div>
 
-    <!-- PANTALLA LOGIN -->
-    <div id="login-screen" class="login-screen">
-      <div class="login-icon">🎓</div>
-      <h3 class="login-title">ACCESO A CERTIFICADOS</h3>
-      <p class="login-subtitle">Inicia sesión con tu cuenta de Google para ver tus certificados de SucreBot</p>
-      <div id="google-signin-button"></div>
-    </div>
-
-    <!-- CONTENEDOR CERTIFICADOS (oculto inicialmente) -->
+    <!-- CONTENEDOR CERTIFICADOS -->
     <div id="certificados-container" class="certificados-container" style="display:none;">
       <div class="user-info">
         <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
@@ -151,6 +143,16 @@
 </main>
 
 <div data-include="../shared/components/footer.html"></div>
+
+<!-- MODAL LOGIN -->
+<div class="modal-login-overlay" id="modal-login">
+  <div class="modal-login-card">
+    <div class="modal-login-icon">🎓</div>
+    <h3 class="modal-login-title">ACCESO A CERTIFICADOS</h3>
+    <p class="modal-login-subtitle">Inicia sesión con tu cuenta de Google para ver tus certificados de SucreBot</p>
+    <div id="google-signin-button"></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -180,15 +182,9 @@
     };
     localStorage.setItem('sucrebot_cert_user', JSON.stringify(userData));
     
-    // Mostrar UI de certificados
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('certificados-container').style.display = 'block';
-    document.getElementById('user-avatar').src = payload.picture;
-    document.getElementById('user-name').textContent = payload.name;
-    document.getElementById('user-email').textContent = payload.email;
-    
-    // Cargar certificados
-    cargarCertificados();
+    // Cerrar modal y mostrar certificados
+    document.getElementById('modal-login').classList.remove('show');
+    mostrarCertificados(userData);
   }
 
   function parseJwt(token) {
@@ -200,10 +196,29 @@
     return JSON.parse(jsonPayload);
   }
 
+  function mostrarCertificados(userData) {
+    document.getElementById('certificados-container').style.display = 'block';
+    document.getElementById('user-avatar').src = userData.picture;
+    document.getElementById('user-name').textContent = userData.name;
+    document.getElementById('user-email').textContent = userData.email;
+    cargarCertificados();
+  }
+
   function cerrarSesion() {
     localStorage.removeItem('sucrebot_cert_user');
     window.location.reload();
   }
+
+  function abrirModalLogin() {
+    document.getElementById('modal-login').classList.add('show');
+  }
+
+  // Cerrar modal al hacer clic fuera
+  document.addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-login')) {
+      document.getElementById('modal-login').classList.remove('show');
+    }
+  });
 
   async function cargarCertificados() {
     const lista = document.getElementById('certificados-lista');
@@ -301,7 +316,7 @@
     setTimeout(() => t.classList.remove('show'), 3500);
   }
 
-  // Inicializar Google Sign-In
+  // Inicializar Google Sign-In y configurar el botón del topbar
   window.onload = function() {
     // Verificar si ya hay sesión
     const savedUser = localStorage.getItem('sucrebot_cert_user');
@@ -309,31 +324,40 @@
       try {
         const userData = JSON.parse(savedUser);
         userEmail = userData.email;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('certificados-container').style.display = 'block';
-        document.getElementById('user-avatar').src = userData.picture;
-        document.getElementById('user-name').textContent = userData.name;
-        document.getElementById('user-email').textContent = userData.email;
-        cargarCertificados();
+        mostrarCertificados(userData);
       } catch (e) {
         localStorage.removeItem('sucrebot_cert_user');
       }
-    } else {
-      // Renderizar botón de Google
-      google.accounts.id.initialize({
-        client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
-        callback: handleCredentialResponse
-      });
-      google.accounts.id.renderButton(
-        document.getElementById('google-signin-button'),
-        { 
-          theme: 'filled_blue', 
-          size: 'large',
-          text: 'signin_with',
-          locale: 'es'
-        }
-      );
     }
+    
+    // Inicializar Google Sign-In
+    google.accounts.id.initialize({
+      client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
+      callback: handleCredentialResponse
+    });
+    
+    // Renderizar botón de Google en el modal
+    google.accounts.id.renderButton(
+      document.getElementById('google-signin-button'),
+      { 
+        theme: 'filled_blue', 
+        size: 'large',
+        text: 'signin_with',
+        locale: 'es'
+      }
+    );
+    
+    // Configurar el botón "INICIAR SESIÓN" del topbar
+    // Esperar a que el topbar se cargue
+    setTimeout(() => {
+      const loginBtn = document.querySelector('.btn-login');
+      if (loginBtn && !savedUser) {
+        loginBtn.onclick = function(e) {
+          e.preventDefault();
+          abrirModalLogin();
+        };
+      }
+    }, 500);
   };
 </script>
 
