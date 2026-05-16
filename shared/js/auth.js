@@ -13,6 +13,26 @@ window.STAFF_EMAILS = STAFF_EMAILS;
 
 let googleOAuthReady = false;
 
+// ── FUNCIÓN: Iniciar login con botón personalizado (GLOBAL)
+window.iniciarLogin = function() {
+  if (!googleOAuthReady) {
+    console.warn('⏳ Google OAuth aún no está listo, esperando...');
+    setTimeout(window.iniciarLogin, 500);
+    return;
+  }
+  
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+    google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        google.accounts.id.prompt();
+      }
+    });
+  } else {
+    console.error('❌ Google Sign-In no está disponible');
+    alert('Error: Google Sign-In no está disponible. Por favor recarga la página.');
+  }
+};
+
 // ── FUNCIÓN: Parsear JWT de Google
 function parseJwt(token) {
   const base64Url = token.split('.')[1];
@@ -67,7 +87,7 @@ function activarSesion(data) {
 }
 
 // ── FUNCIÓN: Cerrar sesión
-function cerrarSesion() {
+window.cerrarSesion = function() {
   localStorage.removeItem('sucrebot_user');
   
   // Revocar credenciales de Google
@@ -93,28 +113,7 @@ function cerrarSesion() {
   
   // Recargar la página para limpiar completamente
   window.location.reload();
-}
-
-// ── FUNCIÓN: Iniciar login con botón personalizado
-function iniciarLogin() {
-  if (!googleOAuthReady) {
-    console.warn('⏳ Google OAuth aún no está listo, esperando...');
-    setTimeout(iniciarLogin, 500);
-    return;
-  }
-  
-  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-    google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // Si el prompt no se muestra, abrir ventana de selección de cuenta
-        google.accounts.id.prompt();
-      }
-    });
-  } else {
-    console.error('❌ Google Sign-In no está disponible');
-    alert('Error: Google Sign-In no está disponible. Por favor recarga la página.');
-  }
-}
+};
 
 // ── FUNCIÓN: Inicializar Google OAuth
 function inicializarGoogleOAuth() {
