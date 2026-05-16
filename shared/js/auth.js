@@ -11,6 +11,8 @@ const STAFF_EMAILS = [
 // ✅ EXPORTAR COMO VARIABLE GLOBAL para que otros archivos puedan acceder
 window.STAFF_EMAILS = STAFF_EMAILS;
 
+let googleOAuthReady = false;
+
 // ── FUNCIÓN: Parsear JWT de Google
 function parseJwt(token) {
   const base64Url = token.split('.')[1];
@@ -95,6 +97,12 @@ function cerrarSesion() {
 
 // ── FUNCIÓN: Iniciar login con botón personalizado
 function iniciarLogin() {
+  if (!googleOAuthReady) {
+    console.warn('⏳ Google OAuth aún no está listo, esperando...');
+    setTimeout(iniciarLogin, 500);
+    return;
+  }
+  
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
@@ -103,13 +111,37 @@ function iniciarLogin() {
       }
     });
   } else {
-    console.error('Google Sign-In no está disponible');
+    console.error('❌ Google Sign-In no está disponible');
     alert('Error: Google Sign-In no está disponible. Por favor recarga la página.');
+  }
+}
+
+// ── FUNCIÓN: Inicializar Google OAuth
+function inicializarGoogleOAuth() {
+  if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+    console.warn('⏳ Esperando a que se cargue el SDK de Google...');
+    setTimeout(inicializarGoogleOAuth, 300);
+    return;
+  }
+  
+  try {
+    google.accounts.id.initialize({
+      client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
+      callback: handleCredentialResponse,
+      auto_select: false,
+      cancel_on_tap_outside: false
+    });
+    googleOAuthReady = true;
+    console.log('✅ Google OAuth inicializado correctamente');
+  } catch (e) {
+    console.error('❌ Error al inicializar Google OAuth:', e);
   }
 }
 
 // ── INICIALIZACIÓN: Restaurar sesión si existe
 document.addEventListener('componentsLoaded', function() {
+  console.log('📦 Componentes cargados, inicializando autenticación...');
+  
   // Restaurar sesión guardada
   const savedUser = localStorage.getItem('sucrebot_user');
   
@@ -123,15 +155,6 @@ document.addEventListener('componentsLoaded', function() {
     }
   }
   
-  // Inicializar Google Sign-In DESPUÉS de cargar componentes
-  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-    google.accounts.id.initialize({
-      client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
-      callback: handleCredentialResponse,
-      auto_select: false,
-      cancel_on_tap_outside: false
-    });
-  } else {
-    console.error('Google Sign-In SDK no está cargado');
-  }
+  // Inicializar Google Sign-In (espera a que el SDK esté cargado)
+  inicializarGoogleOAuth();
 });
