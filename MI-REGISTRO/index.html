@@ -48,13 +48,6 @@
 
     /* ── CONTENEDOR CERTIFICADOS ── */
     .certificados-container { background: #ffffff; border-radius: 20px; padding: 36px 32px; box-shadow: 0 4px 24px rgba(26,92,168,0.1); }
-    .user-info { display: flex; align-items: center; gap: 16px; padding: 20px; background: linear-gradient(135deg, #e8f4ff 0%, #d4e8ff 100%); border-radius: 12px; margin-bottom: 32px; border-left: 4px solid #1a5ca8; }
-    .user-avatar { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #1a5ca8; }
-    .user-details { flex: 1; }
-    .user-name { font-family: 'Exo 2', sans-serif; font-size: 16px; font-weight: 700; color: #1a3a6e; margin-bottom: 2px; }
-    .user-email { font-size: 12px; color: #7a7a8c; }
-    .btn-logout { background: #ff3b3b; color: #ffffff; border: none; padding: 8px 16px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-logout:hover { background: #d92845; transform: translateY(-1px); }
 
     /* ── LISTA CERTIFICADOS ── */
     .certificados-titulo { font-family: 'Exo 2', sans-serif; font-size: 18px; font-weight: 700; color: #1a3a6e; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #e8f0ff; }
@@ -115,12 +108,6 @@
      CONTENIDO ÚNICO DE MIS-CERTIFICADOS
      ═══════════════════════════════════════════════════════════════ -->
 
-<div id="g_id_onload"
-     data-client_id="14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com"
-     data-callback="handleCredentialResponse"
-     data-auto_prompt="false">
-</div>
-
 <main>
   <div class="wrapper">
     <div class="page-hero">
@@ -153,15 +140,6 @@
 
     <!-- CONTENEDOR CERTIFICADOS -->
     <div id="certificados-container" class="certificados-container" style="display:none;">
-      <div class="user-info">
-        <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
-        <div class="user-details">
-          <div class="user-name" id="user-name">—</div>
-          <div class="user-email" id="user-email">—</div>
-        </div>
-        <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
-      </div>
-
       <div class="certificados-titulo">📜 Tus Certificados</div>
       <div class="certificados-grid" id="certificados-lista">
         <div class="vacio-msg">
@@ -189,18 +167,15 @@
   const GAS_URL = CONFIG.GAS_URL();
   let userEmail = '';
 
-  function iniciarLogin() {
-    google.accounts.id.prompt();
-  }
-
-  // Al cargar componentes, verificar sesión (igual que MI-REGISTRO)
+  // Al cargar componentes, verificar sesión
   document.addEventListener('componentsLoaded', function() {
     const savedUser = localStorage.getItem('sucrebot_user');
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
         userEmail = userData.email;
-        mostrarCertificados(userData);
+        document.getElementById('certificados-container').style.display = 'block';
+        cargarCertificados();
       } catch (e) {
         console.error('Error al leer sesión:', e);
         document.getElementById('sin-sesion').style.display = 'block';
@@ -209,19 +184,6 @@
       document.getElementById('sin-sesion').style.display = 'block';
     }
   });
-
-  function mostrarCertificados(userData) {
-    document.getElementById('certificados-container').style.display = 'block';
-    document.getElementById('user-avatar').src = userData.picture;
-    document.getElementById('user-name').textContent = userData.name;
-    document.getElementById('user-email').textContent = userData.email;
-    cargarCertificados();
-  }
-
-  function cerrarSesion() {
-    localStorage.removeItem('sucrebot_user');
-    window.location.reload();
-  }
 
   async function cargarCertificados() {
     const lista = document.getElementById('certificados-lista');
