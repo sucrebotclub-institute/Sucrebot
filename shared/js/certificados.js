@@ -198,20 +198,36 @@ function previewCertificado(idx) {
     modal = document.createElement('div');
     modal.id = 'cert-modal';
     modal.className = 'cert-modal';
-    modal.innerHTML = `
-      <div class="cert-modal-content">
-        <div class="cert-modal-header">
-          <div class="cert-modal-title">📜 VISTA PREVIA DEL CERTIFICADO</div>
-          <button class="cert-modal-close" onclick="cerrarModalCertificado()">×</button>
-        </div>
-        <div id="cert-preview-container"></div>
-        <div class="cert-modal-actions">
-          <button class="btn-modal btn-guardar-cert" onclick="guardarYDescargarCertificado(${idx})">
-            💾 Guardar y Descargar PDF
-          </button>
-        </div>
-      </div>
-    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'cert-modal-content';
+    
+    const modalHeader = document.createElement('div');
+    modalHeader.className = 'cert-modal-header';
+    modalHeader.innerHTML = '<div class="cert-modal-title">📜 VISTA PREVIA DEL CERTIFICADO</div>';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'cert-modal-close';
+    closeBtn.textContent = '×';
+    closeBtn.onclick = cerrarModalCertificado;
+    modalHeader.appendChild(closeBtn);
+    
+    const previewContainer = document.createElement('div');
+    previewContainer.id = 'cert-preview-container';
+    
+    const actions = document.createElement('div');
+    actions.className = 'cert-modal-actions';
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-modal btn-guardar-cert';
+    saveBtn.textContent = '💾 Guardar y Descargar PDF';
+    saveBtn.onclick = function() { guardarYDescargarCertificado(idx); };
+    actions.appendChild(saveBtn);
+    
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(previewContainer);
+    modalContent.appendChild(actions);
+    modal.appendChild(modalContent);
     document.body.appendChild(modal);
   }
   
