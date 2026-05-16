@@ -173,13 +173,13 @@
     
     userEmail = payload.email;
     
-    // Guardar en localStorage (igual que auth.js)
+    // Guardar en localStorage CON CLAVE DIFERENTE para no afectar el topbar
     const userData = {
       name: payload.name,
       email: payload.email,
       picture: payload.picture
     };
-    localStorage.setItem('sucrebot_user', JSON.stringify(userData));
+    localStorage.setItem('sucrebot_cert_user', JSON.stringify(userData));
     
     // Mostrar UI de certificados
     document.getElementById('login-screen').style.display = 'none';
@@ -202,7 +202,7 @@
   }
 
   function cerrarSesion() {
-    localStorage.removeItem('sucrebot_user');
+    localStorage.removeItem('sucrebot_cert_user');
     window.location.reload();
   }
 
@@ -305,7 +305,7 @@
   // Inicializar Google Sign-In
   window.onload = function() {
     // Verificar si ya hay sesión
-    const savedUser = localStorage.getItem('sucrebot_user');
+    const savedUser = localStorage.getItem('sucrebot_cert_user');
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
@@ -317,7 +317,7 @@
         document.getElementById('user-email').textContent = userData.email;
         cargarCertificados();
       } catch (e) {
-        localStorage.removeItem('sucrebot_user');
+        localStorage.removeItem('sucrebot_cert_user');
       }
     } else {
       // Renderizar botón de Google
