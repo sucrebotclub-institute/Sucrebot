@@ -270,94 +270,12 @@
      SCRIPTS ESPECÍFICOS DE MI-REGISTRO
      ═══════════════════════════════════════════════════════════════ -->
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  const GOOGLE_CLIENT_ID = '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com';
-  
   let participanteActual = null;
-  let googleInitialized = false;
 
-  // Inicializar Google OAuth cuando el script esté listo
-  window.addEventListener('load', function() {
-    if (typeof google !== 'undefined' && google.accounts) {
-      initGoogleOAuth();
-    } else {
-      // Si no está listo, intentar de nuevo en 500ms
-      setTimeout(function() {
-        if (typeof google !== 'undefined' && google.accounts) {
-          initGoogleOAuth();
-        }
-      }, 500);
-    }
-  });
-
-  function initGoogleOAuth() {
-    if (googleInitialized) return; // Evitar múltiples inicializaciones
-    
-    try {
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleCredentialResponse,
-        auto_select: false
-      });
-      googleInitialized = true;
-      console.log('✅ Google OAuth inicializado');
-    } catch (e) {
-      console.error('Error al inicializar Google OAuth:', e);
-    }
-  }
-
-  // Función callback de Google OAuth
-  function handleCredentialResponse(response) {
-    try {
-      const userData = parseJwt(response.credential);
-      console.log('Usuario autenticado:', userData.email);
-      
-      // Guardar sesión
-      localStorage.setItem('sucrebot_user', JSON.stringify({
-        email: userData.email,
-        name: userData.name,
-        picture: userData.picture
-      }));
-      
-      // Buscar participante
-      buscarParticipante(userData.email);
-      
-      // Actualizar UI compartida si existe
-      if (typeof window.actualizarUsuarioUI === 'function') {
-        window.actualizarUsuarioUI();
-      }
-    } catch (e) {
-      console.error('Error al procesar credencial de Google:', e);
-      showToast('❌ Error al iniciar sesión');
-    }
-  }
-
-  // Decodificar JWT de Google
-  function parseJwt(token) {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      console.error('Error al decodificar JWT:', e);
-      return {};
-    }
-  }
-
-  function iniciarLogin() {
-    if (typeof google !== 'undefined' && google.accounts) {
-      google.accounts.id.prompt();
-    } else {
-      showToast('⏳ Cargando sistema de login...');
-      setTimeout(iniciarLogin, 500);
-    }
-  }
+  // ⚠️ NO inicializar Google OAuth aquí - ya lo hace auth.js
+  // Solo usar las funciones que auth.js exporta
 
   // Al cargar componentes, verificar sesión
   document.addEventListener('componentsLoaded', function() {
