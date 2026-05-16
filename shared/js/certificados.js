@@ -179,7 +179,7 @@ function previewCertificado(idx) {
   const textoLogro = obtenerTextoLogro(tipo, participante.categoria);
   
   // Generar código de verificación temporal
-  const codigoTemp = `CERT-2026-PREVIEW`;
+  const codigoTemp = 'CERT-2026-PREVIEW';
   
   // Reemplazar variables en el template
   let htmlCert = CERTIFICADO_TEMPLATE
@@ -204,12 +204,17 @@ function previewCertificado(idx) {
     
     const modalHeader = document.createElement('div');
     modalHeader.className = 'cert-modal-header';
-    modalHeader.innerHTML = '<div class="cert-modal-title">📜 VISTA PREVIA DEL CERTIFICADO</div>';
+    
+    const modalTitle = document.createElement('div');
+    modalTitle.className = 'cert-modal-title';
+    modalTitle.textContent = '📜 VISTA PREVIA DEL CERTIFICADO';
     
     const closeBtn = document.createElement('button');
     closeBtn.className = 'cert-modal-close';
     closeBtn.textContent = '×';
     closeBtn.onclick = cerrarModalCertificado;
+    
+    modalHeader.appendChild(modalTitle);
     modalHeader.appendChild(closeBtn);
     
     const previewContainer = document.createElement('div');
@@ -222,6 +227,7 @@ function previewCertificado(idx) {
     saveBtn.className = 'btn-modal btn-guardar-cert';
     saveBtn.textContent = '💾 Guardar y Descargar PDF';
     saveBtn.onclick = function() { guardarYDescargarCertificado(idx); };
+    
     actions.appendChild(saveBtn);
     
     modalContent.appendChild(modalHeader);
@@ -383,4 +389,6 @@ async function cargarLibreriasPDF() {
   linkFont.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap';
   linkFont.rel = 'stylesheet';
   document.head.appendChild(linkFont);
+  
+  console.log('✅ Sistema de certificados inicializado');
 })();
