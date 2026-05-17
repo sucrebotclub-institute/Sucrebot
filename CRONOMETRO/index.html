@@ -3,60 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Cronómetro</title>
+  <title>SucreBot — Escáner QR</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="../shared/js/config.js"></script> 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <script src="../shared/js/config.js"></script>
   
-  <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   
-  <!-- CSS específico de CRONOMETRO -->
   <style>
     :root {
-      --cyan: #5bc8f0; --cyan-dark: #2b8ab8; --blue: #1a5ca8;
+      --cyan: #5bc8f0; --blue: #1a5ca8;
       --text: #ffffff; --text-dark: #0d1f42; --muted: #64748b; 
       --border: #2d4a6e;
-      --sucre-blue: #1a5ca8;
-      --bg-gradient-start: #f0f4f8; --bg-gradient-end: #e1e8ed;
       --surface: #0d2847; --surface2: #1a3a6b; --surface-light: #ffffff;
-      --border2: #2d4a6e;
       --accent: #5bc8f0; --accent2: #ff6b35;
-      --green: #3dd68c; --green-dark: #2ab870;
-      --red: #ff3b3b; --red-dark: #cc2f2f;
-      --yellow: #fbbf24;
+      --green: #3dd68c; --red: #ff3b3b;
       --font-display: 'Bebas Neue', sans-serif;
       --font-mono: 'DM Mono', monospace;
       --font-body: 'DM Sans', sans-serif;
     }
     
     body { 
-      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%) !important; 
+      background: linear-gradient(135deg, #f0f4f8 0%, #e1e8ed 100%) !important; 
       color: var(--text-dark) !important; 
       min-height: 100vh;
-      position: relative;
-    }
-    
-    /* Efecto de fondo animado */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(91, 200, 240, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(26, 92, 168, 0.08) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: 0;
     }
 
-    /* ── CRONÓMETRO ── */
-    .crono-wrapper { max-width: 960px; margin: 0 auto; padding: 80px 20px 60px; position: relative; z-index: 1; }
-    .crono-section-title { 
+    .esc-wrapper { max-width: 800px; margin: 0 auto; padding: 80px 20px 60px; }
+    .esc-title { 
       font-family: var(--font-display); 
       font-size: 2.5rem; 
       letter-spacing: 0.08em; 
@@ -64,608 +40,218 @@
       margin-bottom: 32px; 
       text-align: center;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-      padding-bottom: 16px;
     }
-    .crono-section-title::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 4px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      border-radius: 2px;
+
+    .cat-selector {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 2px solid var(--border);
+      border-left: 6px solid var(--cyan);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(13, 40, 71, 0.3);
     }
-    
-    .crono-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
-    
-    /* Selector de categoría mejorado */
-    .evento-row { 
-      display: flex; 
-      align-items: center; 
-      gap: 16px; 
-      margin-bottom: 24px; 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--border2); 
-      border-left: 6px solid var(--cyan); 
-      border-radius: 16px; 
-      padding: 20px 24px; 
-      box-shadow: 
-        0 4px 20px rgba(13, 40, 71, 0.3),
-        0 0 0 1px rgba(91, 200, 240, 0.1);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .evento-row::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(91, 200, 240, 0.1), transparent);
-      transition: left 0.5s;
-    }
-    
-    .evento-row:hover::before {
-      left: 100%;
-    }
-    
-    .evento-row:hover { 
-      box-shadow: 
-        0 8px 32px rgba(13, 40, 71, 0.4),
-        0 0 0 1px rgba(91, 200, 240, 0.3);
-      transform: translateY(-2px); 
-      border-left-width: 8px;
-    }
-    
-    .evento-row label { 
-      font-size: 0.7rem; 
-      color: var(--cyan); 
-      font-family: var(--font-mono); 
-      letter-spacing: 0.2em; 
-      white-space: nowrap; 
-      text-transform: uppercase; 
-      font-weight: 700; 
-      display: flex; 
-      align-items: center; 
-      gap: 10px;
+
+    .cat-selector label {
+      font-size: 0.7rem;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 12px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    
-    .evento-row label::before { 
-      content: '⚡'; 
-      font-size: 1.3rem; 
-      filter: drop-shadow(0 0 8px rgba(91, 200, 240, 0.5));
-    }
-    
-    .evento-row select { 
-      flex: 1; 
-      background: var(--surface-light); 
-      border: 2px solid #e2e8f0; 
-      color: var(--surface); 
-      font-family: var(--font-body); 
-      font-size: 1rem; 
-      font-weight: 700; 
-      padding: 14px 18px; 
-      border-radius: 12px; 
-      outline: none; 
-      cursor: pointer; 
-      transition: all 0.2s; 
+
+    .cat-selector select {
+      width: 100%;
+      background: var(--surface-light);
+      border: 2px solid #e2e8f0;
+      color: var(--surface);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 14px 18px;
+      border-radius: 12px;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    
-    .evento-row select:hover { 
-      border-color: var(--cyan); 
-      box-shadow: 0 4px 12px rgba(91, 200, 240, 0.2);
+
+    .cat-selector select:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 4px rgba(91, 200, 240, 0.15);
     }
-    
-    .evento-row select:focus { 
-      border-color: var(--cyan); 
-      box-shadow: 0 0 0 4px rgba(91, 200, 240, 0.15), 0 4px 12px rgba(91, 200, 240, 0.2);
-    }
-    
-    /* Strip de participante mejorado */
-    .participante-strip { 
-      background: linear-gradient(135deg, var(--surface) 0%, #0f2d52 100%); 
-      border: 2px solid var(--border2); 
-      border-left: 5px solid var(--cyan); 
-      border-radius: 12px; 
-      padding: 16px 20px; 
-      margin-bottom: 24px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(13, 40, 71, 0.25);
-      transition: all 0.3s;
-    }
-    
-    .participante-strip:hover {
-      box-shadow: 0 6px 24px rgba(13, 40, 71, 0.35);
-      transform: translateY(-1px);
-    }
-    
-    .participante-strip .p-robot { 
-      font-size: 1.1rem; 
-      font-weight: 700; 
-      color: var(--text); 
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .participante-strip .p-inst { 
-      font-size: 0.85rem; 
-      color: var(--muted); 
-      margin-top: 4px;
-    }
-    
-    .participante-strip .p-badge { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      background: var(--cyan); 
-      color: var(--surface); 
-      padding: 6px 14px; 
-      border-radius: 20px; 
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(91, 200, 240, 0.4);
-    }
-    
-    .participante-strip.empty { 
-      border-left-color: var(--muted); 
-      background: linear-gradient(135deg, #1a2b47 0%, #0f1d35 100%);
-    }
-    
-    .participante-strip.empty .p-robot { 
-      color: var(--muted); 
-      font-weight: 500; 
-    }
-    
-    /* Cronómetro display mejorado */
-    .crono-display { 
-      background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%); 
-      border: 3px solid var(--border2); 
-      border-radius: 20px; 
-      padding: 48px 20px; 
-      text-align: center; 
-      margin-bottom: 24px; 
-      position: relative; 
-      overflow: hidden;
-      box-shadow: 
-        0 8px 32px rgba(13, 40, 71, 0.4),
-        inset 0 2px 4px rgba(255,255,255,0.05);
-    }
-    
-    .crono-display::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(91, 200, 240, 0.05) 0%, transparent 70%);
-      animation: rotate 20s linear infinite;
-    }
-    
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
-    .crono-display::after { 
-      content: ''; 
-      position: absolute; 
-      top: 0; 
-      left: 0; 
-      right: 0; 
-      height: 3px; 
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent); 
-      opacity: 0; 
-      transition: opacity 0.3s; 
-    }
-    
-    .crono-display.running::after { 
-      opacity: 1; 
-      animation: scanline 2s linear infinite; 
-    }
-    
-    @keyframes scanline { 
-      0%{transform:translateX(-100%)} 
-      100%{transform:translateX(100%)} 
-    }
-    
-    #cronometro { 
-      font-family: var(--font-display); 
-      font-size: 6rem; 
-      letter-spacing: 0.08em; 
-      color: var(--text); 
-      line-height: 1; 
-      transition: all 0.3s;
-      position: relative;
-      z-index: 1;
-      text-shadow: 
-        0 0 20px rgba(91, 200, 240, 0.3),
-        0 4px 8px rgba(0,0,0,0.5);
-    }
-    
-    .crono-display.running #cronometro { 
-      color: var(--cyan); 
-      text-shadow: 
-        0 0 30px rgba(91, 200, 240, 0.6),
-        0 0 60px rgba(91, 200, 240, 0.3),
-        0 4px 8px rgba(0,0,0,0.5);
-      animation: pulse-glow 2s ease-in-out infinite;
-    }
-    
-    @keyframes pulse-glow {
-      0%, 100% { filter: brightness(1); }
-      50% { filter: brightness(1.2); }
-    }
-    
-    .crono-display.stopped #cronometro { 
-      color: var(--accent2); 
-      text-shadow: 
-        0 0 30px rgba(255, 107, 53, 0.5),
-        0 4px 8px rgba(0,0,0,0.5);
-    }
-    
-    .crono-status { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      letter-spacing: 0.2em; 
-      color: var(--muted); 
-      margin-top: 12px;
-      position: relative;
-      z-index: 1;
-    }
-    
-    /* Botones mejorados */
-    .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-    
-    .btn { 
-      border: 2px solid; 
-      background: var(--surface); 
-      color: var(--text); 
-      font-family: var(--font-body); 
-      font-size: 0.9rem; 
-      font-weight: 700; 
-      padding: 14px 10px; 
-      border-radius: 12px; 
-      cursor: pointer; 
-      transition: all 0.2s; 
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+    .video-container {
+      background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%);
+      border: 3px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(13, 40, 71, 0.4);
       position: relative;
       overflow: hidden;
     }
-    
-    .btn::before {
-      content: '';
+
+    #video {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+      background: #000;
+    }
+
+    .scan-overlay {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
       transform: translate(-50%, -50%);
-      transition: width 0.3s, height 0.3s;
+      width: 250px;
+      height: 250px;
+      border: 3px solid var(--cyan);
+      border-radius: 16px;
+      pointer-events: none;
+      box-shadow: 0 0 30px rgba(91, 200, 240, 0.5);
+      animation: pulse-border 2s ease-in-out infinite;
     }
-    
-    .btn:hover::before {
-      width: 300px;
-      height: 300px;
+
+    @keyframes pulse-border {
+      0%, 100% { border-color: var(--cyan); box-shadow: 0 0 30px rgba(91, 200, 240, 0.5); }
+      50% { border-color: var(--green); box-shadow: 0 0 50px rgba(61, 214, 140, 0.7); }
     }
-    
-    .btn:hover { 
-      transform: translateY(-2px); 
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    }
-    
-    .btn:active { 
-      transform: translateY(0); 
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    
-    .btn.start { 
-      border-color: var(--green); 
-      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-    }
-    
-    .btn.start:hover { 
-      box-shadow: 0 6px 24px rgba(61, 214, 140, 0.4);
-    }
-    
-    .btn.stop { 
-      border-color: var(--red); 
-      background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
-    }
-    
-    .btn.stop:hover { 
-      box-shadow: 0 6px 24px rgba(255, 59, 59, 0.4);
-    }
-    
-    .btn.reset { 
-      border-color: var(--accent2); 
-      background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%);
-    }
-    
-    .btn.reset:hover { 
-      box-shadow: 0 6px 24px rgba(255, 107, 53, 0.4);
-    }
-    
-    /* Configuración de ronda */
-    .ronda-config { 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--border2); 
-      border-radius: 14px; 
-      padding: 16px 20px; 
-      margin-bottom: 20px; 
-      display: flex; 
-      align-items: center; 
-      gap: 20px; 
-      flex-wrap: wrap;
+
+    .scan-status {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text);
       box-shadow: 0 4px 16px rgba(13, 40, 71, 0.25);
     }
-    
-    .ronda-config-title { 
-      font-family: var(--font-mono); 
-      font-size: 0.7rem; 
-      letter-spacing: 0.15em; 
-      color: var(--cyan); 
-      white-space: nowrap;
-      font-weight: 700;
-    }
-    
-    .ronda-control { display: flex; align-items: center; gap: 10px; }
-    
-    .ronda-control label { 
-      font-size: 0.8rem; 
-      color: var(--text); 
-      font-family: var(--font-body); 
-      white-space: nowrap;
-      font-weight: 600;
-    }
-    
-    .ronda-control input { 
-      width: 60px; 
-      background: var(--surface-light); 
-      border: 2px solid #e2e8f0; 
-      color: var(--surface); 
-      font-family: var(--font-mono); 
-      font-size: 1rem; 
-      font-weight: 700; 
-      padding: 8px 12px; 
-      border-radius: 8px; 
-      outline: none; 
-      text-align: center;
-      transition: all 0.2s;
-    }
-    
-    .ronda-control input:focus { 
-      border-color: var(--cyan); 
-      box-shadow: 0 0 0 3px rgba(91, 200, 240, 0.15);
-    }
-    
-    .ronda-status { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-    
-    .ronda-badge { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      padding: 6px 16px; 
-      border-radius: 20px; 
-      background: var(--cyan); 
-      color: var(--surface); 
-      white-space: nowrap;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(91, 200, 240, 0.3);
-    }
-    
-    .intento-badge { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      padding: 6px 16px; 
-      border-radius: 20px; 
-      background: var(--accent2); 
-      color: var(--text); 
-      white-space: nowrap;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-    }
-    
-    /* Botón saltar */
-    .btn-saltar { 
-      width: 100%; 
-      margin-top: 12px; 
-      background: linear-gradient(135deg, #e8f4ff 0%, #d0e8ff 100%); 
-      border: 2px solid var(--cyan); 
-      color: var(--blue); 
-      font-family: var(--font-body); 
-      font-size: 0.9rem; 
-      font-weight: 700; 
-      padding: 14px; 
-      border-radius: 12px; 
-      cursor: pointer; 
-      transition: all 0.2s;
-      box-shadow: 0 4px 12px rgba(91, 200, 240, 0.2);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    
-    .btn-saltar:hover { 
-      background: linear-gradient(135deg, #d0e8ff 0%, #b8dcff 100%); 
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(91, 200, 240, 0.3);
-    }
-    
-    /* Panel de competidos mejorado */
-    .competidos-card { 
-      background: linear-gradient(135deg, var(--surface-light) 0%, #f8fafc 100%); 
-      border: 2px solid #e2e8f0; 
-      border-radius: 16px; 
-      padding: 20px; 
-      position: sticky; 
-      top: 80px; 
-      max-height: calc(100vh - 100px); 
-      overflow-y: auto;
+
+    .participante-card {
+      background: linear-gradient(135deg, var(--surface-light) 0%, #f8fafc 100%);
+      border: 2px solid #e2e8f0;
+      border-left: 5px solid var(--cyan);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
-    
-    .competidos-header { 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
+
+    .participante-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: var(--surface);
       margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #e2e8f0;
+      letter-spacing: 0.05em;
     }
-    
-    .competidos-title { 
-      font-family: var(--font-mono); 
-      font-size: 0.7rem; 
-      letter-spacing: 0.15em; 
+
+    .participante-card p {
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--text-dark);
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .participante-card strong {
       color: var(--surface);
       font-weight: 700;
     }
-    
-    .competidos-count { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      background: var(--cyan); 
-      color: var(--surface); 
-      padding: 4px 14px; 
-      border-radius: 20px;
+
+    .btn-enviar {
+      width: 100%;
+      background: linear-gradient(135deg, var(--green) 0%, #2ab870 100%);
+      border: 2px solid #2ab870;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 1rem;
       font-weight: 700;
-      box-shadow: 0 2px 8px rgba(91, 200, 240, 0.3);
-    }
-    
-    .competido-item { 
-      display: flex; 
-      align-items: center; 
-      gap: 10px; 
-      padding: 12px; 
-      border-bottom: 1px solid #e2e8f0;
-      transition: all 0.2s;
-      border-radius: 8px;
-      margin-bottom: 4px;
-    }
-    
-    .competido-item:hover {
-      background: #f1f5f9;
-    }
-    
-    .competido-item:last-child { border-bottom: none; }
-    
-    .competido-num { 
-      font-family: var(--font-mono); 
-      font-size: 0.7rem; 
-      color: var(--muted); 
-      min-width: 28px; 
-      flex-shrink: 0;
-      font-weight: 700;
-    }
-    
-    .competido-info { flex: 1; min-width: 0; }
-    
-    .competido-robot { 
-      font-size: 0.9rem; 
-      font-weight: 700; 
-      color: var(--surface); 
-      white-space: nowrap; 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
-    }
-    
-    .competido-tiempo { 
-      font-family: var(--font-mono); 
-      font-size: 0.8rem; 
-      color: var(--cyan-dark);
-      font-weight: 600;
-    }
-    
-    .competido-sel { 
-      background: var(--cyan); 
-      border: none; 
-      color: var(--surface); 
-      font-size: 0.75rem; 
-      padding: 6px 12px; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      transition: all 0.2s;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(91, 200, 240, 0.25);
-    }
-    
-    .competido-sel:hover { 
-      background: var(--cyan-dark); 
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(91, 200, 240, 0.4);
-    }
-    
-    /* Botón siguiente */
-    .btn-siguiente { 
-      width: 100%; 
-      margin-top: 16px; 
-      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); 
-      border: 2px solid var(--green-dark); 
-      color: var(--text); 
-      font-family: var(--font-body); 
-      font-size: 0.95rem; 
-      font-weight: 700; 
-      padding: 16px; 
-      border-radius: 12px; 
-      cursor: pointer; 
+      padding: 16px;
+      border-radius: 12px;
+      cursor: pointer;
       transition: all 0.2s;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       box-shadow: 0 4px 16px rgba(61, 214, 140, 0.3);
+      margin-bottom: 12px;
     }
-    
-    .btn-siguiente:hover { 
+
+    .btn-enviar:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 24px rgba(61, 214, 140, 0.5);
     }
-    
-    /* Toast mejorado */
-    .toast { 
-      position: fixed; 
-      bottom: 30px; 
-      left: 50%; 
-      transform: translateX(-50%) translateY(100px); 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--green); 
-      color: var(--text); 
-      font-family: var(--font-body); 
-      font-size: 0.85rem; 
+
+    .btn-enviar:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-enviar.inactivo {
+      background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+      border-color: #64748b;
+      box-shadow: 0 4px 16px rgba(100, 116, 139, 0.2);
+    }
+
+    .btn-nuevo {
+      width: 100%;
+      background: linear-gradient(135deg, #e8f4ff 0%, #d0e8ff 100%);
+      border: 2px solid var(--cyan);
+      color: var(--blue);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      box-shadow: 0 4px 12px rgba(91, 200, 240, 0.2);
+    }
+
+    .btn-nuevo:hover {
+      background: linear-gradient(135deg, #d0e8ff 0%, #b8dcff 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(91, 200, 240, 0.3);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 2px solid var(--green);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
       font-weight: 600;
-      padding: 14px 28px; 
-      border-radius: 30px; 
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-      z-index: 999; 
+      padding: 14px 28px;
+      border-radius: 30px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 999;
       white-space: nowrap;
-      box-shadow: 
-        0 8px 32px rgba(13, 40, 71, 0.5),
-        0 0 0 1px rgba(61, 214, 140, 0.2);
+      box-shadow: 0 8px 32px rgba(13, 40, 71, 0.5);
     }
-    
-    .toast.show { 
-      transform: translateX(-50%) translateY(0); 
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
     }
-    
-    /* Responsive */
-    @media (max-width: 680px) { 
-      .crono-wrapper { padding: 60px 10px 40px; max-width: 100%; }
-      .crono-layout { grid-template-columns: 1fr; gap: 20px; }
-      .crono-section-title { font-size: 2rem; }
-      .evento-row { flex-direction: column; align-items: stretch; gap: 12px; padding: 16px 18px; }
-      .evento-row label { width: 100%; justify-content: center; }
-      .evento-row select { width: 100%; }
-      #cronometro { font-size: 4rem; }
-      .btn-row { grid-template-columns: 1fr; gap: 10px; }
-      .competidos-card { position: static; max-height: none; }
+
+    @media (max-width: 680px) {
+      .esc-wrapper { padding: 60px 10px 40px; }
+      .esc-title { font-size: 2rem; }
     }
   </style>
 </head>
@@ -677,81 +263,42 @@
   <div data-include="../shared/components/nav.html"></div>
 </div>
 
-<div class="crono-wrapper">
-  <h1 class="crono-section-title">CRONÓMETRO</h1>
+<div class="esc-wrapper">
+  <h1 class="esc-title">⚡ ESCÁNER QR</h1>
 
-  <div class="crono-layout">
-    <div>
-      <!-- Selección de categoría -->
-      <div class="evento-row">
-        <label>CATEGORÍA</label>
-        <select id="select-categoria">
-          <option value="">— Selecciona una categoría —</option>
-          <option value="seguidor-velocidad-sin-turbina">Seguidor velocidad sin turbina</option>
-          <option value="seguidor-velocidad-con-turbina">Seguidor velocidad con turbina</option>
-          <option value="robot-laberinto">Robot laberinto</option>
-          <option value="robot-balancin">Robot Balancín</option>
-          <option value="robot-trepador">Robot trepador</option>
-          <option value="seguidor-destreza">Seguidor destreza</option>
-          <option value="drones">Drones</option>
-          <option value="insectos">Insectos</option>
-        </select>
-      </div>
+  <div class="cat-selector">
+    <label>CATEGORÍA ACTIVA</label>
+    <select id="select-categoria">
+      <option value="">— Selecciona una categoría —</option>
+      <option value="seguidor-velocidad-sin-turbina">Seguidor velocidad sin turbina</option>
+      <option value="seguidor-velocidad-con-turbina">Seguidor velocidad con turbina</option>
+      <option value="robot-laberinto">Robot laberinto</option>
+      <option value="robot-balancin">Robot Balancín</option>
+      <option value="robot-trepador">Robot trepador</option>
+      <option value="seguidor-destreza">Seguidor destreza</option>
+      <option value="drones">Drones</option>
+      <option value="insectos">Insectos</option>
+    </select>
+  </div>
 
-      <!-- Participante actual -->
-      <div class="participante-strip empty" id="participante-strip">
-        <div>
-          <div class="p-robot">Ningún participante seleccionado</div>
-          <div class="p-inst">Selecciona una categoría y espera el escáner</div>
-        </div>
-        <div class="p-badge">—</div>
-      </div>
+  <div class="video-container">
+    <video id="video" autoplay playsinline></video>
+    <div class="scan-overlay"></div>
+  </div>
 
-      <!-- Cronómetro -->
-      <div class="crono-display" id="crono-display">
-        <div id="cronometro">00:00:00</div>
-        <div class="crono-status" id="crono-status">DETENIDO</div>
-      </div>
+  <div class="scan-status" id="status">Iniciando escáner...</div>
 
-      <!-- Botones -->
-      <div class="btn-row">
-        <button class="btn start" onclick="iniciarCrono()">▶ Iniciar</button>
-        <button class="btn stop" onclick="detenerCrono()">⏸ Detener</button>
-        <button class="btn reset" onclick="reiniciarCrono()">↻ Reiniciar</button>
-      </div>
-
-      <!-- Configuración de ronda -->
-      <div class="ronda-config">
-        <div class="ronda-config-title">CONFIGURACIÓN</div>
-        <div class="ronda-control">
-          <label>Ronda:</label>
-          <input type="number" id="input-ronda" value="1" min="1" />
-        </div>
-        <div class="ronda-control">
-          <label>Intento:</label>
-          <input type="number" id="input-intento" value="1" min="1" max="3" />
-        </div>
-        <div class="ronda-status">
-          <span class="ronda-badge" id="badge-ronda">Ronda 1</span>
-          <span class="intento-badge" id="badge-intento">Intento 1</span>
-        </div>
-      </div>
-
-      <!-- Botón saltar participante -->
-      <button class="btn-saltar" onclick="saltarParticipante()">⏭ Saltar participante</button>
+  <div id="participante-info" style="display: none;">
+    <div class="participante-card">
+      <h3 id="p-robot">—</h3>
+      <p><strong>Nombre:</strong> <span id="p-nombre">—</span></p>
+      <p><strong>Institución:</strong> <span id="p-institucion">—</span></p>
+      <p><strong>Categoría:</strong> <span id="p-categoria">—</span></p>
+      <p><strong>ID:</strong> <span id="p-id">—</span></p>
     </div>
 
-    <!-- Panel derecho: Competidos -->
-    <div class="competidos-card">
-      <div class="competidos-header">
-        <div class="competidos-title">COMPETIDOS</div>
-        <div class="competidos-count" id="competidos-count">0</div>
-      </div>
-      <div id="competidos-lista">
-        <p style="text-align:center;padding:32px 0;color:var(--muted);font-size:0.85rem;">Ningún participante ha competido aún</p>
-      </div>
-      <button class="btn-siguiente" onclick="siguienteParticipante()">➜ Siguiente</button>
-    </div>
+    <button class="btn-enviar inactivo" id="btn-enviar" onclick="enviarAlAdmin()">⚡ Enviar al cronómetro</button>
+    <button class="btn-nuevo" onclick="nuevoEscaneo()">🔄 Nuevo escaneo</button>
   </div>
 </div>
 
@@ -762,331 +309,217 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  
-  let cronoInterval = null;
-  let cronoInicio = null;
+  let codeReader = null;
+  let videoStream = null;
   let categoriaActual = null;
   let participanteActual = null;
-  let competidos = [];
-  let pollingInterval = null;
 
-  document.getElementById('input-ronda').addEventListener('input', function() {
-    document.getElementById('badge-ronda').textContent = `Ronda ${this.value}`;
-  });
-  document.getElementById('input-intento').addEventListener('input', function() {
-    document.getElementById('badge-intento').textContent = `Intento ${this.value}`;
-  });
-
-  document.getElementById('select-categoria').addEventListener('change', async function() {
-    const nuevaCategoria = this.value;
-    if (!nuevaCategoria) return;
-    
-    const bloqueada = await verificarBloqueoCategoria(nuevaCategoria);
-    
-    if (bloqueada) {
-      showToast(`⚠️ Esta categoría está siendo usada por ${bloqueada.usuario}`);
-      this.value = categoriaActual || '';
-      return;
-    }
-    
+  // Selección de categoría
+  document.getElementById('select-categoria').addEventListener('change', function() {
+    categoriaActual = this.value;
     if (categoriaActual) {
-      await desbloquearCategoria(categoriaActual);
-    }
-    
-    const bloqueado = await bloquearCategoria(nuevaCategoria);
-    
-    if (bloqueado) {
-      categoriaActual = nuevaCategoria;
-      cargarParticipantes();
-      showToast(`✓ Categoría bloqueada correctamente`);
+      showToast('✓ Categoría seleccionada: ' + categoriaActual);
+      document.getElementById('btn-enviar').classList.remove('inactivo');
     } else {
-      showToast('❌ No se pudo bloquear la categoría');
-      this.value = '';
+      document.getElementById('btn-enviar').classList.add('inactivo');
     }
   });
 
-  async function cargarParticipantes() {
+  // Iniciar escáner
+  async function iniciarScanner() {
     try {
-      const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
-      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
-      const lista = await r.json();
-      console.log('Participantes cargados - Esperando escáner QR');
-    } catch (error) {
-      showToast('Error al cargar participantes: ' + error.message);
-    }
-  }
+      codeReader = new ZXing.BrowserMultiFormatReader();
+      const videoInputDevices = await codeReader.listVideoInputDevices();
 
-  function iniciarCrono() {
-    if (!participanteActual) {
-      showToast('Selecciona un participante primero');
-      return;
-    }
-
-    if (!cronoInterval) {
-      cronoInicio = Date.now();
-      cronoInterval = setInterval(actualizarCronometro, 10);
-      document.getElementById('crono-display').classList.add('running');
-      document.getElementById('crono-status').textContent = 'EN MARCHA';
-    }
-  }
-
-  function detenerCrono() {
-    if (cronoInterval) {
-      clearInterval(cronoInterval);
-      cronoInterval = null;
-      document.getElementById('crono-display').classList.remove('running');
-      document.getElementById('crono-display').classList.add('stopped');
-      document.getElementById('crono-status').textContent = 'DETENIDO';
-      
-      const tiempo = document.getElementById('cronometro').textContent;
-      guardarTiempo(tiempo);
-    }
-  }
-
-  function reiniciarCrono() {
-    if (cronoInterval) clearInterval(cronoInterval);
-    cronoInterval = null;
-    cronoInicio = null;
-    document.getElementById('cronometro').textContent = '00:00:00';
-    document.getElementById('crono-display').classList.remove('running', 'stopped');
-    document.getElementById('crono-status').textContent = 'DETENIDO';
-  }
-
-  function actualizarCronometro() {
-    if (!cronoInicio) return;
-    
-    const transcurrido = Date.now() - cronoInicio;
-    const centesimas = Math.floor((transcurrido % 1000) / 10);
-    const segundos = Math.floor((transcurrido / 1000) % 60);
-    const minutos = Math.floor(transcurrido / 60000);
-    
-    const tiempo = String(minutos).padStart(2, '0') + ':' +
-                   String(segundos).padStart(2, '0') + ':' +
-                   String(centesimas).padStart(2, '0');
-    
-    document.getElementById('cronometro').textContent = tiempo;
-  }
-
-  async function guardarTiempo(tiempo) {
-    if (!participanteActual || !categoriaActual) return;
-    
-    const ronda = document.getElementById('input-ronda').value;
-    const intento = document.getElementById('input-intento').value;
-    
-    try {
-      const data = {
-        action: 'pushResultado',
-        participanteId: participanteActual.id,
-        nombre: participanteActual.nombre,
-        robot: participanteActual.robot,
-        institucion: participanteActual.institucion,
-        tiempo: tiempo,
-        ronda: ronda,
-        intento: intento,
-        ruta: categoriaActual.toUpperCase(),
-        fecha: new Date().toISOString()
-      };
-      
-      const r = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(data)
-      });
-      
-      const result = await r.json();
-      
-      if (result.ok) {
-        showToast('✓ Tiempo guardado: ' + tiempo);
-        agregarACompetidos(participanteActual, tiempo);
-      } else {
-        showToast('Error al guardar: ' + (result.error || 'Desconocido'));
+      if (videoInputDevices.length === 0) {
+        showToast('No se detectaron cámaras', true);
+        return;
       }
+
+      // Estrategia de selección de cámara
+      let selectedDeviceId = null;
+
+      // Estrategia 1: Buscar por label (back/rear/environment/trasera)
+      const backCamera = videoInputDevices.find(device =>
+        /back|rear|environment|trasera/i.test(device.label)
+      );
+
+      if (backCamera) {
+        selectedDeviceId = backCamera.deviceId;
+      } else if (videoInputDevices.length > 1) {
+        // Estrategia 2: Si hay múltiples cámaras, usar la última (típicamente es la trasera)
+        selectedDeviceId = videoInputDevices[videoInputDevices.length - 1].deviceId;
+      } else {
+        // Estrategia 3: Usar la única cámara disponible
+        selectedDeviceId = videoInputDevices[0].deviceId;
+      }
+
+      document.getElementById('status').textContent = '📷 Escáner activo - Apunta al código QR';
+
+      codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
+        if (result) {
+          procesarQR(result.text);
+        }
+      });
+
+      // Guardar stream para poder detenerlo después
+      const video = document.getElementById('video');
+      videoStream = video.srcObject;
+
     } catch (error) {
-      showToast('Error: ' + error.message);
+      console.error('Error al iniciar escáner:', error);
+      showToast('Error al iniciar la cámara', true);
     }
   }
 
-  function agregarACompetidos(participante, tiempo) {
-    competidos.push({ ...participante, tiempo });
-    actualizarListaCompetidos();
-  }
-
-  function actualizarListaCompetidos() {
-    const container = document.getElementById('competidos-lista');
-    const count = document.getElementById('competidos-count');
-    
-    count.textContent = competidos.length;
-    
-    if (competidos.length === 0) {
-      container.innerHTML = '<p style="text-align:center;padding:32px 0;color:var(--muted);font-size:0.85rem;">Ningún participante ha competido aún</p>';
-      return;
-    }
-    
-    container.innerHTML = competidos.map((c, i) => `
-      <div class="competido-item">
-        <div class="competido-num">${i + 1}</div>
-        <div class="competido-info">
-          <div class="competido-robot">${c.robot || '—'}</div>
-          <div class="competido-tiempo">${c.tiempo}</div>
-        </div>
-        <button class="competido-sel" onclick="seleccionarCompetido(${i})">↻</button>
-      </div>
-    `).join('');
-  }
-
-  function seleccionarCompetido(index) {
-    participanteActual = competidos[index];
-    actualizarStripParticipante();
-    showToast('Participante seleccionado nuevamente');
-  }
-
-  function actualizarStripParticipante() {
-    const strip = document.getElementById('participante-strip');
-    if (!participanteActual) {
-      strip.classList.add('empty');
-      strip.innerHTML = `
-        <div>
-          <div class="p-robot">Ningún participante seleccionado</div>
-          <div class="p-inst">Selecciona una categoría y espera el escáner</div>
-        </div>
-        <div class="p-badge">—</div>
-      `;
-      return;
-    }
-    
-    strip.classList.remove('empty');
-    strip.innerHTML = `
-      <div>
-        <div class="p-robot">${participanteActual.robot || '—'}</div>
-        <div class="p-inst">${participanteActual.institucion || '—'}</div>
-      </div>
-      <div class="p-badge">${participanteActual.categoria || '—'}</div>
-    `;
-  }
-
-  function saltarParticipante() {
-    showToast('⏭ Participante saltado');
-    siguienteParticipante();
-  }
-
-  function siguienteParticipante() {
-    reiniciarCrono();
-    participanteActual = null;
-    actualizarStripParticipante();
-    showToast('➜ Listo para el siguiente');
-  }
-
-  async function bloquearCategoria(categoria) {
-    const savedUser = JSON.parse(localStorage.getItem('sucrebot_user'));
-    
+  async function procesarQR(qrData) {
     try {
+      const participante = JSON.parse(qrData);
+
+      if (!participante.id) {
+        showToast('QR inválido - No tiene ID', true);
+        return;
+      }
+
+      participanteActual = participante;
+
+      // Actualizar UI
+      document.getElementById('p-robot').textContent = participante.robot || '—';
+      document.getElementById('p-nombre').textContent = participante.nombre || '—';
+      document.getElementById('p-institucion').textContent = participante.institucion || '—';
+      document.getElementById('p-categoria').textContent = participante.categoria || '—';
+      document.getElementById('p-id').textContent = participante.id || '—';
+
+      document.getElementById('participante-info').style.display = 'block';
+      document.getElementById('status').textContent = '✓ QR escaneado correctamente';
+
+      // NO detener el escáner aquí - dejar que siga activo
+      // El usuario puede escanear otro QR sin tener que reiniciar
+
+      showToast('✓ Participante cargado: ' + participante.robot);
+
+    } catch (error) {
+      console.error('Error al procesar QR:', error);
+      showToast('QR inválido - Formato incorrecto', true);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // ENVIAR AL CRONÓMETRO - CORREGIDO
+  // ═══════════════════════════════════════════════════════════
+  
+  async function enviarAlAdmin() {
+    const btn = document.getElementById('btn-enviar');
+    if (btn.classList.contains('inactivo')) {
+      showToast('⚠️ Selecciona una categoría primero', true);
+      return;
+    }
+
+    if (!participanteActual) {
+      showToast('⚠️ No hay participante escaneado', true);
+      return;
+    }
+
+    if (!categoriaActual) {
+      showToast('⚠️ Selecciona una categoría primero', true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Enviando...';
+
+    try {
+      // CORRECCIÓN: Usar POST con el participante completo
       const response = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
-          action: 'bloquearCategoria',
-          categoria: categoria,
-          usuario: savedUser.email
+          action: 'setActivo',
+          ruta: categoriaActual,
+          participante: participanteActual
         })
       });
-      
+
       const data = await response.json();
-      
-      if (!data.ok && data.bloqueadaPor) {
-        return false;
+
+      if (data.ok) {
+        showToast('✓ Enviado al cronómetro correctamente');
+        btn.textContent = '✓ Enviado';
+        
+        // CORRECCIÓN: Detener escáner después de enviar exitosamente
+        stopScanner();
+        
+        setTimeout(() => {
+          btn.textContent = '⚡ Enviar al cronómetro';
+          btn.disabled = false;
+        }, 2000);
+      } else {
+        throw new Error(data.error || 'Error desconocido');
       }
-      
-      return data.ok;
     } catch (error) {
-      console.error('Error al bloquear:', error);
-      return false;
+      showToast('Error al enviar: ' + error.message, true);
+      btn.textContent = '⚡ Enviar al cronómetro';
+      btn.disabled = false;
     }
   }
 
-  async function desbloquearCategoria(categoria) {
-    try {
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'desbloquearCategoria',
-          categoria: categoria
-        })
-      });
-    } catch (error) {
-      console.error('Error al desbloquear:', error);
+  // ═══════════════════════════════════════════════════════════
+  // DETENER ESCÁNER - LIMPIEZA COMPLETA
+  // ═══════════════════════════════════════════════════════════
+  
+  function stopScanner() {
+    // Detener el lector de códigos ZXing
+    if (codeReader) {
+      codeReader.reset();
     }
+
+    // Detener todos los tracks del stream de video
+    if (videoStream) {
+      const tracks = videoStream.getTracks();
+      tracks.forEach(track => track.stop());
+      videoStream = null;
+    }
+
+    // Limpiar el elemento de video
+    const video = document.getElementById('video');
+    if (video.srcObject) {
+      video.srcObject = null;
+    }
+
+    document.getElementById('status').textContent = '📷 Escáner detenido';
   }
 
-  async function verificarBloqueoCategoria(categoria) {
-    try {
-      const qs = new URLSearchParams({ action: 'getCategoriasActivas' }).toString();
-      const r = await fetch(GAS_URL + '?' + qs);
-      const activas = await r.json();
-      
-      return activas.find(c => c.categoria === categoria);
-    } catch (error) {
-      console.error('Error al verificar bloqueo:', error);
-      return null;
-    }
-  }
-
-  function iniciarPolling() {
-    if (pollingInterval) return;
+  function nuevoEscaneo() {
+    participanteActual = null;
+    document.getElementById('participante-info').style.display = 'none';
+    document.getElementById('status').textContent = '📷 Escáner activo - Apunta al código QR';
     
-    pollingInterval = setInterval(async () => {
-      if (!categoriaActual) return;
-      
-      try {
-        const qs = new URLSearchParams({ 
-          action: 'getActivo',
-          ruta: categoriaActual
-        }).toString();
-        
-        const r = await fetch(GAS_URL + '?' + qs);
-        const data = await r.json();
-        
-        if (data.raw && data.raw !== '') {
-          const nuevoParticipante = JSON.parse(data.raw);
-          
-          if (!participanteActual || participanteActual.id !== nuevoParticipante.id) {
-            participanteActual = nuevoParticipante;
-            actualizarStripParticipante();
-            showToast('✓ Nuevo participante: ' + nuevoParticipante.robot);
-            reiniciarCrono();
-          }
-        }
-      } catch (error) {
-        console.error('Error en polling:', error);
-      }
-    }, 2000);
+    // Reiniciar el escáner
+    if (!codeReader) {
+      iniciarScanner();
+    }
+    
+    showToast('🔄 Listo para nuevo escaneo');
   }
 
-  window.addEventListener('beforeunload', () => {
-    if (categoriaActual) {
-      navigator.sendBeacon(GAS_URL, JSON.stringify({
-        action: 'desbloquearCategoria',
-        categoria: categoriaActual
-      }));
-    }
-  });
-
-  function showToast(msg) {
+  function showToast(msg, error = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
+    t.style.borderColor = error ? '#ff3b3b' : var(--green);
+    t.style.color = error ? '#ff3b3b' : var(--green);
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
   }
 
+  // Iniciar al cargar
   document.addEventListener('componentsLoaded', function() {
     const savedUser = localStorage.getItem('sucrebot_user');
     if (!savedUser) {
       window.location.href = '../INICIO/';
       return;
     }
-    
-    iniciarPolling();
-    console.log('✅ Polling iniciado');
+
+    iniciarScanner();
   });
 </script>
 
