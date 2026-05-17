@@ -18,10 +18,37 @@ function loadScript(src, async = true, defer = false) {
     script.async = async;
     script.defer = defer;
     
-    script.onload = () => resolve({ success: true, src });
-    script.onerror = () => reject({ success: false, src, error: 'Failed to load' });
+    script.onload = () => {
+      console.log(`✅ Script cargado: ${src}`);
+      resolve({ success: true, src });
+    };
+    script.onerror = () => {
+      console.error(`❌ Error cargando script: ${src}`);
+      reject({ success: false, src, error: 'Failed to load' });
+    };
     
     document.head.appendChild(script);
+  });
+}
+
+// ── FUNCIÓN: Esperar a que Google SDK esté disponible
+function waitForGoogleSDK(maxAttempts = 50, interval = 100) {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    
+    const checkSDK = setInterval(() => {
+      attempts++;
+      
+      if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+        clearInterval(checkSDK);
+        console.log(`✅ Google SDK disponible después de ${attempts * interval}ms`);
+        resolve();
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkSDK);
+        console.warn('⏱️ Timeout esperando Google SDK - puede estar bloqueado por el navegador');
+        resolve(); // Resolver de todos modos para no bloquear la app
+      }
+    }, interval);
   });
 }
 
@@ -101,7 +128,10 @@ async function loadComponents() {
     // 1. Cargar Google OAuth SDK (async)
     console.log('📦 Cargando Google OAuth SDK...');
     await loadScript('https://accounts.google.com/gsi/client', true, true);
-    console.log('✅ Google OAuth SDK cargado');
+    
+    // 2. Esperar a que el SDK esté realmente disponible
+    await waitForGoogleSDK();
+    console.log('✅ Google OAuth SDK cargado y listo');
     
     // 2. Cargar componentes HTML
     console.log('📦 Cargando componentes HTML...');
