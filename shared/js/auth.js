@@ -24,8 +24,8 @@ function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-// ── FUNCIÓN: Callback de Google Sign-In
-function handleCredentialResponse(response) {
+// ── FUNCIÓN: Callback de Google Sign-In (DEBE SER GLOBAL)
+window.handleCredentialResponse = function(response) {
   const userData = parseJwt(response.credential);
   activarSesion(userData);
 }
@@ -66,7 +66,7 @@ function activarSesion(data) {
   }
 }
 
-// ── FUNCIÓN: Cerrar sesión
+// ── FUNCIÓN: Cerrar sesión (DEBE SER GLOBAL para onclick)
 window.cerrarSesion = function() {
   localStorage.removeItem('sucrebot_user');
   
@@ -95,7 +95,7 @@ window.cerrarSesion = function() {
   window.location.reload();
 };
 
-// ── FUNCIÓN: Mostrar One Tap (sin popup)
+// ── FUNCIÓN: Mostrar One Tap (DEBE SER GLOBAL para onclick)
 window.iniciarLogin = function() {
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.prompt();
@@ -144,7 +144,7 @@ document.addEventListener('componentsLoaded', function() {
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.initialize({
       client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
-      callback: handleCredentialResponse,
+      callback: window.handleCredentialResponse, // ← Usar referencia global
       auto_select: false,
       cancel_on_tap_outside: true
     });
