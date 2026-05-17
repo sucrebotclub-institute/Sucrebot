@@ -165,6 +165,7 @@
     }
   }
 
+  // ✅ FUNCIÓN CORREGIDA: Prioriza cámara trasera automáticamente
   async function startScanner() {
     const video = document.getElementById('qr-video');
     const placeholder = document.getElementById('qr-placeholder');
@@ -182,7 +183,28 @@
         return;
       }
 
-      const selectedDevice = devices[0];
+      // ✅ ESTRATEGIA 1: Buscar cámara trasera por nombre/label
+      let selectedDevice = devices.find(device => {
+        const label = device.label.toLowerCase();
+        return label.includes('back') ||
+               label.includes('rear') ||
+               label.includes('environment') ||
+               label.includes('trasera') ||
+               label.includes('posterior');
+      });
+
+      // ✅ ESTRATEGIA 2: Si hay múltiples cámaras, la última suele ser trasera
+      if (!selectedDevice && devices.length > 1) {
+        selectedDevice = devices[devices.length - 1];
+      }
+
+      // ✅ ESTRATEGIA 3: Si solo hay una, usar esa
+      if (!selectedDevice) {
+        selectedDevice = devices[0];
+      }
+
+      console.log('📷 Usando cámara:', selectedDevice.label);
+
       placeholder.style.display = 'none';
       video.style.display = 'block';
       btn.textContent = '🔴 Detener cámara';
@@ -196,11 +218,13 @@
         }
       });
     } catch (error) {
+      console.error('Error al iniciar escáner:', error);
       showToast('Error al acceder a la cámara: ' + error.message, true);
       stopScanner();
     }
   }
 
+  // ✅ FUNCIÓN CORREGIDA: Cierra correctamente el stream de video
   function stopScanner() {
     const video = document.getElementById('qr-video');
     const placeholder = document.getElementById('qr-placeholder');
@@ -209,6 +233,12 @@
 
     if (codeReader) {
       codeReader.reset();
+    }
+
+    // ✅ Cerrar stream de la cámara explícitamente
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
     }
 
     video.style.display = 'none';
