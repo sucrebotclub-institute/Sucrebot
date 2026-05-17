@@ -1,23 +1,265 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     TOPBAR - Barra superior con autenticación
+     Archivo: /shared/components/topbar.html
+     ═══════════════════════════════════════════════════════════════ -->
+
 <!-- Script de Google OAuth (cargado globalmente) -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+<!-- Div requerido por Google OAuth -->
+<div id="g_id_onload"
+     data-client_id="14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse"
+     data-auto_prompt="false">
+</div>
+
 <div class="top-bar">
   <div class="top-pulse"></div>
+  
+  <!-- Contacto por email -->
   <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <path d="m2 7 10 7 10-7"/>
+    </svg>
     sucrebotclub@tecnologicosucre.edu.ec
   </a>
+  
+  <!-- Link al instituto -->
   <a href="https://tecnologicosucre.edu.ec/web/" target="_blank" rel="noopener">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </svg>
     Instituto Sucre
   </a>
+  
+  <!-- Botón de login (visible cuando NO hay sesión) -->
   <button class="btn-login" id="btnLogin" onclick="iniciarLogin()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
     Iniciar Sesión
   </button>
+  
+  <!-- Info de usuario (visible cuando HAY sesión) -->
   <div class="user-info" id="userInfo">
     <img class="user-avatar" id="userAvatar" src="" alt="avatar" />
     <span class="user-name" id="userName"></span>
+    
+    <!-- Botón para cambiar de cuenta -->
+    <button class="btn-cambiar" onclick="cambiarCuenta()" title="Cambiar de cuenta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </button>
+    
+    <!-- Botón de cerrar sesión -->
     <button class="btn-logout" onclick="cerrarSesion()">✕ Salir</button>
   </div>
 </div>
+
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   ESTILOS DEL TOPBAR
+   ═══════════════════════════════════════════════════════════════ */
+
+.top-bar {
+  background: linear-gradient(135deg, #0d1f42 0%, #1a3a6b 100%);
+  padding: 10px 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 13px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(91, 200, 240, 0.3);
+}
+
+.top-pulse {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(91, 200, 240, 0.1), transparent);
+  animation: topPulse 3s infinite;
+}
+
+@keyframes topPulse {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.top-bar a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.top-bar a:hover {
+  color: #5bc8f0;
+  transform: translateY(-1px);
+}
+
+.top-bar a svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-login {
+  margin-left: auto;
+  background: linear-gradient(135deg, #5bc8f0 0%, #3da9d8 100%);
+  color: #0f3566;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(91, 200, 240, 0.3);
+}
+
+.btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(91, 200, 240, 0.5);
+  background: linear-gradient(135deg, #90dcff 0%, #5bc8f0 100%);
+}
+
+.btn-login svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   USER INFO (cuando hay sesión activa)
+   ═══════════════════════════════════════════════════════════════ */
+
+.user-info {
+  margin-left: auto;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-info.visible {
+  display: flex;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #5bc8f0;
+  object-fit: cover;
+}
+
+.user-name {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOTÓN CAMBIAR CUENTA
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-cambiar {
+  background: #5bc8f0;
+  color: #0f3566;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-cambiar svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-cambiar:hover {
+  background: #90dcff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(91, 200, 240, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOTÓN CERRAR SESIÓN
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-logout {
+  background: rgba(255, 77, 77, 0.15);
+  color: #ff9999;
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-logout:hover {
+  background: rgba(255, 77, 77, 0.25);
+  border-color: rgba(255, 77, 77, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .top-bar {
+    padding: 8px 20px;
+    font-size: 11px;
+    gap: 12px;
+  }
+  
+  .top-bar a:first-of-type {
+    display: none; /* Ocultar email en móvil */
+  }
+  
+  .user-name {
+    max-width: 100px;
+  }
+  
+  .btn-cambiar {
+    padding: 6px 8px;
+  }
+  
+  .btn-cambiar span {
+    display: none; /* Solo mostrar icono en móvil */
+  }
+}
+</style>
