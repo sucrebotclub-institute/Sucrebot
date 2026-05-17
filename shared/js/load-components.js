@@ -1,9 +1,32 @@
 /**
  * SucreBot - Component Loader
- * Carga componentes HTML de forma asíncrona
+ * Carga componentes HTML de forma asíncrona + scripts globales
  */
 
-async function loadComponents() {
+// ── FUNCIÓN: Cargar script dinámicamente
+function loadScript(src, async = true, defer = false) {
+  return new Promise((resolve, reject) => {
+    // Verificar si el script ya está cargado
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      resolve({ success: true, src, cached: true });
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = async;
+    script.defer = defer;
+    
+    script.onload = () => resolve({ success: true, src });
+    script.onerror = () => reject({ success: false, src, error: 'Failed to load' });
+    
+    document.head.appendChild(script);
+  });
+}
+
+// ── FUNCIÓN: Cargar componentes HTML
+async function loadHTMLComponents() {
   const elements = document.querySelectorAll('[data-include]');
   
   // Cargar todos los componentes en paralelo
@@ -49,15 +72,63 @@ async function loadComponents() {
     console.warn('Componentes que fallaron:', failed);
   }
   
-  // Disparar evento personalizado cuando todo esté cargado
-  document.dispatchEvent(new CustomEvent('componentsLoaded'));
+  return results;
 }
 
-// Cargar componentes cuando el DOM esté listo
+// ── FUNCIÓN: Inicializar todo el sistema
+async function loadComponents() {
+  try {
+    // 1. Cargar Google OAuth SDK (async)
+    console.log('📦 Cargando Google OAuth SDK...');
+    await loadScript('https://accounts.google.com/gsi/client', true, true);
+    console.log('✅ Google OAuth SDK cargado');
+    
+    // 2. Cargar componentes HTML
+    console.log('📦 Cargando componentes HTML...');
+    await loadHTMLComponents();
+    console.log('✅ Componentes HTML cargados');
+    
+    // 3. Cargar auth.js (detectar ruta relativa)
+    console.log('📦 Cargando auth.js...');
+    
+    // Detectar la ruta correcta según la ubicación de la página
+    const currentPath = window.location.pathname;
+    let authPath;
+    
+    if (currentPath.includes('/INICIO/')) {
+      authPath = '../shared/js/auth.js';
+    } else if (currentPath.includes('/FAQ/') || 
+               currentPath.includes('/REGISTRO/') || 
+               currentPath.includes('/REGLAMENTO/') ||
+               currentPath.includes('/PARTICIPANTES_REGISTRADOS/') ||
+               currentPath.includes('/MI-REGISTRO/') ||
+               currentPath.includes('/MIS-CERTIFICADOS/') ||
+               currentPath.includes('/ESCANER/') ||
+               currentPath.includes('/CRONOMETRO/') ||
+               currentPath.includes('/PANTALLA/') ||
+               currentPath.includes('/RESULTADOS/') ||
+               currentPath.includes('/GENERAR-CERTIFICADOS/')) {
+      authPath = '../shared/js/auth.js';
+    } else {
+      // Por defecto (raíz o páginas no especificadas)
+      authPath = './shared/js/auth.js';
+    }
+    
+    await loadScript(authPath, false, false);
+    console.log('✅ auth.js cargado');
+    
+    // 4. Disparar evento cuando TODO esté listo
+    document.dispatchEvent(new CustomEvent('componentsLoaded'));
+    console.log('🎉 Sistema completamente inicializado');
+    
+  } catch (error) {
+    console.error('❌ Error durante la inicialización:', error);
+  }
+}
+
+// ── INICIALIZACIÓN: Cargar cuando el DOM esté listo
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', loadComponents);
 } else {
   loadComponents();
 }
-
-
