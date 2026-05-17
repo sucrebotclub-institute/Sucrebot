@@ -75,9 +75,29 @@ async function loadHTMLComponents() {
   return results;
 }
 
+// ── FUNCIÓN: Insertar favicon dinámicamente
+function insertFavicon() {
+  // Verificar si ya existe un favicon
+  const existingFavicon = document.querySelector('link[rel="icon"]');
+  if (existingFavicon) return; // Ya existe, no duplicar
+  
+  // Crear el elemento link para el favicon
+  const favicon = document.createElement('link');
+  favicon.rel = 'icon';
+  favicon.type = 'image/x-icon';
+  favicon.href = '../shared/images/favicon.ico';
+  
+  // Insertar en el head
+  document.head.appendChild(favicon);
+  console.log('✅ Favicon insertado');
+}
+
 // ── FUNCIÓN: Inicializar todo el sistema
 async function loadComponents() {
   try {
+    // 0. Insertar favicon
+    insertFavicon();
+    
     // 1. Cargar Google OAuth SDK (async)
     console.log('📦 Cargando Google OAuth SDK...');
     await loadScript('https://accounts.google.com/gsi/client', true, true);
