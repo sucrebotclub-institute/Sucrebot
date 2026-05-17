@@ -627,16 +627,56 @@
   }
 
   async function procesarQR(qrData) {
+    console.log('QR escaneado (RAW):', qrData); // Debug
+    
     try {
-      const participante = JSON.parse(qrData);
+      let participante;
+      
+      // Intentar parsear como JSON primero
+      try {
+        participante = JSON.parse(qrData);
+        console.log('QR parseado como JSON:', participante);
+      } catch (e) {
+        // Si falla, procesar como texto plano
+        // Formato: "SUCREBOT 2026 | Robot: X | Categoria: Y | Institucion: Z | Ciudad: W | Participante: N | ID: I"
+        
+        console.log('Parseando como texto plano...');
+        
+        // Función para extraer valores usando el delimitador "|"
+        const extraerValor = (texto, clave) => {
+          // Buscar "clave: valor" entre pipes
+          const regex = new RegExp(clave + ':\\s*([^|]+)', 'i');
+          const match = texto.match(regex);
+          const valor = match ? match[1].trim() : null;
+          console.log(`Extrayendo ${clave}:`, valor);
+          return valor;
+        };
+        
+        participante = {
+          id: extraerValor(qrData, 'ID'),
+          robot: extraerValor(qrData, 'Robot'),
+          nombre: extraerValor(qrData, 'Participante'),
+          institucion: extraerValor(qrData, 'Institucion'),
+          ciudad: extraerValor(qrData, 'Ciudad'),
+          categoria: extraerValor(qrData, 'Categoria')
+        };
+        
+        console.log('Participante extraído del texto:', participante);
+      }
 
-      if (!participante.id) {
-        showToast('QR inválido - No tiene ID', true);
+      // Validar que tenga al menos ID
+      if (!participante || !participante.id) {
+        console.error('❌ QR sin ID válido. Participante:', participante);
+        showToast('⚠️ QR inválido - No tiene ID', true);
+        document.getElementById('res-status').textContent = 'ERROR';
+        document.getElementById('res-status').className = 'result-status idle';
         return;
       }
 
+      console.log('✅ Participante válido:', participante);
       participanteActual = participante;
 
+      // Actualizar UI
       document.getElementById('res-robot').textContent = participante.robot || '—';
       document.getElementById('res-nombre').textContent = participante.nombre || '—';
       document.getElementById('res-inst').textContent = participante.institucion || '—';
@@ -649,11 +689,12 @@
       document.getElementById('btn-enviar').classList.remove('inactivo');
 
       agregarAlHistorial(participante);
-      showToast('✓ QR escaneado: ' + participante.robot);
+      showToast('✓ QR escaneado: ' + (participante.robot || participante.nombre || 'Participante'));
 
     } catch (error) {
-      console.error('Error al procesar QR:', error);
-      showToast('QR inválido - Formato incorrecto', true);
+      console.error('❌ Error al procesar QR:', error);
+      console.error('Datos del QR:', qrData);
+      showToast('❌ Error al procesar QR: ' + error.message, true);
       
       document.getElementById('res-status').textContent = 'ERROR';
       document.getElementById('res-status').className = 'result-status idle';
