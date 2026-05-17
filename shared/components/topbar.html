@@ -64,12 +64,12 @@
 
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   ESTILOS DEL TOPBAR
+   ESTILOS DEL TOPBAR - ALTURA FIJA
    ═══════════════════════════════════════════════════════════════ */
 
 .top-bar {
   background: linear-gradient(135deg, #0d1f42 0%, #1a3a6b 100%);
-  padding: 10px 40px;
+  padding: 0 40px;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -77,6 +77,10 @@
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid rgba(91, 200, 240, 0.3);
+  /* ✅ ALTURA FIJA para evitar cambios de tamaño */
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
 }
 
 .top-pulse {
@@ -103,6 +107,7 @@
   transition: all 0.2s;
   font-weight: 500;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .top-bar a:hover {
@@ -113,6 +118,7 @@
 .top-bar a svg {
   width: 16px;
   height: 16px;
+  flex-shrink: 0;
 }
 
 .btn-login {
@@ -131,6 +137,9 @@
   gap: 8px;
   transition: all 0.2s;
   box-shadow: 0 2px 8px rgba(91, 200, 240, 0.3);
+  white-space: nowrap;
+  /* ✅ ALTURA FIJA */
+  height: 36px;
 }
 
 .btn-login:hover {
@@ -142,21 +151,25 @@
 .btn-login svg {
   width: 16px;
   height: 16px;
+  flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   USER INFO (cuando hay sesión activa)
+   USER INFO (cuando hay sesión activa) - ALTURA FIJA
    ═══════════════════════════════════════════════════════════════ */
 
 .user-info {
   margin-left: auto;
   display: none;
   align-items: center;
-  gap: 12px;
-  padding: 6px 12px;
+  gap: 10px;
+  padding: 4px 10px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  /* ✅ ALTURA FIJA igual al botón de login */
+  height: 36px;
+  min-height: 36px;
 }
 
 .user-info.visible {
@@ -164,11 +177,12 @@
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid #5bc8f0;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .user-name {
@@ -189,21 +203,26 @@
   background: #5bc8f0;
   color: #0f3566;
   border: none;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-family: 'Exo 2', sans-serif;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  /* ✅ ALTURA CONSISTENTE */
+  height: 28px;
 }
 
 .btn-cambiar svg {
   width: 14px;
   height: 14px;
+  flex-shrink: 0;
 }
 
 .btn-cambiar:hover {
@@ -220,13 +239,17 @@
   background: rgba(255, 77, 77, 0.15);
   color: #ff9999;
   border: 1px solid rgba(255, 77, 77, 0.3);
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
   font-family: 'Exo 2', sans-serif;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  /* ✅ ALTURA CONSISTENTE */
+  height: 28px;
 }
 
 .btn-logout:hover {
@@ -241,9 +264,13 @@
 
 @media (max-width: 768px) {
   .top-bar {
-    padding: 8px 20px;
+    padding: 0 20px;
     font-size: 11px;
     gap: 12px;
+    /* ✅ ALTURA FIJA también en móvil */
+    height: 48px;
+    min-height: 48px;
+    max-height: 48px;
   }
   
   .top-bar a:first-of-type {
@@ -251,15 +278,42 @@
   }
   
   .user-name {
-    max-width: 100px;
+    max-width: 80px;
+    font-size: 12px;
+  }
+  
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .btn-login {
+    font-size: 12px;
+    padding: 6px 16px;
+    height: 32px;
+  }
+  
+  .user-info {
+    height: 32px;
+    min-height: 32px;
+    padding: 3px 8px;
+    gap: 8px;
   }
   
   .btn-cambiar {
-    padding: 6px 8px;
+    padding: 4px 8px;
+    height: 26px;
   }
   
-  .btn-cambiar span {
-    display: none; /* Solo mostrar icono en móvil */
+  .btn-cambiar svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .btn-logout {
+    padding: 4px 8px;
+    height: 26px;
+    font-size: 11px;
   }
 }
 </style>
