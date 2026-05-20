@@ -5,7 +5,8 @@
 
 const STAFF_EMAILS = [
   'ftipantocta@tecnologicosucre.edu.ec',
-  'sucrebotclub@tecnologicosucre.edu.ec'
+  'sucrebotclub@tecnologicosucre.edu.ec',
+  'vandrade@tecnologico.edu.ec'
 ];
 
 // ✅ EXPORTAR COMO VARIABLE GLOBAL para que otros archivos puedan acceder
