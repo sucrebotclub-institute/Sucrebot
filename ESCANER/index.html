@@ -628,7 +628,7 @@
   }
 
   async function procesarQR(qrData) {
-    console.log('QR escaneado (RAW):', qrData); // Debug
+    console.log('QR escaneado (RAW):', qrData);
     
     try {
       let participante;
@@ -639,13 +639,9 @@
         console.log('QR parseado como JSON:', participante);
       } catch (e) {
         // Si falla, procesar como texto plano
-        // Formato: "SUCREBOT 2026 | Robot: X | Categoria: Y | Institucion: Z | Ciudad: W | Participante: N | ID: I"
-        
         console.log('Parseando como texto plano...');
         
-        // Función para extraer valores usando el delimitador "|"
         const extraerValor = (texto, clave) => {
-          // Buscar "clave: valor" entre pipes
           const regex = new RegExp(clave + ':\\s*([^|]+)', 'i');
           const match = texto.match(regex);
           const valor = match ? match[1].trim() : null;
@@ -669,12 +665,31 @@
       if (!participante || !participante.id) {
         console.error('❌ QR sin ID válido. Participante:', participante);
         showToast('⚠️ QR inválido - No tiene ID', true);
-        document.getElementById('res-status').textContent = 'ERROR';
-        document.getElementById('res-status').className = 'result-status idle';
+        mostrarEstadoError('QR INVÁLIDO', 'El código QR no contiene un ID válido');
         return;
       }
 
-      console.log('✅ Participante válido:', participante);
+      // ✅ NUEVA VALIDACIÓN: Verificar categoría
+      const categoriaParticipante = participante.categoria;
+      
+      if (!categoriaParticipante) {
+        console.error('❌ QR sin categoría. Participante:', participante);
+        showToast('⚠️ El QR no tiene categoría asignada', true);
+        mostrarEstadoError('SIN CATEGORÍA', 'El participante no tiene categoría asignada');
+        return;
+      }
+
+      // Verificar si la categoría está bloqueada (activa en algún cronómetro)
+      const categoriaBloqueada = await verificarCategoriaBloqueada(categoriaParticipante);
+      
+      if (!categoriaBloqueada) {
+        console.warn('⚠️ Categoría no bloqueada:', categoriaParticipante);
+        showToast(`⚠️ La categoría "${categoriaParticipante}" no está activa`, true);
+        mostrarEstadoCategoriaNoBloqueada(categoriaParticipante);
+        return;
+      }
+
+      console.log('✅ Participante válido y categoría bloqueada:', participante);
       participanteActual = participante;
 
       // Actualizar UI
@@ -696,9 +711,7 @@
       console.error('❌ Error al procesar QR:', error);
       console.error('Datos del QR:', qrData);
       showToast('❌ Error al procesar QR: ' + error.message, true);
-      
-      document.getElementById('res-status').textContent = 'ERROR';
-      document.getElementById('res-status').className = 'result-status idle';
+      mostrarEstadoError('ERROR', error.message);
     }
   }
 
@@ -783,6 +796,67 @@
         <div class="hist-nombre">${h.nombre || '—'}</div>
       </div>
     `).join('');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // VALIDACIÓN DE CATEGORÍA BLOQUEADA
+  // ══════════════════════════════════════════════════════════════
+
+  async function verificarCategoriaBloqueada(categoria) {
+    try {
+      const qs = new URLSearchParams({ action: 'getCategoriasActivas' }).toString();
+      const r = await fetch(GAS_URL + '?' + qs);
+      const activas = await r.json();
+      
+      console.log('Categorías activas:', activas);
+      console.log('Buscando:', categoria);
+      
+      // Buscar si esta categoría está bloqueada
+      const bloqueada = activas.find(c => {
+        // Normalizar ambas strings para comparar
+        const catActiva = String(c.categoria || '').toLowerCase().trim();
+        const catBuscada = String(categoria || '').toLowerCase().trim();
+        return catActiva === catBuscada;
+      });
+      
+      console.log('Categoría bloqueada?', bloqueada);
+      return bloqueada ? true : false;
+      
+    } catch (error) {
+      console.error('Error al verificar categoría bloqueada:', error);
+      return false;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // UI - MENSAJES DE ESTADO
+  // ══════════════════════════════════════════════════════════════
+
+  function mostrarEstadoCategoriaNoBloqueada(categoria) {
+    document.getElementById('res-robot').textContent = '⚠️ CATEGORÍA NO ACTIVA';
+    document.getElementById('res-nombre').textContent = `La categoría "${categoria}" no está bloqueada en ningún cronómetro`;
+    document.getElementById('res-inst').textContent = 'Solicita al staff que active esta categoría en el cronómetro';
+    document.getElementById('res-ciudad').textContent = '';
+    document.getElementById('res-cat').textContent = categoria;
+    
+    document.getElementById('res-grid').style.display = 'grid';
+    document.getElementById('res-status').textContent = 'NO ACTIVA';
+    document.getElementById('res-status').className = 'result-status idle';
+    document.getElementById('btn-enviar').classList.add('inactivo');
+    
+    // Limpiar participante actual
+    participanteActual = null;
+  }
+
+  function mostrarEstadoError(titulo, mensaje) {
+    document.getElementById('res-robot').textContent = titulo;
+    document.getElementById('res-nombre').textContent = mensaje;
+    document.getElementById('res-grid').style.display = 'none';
+    document.getElementById('res-status').textContent = 'ERROR';
+    document.getElementById('res-status').className = 'result-status idle';
+    document.getElementById('btn-enviar').classList.add('inactivo');
+    
+    participanteActual = null;
   }
 
   function showToast(msg, error = false) {
