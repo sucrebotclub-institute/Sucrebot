@@ -704,14 +704,14 @@
         <label>CATEGORÍA</label>
         <select id="select-categoria">
           <option value="">— Selecciona una categoría —</option>
-          <option value="seguidor-velocidad-sin-turbina">Seguidor velocidad sin turbina</option>
-          <option value="seguidor-velocidad-con-turbina">Seguidor velocidad con turbina</option>
-          <option value="robot-laberinto">Robot laberinto</option>
-          <option value="robot-balancin">Robot Balancín</option>
-          <option value="robot-trepador">Robot trepador</option>
-          <option value="seguidor-destreza">Seguidor destreza</option>
-          <option value="drones">Drones</option>
-          <option value="insectos">Insectos</option>
+          <option value="Seguidor velocidad sin turbina">Seguidor velocidad sin turbina</option>
+          <option value="Seguidor velocidad con turbina">Seguidor velocidad con turbina</option>
+          <option value="Robot laberinto">Robot laberinto</option>
+          <option value="Robot Balancín">Robot Balancín</option>
+          <option value="Robot trepador">Robot trepador</option>
+          <option value="Seguidor destreza">Seguidor destreza</option>
+          <option value="Drones">Drones</option>
+          <option value="Insectos">Insectos</option>
         </select>
       </div>
 
@@ -818,7 +818,7 @@
     
     if (bloqueado) {
       categoriaActual = nuevaCategoria;
-      localStorage.setItem('cronometro_categoria_activa', nuevaCategoria); // ✅ GUARDAR EN LOCALSTORAGE
+      localStorage.setItem('cronometro_categoria_activa', nuevaCategoria);
       mostrarBotonCerrarCategoria();
       cargarParticipantes();
       showToast(`✓ Categoría "${nuevaCategoria}" bloqueada`);
@@ -877,7 +877,7 @@
       const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
       const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
       const lista = await r.json();
-      console.log('Participantes cargados - Esperando escáner QR');
+      console.log('✅ Categoría bloqueada - Esperando escáner QR');
     } catch (error) {
       showToast('Error al cargar participantes: ' + error.message);
     }
@@ -1162,6 +1162,8 @@
     // Restaurar categoría guardada
     const categoriaGuardada = localStorage.getItem('cronometro_categoria_activa');
     if (categoriaGuardada) {
+      console.log('🔄 Restaurando categoría guardada:', categoriaGuardada);
+      
       // Verificar si sigue bloqueada por este usuario
       const bloqueada = await verificarBloqueoCategoria(categoriaGuardada);
       const userData = JSON.parse(savedUser);
@@ -1173,12 +1175,15 @@
         mostrarBotonCerrarCategoria();
         cargarParticipantes();
         showToast(`✅ Categoría "${categoriaGuardada}" restaurada`);
+        console.log('✅ Categoría restaurada exitosamente');
       } else if (bloqueada) {
         // Otra persona la bloqueó mientras tanto
         localStorage.removeItem('cronometro_categoria_activa');
         showToast(`⚠️ La categoría "${categoriaGuardada}" ahora está en uso por ${bloqueada.usuario}`);
+        console.log('⚠️ Categoría bloqueada por otro usuario');
       } else {
         // Nadie la tiene bloqueada, re-bloquear
+        console.log('🔒 Re-bloqueando categoría...');
         const bloqueado = await bloquearCategoria(categoriaGuardada);
         if (bloqueado) {
           document.getElementById('select-categoria').value = categoriaGuardada;
@@ -1186,15 +1191,17 @@
           mostrarBotonCerrarCategoria();
           cargarParticipantes();
           showToast(`✅ Categoría "${categoriaGuardada}" restaurada y bloqueada`);
+          console.log('✅ Categoría re-bloqueada exitosamente');
         } else {
           localStorage.removeItem('cronometro_categoria_activa');
           showToast('⚠️ No se pudo restaurar la categoría');
+          console.log('❌ No se pudo re-bloquear la categoría');
         }
       }
     }
     
     iniciarPolling();
-    console.log('✅ Polling iniciado');
+    console.log('✅ Polling iniciado - Esperando participantes del escáner');
   });
 </script>
 
