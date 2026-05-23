@@ -193,8 +193,7 @@
     const form = new FormData();
     form.append('key', IMGBB_API_KEY); 
     form.append('image', base64); 
-    form.append('name', `transferencia-${participanteId}`); // Nombre con ID único del GAS
-    form.append('album', 'V2CfsH'); // Álbum TRANSFERENCIAS
+    form.append('name', `TRANSFERENCIA-${participanteId}`); // Nombre organizado con prefijo
     const res = await fetch('https://api.imgbb.com/1/upload', {method:'POST',body:form});
     const data = await res.json();
     if (data.success) return data.data.url;
