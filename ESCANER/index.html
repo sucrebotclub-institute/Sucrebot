@@ -149,6 +149,19 @@
       padding: 28px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.15);
       margin-bottom: 24px;
+      transition: border 0.3s;
+    }
+
+    .result-card.success {
+      border: 2px solid #00d95f;
+    }
+
+    .result-card.warning {
+      border: 2px solid #fbbf24;
+    }
+
+    .result-card.error {
+      border: 2px solid #ff8080;
     }
 
     .result-header {
@@ -190,6 +203,16 @@
     .result-status.success {
       background: #e8f5e9;
       color: #2e7d32;
+    }
+
+    .result-status.warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .result-status.error {
+      background: #ffe8e8;
+      color: #d93025;
     }
 
     .result-grid {
@@ -259,6 +282,10 @@
       opacity: 0.5;
       cursor: not-allowed;
       transform: none !important;
+    }
+
+    .btn-enviar.sent {
+      background: linear-gradient(135deg, #1a5ca8 0%, #0e4a8f 100%);
     }
 
     /* ── HISTORIAL ── */
@@ -494,7 +521,7 @@
         <button class="btn-camera" id="btn-camera" onclick="toggleScanner()">📷 Activar cámara</button>
       </div>
 
-      <div class="result-card">
+      <div class="result-card" id="result-card">
         <div class="result-header">
           <div>
             <div class="result-robot" id="res-robot">Sin escanear</div>
@@ -541,6 +568,18 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
+  
+  // ✅ MAPEO DE CATEGORÍAS A RUTAS (del archivo funcional)
+  const RUTAS_SCANNER = {
+    'Seguidor velocidad sin turbina': 'SVST',
+    'Seguidor velocidad con turbina': 'SVCT',
+    'Robot laberinto': 'RL',
+    'Robot Balancín': 'RB',
+    'Robot trepador': 'RTR',
+    'Seguidor destreza': 'SVDZ',
+    'Drones': 'RD',
+    'Insectos': 'INS'
+  };
   
   let codeReader = null;
   let videoStream = null;
@@ -631,13 +670,11 @@
 
   async function procesarQR(qrData) {
     console.log('QR escaneado (RAW):', qrData);
-    showDebug('QR detectado - procesando...');
     
     // ✅ PROTECCIÓN: Evitar procesar el mismo QR en menos de 3 segundos
     const ahora = Date.now();
     if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 3000) {
       console.log('⏭ Ignorando QR duplicado');
-      showDebug('QR duplicado - ignorado', '#fbbf24');
       return;
     }
     
@@ -658,9 +695,7 @@
         const extraerValor = (texto, clave) => {
           const regex = new RegExp(clave + ':\\s*([^|]+)', 'i');
           const match = texto.match(regex);
-          const valor = match ? match[1].trim() : null;
-          console.log(`Extrayendo ${clave}:`, valor);
-          return valor;
+          return match ? match[1].trim() : null;
         };
         
         participante = {
@@ -679,7 +714,6 @@
       if (!participante || !participante.id) {
         console.error('❌ QR sin ID válido. Participante:', participante);
         showToast('⚠️ QR inválido - No tiene ID', true);
-        showDebug('QR sin ID - rechazado', '#ff8080');
         mostrarEstadoError('QR INVÁLIDO', 'El código QR no contiene un ID válido');
         return;
       }
@@ -690,7 +724,6 @@
       if (!categoriaParticipante) {
         console.error('❌ QR sin categoría. Participante:', participante);
         showToast('⚠️ El QR no tiene categoría asignada', true);
-        showDebug('QR sin categoría - rechazado', '#ff8080');
         mostrarEstadoError('SIN CATEGORÍA', 'El participante no tiene categoría asignada');
         return;
       }
@@ -701,21 +734,24 @@
       if (!categoriaBloqueada) {
         console.warn('⚠️ Categoría no bloqueada:', categoriaParticipante);
         showToast(`⚠️ La categoría "${categoriaParticipante}" no está activa`, true);
-        showDebug('Categoría NO activa', '#ff8080');
         mostrarEstadoCategoriaNoBloqueada(categoriaParticipante);
         return;
       }
 
       console.log('✅ Participante válido y categoría bloqueada:', participante);
-      showDebug('Categoría válida - deteniendo cámara', '#00ff88');
+      
+      // ✅ VERIFICAR SI YA FUE ENVIADO ANTES (del archivo funcional)
+      const yaEnviado = historial.find(h => h.id === participante.id);
       
       // ✅ DETENER EL ESCÁNER AUTOMÁTICAMENTE DESPUÉS DE ESCANEAR
       stopScanner();
       
       participanteActual = participante;
-      showDebug('Participante cargado - listo para enviar', '#00d9ff');
 
       // Actualizar UI
+      const card = document.getElementById('result-card');
+      card.className = 'result-card ' + (yaEnviado ? 'warning' : 'success');
+      
       document.getElementById('res-robot').textContent = participante.robot || '—';
       document.getElementById('res-nombre').textContent = participante.nombre || '—';
       document.getElementById('res-inst').textContent = participante.institucion || '—';
@@ -723,42 +759,43 @@
       document.getElementById('res-cat').textContent = participante.categoria || '—';
       
       document.getElementById('res-grid').style.display = 'grid';
-      document.getElementById('res-status').textContent = 'ESCANEADO';
-      document.getElementById('res-status').className = 'result-status success';
-      document.getElementById('btn-enviar').classList.remove('inactivo');
       
-      showDebug('Botón HABILITADO - esperando clic', '#00ff88');
+      const statusEl = document.getElementById('res-status');
+      const btnEnviar = document.getElementById('btn-enviar');
+      
+      if (yaEnviado) {
+        statusEl.textContent = 'YA ENVIADO';
+        statusEl.className = 'result-status warning';
+        btnEnviar.textContent = '⚡ Enviar de nuevo al cronómetro';
+        btnEnviar.classList.remove('inactivo');
+      } else {
+        statusEl.textContent = 'LISTO';
+        statusEl.className = 'result-status success';
+        btnEnviar.textContent = '⚡ Enviar al cronómetro';
+        btnEnviar.classList.remove('inactivo');
+      }
 
-      agregarAlHistorial(participante);
-      showToast('✓ QR escaneado: ' + (participante.robot || participante.nombre || 'Participante'));
+      showToast((yaEnviado ? '⚠ ' : '✓ ') + 'QR leído: ' + (participante.robot || participante.nombre || 'Participante'), yaEnviado);
 
     } catch (error) {
       console.error('❌ Error al procesar QR:', error);
       console.error('Datos del QR:', qrData);
       showToast('❌ Error al procesar QR: ' + error.message, true);
-      showDebug('Error: ' + error.message, '#ff8080');
       mostrarEstadoError('ERROR', error.message);
     }
   }
 
   async function enviarAlCronometro() {
-    // 🔍 DEBUG: Mostrar que la función fue llamada
-    showDebug('enviarAlCronometro() llamada');
-    
     const btn = document.getElementById('btn-enviar');
     if (btn.classList.contains('inactivo')) {
       showToast('⚠️ No hay participante escaneado', true);
-      showDebug('Botón inactivo - abortando', '#ff8080');
       return;
     }
 
     if (!participanteActual) {
       showToast('⚠️ No hay participante para enviar', true);
-      showDebug('participanteActual es null - abortando', '#ff8080');
       return;
     }
-
-    showDebug('Iniciando envío...', '#00ff88');
 
     // ✅ PROTECCIÓN: Deshabilitar botón inmediatamente
     btn.disabled = true;
@@ -767,40 +804,54 @@
     btn.textContent = '⏳ Enviando...';
 
     try {
-      showDebug('Haciendo fetch al GAS...', '#fbbf24');
+      // ✅ USAR MAPEO DE RUTAS (del archivo funcional)
+      const ruta = RUTAS_SCANNER[participanteActual.categoria] || 'general';
       
       const response = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'setActivo',
-          ruta: participanteActual.categoria || 'general',
-          participante: participanteActual
+          ruta: ruta,
+          participante: {
+            id: participanteActual.id,
+            robot: participanteActual.robot,
+            nombre: participanteActual.nombre || '',
+            institucion: participanteActual.institucion || '',
+            ciudad: participanteActual.ciudad || '',
+            categoria: participanteActual.categoria || '',
+            timestamp: Date.now()
+          }
         })
       });
 
       const data = await response.json();
 
       if (data.ok) {
-        showToast('✓ Enviado al cronómetro');
-        showDebug('Envío exitoso', '#00ff88');
-        btn.textContent = '✓ Enviado';
+        showToast('✓ ' + participanteActual.robot + ' → cronómetro');
+        btn.textContent = '✓ Enviado al cronómetro';
+        btn.classList.add('sent');
         
-        // ✅ Limpiar participante actual después de enviar
-        participanteActual = null;
+        // Actualizar status
+        document.getElementById('res-status').textContent = 'ENVIADO';
+        document.getElementById('res-status').className = 'result-status success';
+        
+        // Agregar al historial
+        agregarAlHistorial(participanteActual);
+        
+        // ✅ Mantener participante actual para permitir reenvío
+        // participanteActual = null;
         
         setTimeout(() => {
           btn.textContent = textoOriginal;
           btn.disabled = false;
-          // Mantener botón inactivo hasta próximo escaneo
-          btn.classList.add('inactivo');
-        }, 1500);
+          btn.classList.remove('sent');
+        }, 2000);
       } else {
         throw new Error(data.error || 'Error desconocido');
       }
     } catch (error) {
       showToast('Error al enviar: ' + error.message, true);
-      showDebug('Error: ' + error.message, '#ff8080');
       btn.textContent = textoOriginal;
       btn.disabled = false;
       btn.classList.remove('inactivo');
@@ -811,7 +862,18 @@
     const ahora = new Date();
     const hora = ahora.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
     
-    historial.unshift({ ...p, hora });
+    // Verificar si ya existe en el historial
+    const existeIdx = historial.findIndex(h => h.id === p.id);
+    
+    if (existeIdx >= 0) {
+      // Actualizar hora del existente y moverlo al principio
+      historial[existeIdx].hora = hora;
+      const item = historial.splice(existeIdx, 1)[0];
+      historial.unshift(item);
+    } else {
+      // Agregar nuevo al principio
+      historial.unshift({ ...p, hora });
+    }
     
     if (historial.length > 10) {
       historial = historial.slice(0, 10);
@@ -877,6 +939,9 @@
   // ══════════════════════════════════════════════════════════════
 
   function mostrarEstadoCategoriaNoBloqueada(categoria) {
+    const card = document.getElementById('result-card');
+    card.className = 'result-card error';
+    
     document.getElementById('res-robot').textContent = '⚠️ CATEGORÍA NO ACTIVA';
     document.getElementById('res-nombre').textContent = `La categoría "${categoria}" no está bloqueada en ningún cronómetro`;
     document.getElementById('res-inst').textContent = 'Solicita al staff que active esta categoría en el cronómetro';
@@ -885,7 +950,7 @@
     
     document.getElementById('res-grid').style.display = 'grid';
     document.getElementById('res-status').textContent = 'NO ACTIVA';
-    document.getElementById('res-status').className = 'result-status idle';
+    document.getElementById('res-status').className = 'result-status error';
     document.getElementById('btn-enviar').classList.add('inactivo');
     
     // Limpiar participante actual
@@ -893,11 +958,14 @@
   }
 
   function mostrarEstadoError(titulo, mensaje) {
+    const card = document.getElementById('result-card');
+    card.className = 'result-card error';
+    
     document.getElementById('res-robot').textContent = titulo;
     document.getElementById('res-nombre').textContent = mensaje;
     document.getElementById('res-grid').style.display = 'none';
     document.getElementById('res-status').textContent = 'ERROR';
-    document.getElementById('res-status').className = 'result-status idle';
+    document.getElementById('res-status').className = 'result-status error';
     document.getElementById('btn-enviar').classList.add('inactivo');
     
     participanteActual = null;
@@ -910,16 +978,6 @@
     t.style.borderColor = error ? 'rgba(255,100,100,0.4)' : 'rgba(0,255,136,0.4)';
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
-  }
-
-  // ✅ NUEVA FUNCIÓN DE DEBUG PARA MÓVIL
-  function showDebug(msg, color = '#00d9ff') {
-    const t = document.getElementById('toast');
-    t.textContent = '🔍 DEBUG: ' + msg;
-    t.style.color = color;
-    t.style.borderColor = 'rgba(0,217,255,0.4)';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 5000); // 5 segundos para que lo leas
   }
 </script>
 
