@@ -569,16 +569,22 @@
 <script>
   const GAS_URL = CONFIG.GAS_URL();
   
-  // ✅ MAPEO DE CATEGORÍAS A RUTAS (del archivo funcional)
+  // ✅ MAPEO DE CATEGORÍAS A RUTAS - SUCREBOT 2026
   const RUTAS_SCANNER = {
-    'Seguidor velocidad sin turbina': 'SVST',
-    'Seguidor velocidad con turbina': 'SVCT',
-    'Robot laberinto': 'RL',
-    'Robot Balancín': 'RB',
-    'Robot trepador': 'RTR',
-    'Seguidor destreza': 'SVDZ',
-    'Drones': 'RD',
-    'Insectos': 'INS'
+    // AMATEUR
+    'Insectos': 'INS',
+    'Trepador (Amateur)': 'TRP_A',
+    'Seguidor de línea ST (Amateur)': 'SL_A',
+    // PRO
+    'Seguidor de línea ST (Pro)': 'SL_P',
+    'Minisumo Autónomo': 'MS_A',
+    'Minisumo RC': 'MS_RC',
+    'Bailarín': 'BAI',
+    'Batalla': 'BAT',
+    'Trepador (Pro)': 'TRP_P',
+    'Robot soccer': 'SOC',
+    // EXTRA
+    'Cubo Rubik': 'CR'
   };
   
   let codeReader = null;
@@ -682,39 +688,45 @@
     tiempoUltimoQr = ahora;
     
     try {
-      let participante;
+      // ✅ EXTRAER ID DEL QR - soporta múltiples formatos
+      let codigo = extraerIdDelQR(qrData);
+      console.log('ID extraído:', codigo);
       
-      // Intentar parsear como JSON primero
-      try {
-        participante = JSON.parse(qrData);
-        console.log('QR parseado como JSON:', participante);
-      } catch (e) {
-        // Si falla, procesar como texto plano
-        console.log('Parseando como texto plano...');
-        
-        const extraerValor = (texto, clave) => {
-          const regex = new RegExp(clave + ':\\s*([^|]+)', 'i');
-          const match = texto.match(regex);
-          return match ? match[1].trim() : null;
-        };
-        
-        participante = {
-          id: extraerValor(qrData, 'ID'),
-          robot: extraerValor(qrData, 'Robot'),
-          nombre: extraerValor(qrData, 'Participante'),
-          institucion: extraerValor(qrData, 'Institucion'),
-          ciudad: extraerValor(qrData, 'Ciudad'),
-          categoria: extraerValor(qrData, 'Categoria')
-        };
-        
-        console.log('Participante extraído del texto:', participante);
+      if (!codigo) {
+        console.error('❌ No se pudo extraer ID del QR. RAW:', qrData);
+        showToast('⚠️ QR inválido - No se detectó ID', true);
+        mostrarEstadoError('QR INVÁLIDO', 'No se pudo leer un ID válido del código QR');
+        return;
       }
 
-      // Validar que tenga al menos ID
-      if (!participante || !participante.id) {
-        console.error('❌ QR sin ID válido. Participante:', participante);
-        showToast('⚠️ QR inválido - No tiene ID', true);
-        mostrarEstadoError('QR INVÁLIDO', 'El código QR no contiene un ID válido');
+      // ✅ CONSULTAR DATOS COMPLETOS DEL PARTICIPANTE AL GAS
+      let participante = null;
+      
+      try {
+        const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
+        const r = await fetch(GAS_URL + '?' + qs);
+        const lista = await r.json();
+        
+        if (Array.isArray(lista) && lista.length > 0) {
+          // Guardar en caché para uso offline
+          localStorage.setItem('participantes_cache', JSON.stringify(lista));
+          // Buscar el participante por ID
+          participante = lista.find(p => p.id === codigo);
+        }
+      } catch (e) {
+        console.warn('⚠️ Sin conexión, usando caché local');
+        // Fallback: usar caché local
+        const cache = JSON.parse(localStorage.getItem('participantes_cache') || '[]');
+        participante = cache.find(p => p.id === codigo);
+        if (participante) {
+          showToast('⚠️ Usando datos en caché', true);
+        }
+      }
+      
+      if (!participante) {
+        console.error('❌ Participante no encontrado. ID:', codigo);
+        showToast('⚠️ ID no encontrado en el sistema', true);
+        mostrarEstadoError('NO REGISTRADO', 'El ID "' + codigo + '" no está en el sistema');
         return;
       }
 
@@ -722,9 +734,9 @@
       const categoriaParticipante = participante.categoria;
       
       if (!categoriaParticipante) {
-        console.error('❌ QR sin categoría. Participante:', participante);
-        showToast('⚠️ El QR no tiene categoría asignada', true);
-        mostrarEstadoError('SIN CATEGORÍA', 'El participante no tiene categoría asignada');
+        console.error('❌ Participante sin categoría:', participante);
+        showToast('⚠️ El participante no tiene categoría asignada', true);
+        mostrarEstadoError('SIN CATEGORÍA', 'Este participante no tiene categoría asignada');
         return;
       }
 
@@ -740,7 +752,7 @@
 
       console.log('✅ Participante válido y categoría bloqueada:', participante);
       
-      // ✅ VERIFICAR SI YA FUE ENVIADO ANTES (del archivo funcional)
+      // ✅ VERIFICAR SI YA FUE ENVIADO ANTES
       const yaEnviado = historial.find(h => h.id === participante.id);
       
       // ✅ DETENER EL ESCÁNER AUTOMÁTICAMENTE DESPUÉS DE ESCANEAR
@@ -783,6 +795,44 @@
       showToast('❌ Error al procesar QR: ' + error.message, true);
       mostrarEstadoError('ERROR', error.message);
     }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // EXTRAER ID DEL QR - acepta múltiples formatos
+  // ══════════════════════════════════════════════════════════════
+  function extraerIdDelQR(rawText) {
+    if (!rawText) return null;
+    
+    let texto = String(rawText).trim();
+    
+    // 1️⃣ FORMATO JSON: {"id":"sb-2026-..."}
+    try {
+      const json = JSON.parse(texto);
+      if (json && json.id) return String(json.id).trim();
+    } catch(e) { /* no es JSON, seguir */ }
+    
+    // 2️⃣ FORMATO URL: https://...?id=sb-2026-...
+    if (texto.includes('?id=') || texto.includes('&id=')) {
+      const matchUrl = texto.match(/[?&]id=([^&\s]+)/i);
+      if (matchUrl) return decodeURIComponent(matchUrl[1]).trim();
+    }
+    
+    // 3️⃣ FORMATO ETIQUETADO: "ID: sb-2026-... | Robot: ..."
+    const matchEtiqueta = texto.match(/ID\s*[:=]\s*([^\|\n\r]+)/i);
+    if (matchEtiqueta) return matchEtiqueta[1].trim();
+    
+    // 4️⃣ FORMATO SOLO ID: "sb-2026-rl-001"
+    // Buscar patrón típico de ID de SucreBot
+    const matchPatron = texto.match(/sb-\d{4}-[a-z]+-\d{3}/i);
+    if (matchPatron) return matchPatron[0].toLowerCase().trim();
+    
+    // 5️⃣ FALLBACK: usar todo el texto si parece un ID válido (sin espacios ni saltos)
+    const limpio = texto.replace(/[\r\n]+/g, '').trim();
+    if (limpio && limpio.length < 100 && !limpio.includes(' ')) {
+      return limpio;
+    }
+    
+    return null;
   }
 
   async function enviarAlCronometro() {
