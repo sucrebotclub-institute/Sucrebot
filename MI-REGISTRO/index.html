@@ -3,685 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Cronómetro</title>
+  <title>SucreBot — Mi Registro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="../shared/js/config.js"></script> 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   
   <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <script src="../shared/js/config.js"></script>
   
-  <!-- CSS específico de CRONOMETRO -->
+  <!-- CSS específico de MI-REGISTRO -->
   <style>
     :root {
-      --cyan: #5bc8f0; --cyan-dark: #2b8ab8; --blue: #1a5ca8;
-      --text: #ffffff; --text-dark: #0d1f42; --muted: #64748b; 
-      --border: #2d4a6e;
-      --sucre-blue: #1a5ca8;
-      --bg-gradient-start: #f0f4f8; --bg-gradient-end: #e1e8ed;
-      --surface: #0d2847; --surface2: #1a3a6b; --surface-light: #ffffff;
-      --border2: #2d4a6e;
-      --accent: #5bc8f0; --accent2: #ff6b35;
-      --green: #3dd68c; --green-dark: #2ab870;
-      --red: #ff3b3b; --red-dark: #cc2f2f;
-      --yellow: #fbbf24;
-      --font-display: 'Bebas Neue', sans-serif;
-      --font-mono: 'DM Mono', monospace;
-      --font-body: 'DM Sans', sans-serif;
-    }
-    
-    body { 
-      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%) !important; 
-      color: var(--text-dark) !important; 
-      min-height: 100vh;
-      position: relative;
-    }
-    
-    /* Efecto de fondo animado */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(91, 200, 240, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(26, 92, 168, 0.08) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: 0;
+      --cyan: #5bc8f0; --sucre-blue: #1a5ca8; --sucre-dark: #1a3a6e;
+      --green: #00ff88; --red: #ff3b3b; --yellow: #ffd966;
+      --font-mono: 'DM Mono', monospace; --font-body: 'Exo 2', sans-serif;
+      --surface2: #1a1a26;
     }
 
-    /* ── CRONÓMETRO ── */
-    .crono-wrapper { max-width: 960px; margin: 0 auto; padding: 80px 20px 60px; position: relative; z-index: 1; }
-    .crono-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-    .crono-section-title { 
-      font-family: var(--font-display); 
-      font-size: 2.5rem; 
-      letter-spacing: 0.08em; 
-      color: var(--surface); 
-      margin: 0;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    .btn-cerrar-categoria {
-      background: linear-gradient(135deg, #ff6b35 0%, #e05a2f 100%);
-      color: #ffffff;
-      border: 2px solid rgba(255,255,255,0.3);
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 16px rgba(255,107,53,0.3);
-      display: none;
-    }
-    .btn-cerrar-categoria.visible {
-      display: block;
-    }
-    .btn-cerrar-categoria:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(255,107,53,0.5);
-    }
-    
-    .crono-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
-    
-    /* Selector de categoría mejorado */
-    .evento-row { 
-      display: flex; 
-      align-items: center; 
-      gap: 16px; 
-      margin-bottom: 24px; 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--border2); 
-      border-left: 6px solid var(--cyan); 
-      border-radius: 16px; 
-      padding: 20px 24px; 
-      box-shadow: 
-        0 4px 20px rgba(13, 40, 71, 0.3),
-        0 0 0 1px rgba(91, 200, 240, 0.1);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .evento-row::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(91, 200, 240, 0.1), transparent);
-      transition: left 0.5s;
-    }
-    
-    .evento-row:hover::before {
-      left: 100%;
-    }
-    
-    .evento-row:hover { 
-      box-shadow: 
-        0 8px 32px rgba(13, 40, 71, 0.4),
-        0 0 0 1px rgba(91, 200, 240, 0.3);
-      transform: translateY(-2px); 
-      border-left-width: 8px;
-    }
-    
-    .evento-row label { 
-      font-size: 0.7rem; 
-      color: var(--cyan); 
-      font-family: var(--font-mono); 
-      letter-spacing: 0.2em; 
-      white-space: nowrap; 
-      text-transform: uppercase; 
-      font-weight: 700; 
-      display: flex; 
-      align-items: center; 
-      gap: 10px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    .evento-row label::before { 
-      content: '⚡'; 
-      font-size: 1.3rem; 
-      filter: drop-shadow(0 0 8px rgba(91, 200, 240, 0.5));
-    }
-    
-    .evento-row select { 
-      flex: 1; 
-      background: var(--surface-light); 
-      border: 2px solid #e2e8f0; 
-      color: var(--surface); 
-      font-family: var(--font-body); 
-      font-size: 1rem; 
-      font-weight: 700; 
-      padding: 14px 18px; 
-      border-radius: 12px; 
-      outline: none; 
-      cursor: pointer; 
-      transition: all 0.2s; 
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    
-    .evento-row select:hover { 
-      border-color: var(--cyan); 
-      box-shadow: 0 4px 12px rgba(91, 200, 240, 0.2);
-    }
-    
-    .evento-row select:focus { 
-      border-color: var(--cyan); 
-      box-shadow: 0 0 0 4px rgba(91, 200, 240, 0.15), 0 4px 12px rgba(91, 200, 240, 0.2);
-    }
-    
-    /* Strip de participante mejorado */
-    .participante-strip { 
-      background: linear-gradient(135deg, var(--surface) 0%, #0f2d52 100%); 
-      border: 2px solid var(--border2); 
-      border-left: 5px solid var(--cyan); 
-      border-radius: 12px; 
-      padding: 16px 20px; 
-      margin-bottom: 24px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(13, 40, 71, 0.25);
-      transition: all 0.3s;
-    }
-    
-    .participante-strip:hover {
-      box-shadow: 0 6px 24px rgba(13, 40, 71, 0.35);
-      transform: translateY(-1px);
-    }
-    
-    .participante-strip .p-robot { 
-      font-size: 1.1rem; 
-      font-weight: 700; 
-      color: var(--text); 
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .participante-strip .p-inst { 
-      font-size: 0.85rem; 
-      color: var(--muted); 
-      margin-top: 4px;
-    }
-    
-    .participante-strip .p-badge { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      background: var(--cyan); 
-      color: var(--surface); 
-      padding: 6px 14px; 
-      border-radius: 20px; 
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(91, 200, 240, 0.4);
-    }
-    
-    .participante-strip.empty { 
-      border-left-color: var(--muted); 
-      background: linear-gradient(135deg, #1a2b47 0%, #0f1d35 100%);
-    }
-    
-    .participante-strip.empty .p-robot { 
-      color: var(--muted); 
-      font-weight: 500; 
-    }
-    
-    /* Cronómetro display mejorado */
-    .crono-display { 
-      background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%); 
-      border: 3px solid var(--border2); 
-      border-radius: 20px; 
-      padding: 48px 20px; 
-      text-align: center; 
-      margin-bottom: 24px; 
-      position: relative; 
-      overflow: hidden;
-      box-shadow: 
-        0 8px 32px rgba(13, 40, 71, 0.4),
-        inset 0 2px 4px rgba(255,255,255,0.05);
-    }
-    
-    .crono-display::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(91, 200, 240, 0.05) 0%, transparent 70%);
-      animation: rotate 20s linear infinite;
-    }
-    
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
-    .crono-display::after { 
-      content: ''; 
-      position: absolute; 
-      top: 0; 
-      left: 0; 
-      right: 0; 
-      height: 3px; 
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent); 
-      opacity: 0; 
-      transition: opacity 0.3s; 
-    }
-    
-    .crono-display.running::after { 
-      opacity: 1; 
-      animation: scanline 2s linear infinite; 
-    }
-    
-    @keyframes scanline { 
-      0%{transform:translateX(-100%)} 
-      100%{transform:translateX(100%)} 
-    }
-    
-    #cronometro { 
-      font-family: var(--font-display); 
-      font-size: 6rem; 
-      letter-spacing: 0.08em; 
-      color: var(--text); 
-      line-height: 1; 
-      transition: all 0.3s;
-      position: relative;
-      z-index: 1;
-      text-shadow: 
-        0 0 20px rgba(91, 200, 240, 0.3),
-        0 4px 8px rgba(0,0,0,0.5);
-    }
-    
-    .crono-display.running #cronometro { 
-      color: var(--cyan); 
-      text-shadow: 
-        0 0 30px rgba(91, 200, 240, 0.6),
-        0 0 60px rgba(91, 200, 240, 0.3),
-        0 4px 8px rgba(0,0,0,0.5);
-      animation: pulse-glow 2s ease-in-out infinite;
-    }
-    
-    @keyframes pulse-glow {
-      0%, 100% { filter: brightness(1); }
-      50% { filter: brightness(1.2); }
-    }
-    
-    .crono-display.stopped #cronometro { 
-      color: var(--accent2); 
-      text-shadow: 
-        0 0 30px rgba(255, 107, 53, 0.5),
-        0 4px 8px rgba(0,0,0,0.5);
-    }
-    
-    .crono-status { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      letter-spacing: 0.2em; 
-      color: var(--muted); 
-      margin-top: 12px;
-      position: relative;
-      z-index: 1;
-    }
-    
-    /* Botones mejorados */
-    .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-    
-    .btn { 
-      border: 2px solid; 
-      background: var(--surface); 
-      color: var(--text); 
-      font-family: var(--font-body); 
-      font-size: 0.9rem; 
-      font-weight: 700; 
-      padding: 14px 10px; 
-      border-radius: 12px; 
-      cursor: pointer; 
-      transition: all 0.2s; 
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      transform: translate(-50%, -50%);
-      transition: width 0.3s, height 0.3s;
-    }
-    
-    .btn:hover::before {
-      width: 300px;
-      height: 300px;
-    }
-    
-    .btn:hover { 
-      transform: translateY(-2px); 
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    }
-    
-    .btn:active { 
-      transform: translateY(0); 
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    
-    .btn.start { 
-      border-color: var(--green); 
-      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-    }
-    
-    .btn.start:hover { 
-      box-shadow: 0 6px 24px rgba(61, 214, 140, 0.4);
-    }
-    
-    .btn.stop { 
-      border-color: var(--red); 
-      background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
-    }
-    
-    .btn.stop:hover { 
-      box-shadow: 0 6px 24px rgba(255, 59, 59, 0.4);
-    }
-    
-    .btn.reset { 
-      border-color: var(--accent2); 
-      background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%);
-    }
-    
-    .btn.reset:hover { 
-      box-shadow: 0 6px 24px rgba(255, 107, 53, 0.4);
-    }
-    
-    /* Configuración de ronda */
-    .ronda-config { 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--border2); 
-      border-radius: 14px; 
-      padding: 16px 20px; 
-      margin-bottom: 20px; 
-      display: flex; 
-      align-items: center; 
-      gap: 20px; 
-      flex-wrap: wrap;
-      box-shadow: 0 4px 16px rgba(13, 40, 71, 0.25);
-    }
-    
-    .ronda-config-title { 
-      font-family: var(--font-mono); 
-      font-size: 0.7rem; 
-      letter-spacing: 0.15em; 
-      color: var(--cyan); 
-      white-space: nowrap;
-      font-weight: 700;
-    }
-    
-    .ronda-control { display: flex; align-items: center; gap: 10px; }
-    
-    .ronda-control label { 
-      font-size: 0.8rem; 
-      color: var(--text); 
-      font-family: var(--font-body); 
-      white-space: nowrap;
-      font-weight: 600;
-    }
-    
-    .ronda-control input { 
-      width: 60px; 
-      background: var(--surface-light); 
-      border: 2px solid #e2e8f0; 
-      color: var(--surface); 
-      font-family: var(--font-mono); 
-      font-size: 1rem; 
-      font-weight: 700; 
-      padding: 8px 12px; 
-      border-radius: 8px; 
-      outline: none; 
-      text-align: center;
-      transition: all 0.2s;
-    }
-    
-    .ronda-control input:focus { 
-      border-color: var(--cyan); 
-      box-shadow: 0 0 0 3px rgba(91, 200, 240, 0.15);
-    }
-    
-    .ronda-status { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-    
-    .ronda-badge { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      padding: 6px 16px; 
-      border-radius: 20px; 
-      background: var(--cyan); 
-      color: var(--surface); 
-      white-space: nowrap;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(91, 200, 240, 0.3);
-    }
-    
-    .intento-badge { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      padding: 6px 16px; 
-      border-radius: 20px; 
-      background: var(--accent2); 
-      color: var(--text); 
-      white-space: nowrap;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-    }
-    
-    /* Botón saltar */
-    .btn-saltar { 
-      width: 100%; 
-      margin-top: 12px; 
-      background: linear-gradient(135deg, #e8f4ff 0%, #d0e8ff 100%); 
-      border: 2px solid var(--cyan); 
-      color: var(--blue); 
-      font-family: var(--font-body); 
-      font-size: 0.9rem; 
-      font-weight: 700; 
-      padding: 14px; 
-      border-radius: 12px; 
-      cursor: pointer; 
-      transition: all 0.2s;
-      box-shadow: 0 4px 12px rgba(91, 200, 240, 0.2);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    
-    .btn-saltar:hover { 
-      background: linear-gradient(135deg, #d0e8ff 0%, #b8dcff 100%); 
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(91, 200, 240, 0.3);
-    }
-    
-    /* Panel de competidos mejorado */
-    .competidos-card { 
-      background: linear-gradient(135deg, var(--surface-light) 0%, #f8fafc 100%); 
-      border: 2px solid #e2e8f0; 
-      border-radius: 16px; 
-      padding: 20px; 
-      position: sticky; 
-      top: 80px; 
-      max-height: calc(100vh - 100px); 
-      overflow-y: auto;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-    
-    .competidos-header { 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #e2e8f0;
-    }
-    
-    .competidos-title { 
-      font-family: var(--font-mono); 
-      font-size: 0.7rem; 
-      letter-spacing: 0.15em; 
-      color: var(--surface);
-      font-weight: 700;
-    }
-    
-    .competidos-count { 
-      font-family: var(--font-mono); 
-      font-size: 0.75rem; 
-      background: var(--cyan); 
-      color: var(--surface); 
-      padding: 4px 14px; 
-      border-radius: 20px;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(91, 200, 240, 0.3);
-    }
-    
-    .competido-item { 
-      display: flex; 
-      align-items: center; 
-      gap: 10px; 
-      padding: 12px; 
-      border-bottom: 1px solid #e2e8f0;
-      transition: all 0.2s;
-      border-radius: 8px;
-      margin-bottom: 4px;
-    }
-    
-    .competido-item:hover {
-      background: #f1f5f9;
-    }
-    
-    .competido-item:last-child { border-bottom: none; }
-    
-    .competido-num { 
-      font-family: var(--font-mono); 
-      font-size: 0.7rem; 
-      color: var(--muted); 
-      min-width: 28px; 
-      flex-shrink: 0;
-      font-weight: 700;
-    }
-    
-    .competido-info { flex: 1; min-width: 0; }
-    
-    .competido-robot { 
-      font-size: 0.9rem; 
-      font-weight: 700; 
-      color: var(--surface); 
-      white-space: nowrap; 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
-    }
-    
-    .competido-tiempo { 
-      font-family: var(--font-mono); 
-      font-size: 0.8rem; 
-      color: var(--cyan-dark);
-      font-weight: 600;
-    }
-    
-    .competido-sel { 
-      background: var(--cyan); 
-      border: none; 
-      color: var(--surface); 
-      font-size: 0.75rem; 
-      padding: 6px 12px; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      transition: all 0.2s;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(91, 200, 240, 0.25);
-    }
-    
-    .competido-sel:hover { 
-      background: var(--cyan-dark); 
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(91, 200, 240, 0.4);
-    }
-    
-    /* Botón siguiente */
-    .btn-siguiente { 
-      width: 100%; 
-      margin-top: 16px; 
-      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); 
-      border: 2px solid var(--green-dark); 
-      color: var(--text); 
-      font-family: var(--font-body); 
-      font-size: 0.95rem; 
-      font-weight: 700; 
-      padding: 16px; 
-      border-radius: 12px; 
-      cursor: pointer; 
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      box-shadow: 0 4px 16px rgba(61, 214, 140, 0.3);
-    }
-    
-    .btn-siguiente:hover { 
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(61, 214, 140, 0.5);
-    }
-    
-    /* Toast mejorado */
-    .toast { 
-      position: fixed; 
-      bottom: 30px; 
-      left: 50%; 
-      transform: translateX(-50%) translateY(100px); 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--green); 
-      color: var(--text); 
-      font-family: var(--font-body); 
-      font-size: 0.85rem; 
-      font-weight: 600;
-      padding: 14px 28px; 
-      border-radius: 30px; 
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-      z-index: 999; 
-      white-space: nowrap;
-      box-shadow: 
-        0 8px 32px rgba(13, 40, 71, 0.5),
-        0 0 0 1px rgba(61, 214, 140, 0.2);
-    }
-    
-    .toast.show { 
-      transform: translateX(-50%) translateY(0); 
-    }
-    
-    /* Responsive */
-    @media (max-width: 680px) { 
-      .crono-wrapper { padding: 60px 10px 40px; max-width: 100%; }
-      .crono-layout { grid-template-columns: 1fr; gap: 20px; }
-      .crono-header-row { flex-direction: column; gap: 16px; align-items: stretch; }
-      .crono-section-title { font-size: 2rem; text-align: center; }
-      .btn-cerrar-categoria { width: 100%; }
-      .evento-row { flex-direction: column; align-items: stretch; gap: 12px; padding: 16px 18px; }
-      .evento-row label { width: 100%; justify-content: center; }
-      .evento-row select { width: 100%; }
-      #cronometro { font-size: 4rem; }
-      .btn-row { grid-template-columns: 1fr; gap: 10px; }
-      .competidos-card { position: static; max-height: none; }
+    body { background: #ffffff !important; color: #1a1a2e !important; }
+    main { min-height: calc(100vh - 174px); background: #f4f7fb; }
+
+    /* ── CONTENIDO ── */
+    .wrapper { max-width: 680px; margin: 0 auto; padding: 40px 20px 60px; }
+
+    /* Pantalla login */
+    .login-screen { text-align: center; padding: 60px 20px; }
+    .login-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 3px; color: var(--sucre-dark); margin-bottom: 12px; }
+    .login-screen p { font-size: 14px; color: #7a7a8c; margin-bottom: 32px; }
+    .btn-google { display: inline-flex; align-items: center; gap: 10px; background: var(--sucre-blue); color: #ffffff; border: none; padding: 14px 28px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .btn-google:hover { background: var(--sucre-dark); }
+
+    /* Pantalla no encontrado */
+    .not-found { text-align: center; padding: 60px 20px; }
+    .not-found h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: var(--sucre-dark); margin-bottom: 12px; }
+    .not-found p { font-size: 14px; color: #7a7a8c; margin-bottom: 24px; }
+    .not-found a { color: var(--sucre-blue); font-weight: 600; text-decoration: none; }
+    .not-found a:hover { text-decoration: underline; }
+
+    /* Ficha */
+    .ficha { background: var(--sucre-blue); border-radius: 20px; box-shadow: 0 4px 24px rgba(26,92,168,0.30); overflow: hidden; }
+    .ficha-header { background: var(--sucre-dark); padding: 28px 32px; }
+    .ficha-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; }
+    .ficha-robot { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 2px; color: #ffffff; line-height: 1; margin-bottom: 10px; }
+    .ficha-estado { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; padding: 5px 14px; border-radius: 20px; }
+    .estado-aprobado { background: #00ff88; color: #ffffff; }
+    .estado-pendiente { background: rgba(255,235,59,0.25); color: #ffeb3b; border: 1px solid rgba(255,235,59,0.5); }
+    .estado-nocumple { background: rgba(220,50,50,0.2); color: #ff6b6b; border: 1px solid rgba(220,50,50,0.5); }
+
+    .ficha-body { padding: 28px 32px; background: var(--sucre-blue); }
+    .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+    .ficha-campo { display: flex; flex-direction: column; gap: 4px; }
+    .ficha-campo span { font-size: 0.65rem; color: rgba(255,255,255,0.7); font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+    .ficha-campo strong { font-size: 0.92rem; color: #ffffff; font-weight: 700; }
+
+    /* QR */
+    .ficha-qr { text-align: center; padding: 24px; background: rgba(0,0,0,0.15); border-radius: 14px; margin-bottom: 24px; }
+    .ficha-qr-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.8); text-transform: uppercase; margin-bottom: 16px; }
+    .ficha-qr img { width: 200px; height: 200px; border-radius: 10px; border: 3px solid rgba(255,255,255,0.3); }
+    .ficha-qr-nota { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 10px; font-family: var(--font-mono); }
+
+    /* Aviso pendiente */
+    .ficha-pendiente-aviso { background: rgba(255,200,0,0.15); border: 1px solid rgba(255,200,0,0.4); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+    .ficha-pendiente-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .ficha-pendiente-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
+    .ficha-pendiente-aviso strong { font-weight: 700; color: #ffeb3b; }
+
+    /* Aviso no cumple */
+    .ficha-nocumple-aviso { background: rgba(220,50,50,0.15); border: 1px solid rgba(220,50,50,0.4); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+    .ficha-nocumple-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .ficha-nocumple-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
+    .ficha-nocumple-aviso strong { font-weight: 700; color: #ff6b6b; }
+    .ficha-nocumple-aviso .razon-texto { display: block; margin: 8px 0; padding: 8px 12px; background: rgba(0,0,0,0.2); border-left: 3px solid #ff6b6b; border-radius: 4px; font-style: italic; }
+
+    /* Formulario edición */
+    .ficha-form { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 24px; }
+    .ficha-form-title { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-bottom: 18px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-field label { font-size: 0.68rem; color: rgba(255,255,255,0.7); font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+    .form-field input, .form-field select { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.88rem; padding: 10px 14px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.2s; }
+    .form-field input::placeholder { color: rgba(255,255,255,0.4); }
+    .form-field input:focus, .form-field select:focus { border-color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.3); }
+    .form-field-full { grid-column: 1 / -1; }
+
+    /* Aviso comprobante */
+    .comprobante-aviso { background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+    .comprobante-aviso svg { width: 16px; height: 16px; flex-shrink: 0; color: rgba(255,255,255,0.6); }
+    .comprobante-aviso span { font-size: 0.8rem; color: rgba(255,255,255,0.8); font-family: var(--font-mono); line-height: 1.4; }
+    .comprobante-aviso a { color: #ffeb3b; font-weight: 600; text-decoration: none; }
+    .comprobante-aviso a:hover { text-decoration: underline; }
+
+    .btn-guardar { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 14px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; margin-top: 8px; }
+    .btn-guardar:hover { background: var(--sucre-dark); border-color: rgba(255,255,255,0.5); }
+    .btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid rgba(0,255,136,0.4); color: var(--green); font-family: var(--font-mono); font-size: 0.8rem; padding: 12px 24px; border-radius: 30px; transition: transform 0.3s ease; z-index: 9999; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      .wrapper { padding: 24px 12px 40px; }
+      .ficha-header { padding: 20px; }
+      .ficha-body { padding: 20px; }
+      .ficha-grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .ficha-robot { font-size: 1.6rem; }
     }
   </style>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COMPONENTES COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
 
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
@@ -689,458 +123,309 @@
   <div data-include="../shared/components/nav.html"></div>
 </div>
 
-<div class="crono-wrapper">
-  <div class="crono-header-row">
-    <h1 class="crono-section-title">CRONÓMETRO</h1>
-    <button class="btn-cerrar-categoria" id="btn-cerrar-categoria" onclick="cerrarCategoria()">
-      🚪 Cerrar Categoría
-    </button>
-  </div>
+<!-- ═══════════════════════════════════════════════════════════════
+     CONTENIDO ÚNICO DE MI-REGISTRO
+     ═══════════════════════════════════════════════════════════════ -->
 
-  <div class="crono-layout">
-    <div>
-      <!-- Selección de categoría -->
-      <div class="evento-row">
-        <label>CATEGORÍA</label>
-        <select id="select-categoria">
-          <option value="">— Selecciona una categoría —</option>
-          <option value="seguidor-velocidad-sin-turbina">Seguidor velocidad sin turbina</option>
-          <option value="seguidor-velocidad-con-turbina">Seguidor velocidad con turbina</option>
-          <option value="robot-laberinto">Robot laberinto</option>
-          <option value="robot-balancin">Robot Balancín</option>
-          <option value="robot-trepador">Robot trepador</option>
-          <option value="seguidor-destreza">Seguidor destreza</option>
-          <option value="drones">Drones</option>
-          <option value="insectos">Insectos</option>
-        </select>
-      </div>
+<main>
+  <div class="wrapper">
 
-      <!-- Participante actual -->
-      <div class="participante-strip empty" id="participante-strip">
-        <div>
-          <div class="p-robot">Ningún participante seleccionado</div>
-          <div class="p-inst">Selecciona una categoría y espera el escáner</div>
-        </div>
-        <div class="p-badge">—</div>
-      </div>
-
-      <!-- Cronómetro -->
-      <div class="crono-display" id="crono-display">
-        <div id="cronometro">00:00:00</div>
-        <div class="crono-status" id="crono-status">DETENIDO</div>
-      </div>
-
-      <!-- Botones -->
-      <div class="btn-row">
-        <button class="btn start" onclick="iniciarCrono()">▶ Iniciar</button>
-        <button class="btn stop" onclick="detenerCrono()">⏸ Detener</button>
-        <button class="btn reset" onclick="reiniciarCrono()">↻ Reiniciar</button>
-      </div>
-
-      <!-- Configuración de ronda -->
-      <div class="ronda-config">
-        <div class="ronda-config-title">CONFIGURACIÓN</div>
-        <div class="ronda-control">
-          <label>Ronda:</label>
-          <input type="number" id="input-ronda" value="1" min="1" />
-        </div>
-        <div class="ronda-control">
-          <label>Intento:</label>
-          <input type="number" id="input-intento" value="1" min="1" max="3" />
-        </div>
-        <div class="ronda-status">
-          <span class="ronda-badge" id="badge-ronda">Ronda 1</span>
-          <span class="intento-badge" id="badge-intento">Intento 1</span>
-        </div>
-      </div>
-
-      <!-- Botón saltar participante -->
-      <button class="btn-saltar" onclick="saltarParticipante()">⏭ Saltar participante</button>
+    <!-- PANTALLA: debe iniciar sesión -->
+    <div id="screen-login" class="login-screen">
+      <h2>MI REGISTRO</h2>
+      <p>Inicia sesión con el correo con el que te registraste para ver tu ficha y estado de aprobación.</p>
+      <button class="btn-google" onclick="iniciarLogin()">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continuar con Google
+      </button>
     </div>
 
-    <!-- Panel derecho: Competidos -->
-    <div class="competidos-card">
-      <div class="competidos-header">
-        <div class="competidos-title">COMPETIDOS</div>
-        <div class="competidos-count" id="competidos-count">0</div>
-      </div>
-      <div id="competidos-lista">
-        <p style="text-align:center;padding:32px 0;color:var(--muted);font-size:0.85rem;">Ningún participante ha competido aún</p>
-      </div>
-      <button class="btn-siguiente" onclick="siguienteParticipante()">➜ Siguiente</button>
+    <!-- PANTALLA: cargando -->
+    <div id="screen-loading" style="display:none;text-align:center;padding:60px 20px;">
+      <p style="font-family:var(--font-mono);font-size:0.85rem;color:#8a96b0;letter-spacing:0.1em;">BUSCANDO TU REGISTRO...</p>
     </div>
-  </div>
-</div>
 
-<div class="toast" id="toast"></div>
+    <!-- PANTALLA: no encontrado -->
+    <div id="screen-notfound" class="not-found" style="display:none;">
+      <h2>NO ENCONTRAMOS TU REGISTRO</h2>
+      <p>El correo con el que iniciaste sesión no tiene ningún registro en SucreBot 2026.</p>
+      <p style="margin-top:8px;">¿Todavía no te registraste? <a href="https://sucrebotclub-institute.github.io/Sucrebot/REGISTRO/">Regístrate aquí →</a></p>
+    </div>
+
+    <!-- PANTALLA: ficha -->
+    <div id="screen-ficha" style="display:none;">
+      <div class="ficha">
+
+        <div class="ficha-header">
+          <div class="ficha-label">MI REGISTRO — SUCREBOT 2026</div>
+          <div class="ficha-robot" id="f-robot">—</div>
+          <div id="f-estado-badge" class="ficha-estado estado-pendiente">⏳ Pendiente de aprobación</div>
+        </div>
+
+        <div class="ficha-body">
+
+          <div class="ficha-grid">
+            <div class="ficha-campo"><span>Categoría</span><strong id="f-categoria">—</strong></div>
+            <div class="ficha-campo"><span>Institución</span><strong id="f-institucion">—</strong></div>
+            <div class="ficha-campo"><span>Ciudad</span><strong id="f-ciudad">—</strong></div>
+            <div class="ficha-campo"><span>Correo</span><strong id="f-correo">—</strong></div>
+            <div class="ficha-campo"><span>Participante</span><strong id="f-nombre">—</strong></div>
+            <div class="ficha-campo"><span>Contacto</span><strong id="f-contacto">—</strong></div>
+          </div>
+
+          <!-- QR — solo si aprobado -->
+          <div class="ficha-qr" id="ficha-qr-section" style="display:none;">
+            <div class="ficha-qr-label">TU CÓDIGO QR DE ACCESO</div>
+            <img id="f-qr-img" src="" alt="QR de acceso" />
+            <p class="ficha-qr-nota">Presenta este QR el día del evento para acceder a la competencia.</p>
+          </div>
+
+          <!-- Sección pendiente: aviso + formulario -->
+          <div id="ficha-pendiente-section" style="display:none;">
+
+            <div class="ficha-pendiente-aviso" id="aviso-pendiente">
+              <span class="aviso-icon">⏳</span>
+              <p>Tu registro está <strong>pendiente de revisión</strong> por el staff. Si necesitas corregir algún dato, puedes editarlo a continuación. Al guardar, tu registro volverá a revisión.</p>
+            </div>
+
+            <div class="ficha-nocumple-aviso" id="aviso-nocumple" style="display:none;">
+              <span class="aviso-icon">✖</span>
+              <p>Tu registro <strong>no cumple con los requisitos</strong> de la competencia.<span id="razon-rechazo-container"></span> Por favor revisa y corrige la información a continuación, o contacta al staff en <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></p>
+            </div>
+
+            <div class="ficha-form">
+              <div class="ficha-form-title">✏️ EDITAR MI REGISTRO</div>
+              <div class="form-grid">
+
+                <div class="form-field">
+                  <label>Nombre del Robot</label>
+                  <input type="text" id="edit-robot" placeholder="Nombre del robot" />
+                </div>
+
+                <div class="form-field">
+                  <label>Categoría</label>
+                  <select id="edit-categoria">
+                    <option value="">— Selecciona —</option>
+                    <option value="Seguidor velocidad sin turbina">Seguidor velocidad sin turbina</option>
+                    <option value="Seguidor velocidad con turbina">Seguidor velocidad con turbina</option>
+                    <option value="Robot laberinto">Robot laberinto</option>
+                    <option value="Robot Balancín">Robot Balancín</option>
+                    <option value="Robot trepador">Robot trepador</option>
+                    <option value="Seguidor destreza">Seguidor destreza</option>
+                    <option value="Drones">Drones</option>
+                    <option value="Insectos">Insectos</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label>Institución</label>
+                  <input type="text" id="edit-institucion" placeholder="Nombre de tu institución" />
+                </div>
+
+                <div class="form-field">
+                  <label>Ciudad</label>
+                  <input type="text" id="edit-ciudad" placeholder="Ciudad" />
+                </div>
+
+                <div class="form-field">
+                  <label>Nombre del Participante</label>
+                  <input type="text" id="edit-nombre" placeholder="Tu nombre completo" />
+                </div>
+
+                <div class="form-field">
+                  <label>Teléfono / WhatsApp</label>
+                  <input type="text" id="edit-contacto" placeholder="0987654321" />
+                </div>
+
+                <!-- Aviso comprobante — no editable desde web -->
+                <div class="form-field form-field-full">
+                  <label>Comprobante de Pago</label>
+                  <div class="comprobante-aviso">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>Para cambiar el comprobante de pago escríbenos a <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></span>
+                  </div>
+                </div>
+
+              </div>
+              <button class="btn-guardar" id="btn-guardar" onclick="guardarCambios()">💾 Guardar cambios</button>
+            </div>
+
+          </div><!-- /ficha-pendiente-section -->
+
+        </div><!-- /ficha-body -->
+      </div><!-- /ficha -->
+    </div><!-- /screen-ficha -->
+
+  </div>
+  <div class="toast" id="toast"></div>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS COMPARTIDOS
+     ═══════════════════════════════════════════════════════════════ -->
 
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS ESPECÍFICOS DE MI-REGISTRO
+     ═══════════════════════════════════════════════════════════════ -->
+
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  
-  let cronoInterval = null;
-  let cronoInicio = null;
-  let categoriaActual = null;
   let participanteActual = null;
-  let competidos = [];
-  let pollingInterval = null;
 
-  document.getElementById('input-ronda').addEventListener('input', function() {
-    document.getElementById('badge-ronda').textContent = `Ronda ${this.value}`;
-  });
-  document.getElementById('input-intento').addEventListener('input', function() {
-    document.getElementById('badge-intento').textContent = `Intento ${this.value}`;
-  });
+  // ⚠️ NO inicializar Google OAuth aquí - ya lo hace auth.js
+  // Solo usar las funciones que auth.js exporta
 
-  // ══════════════════════════════════════════════════════════════
-  // EVENTO CHANGE DEL SELECTOR DE CATEGORÍA (CON PERSISTENCIA)
-  // ══════════════════════════════════════════════════════════════
-  document.getElementById('select-categoria').addEventListener('change', async function() {
-    const nuevaCategoria = this.value;
-    if (!nuevaCategoria) return;
-    
-    const bloqueada = await verificarBloqueoCategoria(nuevaCategoria);
-    
-    if (bloqueada) {
-      showToast(`⚠️ Esta categoría está siendo usada por ${bloqueada.usuario}`);
-      this.value = categoriaActual || '';
-      return;
-    }
-    
-    if (categoriaActual) {
-      await desbloquearCategoria(categoriaActual);
-      localStorage.removeItem('cronometro_categoria_activa');
-    }
-    
-    const bloqueado = await bloquearCategoria(nuevaCategoria);
-    
-    if (bloqueado) {
-      categoriaActual = nuevaCategoria;
-      localStorage.setItem('cronometro_categoria_activa', nuevaCategoria); // ✅ GUARDAR EN LOCALSTORAGE
-      mostrarBotonCerrarCategoria();
-      cargarParticipantes();
-      showToast(`✓ Categoría "${nuevaCategoria}" bloqueada`);
-    } else {
-      showToast('❌ No se pudo bloquear la categoría');
-      this.value = '';
-      localStorage.removeItem('cronometro_categoria_activa');
+  // Al cargar componentes, verificar sesión
+  document.addEventListener('componentsLoaded', function() {
+    const savedUser = localStorage.getItem('sucrebot_user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        buscarParticipante(userData.email);
+      } catch (e) {
+        console.error('Error al leer sesión:', e);
+      }
     }
   });
 
-  function mostrarBotonCerrarCategoria() {
-    const btn = document.getElementById('btn-cerrar-categoria');
-    btn.classList.add('visible');
-  }
+  async function buscarParticipante(correo) {
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('screen-loading').style.display = 'block';
+    document.getElementById('screen-notfound').style.display = 'none';
+    document.getElementById('screen-ficha').style.display = 'none';
 
-  function ocultarBotonCerrarCategoria() {
-    const btn = document.getElementById('btn-cerrar-categoria');
-    btn.classList.remove('visible');
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  // FUNCIÓN CERRAR CATEGORÍA (SIN CERRAR SESIÓN)
-  // ══════════════════════════════════════════════════════════════
-  async function cerrarCategoria() {
-    if (!categoriaActual) {
-      showToast('⚠️ No hay categoría activa para cerrar');
-      return;
-    }
-    
-    if (!confirm(`¿Cerrar la categoría "${categoriaActual}"?\n\nEsto permitirá que otras computadoras la usen.`)) {
-      return;
-    }
-    
-    try {
-      await desbloquearCategoria(categoriaActual);
-      localStorage.removeItem('cronometro_categoria_activa');
-      
-      categoriaActual = null;
-      document.getElementById('select-categoria').value = '';
-      ocultarBotonCerrarCategoria();
-      reiniciarCrono();
-      participanteActual = null;
-      actualizarStripParticipante();
-      competidos = [];
-      actualizarListaCompetidos();
-      
-      showToast('✅ Categoría cerrada correctamente');
-    } catch (error) {
-      console.error('Error al cerrar categoría:', error);
-      showToast('❌ Error al cerrar categoría');
-    }
-  }
-
-  async function cargarParticipantes() {
     try {
       const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
       const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
       const lista = await r.json();
-      console.log('Participantes cargados - Esperando escáner QR');
+
+      const p = lista.find(x => x.correo && x.correo.toLowerCase() === correo.toLowerCase());
+
+      if (!p) {
+        document.getElementById('screen-loading').style.display = 'none';
+        document.getElementById('screen-notfound').style.display = 'block';
+        return;
+      }
+
+      participanteActual = p;
+      mostrarFicha(p);
     } catch (error) {
-      showToast('Error al cargar participantes: ' + error.message);
+      console.error('Error al buscar participante:', error);
+      document.getElementById('screen-loading').style.display = 'none';
+      document.getElementById('screen-notfound').style.display = 'block';
     }
   }
 
-  function iniciarCrono() {
-    if (!participanteActual) {
-      showToast('Selecciona un participante primero');
-      return;
-    }
+  function mostrarFicha(p) {
+    document.getElementById('screen-loading').style.display = 'none';
+    document.getElementById('screen-ficha').style.display = 'block';
 
-    if (!cronoInterval) {
-      cronoInicio = Date.now();
-      cronoInterval = setInterval(actualizarCronometro, 10);
-      document.getElementById('crono-display').classList.add('running');
-      document.getElementById('crono-status').textContent = 'EN MARCHA';
-    }
-  }
+    // Datos principales
+    document.getElementById('f-robot').textContent = p.robot || '—';
+    document.getElementById('f-categoria').textContent = p.categoria || '—';
+    document.getElementById('f-institucion').textContent = p.institucion || '—';
+    document.getElementById('f-ciudad').textContent = p.ciudad || '—';
+    document.getElementById('f-correo').textContent = p.correo || '—';
+    document.getElementById('f-nombre').textContent = p.nombre || '—';
+    document.getElementById('f-contacto').textContent = p.contacto || '—';
 
-  function detenerCrono() {
-    if (cronoInterval) {
-      clearInterval(cronoInterval);
-      cronoInterval = null;
-      document.getElementById('crono-display').classList.remove('running');
-      document.getElementById('crono-display').classList.add('stopped');
-      document.getElementById('crono-status').textContent = 'DETENIDO';
+    const aprobado = p.aprobado === 'APROBADO' || p.aprobado === true || p.aprobado === 'true';
+    const nocumple = p.aprobado === 'NO CUMPLE' || p.aprobado === 'NOCUMPLE' || p.aprobado === 'nocumple';
+
+    const badge = document.getElementById('f-estado-badge');
+    const qrSection = document.getElementById('ficha-qr-section');
+    const pendienteSection = document.getElementById('ficha-pendiente-section');
+    const avisoPendiente = document.getElementById('aviso-pendiente');
+    const avisoNocumple = document.getElementById('aviso-nocumple');
+
+    if (aprobado) {
+      // APROBADO
+      badge.className = 'ficha-estado estado-aprobado';
+      badge.textContent = '✅ Aprobado';
+      qrSection.style.display = 'block';
+      pendienteSection.style.display = 'none';
+
+      const textoQR = `SUCREBOT 2026 | Robot: ${p.robot} | Categoria: ${p.categoria} | Institucion: ${p.institucion} | Ciudad: ${p.ciudad} | Participante: ${p.nombre} | ID: ${p.id}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(textoQR)}`;
+      document.getElementById('f-qr-img').src = qrUrl;
+    } else if (nocumple) {
+      // NO CUMPLE
+      badge.className = 'ficha-estado estado-nocumple';
+      badge.textContent = '✖ No cumple requisitos';
+      qrSection.style.display = 'none';
+      pendienteSection.style.display = 'block';
+      avisoPendiente.style.display = 'none';
+      avisoNocumple.style.display = 'flex';
       
-      const tiempo = document.getElementById('cronometro').textContent;
-      guardarTiempo(tiempo);
-    }
-  }
-
-  function reiniciarCrono() {
-    if (cronoInterval) clearInterval(cronoInterval);
-    cronoInterval = null;
-    cronoInicio = null;
-    document.getElementById('cronometro').textContent = '00:00:00';
-    document.getElementById('crono-display').classList.remove('running', 'stopped');
-    document.getElementById('crono-status').textContent = 'DETENIDO';
-  }
-
-  function actualizarCronometro() {
-    if (!cronoInicio) return;
-    
-    const transcurrido = Date.now() - cronoInicio;
-    const centesimas = Math.floor((transcurrido % 1000) / 10);
-    const segundos = Math.floor((transcurrido / 1000) % 60);
-    const minutos = Math.floor(transcurrido / 60000);
-    
-    const tiempo = String(minutos).padStart(2, '0') + ':' +
-                   String(segundos).padStart(2, '0') + ':' +
-                   String(centesimas).padStart(2, '0');
-    
-    document.getElementById('cronometro').textContent = tiempo;
-  }
-
-  async function guardarTiempo(tiempo) {
-    if (!participanteActual || !categoriaActual) return;
-    
-    const ronda = document.getElementById('input-ronda').value;
-    const intento = document.getElementById('input-intento').value;
-    
-    try {
-      const data = {
-        action: 'pushResultado',
-        participanteId: participanteActual.id,
-        nombre: participanteActual.nombre,
-        robot: participanteActual.robot,
-        institucion: participanteActual.institucion,
-        tiempo: tiempo,
-        ronda: ronda,
-        intento: intento,
-        ruta: categoriaActual.toUpperCase(),
-        fecha: new Date().toISOString()
-      };
-      
-      const r = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(data)
-      });
-      
-      const result = await r.json();
-      
-      if (result.ok) {
-        showToast('✓ Tiempo guardado: ' + tiempo);
-        agregarACompetidos(participanteActual, tiempo);
+      // Mostrar razón del rechazo si existe
+      const razonContainer = document.getElementById('razon-rechazo-container');
+      if (p.razonRechazo && p.razonRechazo.trim()) {
+        razonContainer.innerHTML = `<span class="razon-texto"><strong>Razón:</strong> ${p.razonRechazo}</span>`;
       } else {
-        showToast('Error al guardar: ' + (result.error || 'Desconocido'));
-      }
-    } catch (error) {
-      showToast('Error: ' + error.message);
-    }
-  }
-
-  function agregarACompetidos(participante, tiempo) {
-    competidos.push({ ...participante, tiempo });
-    actualizarListaCompetidos();
-  }
-
-  function actualizarListaCompetidos() {
-    const container = document.getElementById('competidos-lista');
-    const count = document.getElementById('competidos-count');
-    
-    count.textContent = competidos.length;
-    
-    if (competidos.length === 0) {
-      container.innerHTML = '<p style="text-align:center;padding:32px 0;color:var(--muted);font-size:0.85rem;">Ningún participante ha competido aún</p>';
-      return;
-    }
-    
-    container.innerHTML = competidos.map((c, i) => `
-      <div class="competido-item">
-        <div class="competido-num">${i + 1}</div>
-        <div class="competido-info">
-          <div class="competido-robot">${c.robot || '—'}</div>
-          <div class="competido-tiempo">${c.tiempo}</div>
-        </div>
-        <button class="competido-sel" onclick="seleccionarCompetido(${i})">↻</button>
-      </div>
-    `).join('');
-  }
-
-  function seleccionarCompetido(index) {
-    participanteActual = competidos[index];
-    actualizarStripParticipante();
-    showToast('Participante seleccionado nuevamente');
-  }
-
-  function actualizarStripParticipante() {
-    const strip = document.getElementById('participante-strip');
-    if (!participanteActual) {
-      strip.classList.add('empty');
-      strip.innerHTML = `
-        <div>
-          <div class="p-robot">Ningún participante seleccionado</div>
-          <div class="p-inst">Selecciona una categoría y espera el escáner</div>
-        </div>
-        <div class="p-badge">—</div>
-      `;
-      return;
-    }
-    
-    strip.classList.remove('empty');
-    strip.innerHTML = `
-      <div>
-        <div class="p-robot">${participanteActual.robot || '—'}</div>
-        <div class="p-inst">${participanteActual.institucion || '—'}</div>
-      </div>
-      <div class="p-badge">${participanteActual.categoria || '—'}</div>
-    `;
-  }
-
-  function saltarParticipante() {
-    showToast('⏭ Participante saltado');
-    siguienteParticipante();
-  }
-
-  function siguienteParticipante() {
-    reiniciarCrono();
-    participanteActual = null;
-    actualizarStripParticipante();
-    showToast('➜ Listo para el siguiente');
-  }
-
-  async function bloquearCategoria(categoria) {
-    const savedUser = JSON.parse(localStorage.getItem('sucrebot_user'));
-    
-    try {
-      const response = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'bloquearCategoria',
-          categoria: categoria,
-          usuario: savedUser.email
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (!data.ok && data.bloqueadaPor) {
-        return false;
+        razonContainer.innerHTML = '';
       }
       
-      return data.ok;
-    } catch (error) {
-      console.error('Error al bloquear:', error);
-      return false;
+      cargarFormulario(p);
+    } else {
+      // PENDIENTE
+      badge.className = 'ficha-estado estado-pendiente';
+      badge.textContent = '⏳ Pendiente de aprobación';
+      qrSection.style.display = 'none';
+      pendienteSection.style.display = 'block';
+      avisoPendiente.style.display = 'flex';
+      avisoNocumple.style.display = 'none';
+      cargarFormulario(p);
     }
   }
 
-  async function desbloquearCategoria(categoria) {
+  function cargarFormulario(p) {
+    document.getElementById('edit-robot').value = p.robot || '';
+    document.getElementById('edit-categoria').value = p.categoria || '';
+    document.getElementById('edit-institucion').value = p.institucion || '';
+    document.getElementById('edit-ciudad').value = p.ciudad || '';
+    document.getElementById('edit-nombre').value = p.nombre || '';
+    document.getElementById('edit-contacto').value = p.contacto || '';
+  }
+
+  async function guardarCambios() {
+    if (!participanteActual) return;
+
+    const btn = document.getElementById('btn-guardar');
+    btn.disabled = true;
+    btn.textContent = '⏳ Guardando...';
+
+    const datos = {
+      action: 'actualizarParticipante',
+      id: participanteActual.id,
+      robot: document.getElementById('edit-robot').value.trim(),
+      categoria: document.getElementById('edit-categoria').value,
+      institucion: document.getElementById('edit-institucion').value.trim(),
+      ciudad: document.getElementById('edit-ciudad').value.trim(),
+      nombre: document.getElementById('edit-nombre').value.trim(),
+      contacto: document.getElementById('edit-contacto').value.trim()
+    };
+
     try {
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'desbloquearCategoria',
-          categoria: categoria
-        })
-      });
-    } catch (error) {
-      console.error('Error al desbloquear:', error);
-    }
-  }
+      const qs = new URLSearchParams(datos).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
+      const result = await r.json();
 
-  async function verificarBloqueoCategoria(categoria) {
-    try {
-      const qs = new URLSearchParams({ action: 'getCategoriasActivas' }).toString();
-      const r = await fetch(GAS_URL + '?' + qs);
-      const activas = await r.json();
-      
-      return activas.find(c => c.categoria === categoria);
-    } catch (error) {
-      console.error('Error al verificar bloqueo:', error);
-      return null;
-    }
-  }
-
-  function iniciarPolling() {
-    if (pollingInterval) return;
-    
-    pollingInterval = setInterval(async () => {
-      if (!categoriaActual) return;
-      
-      try {
-        const qs = new URLSearchParams({ 
-          action: 'getActivo',
-          ruta: categoriaActual
-        }).toString();
-        
-        const r = await fetch(GAS_URL + '?' + qs);
-        const data = await r.json();
-        
-        if (data.raw && data.raw !== '') {
-          const nuevoParticipante = JSON.parse(data.raw);
-          
-          if (!participanteActual || participanteActual.id !== nuevoParticipante.id) {
-            participanteActual = nuevoParticipante;
-            actualizarStripParticipante();
-            showToast('✓ Nuevo participante: ' + nuevoParticipante.robot);
-            reiniciarCrono();
-          }
-        }
-      } catch (error) {
-        console.error('Error en polling:', error);
+      if (result.ok) {
+        showToast('✅ Cambios guardados correctamente');
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        throw new Error(result.error || 'Error desconocido');
       }
-    }, 2000);
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  // DESBLOQUEAR AL CERRAR VENTANA (PERO NO BORRAR LOCALSTORAGE)
-  // ══════════════════════════════════════════════════════════════
-  window.addEventListener('beforeunload', () => {
-    if (categoriaActual) {
-      navigator.sendBeacon(GAS_URL, JSON.stringify({
-        action: 'desbloquearCategoria',
-        categoria: categoriaActual
-      }));
-      // NO limpiar localStorage aquí - queremos que persista al refrescar
+    } catch (error) {
+      console.error('Error completo:', error);
+      showToast('❌ Error al guardar: ' + error.message);
+      btn.disabled = false;
+      btn.textContent = '💾 Guardar cambios';
     }
-  });
+  }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
@@ -1148,54 +433,6 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
   }
-
-  // ══════════════════════════════════════════════════════════════
-  // RESTAURAR CATEGORÍA AL CARGAR LA PÁGINA
-  // ══════════════════════════════════════════════════════════════
-  document.addEventListener('componentsLoaded', async function() {
-    const savedUser = localStorage.getItem('sucrebot_user');
-    if (!savedUser) {
-      window.location.href = '../INICIO/';
-      return;
-    }
-    
-    // Restaurar categoría guardada
-    const categoriaGuardada = localStorage.getItem('cronometro_categoria_activa');
-    if (categoriaGuardada) {
-      // Verificar si sigue bloqueada por este usuario
-      const bloqueada = await verificarBloqueoCategoria(categoriaGuardada);
-      const userData = JSON.parse(savedUser);
-      
-      if (bloqueada && bloqueada.usuario === userData.email) {
-        // Restaurar categoría
-        document.getElementById('select-categoria').value = categoriaGuardada;
-        categoriaActual = categoriaGuardada;
-        mostrarBotonCerrarCategoria();
-        cargarParticipantes();
-        showToast(`✅ Categoría "${categoriaGuardada}" restaurada`);
-      } else if (bloqueada) {
-        // Otra persona la bloqueó mientras tanto
-        localStorage.removeItem('cronometro_categoria_activa');
-        showToast(`⚠️ La categoría "${categoriaGuardada}" ahora está en uso por ${bloqueada.usuario}`);
-      } else {
-        // Nadie la tiene bloqueada, re-bloquear
-        const bloqueado = await bloquearCategoria(categoriaGuardada);
-        if (bloqueado) {
-          document.getElementById('select-categoria').value = categoriaGuardada;
-          categoriaActual = categoriaGuardada;
-          mostrarBotonCerrarCategoria();
-          cargarParticipantes();
-          showToast(`✅ Categoría "${categoriaGuardada}" restaurada y bloqueada`);
-        } else {
-          localStorage.removeItem('cronometro_categoria_activa');
-          showToast('⚠️ No se pudo restaurar la categoría');
-        }
-      }
-    }
-    
-    iniciarPolling();
-    console.log('✅ Polling iniciado');
-  });
 </script>
 
 </body>
