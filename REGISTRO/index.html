@@ -192,12 +192,12 @@
     return nombre.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
   }
 
-  async function subirArchivoImgBB(archivo) {
+  async function subirArchivoImgBB(archivo, participanteId) {
     const base64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(archivo); });
     const form = new FormData();
     form.append('key', IMGBB_API_KEY); 
     form.append('image', base64); 
-    form.append('name', archivo.name);
+    form.append('name', `transferencia-${participanteId}`); // Nombre con ID del participante
     form.append('album', 'V2CfsH'); // Álbum TRANSFERENCIAS
     const res = await fetch('https://api.imgbb.com/1/upload', {method:'POST',body:form});
     const data = await res.json();
@@ -230,12 +230,14 @@
     btn.disabled=true; btn.textContent='⏳ Subiendo comprobante...';
     
     try {
+      // Generar ID primero para usarlo en el nombre del archivo
+      const id=generarId(nombre);
+      
       let archivoUrl='';
-      try { archivoUrl=await subirArchivoImgBB(archivo); } 
+      try { archivoUrl=await subirArchivoImgBB(archivo, id); } 
       catch(e) { showToast('Error al subir comprobante: '+e.message,true); btn.disabled=false; btn.textContent='⚡ Registrar Participante'; return; }
       
       btn.textContent='⏳ Registrando...';
-      const id=generarId(nombre);
       await gasPost({action:'setParticipante',id,nombre,institucion,ciudad,robot,contacto,correo,categoria,archivoUrl});
       
       const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
