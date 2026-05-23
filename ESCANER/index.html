@@ -631,11 +631,13 @@
 
   async function procesarQR(qrData) {
     console.log('QR escaneado (RAW):', qrData);
+    showDebug('QR detectado - procesando...');
     
     // ✅ PROTECCIÓN: Evitar procesar el mismo QR en menos de 3 segundos
     const ahora = Date.now();
     if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 3000) {
-      console.log('⏭ Ignorando QR duplicado (escaneado hace menos de 3 segundos)');
+      console.log('⏭ Ignorando QR duplicado');
+      showDebug('QR duplicado - ignorado', '#fbbf24');
       return;
     }
     
@@ -677,6 +679,7 @@
       if (!participante || !participante.id) {
         console.error('❌ QR sin ID válido. Participante:', participante);
         showToast('⚠️ QR inválido - No tiene ID', true);
+        showDebug('QR sin ID - rechazado', '#ff8080');
         mostrarEstadoError('QR INVÁLIDO', 'El código QR no contiene un ID válido');
         return;
       }
@@ -687,6 +690,7 @@
       if (!categoriaParticipante) {
         console.error('❌ QR sin categoría. Participante:', participante);
         showToast('⚠️ El QR no tiene categoría asignada', true);
+        showDebug('QR sin categoría - rechazado', '#ff8080');
         mostrarEstadoError('SIN CATEGORÍA', 'El participante no tiene categoría asignada');
         return;
       }
@@ -697,16 +701,19 @@
       if (!categoriaBloqueada) {
         console.warn('⚠️ Categoría no bloqueada:', categoriaParticipante);
         showToast(`⚠️ La categoría "${categoriaParticipante}" no está activa`, true);
+        showDebug('Categoría NO activa', '#ff8080');
         mostrarEstadoCategoriaNoBloqueada(categoriaParticipante);
         return;
       }
 
       console.log('✅ Participante válido y categoría bloqueada:', participante);
+      showDebug('Categoría válida - deteniendo cámara', '#00ff88');
       
       // ✅ DETENER EL ESCÁNER AUTOMÁTICAMENTE DESPUÉS DE ESCANEAR
       stopScanner();
       
       participanteActual = participante;
+      showDebug('Participante cargado - listo para enviar', '#00d9ff');
 
       // Actualizar UI
       document.getElementById('res-robot').textContent = participante.robot || '—';
@@ -719,6 +726,8 @@
       document.getElementById('res-status').textContent = 'ESCANEADO';
       document.getElementById('res-status').className = 'result-status success';
       document.getElementById('btn-enviar').classList.remove('inactivo');
+      
+      showDebug('Botón HABILITADO - esperando clic', '#00ff88');
 
       agregarAlHistorial(participante);
       showToast('✓ QR escaneado: ' + (participante.robot || participante.nombre || 'Participante'));
@@ -727,21 +736,29 @@
       console.error('❌ Error al procesar QR:', error);
       console.error('Datos del QR:', qrData);
       showToast('❌ Error al procesar QR: ' + error.message, true);
+      showDebug('Error: ' + error.message, '#ff8080');
       mostrarEstadoError('ERROR', error.message);
     }
   }
 
   async function enviarAlCronometro() {
+    // 🔍 DEBUG: Mostrar que la función fue llamada
+    showDebug('enviarAlCronometro() llamada');
+    
     const btn = document.getElementById('btn-enviar');
     if (btn.classList.contains('inactivo')) {
       showToast('⚠️ No hay participante escaneado', true);
+      showDebug('Botón inactivo - abortando', '#ff8080');
       return;
     }
 
     if (!participanteActual) {
       showToast('⚠️ No hay participante para enviar', true);
+      showDebug('participanteActual es null - abortando', '#ff8080');
       return;
     }
+
+    showDebug('Iniciando envío...', '#00ff88');
 
     // ✅ PROTECCIÓN: Deshabilitar botón inmediatamente
     btn.disabled = true;
@@ -750,6 +767,8 @@
     btn.textContent = '⏳ Enviando...';
 
     try {
+      showDebug('Haciendo fetch al GAS...', '#fbbf24');
+      
       const response = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -764,6 +783,7 @@
 
       if (data.ok) {
         showToast('✓ Enviado al cronómetro');
+        showDebug('Envío exitoso', '#00ff88');
         btn.textContent = '✓ Enviado';
         
         // ✅ Limpiar participante actual después de enviar
@@ -780,9 +800,10 @@
       }
     } catch (error) {
       showToast('Error al enviar: ' + error.message, true);
+      showDebug('Error: ' + error.message, '#ff8080');
       btn.textContent = textoOriginal;
       btn.disabled = false;
-      btn.classList.remove('inactivo'); // Re-habilitar si falló
+      btn.classList.remove('inactivo');
     }
   }
 
@@ -889,6 +910,16 @@
     t.style.borderColor = error ? 'rgba(255,100,100,0.4)' : 'rgba(0,255,136,0.4)';
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // ✅ NUEVA FUNCIÓN DE DEBUG PARA MÓVIL
+  function showDebug(msg, color = '#00d9ff') {
+    const t = document.getElementById('toast');
+    t.textContent = '🔍 DEBUG: ' + msg;
+    t.style.color = color;
+    t.style.borderColor = 'rgba(0,217,255,0.4)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 5000); // 5 segundos para que lo leas
   }
 </script>
 
