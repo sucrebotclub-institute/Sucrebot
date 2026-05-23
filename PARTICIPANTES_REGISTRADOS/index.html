@@ -10,51 +10,30 @@
   <script src="../shared/js/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>emailjs.init('647agTJlgkG1SEqVa');</script>
-  
-  <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  
-  <!-- CSS específico de PARTICIPANTES_REGISTRADOS -->
   <style>
-    /* Mantener fondo blanco como el original */
-    body {
-      background: #ffffff !important;
-      color: #1a1a2e !important;
+    :root {
+      --p-cyan: #5bc8f0; --p-cyan-bright: #90dcff;
+      --p-blue: #1a5ca8; --p-blue-dark: #0e2a5a;
+      --p-surface: #0f3566; --p-surface-2: #1a4580; --p-surface-3: #2a5a9e;
+      --p-success: #00ff88; --p-warning: #c27803; --p-error: #c41e3a; --p-error-light: #ff3b3b;
     }
+    body { background: #ffffff !important; color: #1a1a2e !important; }
     main { min-height: calc(100vh - 174px); background: #ffffff; }
-
-    /* ── ESTILOS PARTICIPANTES ── */
     .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
-    
-    /* Contenedor con fondo azul degradado SOLO para la sección de participantes */
-    .participantes-container {
-      background: linear-gradient(135deg, #2a5a9e 0%, #1a4580 50%, #0f3566 100%);
-      border-radius: 20px;
-      padding: 36px 32px;
-      margin-top: 24px;
-      box-shadow: 0 12px 40px rgba(26,92,168,0.35);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .participantes-container > * {
-      position: relative;
-      z-index: 1;
-    }
     
     .page-hero { padding: 40px 0 32px; border-bottom: 1px solid rgba(26,92,168,0.15); margin-bottom: 32px; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
     .page-hero-content { flex: 1; }
-    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--p-blue); border: 1px solid var(--p-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
     .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-    .page-hero-line { flex: 0 0 40px; height: 3px; background: #1a5ca8; border-radius: 2px; }
+    .page-hero-line { flex: 0 0 40px; height: 3px; background: var(--p-blue); border-radius: 2px; }
     .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; line-height: 1; }
-    .page-hero h2 span { color: #1a5ca8; }
+    .page-hero h2 span { color: var(--p-blue); }
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
 
-    /* ── ROBOT CAMPEÓN ANIMADO ── */
     .robot-champion-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
     .glow-effect { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 220px; height: 220px; background: radial-gradient(circle, rgba(26,92,168,0.15) 0%, transparent 70%); border-radius: 50%; animation: glow-pulse 3s ease-in-out infinite; pointer-events: none; z-index: -1; }
     @keyframes glow-pulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.5} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:0.8} }
@@ -63,57 +42,24 @@
     .crown-icon { position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-12deg); font-size: 48px; z-index: 2; animation: crown-bounce 2s ease-in-out infinite; filter: drop-shadow(0 4px 12px rgba(255,215,0,0.6)); }
     @keyframes crown-bounce { 0%,100%{transform:translateX(-50%) rotate(-12deg) translateY(0)} 50%{transform:translateX(-50%) rotate(-12deg) translateY(-8px)} }
 
-    /* ── CONTROLES ── */
+    .participantes-container { background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 50%, var(--p-surface) 100%); border-radius: 20px; padding: 36px 32px; margin-top: 24px; box-shadow: 0 12px 40px rgba(26,92,168,0.35); position: relative; overflow: hidden; }
+    .participantes-container > * { position: relative; z-index: 1; }
+
     .controles { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
     .controles-left { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .filtro-categoria { 
-      background: rgba(255,255,255,0.15); 
-      border: 1.5px solid rgba(255,255,255,0.25); 
-      color: #ffffff; 
-      font-family: 'Exo 2', sans-serif; 
-      font-size: 13px; 
-      font-weight: 600; 
-      padding: 8px 14px; 
-      border-radius: 8px; 
-      outline: none; 
-      cursor: pointer; 
-      transition: all 0.2s; 
-    }
-    .filtro-categoria:focus { 
-      border-color: #5bc8f0; 
-      background: rgba(255,255,255,0.25); 
-    }
-    .filtro-categoria option { 
-      background: #1a4580; 
-      color: #ffffff; 
-    }
-    .busqueda-input { 
-      background: rgba(255,255,255,0.15); 
-      border: 1.5px solid rgba(255,255,255,0.25); 
-      color: #ffffff; 
-      font-family: 'Exo 2', sans-serif; 
-      font-size: 13px; 
-      padding: 8px 14px; 
-      border-radius: 8px; 
-      outline: none; 
-      width: 280px; 
-      transition: all 0.2s; 
-    }
-    .busqueda-input:focus { 
-      border-color: #5bc8f0; 
-      background: rgba(255,255,255,0.25); 
-    }
-    .busqueda-input::placeholder { 
-      color: rgba(255,255,255,0.6); 
-    }
-    .btn-refrescar { background: #5bc8f0; border: none; color: #0f3566; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-    .btn-refrescar:hover { background: #90dcff; transform: translateY(-1px); }
-    .btn-refrescar:active { transform: translateY(0); }
+    .filtro-categoria, .busqueda-input { background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.25); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 8px; outline: none; transition: all 0.2s; }
+    .filtro-categoria { cursor: pointer; min-width: 200px; }
+    .filtro-categoria:focus, .busqueda-input:focus { border-color: var(--p-cyan); background: rgba(255,255,255,0.25); }
+    .filtro-categoria optgroup { background: var(--p-surface); color: var(--p-cyan-bright); font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+    .filtro-categoria option { background: var(--p-surface-2); color: #ffffff; font-weight: 500; }
+    .busqueda-input { width: 280px; }
+    .busqueda-input::placeholder { color: rgba(255,255,255,0.6); }
+    .btn-refrescar { background: var(--p-cyan); border: none; color: var(--p-surface); font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+    .btn-refrescar:hover { background: var(--p-cyan-bright); transform: translateY(-1px); }
 
-    /* ── TABLA ── */
     .tabla-participantes { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
     .tabla-participantes thead { background: linear-gradient(135deg, #0a2545 0%, #051729 100%); color: #ffffff; }
-    .tabla-participantes th { padding: 16px; text-align: left; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.1); }
+    .tabla-participantes th { padding: 16px; text-align: left; font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.1); }
     .tabla-participantes th:first-child { border-radius: 12px 0 0 0; }
     .tabla-participantes th:last-child { border-radius: 0 12px 0 0; }
     .tabla-participantes tbody tr { background: rgba(255,255,255,0.95); transition: all 0.2s; cursor: pointer; }
@@ -124,50 +70,54 @@
     .tabla-participantes tbody tr:last-child td { border-bottom: none; }
     .tabla-participantes tbody tr:last-child td:first-child { border-radius: 0 0 0 12px; }
     .tabla-participantes tbody tr:last-child td:last-child { border-radius: 0 0 12px 0; }
-    .categoria-badge { display: inline-block; background: #5bc8f0; color: #0f3566; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 12px; letter-spacing: 0.5px; border: 1px solid #90dcff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-    .estado-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 12px; letter-spacing: 0.5px; }
-    .estado-badge.aprobado { background: #00ff88; color: #0a3d1a; }
-    .estado-badge.pendiente { background: #c27803; color: #2a1a00; }
-    .estado-badge.nocumple { background: #c41e3a; color: #ffffff; }
+    
+    .categoria-badge { display: inline-block; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 12px; letter-spacing: 0.5px; border: 1px solid; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    .categoria-badge.amateur { background: #ffd966; color: #5a4500; border-color: #ffea88; }
+    .categoria-badge.pro { background: var(--p-cyan); color: var(--p-surface); border-color: var(--p-cyan-bright); }
+    .categoria-badge.extra { background: #c084fc; color: #3a0c5c; border-color: #d8a9ff; }
+    
+    .estado-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 12px; letter-spacing: 0.5px; }
+    .estado-badge.aprobado { background: var(--p-success); color: #0a3d1a; }
+    .estado-badge.pendiente { background: var(--p-warning); color: #2a1a00; }
+    .estado-badge.nocumple { background: var(--p-error); color: #ffffff; }
     .estado-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .vacio-msg { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.7); font-size: 14px; }
+    .vacio-msg { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.7); font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.1em; }
 
-    /* ── MODAL REVISAR ── */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     .modal-overlay.show { display: flex; }
-    .modal-card { background: #ffffff; border-radius: 16px; width: 90%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.4); position: relative; }
-    .modal-header { background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; padding: 20px 24px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-card { background: #ffffff; border-radius: 16px; width: 90%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.4); }
+    .modal-header { background: linear-gradient(135deg, var(--p-blue) 0%, var(--p-blue-dark) 100%); color: #ffffff; padding: 20px 24px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
     .modal-close { background: none; border: none; color: #ffffff; font-size: 28px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
     .modal-close:hover { opacity: 1; }
     .modal-body { padding: 28px 24px; }
     .modal-section { margin-bottom: 24px; }
-    .modal-section-title { font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #1a5ca8; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #e8f0ff; }
+    .modal-section-title { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--p-blue); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #e8f0ff; }
     .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .modal-field { display: flex; flex-direction: column; gap: 4px; }
-    .modal-field-label { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #7a7a8c; }
-    .modal-field-value { font-size: 14px; color: #2a3f5f; font-weight: 600; }
+    .modal-field-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #7a7a8c; }
+    .modal-field-value { font-family: 'Exo 2', sans-serif; font-size: 14px; color: #2a3f5f; font-weight: 600; }
+    .modal-field-value.codigo { font-family: 'DM Mono', monospace; background: #f0f4f8; padding: 4px 10px; border-radius: 6px; display: inline-block; color: var(--p-blue-dark); width: fit-content; }
     .modal-comprobante { text-align: center; margin-top: 16px; }
     .modal-comprobante img { max-width: 100%; height: auto; border-radius: 12px; border: 2px solid #e8f0ff; box-shadow: 0 4px 16px rgba(26,92,168,0.15); }
-    .modal-comprobante-link { display: inline-block; margin-top: 12px; color: #1a5ca8; font-size: 13px; font-weight: 600; text-decoration: none; transition: color 0.2s; }
-    .modal-comprobante-link:hover { color: #0f3d75; text-decoration: underline; }
+    .modal-comprobante-link { display: inline-block; margin-top: 12px; color: var(--p-blue); font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .modal-comprobante-link:hover { color: var(--p-blue-dark); text-decoration: underline; }
+    
     .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
-    .modal-btn { font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 800; padding: 16px 24px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-    .modal-btn-eliminar { background: linear-gradient(135deg, #ff3b3b 0%, #c41e3a 100%); color: #ffffff; border: 2px solid rgba(255,255,255,0.3); }
-    .modal-btn-eliminar:hover { background: linear-gradient(135deg, #ff5555 0%, #d92845 100%); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(196,30,58,0.4); }
-    .modal-btn-aprobar { background: linear-gradient(135deg, #00d95f 0%, #00a046 100%); color: #ffffff; border: 2px solid rgba(255,255,255,0.3); }
-    .modal-btn-aprobar:hover { background: linear-gradient(135deg, #00ff6f 0%, #00c054 100%); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(0,160,70,0.4); }
-    .modal-btn-reenviar { background: linear-gradient(135deg, #5bc8f0 0%, #1a5ca8 100%); color: #ffffff; border: 2px solid rgba(255,255,255,0.3); }
-    .modal-btn-reenviar:hover { background: linear-gradient(135deg, #6dd8ff 0%, #2470c0 100%); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(26,92,168,0.4); }
-    .modal-btn-desaprobar { background: linear-gradient(135deg, #ffd966 0%, #c27803 100%); color: #2a1a00; border: 2px solid rgba(255,255,255,0.3); }
-    .modal-btn-desaprobar:hover { background: linear-gradient(135deg, #ffe680 0%, #d88a10 100%); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(194,120,3,0.4); }
+    .modal-btn { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; padding: 16px 20px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); color: #ffffff; }
+    .modal-btn-eliminar { background: linear-gradient(135deg, var(--p-error-light) 0%, var(--p-error) 100%); }
+    .modal-btn-eliminar:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(196,30,58,0.4); }
+    .modal-btn-aprobar { background: linear-gradient(135deg, #00d95f 0%, #00a046 100%); }
+    .modal-btn-aprobar:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(0,160,70,0.4); }
+    .modal-btn-reenviar { background: linear-gradient(135deg, var(--p-cyan) 0%, var(--p-blue) 100%); }
+    .modal-btn-reenviar:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(26,92,168,0.4); }
+    .modal-btn-desaprobar { background: linear-gradient(135deg, #ffd966 0%, var(--p-warning) 100%); color: #2a1a00; }
+    .modal-btn-desaprobar:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(194,120,3,0.4); }
     .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-    /* ── TOAST ── */
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border: 2px solid rgba(0,255,136,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: var(--p-success); padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s; border: 2px solid rgba(0,255,136,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .page-hero { grid-template-columns: 1fr; gap: 24px; }
       .robot-champion-wrapper { width: 140px; height: 140px; margin: 0 auto; }
@@ -177,19 +127,8 @@
       .controles { flex-direction: column; align-items: stretch; }
       .controles-left { flex-direction: column; width: 100%; }
       .filtro-categoria, .busqueda-input, .btn-refrescar { width: 100%; }
-      
-      /* Wrapper con scroll horizontal para la tabla */
-      .tabla-wrapper {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        margin-bottom: 16px;
-      }
-      
-      .tabla-participantes { 
-        min-width: 700px; /* Ancho mínimo para que todas las columnas se vean bien */
-        font-size: 12px; 
-      }
+      .tabla-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tabla-participantes { min-width: 700px; font-size: 12px; }
       .tabla-participantes th, .tabla-participantes td { padding: 12px 10px; }
       .modal-grid { grid-template-columns: 1fr; }
       .modal-actions { grid-template-columns: 1fr; }
@@ -231,16 +170,25 @@
         <div class="controles-left">
           <select class="filtro-categoria" id="filtro-categoria">
             <option value="todos">🏆 Todas las categorías</option>
-            <option value="Robot laberinto">Robot laberinto</option>
-            <option value="Robot trepador">Robot trepador</option>
-            <option value="Robot seguidor de línea">Robot seguidor de línea</option>
-            <option value="Robot sumo">Robot sumo</option>
-            <option value="Robot velocista">Robot velocista</option>
-            <option value="Robot cartero">Robot cartero</option>
-            <option value="Robot rescatista">Robot rescatista</option>
-            <option value="Robot bailarín">Robot bailarín</option>
+            <optgroup label="🏅 AMATEUR">
+              <option value="Insectos">Insectos</option>
+              <option value="Trepador (Amateur)">Trepador (Amateur)</option>
+              <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+            </optgroup>
+            <optgroup label="🏆 PRO">
+              <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+              <option value="Minisumo Autónomo">Minisumo Autónomo</option>
+              <option value="Minisumo RC">Minisumo RC</option>
+              <option value="Bailarín">Bailarín</option>
+              <option value="Batalla">Batalla</option>
+              <option value="Trepador (Pro)">Trepador (Pro)</option>
+              <option value="Robot soccer">Robot soccer</option>
+            </optgroup>
+            <optgroup label="⭐ EXTRA">
+              <option value="Cubo Rubik">Cubo Rubik</option>
+            </optgroup>
           </select>
-          <input type="text" class="busqueda-input" id="busqueda-input" placeholder="🔍 Buscar por nombre, robot o institución...">
+          <input type="text" class="busqueda-input" id="busqueda-input" placeholder="🔍 Buscar por nombre, robot, ID o institución...">
         </div>
         <button class="btn-refrescar" onclick="refrescarDatos()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -262,9 +210,7 @@
             </tr>
           </thead>
           <tbody id="tabla-body">
-            <tr>
-              <td colspan="5" class="vacio-msg">Cargando participantes...</td>
-            </tr>
+            <tr><td colspan="5" class="vacio-msg">⏳ CARGANDO PARTICIPANTES...</td></tr>
           </tbody>
         </table>
       </div>
@@ -274,7 +220,6 @@
 
 <div data-include="../shared/components/footer.html"></div>
 
-<!-- MODAL REVISAR -->
 <div class="modal-overlay" id="modal-revisar">
   <div class="modal-card">
     <div class="modal-header">
@@ -283,58 +228,43 @@
     </div>
     <div class="modal-body">
       <div class="modal-section">
-        <div class="modal-section-title">📝 Datos Personales</div>
+        <div class="modal-section-title">🆔 Identificación</div>
         <div class="modal-grid">
-          <div class="modal-field">
-            <div class="modal-field-label">Nombre Completo</div>
-            <div class="modal-field-value" id="rev-nombre">—</div>
-          </div>
-          <div class="modal-field">
-            <div class="modal-field-label">Institución / Club</div>
-            <div class="modal-field-value" id="rev-institucion">—</div>
-          </div>
-          <div class="modal-field">
-            <div class="modal-field-label">Ciudad</div>
-            <div class="modal-field-value" id="rev-ciudad">—</div>
-          </div>
-          <div class="modal-field">
-            <div class="modal-field-label">Correo Electrónico</div>
-            <div class="modal-field-value" id="rev-correo">—</div>
-          </div>
-          <div class="modal-field">
-            <div class="modal-field-label">Número de Contacto</div>
-            <div class="modal-field-value" id="rev-contacto">—</div>
+          <div class="modal-field" style="grid-column: 1 / -1;">
+            <div class="modal-field-label">ID del Sistema</div>
+            <div class="modal-field-value codigo" id="rev-id">—</div>
           </div>
         </div>
       </div>
-
+      <div class="modal-section">
+        <div class="modal-section-title">📝 Datos Personales</div>
+        <div class="modal-grid">
+          <div class="modal-field"><div class="modal-field-label">Nombre Completo</div><div class="modal-field-value" id="rev-nombre">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Institución / Club</div><div class="modal-field-value" id="rev-institucion">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Ciudad</div><div class="modal-field-value" id="rev-ciudad">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Correo Electrónico</div><div class="modal-field-value" id="rev-correo">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Número de Contacto</div><div class="modal-field-value" id="rev-contacto">—</div></div>
+        </div>
+      </div>
       <div class="modal-section">
         <div class="modal-section-title">🤖 Datos del Robot</div>
         <div class="modal-grid">
-          <div class="modal-field">
-            <div class="modal-field-label">Nombre del Robot</div>
-            <div class="modal-field-value" id="rev-robot">—</div>
-          </div>
-          <div class="modal-field">
-            <div class="modal-field-label">Categoría de Competencia</div>
-            <div class="modal-field-value" id="rev-categoria">—</div>
-          </div>
+          <div class="modal-field"><div class="modal-field-label">Nombre del Robot</div><div class="modal-field-value" id="rev-robot">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Categoría</div><div class="modal-field-value" id="rev-categoria">—</div></div>
         </div>
       </div>
-
       <div class="modal-section">
         <div class="modal-section-title">💳 Comprobante de Pago</div>
         <div class="modal-comprobante">
           <img id="rev-comprobante" src="" alt="Comprobante" style="display:none;">
-          <a id="rev-comprobante-link" href="" target="_blank" style="display:none;">🔗 Ver comprobante en tamaño completo</a>
+          <a id="rev-comprobante-link" href="" target="_blank" style="display:none;">🔗 Ver en tamaño completo</a>
         </div>
       </div>
-
       <div class="modal-actions">
-        <button class="modal-btn modal-btn-eliminar" id="btn-eliminar" onclick="noCumpleRequisitos()">✖ No cumple con los requisitos</button>
+        <button class="modal-btn modal-btn-eliminar" id="btn-eliminar" onclick="noCumpleRequisitos()">✖ No cumple</button>
         <button class="modal-btn modal-btn-aprobar" id="btn-aprobar" onclick="aprobarParticipante()">✔ Aprobar y enviar QR</button>
-        <button class="modal-btn modal-btn-reenviar" id="btn-reenviar" onclick="reenviarQR()" style="display:none;">📧 Reenviar QR por email</button>
-        <button class="modal-btn modal-btn-desaprobar" id="btn-desaprobar" onclick="desaprobarParticipante()" style="display:none;">↩ Marcar como no aprobado</button>
+        <button class="modal-btn modal-btn-reenviar" id="btn-reenviar" onclick="reenviarQR()" style="display:none;">📧 Reenviar QR</button>
+        <button class="modal-btn modal-btn-desaprobar" id="btn-desaprobar" onclick="desaprobarParticipante()" style="display:none;">↩ Marcar pendiente</button>
       </div>
     </div>
   </div>
@@ -348,115 +278,96 @@
 <script>
   const GAS_URL = CONFIG.GAS_URL();
 
+  // ✅ MAPEO DE CATEGORÍAS POR NIVEL
+  const CATEGORIAS_NIVEL = {
+    'Insectos': 'amateur',
+    'Trepador (Amateur)': 'amateur',
+    'Seguidor de línea ST (Amateur)': 'amateur',
+    'Seguidor de línea ST (Pro)': 'pro',
+    'Minisumo Autónomo': 'pro',
+    'Minisumo RC': 'pro',
+    'Bailarín': 'pro',
+    'Batalla': 'pro',
+    'Trepador (Pro)': 'pro',
+    'Robot soccer': 'pro',
+    'Cubo Rubik': 'extra'
+  };
+
   function gasGet(params) {
     const qs = new URLSearchParams(params).toString();
-    return fetch(GAS_URL + '?' + qs).then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    });
+    return fetch(GAS_URL + '?' + qs).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+
+  // ✅ Helper QR usando SOLO el ID
+  function generarUrlQR(participanteId) {
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data=' + encodeURIComponent(participanteId);
   }
 
   function cargarListaLocal() {
     const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
     const filtro = document.getElementById('filtro-categoria').value;
     const busqueda = document.getElementById('busqueda-input').value.toLowerCase();
-    
     let filtrados = lista;
-    
-    if (filtro !== 'todos') {
-      filtrados = filtrados.filter(p => p.categoria === filtro);
-    }
-    
+    if (filtro !== 'todos') filtrados = filtrados.filter(p => p.categoria === filtro);
     if (busqueda) {
       filtrados = filtrados.filter(p => {
         return (p.nombre || '').toLowerCase().includes(busqueda) ||
                (p.robot || '').toLowerCase().includes(busqueda) ||
-               (p.institucion || '').toLowerCase().includes(busqueda);
+               (p.institucion || '').toLowerCase().includes(busqueda) ||
+               (p.id || '').toLowerCase().includes(busqueda);
       });
     }
-    
     const tbody = document.getElementById('tabla-body');
     if (filtrados.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" class="vacio-msg">No se encontraron participantes</td></tr>';
       return;
     }
-    
     tbody.innerHTML = filtrados.map(p => {
-      let estadoClass = 'pendiente';
-      let estadoTexto = 'Pendiente';
-      if (p.aprobado === 'APROBADO') {
-        estadoClass = 'aprobado';
-        estadoTexto = 'Aprobado';
-      } else if (p.aprobado === 'NO CUMPLE') {
-        estadoClass = 'nocumple';
-        estadoTexto = 'No cumple';
-      } else {
-        estadoClass = 'pendiente';
-        estadoTexto = 'En revisión';
-      }
-      
-      return `
-        <tr onclick='abrirModalRevisar(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
-          <td>${p.robot || '—'}</td>
-          <td><span class="categoria-badge">${p.categoria || '—'}</span></td>
-          <td>${p.nombre || '—'}</td>
-          <td>${p.institucion || '—'}</td>
-          <td><span class="estado-badge ${estadoClass}">${estadoTexto}</span></td>
-        </tr>
-      `;
+      let estadoClass = 'pendiente', estadoTexto = 'EN REVISIÓN';
+      if (p.aprobado === 'APROBADO') { estadoClass = 'aprobado'; estadoTexto = 'APROBADO'; }
+      else if (p.aprobado === 'NO CUMPLE') { estadoClass = 'nocumple'; estadoTexto = 'NO CUMPLE'; }
+      const nivel = CATEGORIAS_NIVEL[p.categoria] || 'pro';
+      return '<tr onclick=\'abrirModalRevisar(' + JSON.stringify(p).replace(/'/g, "&apos;") + ')\'>' +
+        '<td>' + (p.robot || '—') + '</td>' +
+        '<td><span class="categoria-badge ' + nivel + '">' + (p.categoria || '—') + '</span></td>' +
+        '<td>' + (p.nombre || '—') + '</td>' +
+        '<td>' + (p.institucion || '—') + '</td>' +
+        '<td><span class="estado-badge ' + estadoClass + '">' + estadoTexto + '</span></td>' +
+        '</tr>';
     }).join('');
   }
 
   function refrescarDatos() {
     const btn = document.querySelector('.btn-refrescar');
     btn.disabled = true;
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>Actualizando...';
-    
+    const iconoOriginal = btn.innerHTML;
+    btn.innerHTML = '⏳ Actualizando...';
     gasGet({ action: 'getParticipantes' })
       .then(arr => {
-        if (Array.isArray(arr) && arr.length > 0 && arr[0].id) {
+        if (Array.isArray(arr)) {
           localStorage.setItem('participantes', JSON.stringify(arr));
           cargarListaLocal();
-          showToast('✅ Datos actualizados correctamente');
+          showToast('✅ Datos actualizados');
         }
       })
-      .catch(e => {
-        showToast('❌ Error al actualizar: ' + (e.message || 'Desconocido'), true);
-      })
-      .finally(() => {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>Refrescar';
-      });
+      .catch(e => showToast('❌ Error: ' + (e.message || 'Desconocido'), true))
+      .finally(() => { btn.disabled = false; btn.innerHTML = iconoOriginal; });
   }
 
   let participanteEnRevision = null;
 
   function abrirModalRevisar(p) {
-    // Verificar si el usuario es staff usando el array global de auth.js
     const savedUser = localStorage.getItem('sucrebot_user');
-    
-    if (!savedUser) {
-      showToast('⚠️ Debes iniciar sesión para revisar participantes', true);
-      return;
-    }
-    
+    if (!savedUser) { showToast('⚠️ Debes iniciar sesión', true); return; }
     let userData;
-    try {
-      userData = JSON.parse(savedUser);
-    } catch (e) {
-      showToast('⚠️ Error al verificar sesión', true);
-      return;
-    }
-    
-    // Usar el array STAFF_EMAILS global exportado desde auth.js
+    try { userData = JSON.parse(savedUser); } catch (e) { showToast('⚠️ Error de sesión', true); return; }
     if (!window.STAFF_EMAILS || !window.STAFF_EMAILS.includes(userData.email)) {
-      showToast('⚠️ Solo el personal autorizado puede revisar participantes', true);
+      showToast('⚠️ Solo personal autorizado', true);
       return;
     }
-    
     participanteEnRevision = p;
     const estado = (p.aprobado === 'APROBADO') ? 'aprobado' : 'pendiente';
-    
+    document.getElementById('rev-id').textContent = p.id || '—';
     document.getElementById('rev-nombre').textContent = p.nombre || '—';
     document.getElementById('rev-robot').textContent = p.robot || '—';
     document.getElementById('rev-categoria').textContent = p.categoria || '—';
@@ -464,19 +375,12 @@
     document.getElementById('rev-ciudad').textContent = p.ciudad || '—';
     document.getElementById('rev-correo').textContent = p.correo || '—';
     document.getElementById('rev-contacto').textContent = p.contacto || '—';
-    
     const imgEl = document.getElementById('rev-comprobante');
     const linkEl = document.getElementById('rev-comprobante-link');
-    
     if (p.archivoUrl) {
-      imgEl.src = p.archivoUrl;
-      imgEl.style.display = 'block';
-      linkEl.href = p.archivoUrl;
-      linkEl.style.display = 'inline-block';
-    } else {
-      imgEl.style.display = 'none';
-      linkEl.style.display = 'none';
-    }
+      imgEl.src = p.archivoUrl; imgEl.style.display = 'block';
+      linkEl.href = p.archivoUrl; linkEl.style.display = 'inline-block';
+    } else { imgEl.style.display = 'none'; linkEl.style.display = 'none'; }
     
     const btnEliminar = document.getElementById('btn-eliminar');
     const btnAprobar = document.getElementById('btn-aprobar');
@@ -486,24 +390,14 @@
     if (estado === 'aprobado') {
       btnEliminar.style.display = 'none';
       btnAprobar.style.display = 'none';
-      btnReenviar.style.display = 'block';
-      btnReenviar.textContent = '📧 Reenviar QR por email';
-      btnReenviar.disabled = false;
-      btnDesaprobar.style.display = 'block';
-      btnDesaprobar.textContent = '↩ Marcar como no aprobado';
-      btnDesaprobar.disabled = false;
+      btnReenviar.style.display = 'flex'; btnReenviar.disabled = false; btnReenviar.innerHTML = '📧 Reenviar QR';
+      btnDesaprobar.style.display = 'flex'; btnDesaprobar.disabled = false; btnDesaprobar.innerHTML = '↩ Marcar pendiente';
     } else {
-      btnEliminar.style.display = 'block';
-      btnEliminar.textContent = '✖ No cumple con los requisitos';
-      btnEliminar.disabled = false;
-      btnAprobar.style.display = 'block';
-      btnAprobar.textContent = '✔ Aprobar y enviar QR';
-      btnAprobar.disabled = false;
-      btnAprobar.style.opacity = '1';
+      btnEliminar.style.display = 'flex'; btnEliminar.disabled = false; btnEliminar.innerHTML = '✖ No cumple';
+      btnAprobar.style.display = 'flex'; btnAprobar.disabled = false; btnAprobar.innerHTML = '✔ Aprobar y enviar QR';
       btnReenviar.style.display = 'none';
       btnDesaprobar.style.display = 'none';
     }
-    
     document.getElementById('modal-revisar').classList.add('show');
   }
 
@@ -514,55 +408,33 @@
 
   async function noCumpleRequisitos() {
     if (!participanteEnRevision) return;
-    
-    // Pedir la razón del rechazo
-    const razon = prompt('Por favor, indica la razón por la que no cumple con los requisitos:\n\n(Esto se mostrará al participante para que pueda corregir su registro)');
-    
-    if (!razon || razon.trim() === '') {
-      showToast('⚠️ Debes especificar una razón', true);
-      return;
-    }
-    
+    const razon = prompt('Razón por la que no cumple con los requisitos:\n\n(Se mostrará al participante)');
+    if (!razon || razon.trim() === '') { showToast('⚠️ Debes especificar una razón', true); return; }
     const btn = document.getElementById('btn-eliminar');
-    btn.disabled = true;
-    btn.textContent = '⏳ Procesando...';
-    
+    btn.disabled = true; btn.innerHTML = '⏳ Procesando...';
     try {
-      await gasGet({ 
-        action: 'noCumpleRequisitos', 
-        id: participanteEnRevision.id,
-        razon: razon.trim()
-      });
-      
+      await gasGet({ action: 'noCumpleRequisitos', id: participanteEnRevision.id, razon: razon.trim() });
       const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
       const idx = lista.findIndex(x => x.id === participanteEnRevision.id);
-      if (idx >= 0) {
-        lista[idx].aprobado = 'nocumple';
-        lista[idx].razonRechazo = razon.trim();
-      }
+      if (idx >= 0) { lista[idx].aprobado = 'NO CUMPLE'; lista[idx].razonRechazo = razon.trim(); }
       localStorage.setItem('participantes', JSON.stringify(lista));
-      cerrarModalRevisar();
-      cargarListaLocal();
+      cerrarModalRevisar(); cargarListaLocal();
       showToast('✖ Marcado como no cumple requisitos');
     } catch (e) {
-      btn.disabled = false;
-      btn.textContent = '✖ No cumple con los requisitos';
+      btn.disabled = false; btn.innerHTML = '✖ No cumple';
       showToast('Error: ' + (e.message || JSON.stringify(e)), true);
     }
   }
 
+  // ✅ APROBAR: QR contiene SOLO el ID
   async function aprobarParticipante() {
     if (!participanteEnRevision) return;
     const p = participanteEnRevision;
     const btn = document.getElementById('btn-aprobar');
-    btn.disabled = true;
-    btn.textContent = '⏳ Aprobando...';
-    
+    btn.disabled = true; btn.innerHTML = '⏳ Aprobando...';
     try {
       await gasGet({ action: 'aprobarParticipante', id: p.id });
-      const textoQR = 'SUCREBOT 2026 | Robot: ' + p.robot + ' | Categoria: ' + p.categoria + ' | Institucion: ' + p.institucion + ' | Ciudad: ' + p.ciudad + ' | Participante: ' + p.nombre + ' | ID: ' + p.id;
-      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=' + encodeURIComponent(textoQR);
-      
+      const qrUrl = generarUrlQR(p.id);  // ← Solo el ID
       await emailjs.send('service_t1tb15d', 'template_s9ap2wh', {
         correo_destino: p.correo,
         nombre: p.nombre,
@@ -571,35 +443,30 @@
         categoria: p.categoria,
         ciudad: p.ciudad,
         qr_image: qrUrl,
+        participante_id: p.id,
         name: 'SucreBot 2026',
         email: 'sucrebotclub@tecnologicosucre.edu.ec'
       });
-      
       const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
       const idx = lista.findIndex(x => x.id === p.id);
-      if (idx >= 0) lista[idx].aprobado = true;
+      if (idx >= 0) lista[idx].aprobado = 'APROBADO';
       localStorage.setItem('participantes', JSON.stringify(lista));
-      cerrarModalRevisar();
-      cargarListaLocal();
-      showToast('✔ Aprobado — QR enviado por email');
+      cerrarModalRevisar(); cargarListaLocal();
+      showToast('✔ Aprobado — QR enviado a ' + p.correo);
     } catch (e) {
-      btn.disabled = false;
-      btn.textContent = '✔ Aprobar y enviar QR';
+      btn.disabled = false; btn.innerHTML = '✔ Aprobar y enviar QR';
       showToast('Error: ' + (e.text || e.message || JSON.stringify(e)), true);
     }
   }
 
+  // ✅ REENVIAR: QR contiene SOLO el ID
   async function reenviarQR() {
     if (!participanteEnRevision) return;
     const p = participanteEnRevision;
     const btn = document.getElementById('btn-reenviar');
-    btn.disabled = true;
-    btn.textContent = '⏳ Enviando...';
-    
+    btn.disabled = true; btn.innerHTML = '⏳ Enviando...';
     try {
-      const textoQR = 'SUCREBOT 2026 | Robot: ' + p.robot + ' | Categoria: ' + p.categoria + ' | Institucion: ' + p.institucion + ' | Ciudad: ' + p.ciudad + ' | Participante: ' + p.nombre + ' | ID: ' + p.id;
-      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=' + encodeURIComponent(textoQR);
-      
+      const qrUrl = generarUrlQR(p.id);  // ← Solo el ID
       await emailjs.send('service_t1tb15d', 'template_s9ap2wh', {
         correo_destino: p.correo,
         nombre: p.nombre,
@@ -608,15 +475,14 @@
         categoria: p.categoria,
         ciudad: p.ciudad,
         qr_image: qrUrl,
+        participante_id: p.id,
         name: 'SucreBot 2026',
         email: 'sucrebotclub@tecnologicosucre.edu.ec'
       });
-      
       cerrarModalRevisar();
       showToast('📧 QR reenviado a ' + p.correo);
     } catch (e) {
-      btn.disabled = false;
-      btn.textContent = '📧 Reenviar QR por email';
+      btn.disabled = false; btn.innerHTML = '📧 Reenviar QR';
       showToast('Error al reenviar: ' + (e.text || e.message || JSON.stringify(e)), true);
     }
   }
@@ -624,21 +490,17 @@
   async function desaprobarParticipante() {
     if (!participanteEnRevision) return;
     const btn = document.getElementById('btn-desaprobar');
-    btn.disabled = true;
-    btn.textContent = '⏳ Procesando...';
-    
+    btn.disabled = true; btn.innerHTML = '⏳ Procesando...';
     try {
       await gasGet({ action: 'desaprobarParticipante', id: participanteEnRevision.id });
       const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
       const idx = lista.findIndex(x => x.id === participanteEnRevision.id);
-      if (idx >= 0) lista[idx].aprobado = false;
+      if (idx >= 0) lista[idx].aprobado = 'EN REVISION';
       localStorage.setItem('participantes', JSON.stringify(lista));
-      cerrarModalRevisar();
-      cargarListaLocal();
+      cerrarModalRevisar(); cargarListaLocal();
       showToast('↩ Participante marcado como pendiente');
     } catch (e) {
-      btn.disabled = false;
-      btn.textContent = '↩ Marcar como no aprobado';
+      btn.disabled = false; btn.innerHTML = '↩ Marcar pendiente';
       showToast('Error: ' + (e.message || JSON.stringify(e)), true);
     }
   }
@@ -659,25 +521,18 @@
   document.getElementById('filtro-categoria').addEventListener('change', cargarListaLocal);
   document.getElementById('busqueda-input').addEventListener('input', cargarListaLocal);
 
-  // Mostrar mensaje de carga inicial
-  const tbody = document.getElementById('tabla-body');
-  tbody.innerHTML = '<tr><td colspan="5" class="vacio-msg" style="padding: 40px; text-align: center; color: #8a96b0; font-family: var(--font-mono); letter-spacing: 0.1em;">⏳ CARGANDO PARTICIPANTES...</td></tr>';
-
-  // Siempre consultar el servidor al cargar la página
   gasGet({ action: 'getParticipantes' }).then(arr => {
-    if (Array.isArray(arr) && arr.length > 0 && arr[0].id) {
+    if (Array.isArray(arr)) {
       localStorage.setItem('participantes', JSON.stringify(arr));
       cargarListaLocal();
     } else {
-      // Si no hay participantes, limpiar la tabla
       localStorage.setItem('participantes', JSON.stringify([]));
       cargarListaLocal();
     }
   }).catch(e => {
-    console.error('Error al cargar participantes:', e);
-    // Si falla, intentar usar el caché local
+    console.error('Error al cargar:', e);
     cargarListaLocal();
-    showToast('⚠️ Error al cargar datos del servidor. Mostrando caché local.', true);
+    showToast('⚠️ Error al cargar datos', true);
   });
 </script>
 
