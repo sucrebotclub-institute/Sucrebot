@@ -60,7 +60,8 @@
     /* QR */
     .ficha-qr { text-align: center; padding: 24px; background: rgba(0,0,0,0.15); border-radius: 14px; margin-bottom: 24px; }
     .ficha-qr-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.8); text-transform: uppercase; margin-bottom: 16px; }
-    .ficha-qr img { width: 200px; height: 200px; border-radius: 10px; border: 3px solid rgba(255,255,255,0.3); }
+    .ficha-qr img { width: 200px; height: 200px; border-radius: 10px; border: 3px solid rgba(255,255,255,0.3); background: #ffffff; padding: 6px; }
+    .ficha-qr-id { font-family: var(--font-mono); font-size: 0.78rem; color: rgba(255,255,255,0.9); margin-top: 12px; letter-spacing: 0.08em; background: rgba(0,0,0,0.2); padding: 6px 12px; border-radius: 6px; display: inline-block; }
     .ficha-qr-nota { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 10px; font-family: var(--font-mono); }
 
     /* Aviso pendiente */
@@ -85,6 +86,8 @@
     .form-field input, .form-field select { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.88rem; padding: 10px 14px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.2s; }
     .form-field input::placeholder { color: rgba(255,255,255,0.4); }
     .form-field input:focus, .form-field select:focus { border-color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.3); }
+    .form-field select optgroup { background: #0d2847; color: #5bc8f0; font-family: 'DM Mono', monospace; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; padding: 6px 0; }
+    .form-field select option { background: #0f2044; color: #ffffff; padding: 6px; }
     .form-field-full { grid-column: 1 / -1; }
 
     /* Aviso comprobante */
@@ -113,19 +116,11 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     COMPONENTES COMPARTIDOS
-     ═══════════════════════════════════════════════════════════════ -->
-
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
   <div data-include="../shared/components/header.html"></div>
   <div data-include="../shared/components/nav.html"></div>
 </div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     CONTENIDO ÚNICO DE MI-REGISTRO
-     ═══════════════════════════════════════════════════════════════ -->
 
 <main>
   <div class="wrapper">
@@ -177,6 +172,7 @@
           <div class="ficha-qr" id="ficha-qr-section" style="display:none;">
             <div class="ficha-qr-label">TU CÓDIGO QR DE ACCESO</div>
             <img id="f-qr-img" src="" alt="QR de acceso" />
+            <div class="ficha-qr-id" id="f-qr-id">—</div>
             <p class="ficha-qr-nota">Presenta este QR el día del evento para acceder a la competencia.</p>
           </div>
 
@@ -206,14 +202,23 @@
                   <label>Categoría</label>
                   <select id="edit-categoria">
                     <option value="">— Selecciona —</option>
-                    <option value="Seguidor velocidad sin turbina">Seguidor velocidad sin turbina</option>
-                    <option value="Seguidor velocidad con turbina">Seguidor velocidad con turbina</option>
-                    <option value="Robot laberinto">Robot laberinto</option>
-                    <option value="Robot Balancín">Robot Balancín</option>
-                    <option value="Robot trepador">Robot trepador</option>
-                    <option value="Seguidor destreza">Seguidor destreza</option>
-                    <option value="Drones">Drones</option>
-                    <option value="Insectos">Insectos</option>
+                    <optgroup label="🏅 AMATEUR">
+                      <option value="Insectos">Insectos</option>
+                      <option value="Trepador (Amateur)">Trepador (Amateur)</option>
+                      <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+                    </optgroup>
+                    <optgroup label="🏆 PRO">
+                      <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+                      <option value="Minisumo Autónomo">Minisumo Autónomo</option>
+                      <option value="Minisumo RC">Minisumo RC</option>
+                      <option value="Bailarín">Bailarín</option>
+                      <option value="Batalla">Batalla</option>
+                      <option value="Trepador (Pro)">Trepador (Pro)</option>
+                      <option value="Robot soccer">Robot soccer</option>
+                    </optgroup>
+                    <optgroup label="⭐ EXTRA">
+                      <option value="Cubo Rubik">Cubo Rubik</option>
+                    </optgroup>
                   </select>
                 </div>
 
@@ -260,25 +265,13 @@
   <div class="toast" id="toast"></div>
 </main>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     SCRIPTS COMPARTIDOS
-     ═══════════════════════════════════════════════════════════════ -->
-
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     SCRIPTS ESPECÍFICOS DE MI-REGISTRO
-     ═══════════════════════════════════════════════════════════════ -->
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
   let participanteActual = null;
 
-  // ⚠️ NO inicializar Google OAuth aquí - ya lo hace auth.js
-  // Solo usar las funciones que auth.js exporta
-
-  // Al cargar componentes, verificar sesión
   document.addEventListener('componentsLoaded', function() {
     const savedUser = localStorage.getItem('sucrebot_user');
     if (savedUser) {
@@ -348,9 +341,14 @@
       qrSection.style.display = 'block';
       pendienteSection.style.display = 'none';
 
-      const textoQR = `SUCREBOT 2026 | Robot: ${p.robot} | Categoria: ${p.categoria} | Institucion: ${p.institucion} | Ciudad: ${p.ciudad} | Participante: ${p.nombre} | ID: ${p.id}`;
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(textoQR)}`;
+      // ✅ EL QR SOLO CONTIENE EL ID (formato robusto y limpio)
+      // El escáner consulta el GAS para traer datos completos
+      const textoQR = p.id;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data=${encodeURIComponent(textoQR)}`;
       document.getElementById('f-qr-img').src = qrUrl;
+      
+      // Mostrar el ID debajo del QR (visible para el participante)
+      document.getElementById('f-qr-id').textContent = '🆔 ' + p.id;
     } else if (nocumple) {
       // NO CUMPLE
       badge.className = 'ficha-estado estado-nocumple';
