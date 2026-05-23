@@ -57,27 +57,36 @@
 
     /* ── CRONÓMETRO ── */
     .crono-wrapper { max-width: 960px; margin: 0 auto; padding: 80px 20px 60px; position: relative; z-index: 1; }
+    .crono-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
     .crono-section-title { 
       font-family: var(--font-display); 
       font-size: 2.5rem; 
       letter-spacing: 0.08em; 
       color: var(--surface); 
-      margin-bottom: 32px; 
-      text-align: center;
+      margin: 0;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
       position: relative;
-      padding-bottom: 16px;
     }
-    .crono-section-title::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 4px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      border-radius: 2px;
+    .btn-cerrar-categoria {
+      background: linear-gradient(135deg, #ff6b35 0%, #e05a2f 100%);
+      color: #ffffff;
+      border: 2px solid rgba(255,255,255,0.3);
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(255,107,53,0.3);
+      display: none;
+    }
+    .btn-cerrar-categoria.visible {
+      display: block;
+    }
+    .btn-cerrar-categoria:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(255,107,53,0.5);
     }
     
     .crono-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
@@ -660,7 +669,9 @@
     @media (max-width: 680px) { 
       .crono-wrapper { padding: 60px 10px 40px; max-width: 100%; }
       .crono-layout { grid-template-columns: 1fr; gap: 20px; }
-      .crono-section-title { font-size: 2rem; }
+      .crono-header-row { flex-direction: column; gap: 16px; align-items: stretch; }
+      .crono-section-title { font-size: 2rem; text-align: center; }
+      .btn-cerrar-categoria { width: 100%; }
       .evento-row { flex-direction: column; align-items: stretch; gap: 12px; padding: 16px 18px; }
       .evento-row label { width: 100%; justify-content: center; }
       .evento-row select { width: 100%; }
@@ -679,7 +690,12 @@
 </div>
 
 <div class="crono-wrapper">
-  <h1 class="crono-section-title">CRONÓMETRO</h1>
+  <div class="crono-header-row">
+    <h1 class="crono-section-title">CRONÓMETRO</h1>
+    <button class="btn-cerrar-categoria" id="btn-cerrar-categoria" onclick="cerrarCategoria()">
+      🚪 Cerrar Categoría
+    </button>
+  </div>
 
   <div class="crono-layout">
     <div>
@@ -778,6 +794,9 @@
     document.getElementById('badge-intento').textContent = `Intento ${this.value}`;
   });
 
+  // ══════════════════════════════════════════════════════════════
+  // EVENTO CHANGE DEL SELECTOR DE CATEGORÍA (CON PERSISTENCIA)
+  // ══════════════════════════════════════════════════════════════
   document.getElementById('select-categoria').addEventListener('change', async function() {
     const nuevaCategoria = this.value;
     if (!nuevaCategoria) return;
@@ -792,19 +811,66 @@
     
     if (categoriaActual) {
       await desbloquearCategoria(categoriaActual);
+      localStorage.removeItem('cronometro_categoria_activa');
     }
     
     const bloqueado = await bloquearCategoria(nuevaCategoria);
     
     if (bloqueado) {
       categoriaActual = nuevaCategoria;
+      localStorage.setItem('cronometro_categoria_activa', nuevaCategoria); // ✅ GUARDAR EN LOCALSTORAGE
+      mostrarBotonCerrarCategoria();
       cargarParticipantes();
-      showToast(`✓ Categoría bloqueada correctamente`);
+      showToast(`✓ Categoría "${nuevaCategoria}" bloqueada`);
     } else {
       showToast('❌ No se pudo bloquear la categoría');
       this.value = '';
+      localStorage.removeItem('cronometro_categoria_activa');
     }
   });
+
+  function mostrarBotonCerrarCategoria() {
+    const btn = document.getElementById('btn-cerrar-categoria');
+    btn.classList.add('visible');
+  }
+
+  function ocultarBotonCerrarCategoria() {
+    const btn = document.getElementById('btn-cerrar-categoria');
+    btn.classList.remove('visible');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // FUNCIÓN CERRAR CATEGORÍA (SIN CERRAR SESIÓN)
+  // ══════════════════════════════════════════════════════════════
+  async function cerrarCategoria() {
+    if (!categoriaActual) {
+      showToast('⚠️ No hay categoría activa para cerrar');
+      return;
+    }
+    
+    if (!confirm(`¿Cerrar la categoría "${categoriaActual}"?\n\nEsto permitirá que otras computadoras la usen.`)) {
+      return;
+    }
+    
+    try {
+      await desbloquearCategoria(categoriaActual);
+      localStorage.removeItem('cronometro_categoria_activa');
+      
+      categoriaActual = null;
+      document.getElementById('select-categoria').value = '';
+      ocultarBotonCerrarCategoria();
+      reiniciarCrono();
+      participanteActual = null;
+      actualizarStripParticipante();
+      competidos = [];
+      actualizarListaCompetidos();
+      
+      showToast('✅ Categoría cerrada correctamente');
+    } catch (error) {
+      console.error('Error al cerrar categoría:', error);
+      showToast('❌ Error al cerrar categoría');
+    }
+  }
 
   async function cargarParticipantes() {
     try {
@@ -1063,12 +1129,16 @@
     }, 2000);
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // DESBLOQUEAR AL CERRAR VENTANA (PERO NO BORRAR LOCALSTORAGE)
+  // ══════════════════════════════════════════════════════════════
   window.addEventListener('beforeunload', () => {
     if (categoriaActual) {
       navigator.sendBeacon(GAS_URL, JSON.stringify({
         action: 'desbloquearCategoria',
         categoria: categoriaActual
       }));
+      // NO limpiar localStorage aquí - queremos que persista al refrescar
     }
   });
 
@@ -1079,11 +1149,48 @@
     setTimeout(() => t.classList.remove('show'), 3500);
   }
 
-  document.addEventListener('componentsLoaded', function() {
+  // ══════════════════════════════════════════════════════════════
+  // RESTAURAR CATEGORÍA AL CARGAR LA PÁGINA
+  // ══════════════════════════════════════════════════════════════
+  document.addEventListener('componentsLoaded', async function() {
     const savedUser = localStorage.getItem('sucrebot_user');
     if (!savedUser) {
       window.location.href = '../INICIO/';
       return;
+    }
+    
+    // Restaurar categoría guardada
+    const categoriaGuardada = localStorage.getItem('cronometro_categoria_activa');
+    if (categoriaGuardada) {
+      // Verificar si sigue bloqueada por este usuario
+      const bloqueada = await verificarBloqueoCategoria(categoriaGuardada);
+      const userData = JSON.parse(savedUser);
+      
+      if (bloqueada && bloqueada.usuario === userData.email) {
+        // Restaurar categoría
+        document.getElementById('select-categoria').value = categoriaGuardada;
+        categoriaActual = categoriaGuardada;
+        mostrarBotonCerrarCategoria();
+        cargarParticipantes();
+        showToast(`✅ Categoría "${categoriaGuardada}" restaurada`);
+      } else if (bloqueada) {
+        // Otra persona la bloqueó mientras tanto
+        localStorage.removeItem('cronometro_categoria_activa');
+        showToast(`⚠️ La categoría "${categoriaGuardada}" ahora está en uso por ${bloqueada.usuario}`);
+      } else {
+        // Nadie la tiene bloqueada, re-bloquear
+        const bloqueado = await bloquearCategoria(categoriaGuardada);
+        if (bloqueado) {
+          document.getElementById('select-categoria').value = categoriaGuardada;
+          categoriaActual = categoriaGuardada;
+          mostrarBotonCerrarCategoria();
+          cargarParticipantes();
+          showToast(`✅ Categoría "${categoriaGuardada}" restaurada y bloqueada`);
+        } else {
+          localStorage.removeItem('cronometro_categoria_activa');
+          showToast('⚠️ No se pudo restaurar la categoría');
+        }
+      }
     }
     
     iniciarPolling();
