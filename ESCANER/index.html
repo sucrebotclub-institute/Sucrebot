@@ -547,6 +547,8 @@
   let scannerActivo = false;
   let participanteActual = null;
   let historial = [];
+  let ultimoQrProcesado = null;
+  let tiempoUltimoQr = 0;
 
   async function toggleScanner() {
     if (scannerActivo) {
@@ -630,6 +632,16 @@
   async function procesarQR(qrData) {
     console.log('QR escaneado (RAW):', qrData);
     
+    // ✅ PROTECCIÓN: Evitar procesar el mismo QR en menos de 3 segundos
+    const ahora = Date.now();
+    if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 3000) {
+      console.log('⏭ Ignorando QR duplicado (escaneado hace menos de 3 segundos)');
+      return;
+    }
+    
+    ultimoQrProcesado = qrData;
+    tiempoUltimoQr = ahora;
+    
     try {
       let participante;
       
@@ -669,7 +681,7 @@
         return;
       }
 
-      // ✅ NUEVA VALIDACIÓN: Verificar categoría
+      // ✅ VALIDACIÓN: Verificar categoría
       const categoriaParticipante = participante.categoria;
       
       if (!categoriaParticipante) {
@@ -690,6 +702,10 @@
       }
 
       console.log('✅ Participante válido y categoría bloqueada:', participante);
+      
+      // ✅ DETENER EL ESCÁNER AUTOMÁTICAMENTE DESPUÉS DE ESCANEAR
+      stopScanner();
+      
       participanteActual = participante;
 
       // Actualizar UI
@@ -727,7 +743,9 @@
       return;
     }
 
+    // ✅ PROTECCIÓN: Deshabilitar botón inmediatamente
     btn.disabled = true;
+    btn.classList.add('inactivo');
     const textoOriginal = btn.textContent;
     btn.textContent = '⏳ Enviando...';
 
@@ -748,10 +766,14 @@
         showToast('✓ Enviado al cronómetro');
         btn.textContent = '✓ Enviado';
         
+        // ✅ Limpiar participante actual después de enviar
+        participanteActual = null;
+        
         setTimeout(() => {
-          stopScanner();
           btn.textContent = textoOriginal;
           btn.disabled = false;
+          // Mantener botón inactivo hasta próximo escaneo
+          btn.classList.add('inactivo');
         }, 1500);
       } else {
         throw new Error(data.error || 'Error desconocido');
@@ -760,6 +782,7 @@
       showToast('Error al enviar: ' + error.message, true);
       btn.textContent = textoOriginal;
       btn.disabled = false;
+      btn.classList.remove('inactivo'); // Re-habilitar si falló
     }
   }
 
