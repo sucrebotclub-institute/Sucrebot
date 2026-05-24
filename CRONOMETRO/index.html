@@ -1496,6 +1496,13 @@
     cerrarModalRonda();
     getRonda(rondaActual).cerrada = true;
     
+    // ✅ Limpiar participante activo en GAS para que no se recargue por polling
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
+    }).catch(e => console.error('Error clearing activo:', e));
+    
     if (rondaActual < maxRondas) {
       // Pasar clasificados a siguiente ronda
       const ant = rondaActual;
@@ -1585,6 +1592,7 @@
       const raw = localStorage.getItem(getEstadoKey());
       if (!raw) {
         // Estado limpio para esta categoría - empezar en Ronda 0 (revisión)
+        console.log('✅ No hay estado guardado - Iniciando en RONDA 0 (REVISIÓN)');
         rondaActual = 0;
         intentoActual = 1;
         maxRondas = parseInt(document.getElementById('cfg-rondas').value) || 3;
@@ -1599,6 +1607,7 @@
       
       const estado = JSON.parse(raw);
       rondaActual = estado.rondaActual !== undefined ? estado.rondaActual : 0;
+      console.log(`📂 Cargando estado guardado - rondaActual: ${rondaActual}, competenciaIniciada: ${estado.competenciaIniciada}`);
       intentoActual = estado.intentoActual || 1;
       maxRondas = estado.maxRondas || 3;
       maxIntentos = estado.maxIntentos || 2;
