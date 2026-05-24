@@ -1021,8 +1021,16 @@
       <div class="p-badge">${badgeText}</div>
     `;
     
+    // ✅ En Ronda 0 (Revisión): agregar participante al ranking para pre-carga
+    if (rondaActual === 0) {
+      agregarCompetido(p.robot, '—', 0, 0);
+      actualizarContadorCompetidos();
+      renderTodasRondas();
+      guardarEstado();
+    }
+    
     const mensaje = rondaActual === 0 
-      ? '✓ Revisión: ' + (p.robot || p.nombre)
+      ? '✓ Revisión: ' + (p.robot || p.nombre) + ' agregado al ranking'
       : '✓ Nuevo participante: ' + (p.robot || p.nombre);
     showToast(mensaje);
   }
@@ -1274,17 +1282,32 @@
     // Ocultar botón
     document.getElementById('btn-iniciar-competencia').classList.add('oculto');
     
-    // Pasar a Ronda 1
+    // ✅ Pasar participantes de Ronda 0 a Ronda 1
+    const ronda0 = getRonda(0);
     rondaActual = 1;
     intentoActual = 1;
-    rondasData[1] = { clasificados: [], eliminados: [], cerrada: false };
+    
+    // Crear Ronda 1 con los participantes pre-cargados de Ronda 0
+    rondasData[1] = { 
+      clasificados: ronda0.clasificados.map(c => ({
+        ...c,
+        tiempo: '—',
+        tiempos: [],
+        ronda: 1,
+        intento: 0,
+        ts: Date.now()
+      })), 
+      eliminados: [], 
+      cerrada: false 
+    };
     
     actualizarBadges();
     renderTodasRondas();
     limpiarParticipante();
     guardarEstado();
     
-    showToast('🏁 Competencia iniciada · Ronda 1');
+    const numParticipantes = rondasData[1].clasificados.length;
+    showToast(`🏁 Competencia iniciada · ${numParticipantes} participantes en Ronda 1`);
   }
 
   // ══════════════════════════════════════════════════════════════
