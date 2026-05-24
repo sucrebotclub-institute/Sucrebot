@@ -1393,12 +1393,22 @@
     const c = rd.clasificados.find(x => x.ts === ts);
     if (!c) return;
     
-    // ✅ Si ya hay un participante activo, pedir confirmación para cambiarlo
+    console.log('🔍 seleccionarCompetido:', {
+      clickeado: c.robot,
+      actual: participanteActual?.robot || 'ninguno'
+    });
+    
+    // ✅ Si ya hay un participante activo Y es diferente, pedir confirmación
     if (participanteActual && participanteActual.robot !== c.robot) {
+      console.log('⚠️ Pidiendo confirmación para cambiar de', participanteActual.robot, 'a', c.robot);
       const confirmar = confirm(
         `Ya tienes a "${participanteActual.robot}" seleccionado.\n\n¿Cambiar a "${c.robot}"?`
       );
-      if (!confirmar) return;
+      if (!confirmar) {
+        console.log('❌ Cambio cancelado');
+        return;
+      }
+      console.log('✅ Cambio confirmado');
     }
     
     // ✅ Limpiar GAS activo para que polling no sobrescriba esta selección manual
@@ -1408,10 +1418,17 @@
       body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
     }).catch(e => console.error('Error clearing activo:', e));
     
+    // ✅ Actualizar participante actual con datos frescos
     participanteActual = {
-      id: c.id, robot: c.robot, nombre: c.nombre,
-      institucion: c.institucion, ciudad: c.ciudad, categoria: c.categoria
+      id: c.id, 
+      robot: c.robot, 
+      nombre: c.nombre,
+      institucion: c.institucion, 
+      ciudad: c.ciudad, 
+      categoria: c.categoria
     };
+    
+    console.log('✅ Nuevo participanteActual:', participanteActual.robot);
     
     intentosLog = [];
     intentoActual = 1;
