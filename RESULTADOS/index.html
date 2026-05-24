@@ -516,6 +516,24 @@
   <script>
     const GAS_URL = CONFIG.GAS_URL();
 
+    // ✅ Mapeo de categorías a rutas (códigos cortos para GAS)
+    const RUTAS = {
+      // AMATEUR
+      'Insectos': 'INS',
+      'Trepador (Amateur)': 'TRP_A',
+      'Seguidor de línea ST (Amateur)': 'SL_A',
+      // PRO
+      'Seguidor de línea ST (Pro)': 'SL_P',
+      'Minisumo Autónomo': 'MS_A',
+      'Minisumo RC': 'MS_RC',
+      'Bailarín': 'BAI',
+      'Batalla': 'BAT',
+      'Trepador (Pro)': 'TRP_P',
+      'Robot soccer': 'SOC',
+      // EXTRA
+      'Cubo Rubik': 'CR'
+    };
+
     const RUTAS_NOMBRE = {
       // AMATEUR
       'Insectos':                           'Insectos',
@@ -759,8 +777,26 @@
           gasGet({ action: 'getAllActivos' })
         ]);
 
-        if (estados && typeof estados === 'object') todosEstados = estados;
-        if (activos && typeof activos === 'object') todosActivos = activos;
+        // ✅ Mapear de rutas cortas (INS, TRP_A) a nombres completos (Insectos, Trepador Amateur)
+        if (estados && typeof estados === 'object') {
+          todosEstados = {};
+          Object.keys(RUTAS).forEach(categoria => {
+            const rutaCorta = RUTAS[categoria];
+            if (estados[rutaCorta]) {
+              todosEstados[categoria] = estados[rutaCorta];
+            }
+          });
+        }
+        
+        if (activos && typeof activos === 'object') {
+          todosActivos = {};
+          Object.keys(RUTAS).forEach(categoria => {
+            const rutaCorta = RUTAS[categoria];
+            if (activos[rutaCorta]) {
+              todosActivos[categoria] = activos[rutaCorta];
+            }
+          });
+        }
 
         renderTabs(); // actualiza rutasConDatos
 
