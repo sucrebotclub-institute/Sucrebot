@@ -1393,6 +1393,14 @@
     const c = rd.clasificados.find(x => x.ts === ts);
     if (!c) return;
     
+    // ✅ Si ya hay un participante activo, pedir confirmación para cambiarlo
+    if (participanteActual && participanteActual.robot !== c.robot) {
+      const confirmar = confirm(
+        `Ya tienes a "${participanteActual.robot}" seleccionado.\n\n¿Cambiar a "${c.robot}"?`
+      );
+      if (!confirmar) return;
+    }
+    
     // ✅ Limpiar GAS activo para que polling no sobrescriba esta selección manual
     fetch(GAS_URL, {
       method: 'POST',
