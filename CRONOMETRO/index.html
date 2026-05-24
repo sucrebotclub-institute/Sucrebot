@@ -1223,6 +1223,11 @@
     const log = document.getElementById('intentos-log');
     const lista = document.getElementById('intentos-lista');
     
+    // ✅ Siempre oculto - la información ya está en el ranking
+    log.style.display = 'none';
+    return;
+    
+    /* CÓDIGO ORIGINAL COMENTADO - info duplicada en ranking
     if (intentosLog.length === 0) {
       log.style.display = 'none';
       return;
@@ -1237,6 +1242,7 @@
         <span class="intento-tiempo ${i.tiempo === mejor ? 'intento-mejor' : ''}">${i.tiempo}${i.tiempo === mejor ? ' ★' : ''}</span>
       </div>
     `).join('');
+    */
   }
 
   function actualizarBadges() {
@@ -1409,11 +1415,11 @@
         <div class="p-robot">${c.robot}</div>
         <div class="p-inst">${c.institucion || ''}${c.ciudad ? ' · ' + c.ciudad : ''}</div>
       </div>
-      <div class="p-badge">RE-INTENTO</div>
+      <div class="p-badge">LISTO ✓</div>
     `;
     
     document.getElementById('intentos-log').style.display = 'none';
-    showToast('✓ ' + c.robot + ' listo para nuevo intento');
+    showToast('✓ ' + c.robot + ' seleccionado');
   }
 
   function actualizarContadorCompetidos() {
