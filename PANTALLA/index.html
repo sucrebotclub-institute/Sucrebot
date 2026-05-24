@@ -754,6 +754,24 @@
   // ── Lógica en vivo ──
   const GAS_URL = CONFIG.GAS_URL();
 
+  // ✅ Mapeo de categorías a rutas (códigos cortos para GAS)
+  const RUTAS = {
+    // AMATEUR
+    'Insectos': 'INS',
+    'Trepador (Amateur)': 'TRP_A',
+    'Seguidor de línea ST (Amateur)': 'SL_A',
+    // PRO
+    'Seguidor de línea ST (Pro)': 'SL_P',
+    'Minisumo Autónomo': 'MS_A',
+    'Minisumo RC': 'MS_RC',
+    'Bailarín': 'BAI',
+    'Batalla': 'BAT',
+    'Trepador (Pro)': 'TRP_P',
+    'Robot soccer': 'SOC',
+    // EXTRA
+    'Cubo Rubik': 'CR'
+  };
+
   const RUTAS_NOMBRE = {
     // AMATEUR
     'Insectos': 'Insectos',
@@ -928,17 +946,18 @@
 
   async function cargarDatos() {
     try {
-      const rutas = Object.keys(RUTAS_NOMBRE);
-      await Promise.all(rutas.map(async ruta => {
-        const qs = new URLSearchParams({ action: 'getEstado', ruta }).toString();
+      const categorias = Object.keys(RUTAS_NOMBRE);
+      await Promise.all(categorias.map(async categoria => {
+        const rutaCorta = RUTAS[categoria] || categoria; // usar código corto para GAS
+        const qs = new URLSearchParams({ action: 'getEstado', ruta: rutaCorta }).toString();
         const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
         const data = await r.json();
-        todosEstados[ruta] = data;
+        todosEstados[categoria] = data; // guardar con nombre completo como key
 
-        const qs2 = new URLSearchParams({ action: 'getActivo', ruta }).toString();
+        const qs2 = new URLSearchParams({ action: 'getActivo', ruta: rutaCorta }).toString();
         const r2 = await fetch(GAS_URL + '?' + qs2, { redirect: 'follow' });
         const data2 = await r2.json();
-        todosActivos[ruta] = data2;
+        todosActivos[categoria] = data2; // guardar con nombre completo como key
       }));
 
       renderTabs();
