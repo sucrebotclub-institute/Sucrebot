@@ -1393,6 +1393,13 @@
     const c = rd.clasificados.find(x => x.ts === ts);
     if (!c) return;
     
+    // ✅ Limpiar GAS activo para que polling no sobrescriba esta selección manual
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
+    }).catch(e => console.error('Error clearing activo:', e));
+    
     participanteActual = {
       id: c.id, robot: c.robot, nombre: c.nombre,
       institucion: c.institucion, ciudad: c.ciudad, categoria: c.categoria
