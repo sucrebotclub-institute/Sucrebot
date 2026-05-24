@@ -66,16 +66,18 @@
     .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
     
     .btn-cerrar-categoria, .btn-descargar-excel {
+      width: 100%;
       color: #ffffff;
       border: 2px solid rgba(255,255,255,0.3);
-      padding: 10px 20px;
+      padding: 12px 16px;
       border-radius: 10px;
       font-family: 'Exo 2', sans-serif;
-      font-size: 13px;
+      font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
       display: none;
+      text-align: center;
     }
     .btn-cerrar-categoria { background: linear-gradient(135deg, #ff6b35 0%, #e05a2f 100%); box-shadow: 0 4px 16px rgba(255,107,53,0.3); }
     .btn-cerrar-categoria.visible { display: block; }
@@ -85,19 +87,38 @@
     .btn-descargar-excel.visible { display: block; }
     .btn-descargar-excel:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,122,60,0.5); }
     
-    .crono-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+    .crono-layout { display: grid; grid-template-columns: 300px 1fr 340px; gap: 20px; align-items: start; }
+    
+    /* ── COLUMNAS ── */
+    .col-config { display: flex; flex-direction: column; gap: 16px; }
+    .col-crono { display: flex; flex-direction: column; gap: 16px; }
+    
+    /* ── BADGES CONTAINER ── */
+    .badges-container {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: var(--surface);
+      border: 2px solid var(--border2);
+      border-radius: 10px;
+    }
+    .ronda-badge, .intento-badge {
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
+    }
     
     /* ── SELECTOR CATEGORÍA ── */
     .evento-row { 
       display: flex; 
-      align-items: center; 
-      gap: 16px; 
-      margin-bottom: 20px; 
+      flex-direction: column;
+      gap: 10px; 
       background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
       border: 2px solid var(--border2); 
       border-left: 6px solid var(--cyan); 
-      border-radius: 16px; 
-      padding: 18px 22px; 
+      border-radius: 12px; 
+      padding: 14px 16px; 
       box-shadow: 0 4px 20px rgba(13, 40, 71, 0.3);
       transition: all 0.3s;
     }
@@ -106,28 +127,27 @@
       transform: translateY(-2px); 
     }
     .evento-row label { 
-      font-size: 0.7rem; 
+      font-size: 0.65rem; 
       color: var(--cyan); 
       font-family: var(--font-mono); 
       letter-spacing: 0.2em; 
-      white-space: nowrap; 
       text-transform: uppercase; 
       font-weight: 700; 
       display: flex; 
       align-items: center; 
-      gap: 10px;
+      gap: 8px;
     }
-    .evento-row label::before { content: '⚡'; font-size: 1.3rem; }
+    .evento-row label::before { content: '⚡'; font-size: 1.1rem; }
     .evento-row select { 
-      flex: 1; 
+      width: 100%;
       background: var(--surface-light); 
       border: 2px solid #e2e8f0; 
       color: var(--surface); 
       font-family: var(--font-body); 
-      font-size: 1rem; 
+      font-size: 0.9rem; 
       font-weight: 700; 
-      padding: 12px 16px; 
-      border-radius: 10px; 
+      padding: 10px 12px; 
+      border-radius: 8px; 
       outline: none; 
       cursor: pointer; 
       transition: all 0.2s;
@@ -140,16 +160,16 @@
     .aviso-categoria {
       background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
       border: 2px solid #ffc107;
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
+      border-radius: 10px;
+      padding: 12px 14px;
       color: #856404;
       font-family: var(--font-body);
-      font-size: 0.9rem;
+      font-size: 0.75rem;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      text-align: center;
     }
     
     /* ── STRIP PARTICIPANTE ── */
@@ -225,21 +245,21 @@
     .ronda-config { 
       background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
       border: 2px solid var(--border2); 
-      border-radius: 14px; 
-      padding: 14px 18px; 
-      margin-bottom: 16px; 
-      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      border-radius: 12px; 
+      padding: 14px 16px; 
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .ronda-config-title { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em; color: var(--cyan); font-weight: 700; }
-    .ronda-control { display: flex; align-items: center; gap: 8px; }
-    .ronda-control label { font-size: 0.78rem; color: var(--text); font-family: var(--font-body); white-space: nowrap; font-weight: 600; }
+    .ronda-config-title { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--cyan); font-weight: 700; }
+    .ronda-control { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .ronda-control label { font-size: 0.75rem; color: var(--text); font-family: var(--font-body); font-weight: 600; }
     .ronda-control input { 
-      width: 56px; background: var(--surface-light); border: 2px solid #e2e8f0; 
-      color: var(--surface); font-family: var(--font-mono); font-size: 0.95rem; 
-      font-weight: 700; padding: 7px 10px; border-radius: 8px; outline: none; text-align: center;
+      width: 60px; background: var(--surface-light); border: 2px solid #e2e8f0; 
+      color: var(--surface); font-family: var(--font-mono); font-size: 0.9rem; 
+      font-weight: 700; padding: 6px 8px; border-radius: 8px; outline: none; text-align: center;
     }
     .ronda-control input:focus { border-color: var(--cyan); }
-    .ronda-status { margin-left: auto; display: flex; gap: 8px; align-items: center; }
     .ronda-badge { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; background: var(--cyan); color: var(--surface); font-weight: 700; }
     .intento-badge { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; background: var(--accent2); color: var(--text); font-weight: 700; }
     
@@ -303,14 +323,13 @@
       width: 100%;
       font-family: var(--font-body);
       font-weight: 700;
-      padding: 16px;
-      border-radius: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 16px;
-      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+      font-size: 0.8rem;
       background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
       border: 2px solid #f59e0b;
       color: #78350f;
@@ -433,19 +452,18 @@
     .toast.show { transform: translateX(-50%) translateY(0); }
     
     /* ── RESPONSIVE ── */
-    @media (max-width: 880px) { 
+    @media (max-width: 1200px) { 
       .crono-wrapper { padding: 20px 12px 40px; }
       .crono-layout { grid-template-columns: 1fr; gap: 20px; }
+      .col-config { max-width: 600px; margin: 0 auto; }
+      .col-crono { max-width: 800px; margin: 0 auto; }
       .crono-header-row { flex-direction: column; gap: 12px; align-items: stretch; }
       .crono-section-title { font-size: 2rem; text-align: center; }
-      .header-actions { justify-content: center; }
-      .btn-cerrar-categoria, .btn-descargar-excel { width: 100%; }
-      .evento-row { flex-direction: column; align-items: stretch; gap: 12px; padding: 16px; }
-      .evento-row label { justify-content: center; }
+      .header-actions { justify-content: center; display: none; }
       #cronometro { font-size: 3.8rem; }
       .btn-row { grid-template-columns: 1fr; gap: 8px; }
       .competidos-card { position: static; max-height: none; }
-      .ronda-status { width: 100%; justify-content: center; margin-left: 0; }
+      .badges-container { justify-content: center; }
     }
   </style>
 </head>
@@ -467,25 +485,28 @@
   </div>
 
   <div class="crono-layout">
-    <div>
+    <!-- ═══════════════════════════════════════════════════════════
+         COLUMNA IZQUIERDA: CONFIGURACIÓN Y CONTROLES
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="col-config">
       <!-- Selección de categoría -->
       <div class="evento-row">
         <label>CATEGORÍA</label>
         <select id="select-categoria">
-          <option value="">— Selecciona una categoría —</option>
+          <option value="">— Selecciona —</option>
           <optgroup label="🏅 AMATEUR">
             <option value="Insectos">Insectos</option>
             <option value="Trepador (Amateur)">Trepador (Amateur)</option>
-            <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+            <option value="Seguidor de línea ST (Amateur)">Seguidor ST (Amateur)</option>
           </optgroup>
           <optgroup label="🏆 PRO">
-            <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+            <option value="Seguidor de línea ST (Pro)">Seguidor ST (Pro)</option>
             <option value="Minisumo Autónomo">Minisumo Autónomo</option>
             <option value="Minisumo RC">Minisumo RC</option>
             <option value="Bailarín">Bailarín</option>
             <option value="Batalla">Batalla</option>
             <option value="Trepador (Pro)">Trepador (Pro)</option>
-            <option value="Robot soccer">Robot soccer</option>
+            <option value="Robot soccer">Robot Soccer</option>
           </optgroup>
           <optgroup label="⭐ EXTRA">
             <option value="Cubo Rubik">Cubo Rubik</option>
@@ -495,9 +516,42 @@
 
       <!-- Aviso categoría -->
       <div class="aviso-categoria" id="aviso-categoria">
-        ⚠️ Selecciona una categoría para empezar a recibir participantes del escáner
+        ⚠️ Selecciona una categoría para empezar
       </div>
 
+      <!-- Configuración de ronda -->
+      <div class="ronda-config">
+        <div class="ronda-config-title">CONFIG</div>
+        <div class="ronda-control">
+          <label>Rondas:</label>
+          <input type="number" id="cfg-rondas" value="3" min="1" max="10" />
+        </div>
+        <div class="ronda-control">
+          <label>Intentos:</label>
+          <input type="number" id="cfg-intentos" value="2" min="1" max="5" />
+        </div>
+      </div>
+
+      <!-- Badges de estado -->
+      <div class="badges-container">
+        <span class="ronda-badge" id="badge-ronda">RONDA 0 · REVISIÓN</span>
+        <span class="intento-badge" id="badge-intento">—</span>
+      </div>
+
+      <!-- Botón Iniciar Competencia -->
+      <button class="btn-iniciar-competencia" id="btn-iniciar-competencia" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
+
+      <!-- Botón Cerrar Categoría -->
+      <button class="btn-cerrar-categoria" id="btn-cerrar-categoria" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
+
+      <!-- Botón Descargar Excel -->
+      <button class="btn-descargar-excel" id="btn-descargar-excel" onclick="exportarExcel()">📊 Descargar Excel</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         COLUMNA CENTRAL: CRONÓMETRO Y ACCIONES
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="col-crono">
       <!-- Participante actual -->
       <div class="participante-strip empty" id="participante-strip">
         <div class="p-info">
@@ -520,43 +574,21 @@
         <button class="btn reset" onclick="reiniciarCrono()">↻ Reiniciar</button>
       </div>
 
-      <!-- Configuración de ronda -->
-      <div class="ronda-config">
-        <div class="ronda-config-title">CONFIG</div>
-        <div class="ronda-control">
-          <label>Rondas:</label>
-          <input type="number" id="cfg-rondas" value="3" min="1" max="10" />
-        </div>
-        <div class="ronda-control">
-          <label>Intentos:</label>
-          <input type="number" id="cfg-intentos" value="2" min="1" max="5" />
-        </div>
-        <div class="ronda-status">
-          <span class="ronda-badge" id="badge-ronda">RONDA 0 · REVISIÓN</span>
-          <span class="intento-badge" id="badge-intento">—</span>
-        </div>
-      </div>
-
-      <!-- Botón Iniciar Competencia (bloquea config) -->
-      <button class="btn-iniciar-competencia" id="btn-iniciar-competencia" onclick="iniciarCompetencia()">🏁 Iniciar Competencia (Bloquear Config)</button>
-
       <!-- Log de intentos del participante actual -->
       <div class="intentos-log" id="intentos-log">
         <div class="intentos-log-title">INTENTOS DEL PARTICIPANTE</div>
         <div id="intentos-lista"></div>
       </div>
 
-      <!-- Botón siguiente intento / siguiente participante -->
+      <!-- Botones de acción -->
       <button class="btn-siguiente" id="btn-siguiente" onclick="siguienteIntento()">➜ Siguiente intento</button>
-      
-      <!-- Botón saltar participante -->
       <button class="btn-saltar" id="btn-saltar" onclick="saltarParticipante()">⏭ Saltar participante</button>
-      
-      <!-- Botón cerrar ronda -->
-      <button class="btn-cerrar-ronda" id="btn-cerrar-ronda" onclick="pedirCerrarRonda()">🏁 Cerrar Ronda <span id="cerrar-ronda-num">1</span></button>
+      <button class="btn-cerrar-ronda" id="btn-cerrar-ronda" onclick="pedirCerrarRonda()">🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span></button>
     </div>
 
-    <!-- Panel derecho: Competidos -->
+    <!-- ═══════════════════════════════════════════════════════════
+         COLUMNA DERECHA: RANKING
+         ═══════════════════════════════════════════════════════════ -->
     <div class="competidos-card">
       <div class="competidos-header">
         <div class="competidos-title">RANKING</div>
