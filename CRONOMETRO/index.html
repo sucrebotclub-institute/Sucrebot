@@ -1317,13 +1317,13 @@
     
     // Crear Ronda 1 con los participantes pre-cargados de Ronda 0
     rondasData[1] = { 
-      clasificados: ronda0.clasificados.map(c => ({
+      clasificados: ronda0.clasificados.map((c, index) => ({
         ...c,
         tiempo: '—',
         tiempos: [],
         ronda: 1,
         intento: 0,
-        ts: Date.now()
+        ts: Date.now() + index // ✅ Timestamp único por participante
       })), 
       eliminados: [], 
       cerrada: false 
