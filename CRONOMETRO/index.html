@@ -298,6 +298,33 @@
     .btn-cerrar-ronda:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5); }
     .btn-cerrar-ronda:disabled { opacity: 0.5; cursor: not-allowed; }
     
+    /* ── BOTÓN INICIAR COMPETENCIA ── */
+    .btn-iniciar-competencia {
+      width: 100%;
+      font-family: var(--font-body);
+      font-weight: 700;
+      padding: 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border: 2px solid #f59e0b;
+      color: #78350f;
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+      display: block;
+    }
+    .btn-iniciar-competencia:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
+    }
+    .btn-iniciar-competencia.oculto {
+      display: none;
+    }
+    
     /* ── PANEL COMPETIDOS / RONDAS ── */
     .competidos-card { 
       background: linear-gradient(135deg, var(--surface-light) 0%, #f8fafc 100%); 
@@ -505,10 +532,13 @@
           <input type="number" id="cfg-intentos" value="2" min="1" max="5" />
         </div>
         <div class="ronda-status">
-          <span class="ronda-badge" id="badge-ronda">RONDA 1</span>
-          <span class="intento-badge" id="badge-intento">INTENTO 1</span>
+          <span class="ronda-badge" id="badge-ronda">RONDA 0 · REVISIÓN</span>
+          <span class="intento-badge" id="badge-intento">—</span>
         </div>
       </div>
+
+      <!-- Botón Iniciar Competencia (bloquea config) -->
+      <button class="btn-iniciar-competencia" id="btn-iniciar-competencia" onclick="iniciarCompetencia()">🏁 Iniciar Competencia (Bloquear Config)</button>
 
       <!-- Log de intentos del participante actual -->
       <div class="intentos-log" id="intentos-log">
@@ -599,12 +629,13 @@
   let cronoInicio = null;
   
   // Sistema de rondas
-  let rondaActual = 1;
+  let rondaActual = 0; // ✅ Inicia en ronda 0 (revisión)
   let intentoActual = 1;
   let maxRondas = 3;
   let maxIntentos = 2;
-  let rondasData = { 1: { clasificados: [], eliminados: [], cerrada: false } };
+  let rondasData = { 0: { clasificados: [], eliminados: [], cerrada: false } }; // ✅ Ronda 0 para revisión
   let intentosLog = []; // intentos del participante actual
+  let competenciaIniciada = false; // ✅ Flag para bloquear config
   
   // ══════════════════════════════════════════════════════════════
   // HELPERS BOTÓN INICIAR (bloquear/desbloquear)
@@ -773,12 +804,13 @@
       // Reset estado
       categoriaActual = null;
       participanteActual = null;
-      rondaActual = 1;
+      rondaActual = 0;  // ✅ Volver a Ronda 0 (revisión)
       intentoActual = 1;
       maxRondas = 3;
       maxIntentos = 2;
-      rondasData = { 1: { clasificados: [], eliminados: [], cerrada: false } };
+      rondasData = { 0: { clasificados: [], eliminados: [], cerrada: false } };
       intentosLog = [];
+      competenciaIniciada = false;  // ✅ Desbloquear config
       
       // Reset UI
       desactivarUICategoria();
@@ -788,9 +820,14 @@
       renderTodasRondas();
       document.getElementById('cfg-rondas').value = 3;
       document.getElementById('cfg-intentos').value = 2;
+      document.getElementById('cfg-rondas').disabled = false;
+      document.getElementById('cfg-intentos').disabled = false;
+      document.getElementById('cfg-rondas').style.opacity = '';
+      document.getElementById('cfg-intentos').style.opacity = '';
+      document.getElementById('btn-iniciar-competencia').classList.remove('oculto');
       document.getElementById('competidos-count').textContent = '0';
       document.getElementById('btn-cerrar-ronda').disabled = false;
-      document.getElementById('btn-cerrar-ronda').innerHTML = '🏁 Cerrar Ronda <span id="cerrar-ronda-num">1</span>';
+      document.getElementById('btn-cerrar-ronda').innerHTML = '🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>';
       
       showToast('✅ Categoría cerrada');
     } catch (error) {
@@ -854,15 +891,22 @@
     
     const strip = document.getElementById('participante-strip');
     strip.className = 'participante-strip';
+    
+    // ✅ Badge diferente en Ronda 0 (revisión)
+    const badgeText = rondaActual === 0 ? 'REVISIÓN ✓' : 'LISTO ✓';
+    
     strip.innerHTML = `
       <div class="p-info">
         <div class="p-robot">${p.robot || '—'}</div>
         <div class="p-inst">${p.institucion || ''}${p.ciudad ? ' · ' + p.ciudad : ''}</div>
       </div>
-      <div class="p-badge">LISTO ✓</div>
+      <div class="p-badge">${badgeText}</div>
     `;
     
-    showToast('✓ Nuevo participante: ' + (p.robot || p.nombre));
+    const mensaje = rondaActual === 0 
+      ? '✓ Revisión: ' + (p.robot || p.nombre)
+      : '✓ Nuevo participante: ' + (p.robot || p.nombre);
+    showToast(mensaje);
   }
 
   function limpiarParticipante() {
@@ -900,6 +944,12 @@
   // CRONÓMETRO
   // ══════════════════════════════════════════════════════════════
   function iniciarCrono() {
+    // ✅ Bloqueo en Ronda 0 (solo revisión, no competencia)
+    if (rondaActual === 0) {
+      showToast('⚠️ Ronda 0 es solo para REVISIÓN · Inicia la competencia primero');
+      return;
+    }
+    
     if (!participanteActual) {
       showToast('⚠️ No hay participante seleccionado');
       return;
@@ -1064,9 +1114,55 @@
   }
 
   function actualizarBadges() {
-    document.getElementById('badge-ronda').textContent = 'RONDA ' + rondaActual;
-    document.getElementById('badge-intento').textContent = 'INTENTO ' + intentoActual;
+    if (rondaActual === 0) {
+      document.getElementById('badge-ronda').textContent = 'RONDA 0 · REVISIÓN';
+      document.getElementById('badge-intento').textContent = '—';
+    } else {
+      document.getElementById('badge-ronda').textContent = 'RONDA ' + rondaActual;
+      document.getElementById('badge-intento').textContent = 'INTENTO ' + intentoActual;
+    }
     document.getElementById('cerrar-ronda-num').textContent = rondaActual;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // INICIAR COMPETENCIA (bloquear config y pasar a Ronda 1)
+  // ══════════════════════════════════════════════════════════════
+  function iniciarCompetencia() {
+    if (!categoriaActual) {
+      showToast('⚠️ Primero selecciona una categoría');
+      return;
+    }
+    
+    const confirmar = confirm(
+      `¿Iniciar competencia?\n\n` +
+      `• Rondas: ${maxRondas}\n` +
+      `• Intentos por ronda: ${maxIntentos}\n\n` +
+      `Esto bloqueará la configuración.`
+    );
+    
+    if (!confirmar) return;
+    
+    // Bloquear configuración
+    competenciaIniciada = true;
+    document.getElementById('cfg-rondas').disabled = true;
+    document.getElementById('cfg-intentos').disabled = true;
+    document.getElementById('cfg-rondas').style.opacity = '0.5';
+    document.getElementById('cfg-intentos').style.opacity = '0.5';
+    
+    // Ocultar botón
+    document.getElementById('btn-iniciar-competencia').classList.add('oculto');
+    
+    // Pasar a Ronda 1
+    rondaActual = 1;
+    intentoActual = 1;
+    rondasData[1] = { clasificados: [], eliminados: [], cerrada: false };
+    
+    actualizarBadges();
+    renderTodasRondas();
+    limpiarParticipante();
+    guardarEstado();
+    
+    showToast('🏁 Competencia iniciada · Ronda 1');
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -1357,7 +1453,7 @@
     if (!categoriaActual) return;
     const estado = {
       rondaActual, intentoActual, maxRondas, maxIntentos, rondasData,
-      categoria: categoriaActual
+      categoria: categoriaActual, competenciaIniciada
     };
     localStorage.setItem(getEstadoKey(), JSON.stringify(estado));
   }
@@ -1366,12 +1462,13 @@
     try {
       const raw = localStorage.getItem(getEstadoKey());
       if (!raw) {
-        // Estado limpio para esta categoría
-        rondaActual = 1;
+        // Estado limpio para esta categoría - empezar en Ronda 0 (revisión)
+        rondaActual = 0;
         intentoActual = 1;
         maxRondas = parseInt(document.getElementById('cfg-rondas').value) || 3;
         maxIntentos = parseInt(document.getElementById('cfg-intentos').value) || 2;
-        rondasData = { 1: { clasificados: [], eliminados: [], cerrada: false } };
+        rondasData = { 0: { clasificados: [], eliminados: [], cerrada: false } };
+        competenciaIniciada = false;
         actualizarBadges();
         renderTodasRondas();
         actualizarContadorCompetidos();
@@ -1379,14 +1476,25 @@
       }
       
       const estado = JSON.parse(raw);
-      rondaActual = estado.rondaActual || 1;
+      rondaActual = estado.rondaActual !== undefined ? estado.rondaActual : 0;
       intentoActual = estado.intentoActual || 1;
       maxRondas = estado.maxRondas || 3;
       maxIntentos = estado.maxIntentos || 2;
-      rondasData = estado.rondasData || { 1: { clasificados: [], eliminados: [], cerrada: false } };
+      rondasData = estado.rondasData || { 0: { clasificados: [], eliminados: [], cerrada: false } };
+      competenciaIniciada = estado.competenciaIniciada || false;
       
       document.getElementById('cfg-rondas').value = maxRondas;
       document.getElementById('cfg-intentos').value = maxIntentos;
+      
+      // ✅ Restaurar bloqueo de config si competencia ya inició
+      if (competenciaIniciada) {
+        document.getElementById('cfg-rondas').disabled = true;
+        document.getElementById('cfg-intentos').disabled = true;
+        document.getElementById('cfg-rondas').style.opacity = '0.5';
+        document.getElementById('cfg-intentos').style.opacity = '0.5';
+        document.getElementById('btn-iniciar-competencia').classList.add('oculto');
+      }
+      
       actualizarBadges();
       renderTodasRondas();
       actualizarContadorCompetidos();
@@ -1407,10 +1515,20 @@
 
   // Listeners para configuración
   document.getElementById('cfg-rondas').addEventListener('change', function() {
+    if (competenciaIniciada) {
+      showToast('⚠️ No se puede cambiar la config durante la competencia');
+      this.value = maxRondas;
+      return;
+    }
     maxRondas = parseInt(this.value) || 3;
     guardarEstado();
   });
   document.getElementById('cfg-intentos').addEventListener('change', function() {
+    if (competenciaIniciada) {
+      showToast('⚠️ No se puede cambiar la config durante la competencia');
+      this.value = maxIntentos;
+      return;
+    }
     maxIntentos = parseInt(this.value) || 2;
     document.getElementById('crono-status').textContent = participanteActual 
       ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` 
