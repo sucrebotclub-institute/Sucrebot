@@ -214,8 +214,9 @@
       transition: all 0.2s; text-transform: uppercase;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-    .btn:active { transform: translateY(0); }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { cursor: not-allowed; }
     .btn.start { border-color: var(--green); background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); }
     .btn.stop { border-color: var(--red); background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%); }
     .btn.reset { border-color: var(--accent2); background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); }
@@ -515,7 +516,7 @@
         <div id="intentos-lista"></div>
       </div>
 
-      <!-- Botón siguiente intento -->
+      <!-- Botón siguiente intento / siguiente participante -->
       <button class="btn-siguiente" id="btn-siguiente" onclick="siguienteIntento()">➜ Siguiente intento</button>
       
       <!-- Botón saltar participante -->
@@ -604,6 +605,23 @@
   let maxIntentos = 2;
   let rondasData = { 1: { clasificados: [], eliminados: [], cerrada: false } };
   let intentosLog = []; // intentos del participante actual
+  
+  // ══════════════════════════════════════════════════════════════
+  // HELPERS BOTÓN INICIAR (bloquear/desbloquear)
+  // ══════════════════════════════════════════════════════════════
+  function bloquearBotonIniciar() {
+    const btn = document.querySelector('.btn.start');
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.style.cursor = 'not-allowed';
+  }
+  
+  function desbloquearBotonIniciar() {
+    const btn = document.querySelector('.btn.start');
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = '';
+  }
   
   // ══════════════════════════════════════════════════════════════
   // KEY HELPERS
@@ -829,6 +847,11 @@
     renderIntentosLog();
     document.getElementById('intentos-log').style.display = 'none';
     
+    // Re-habilitar botón Iniciar y ocultar botones de acción (por si venía bloqueado del anterior)
+    desbloquearBotonIniciar();
+    document.getElementById('btn-siguiente').classList.remove('visible');
+    document.getElementById('btn-saltar').classList.remove('visible');
+    
     const strip = document.getElementById('participante-strip');
     strip.className = 'participante-strip';
     strip.innerHTML = `
@@ -882,6 +905,12 @@
       return;
     }
     if (cronoInterval) return; // ya está corriendo
+    
+    // ✅ Bloqueo defensivo: si ya completó todos los intentos, no permitir iniciar
+    if (intentosLog.length >= maxIntentos) {
+      showToast(`⚠️ ${participanteActual.robot} ya completó sus ${maxIntentos} intentos`);
+      return;
+    }
     
     cronoInicio = Date.now();
     cronoInterval = setInterval(actualizarCronometro, 10);
@@ -937,20 +966,39 @@
     // Guardar resultado en GAS
     guardarResultadoGAS(tiempo);
     
-    // Mostrar botones de acción
+    // ✅ Mostrar botones de acción según si quedan intentos
+    const btnSiguiente = document.getElementById('btn-siguiente');
+    const btnSaltar = document.getElementById('btn-saltar');
+    
     if (intentoActual < maxIntentos) {
-      document.getElementById('btn-siguiente').classList.add('visible');
-      document.getElementById('btn-saltar').classList.remove('visible');
+      // Aún quedan intentos: mostrar "Siguiente intento"
+      btnSiguiente.classList.add('visible');
+      btnSiguiente.textContent = '➜ Siguiente intento';
+      btnSaltar.classList.remove('visible');
     } else {
-      document.getElementById('btn-siguiente').classList.remove('visible');
-      document.getElementById('btn-saltar').classList.add('visible');
-      document.getElementById('btn-saltar').textContent = '⏭ Siguiente participante';
+      // ✅ Completó todos los intentos: mostrar "Siguiente participante" en verde
+      btnSiguiente.classList.add('visible');
+      btnSiguiente.textContent = '⏭ Siguiente participante';
+      btnSaltar.classList.remove('visible');
+      
+      // Bloquear el botón Iniciar para evitar intentos extra
+      bloquearBotonIniciar();
+      
+      // Mensaje claro en el status
+      document.getElementById('crono-status').textContent = `✓ COMPLETÓ ${maxIntentos} DE ${maxIntentos} INTENTOS`;
     }
     
     guardarEstado();
   }
 
   function siguienteIntento() {
+    // ✅ Si ya completó todos los intentos, este botón funciona como "Siguiente participante"
+    if (intentoActual >= maxIntentos) {
+      pasarSiguienteParticipante();
+      return;
+    }
+    
+    // Si no, avanzar al siguiente intento normalmente
     intentoActual++;
     actualizarBadges();
     reiniciarCrono();
@@ -958,9 +1006,40 @@
     document.getElementById('btn-saltar').classList.remove('visible');
     document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
   }
+  
+  // ✅ NUEVA FUNCIÓN: limpiar todo y esperar nuevo participante
+  function pasarSiguienteParticipante() {
+    if (!participanteActual) return;
+    
+    const nombreRobot = participanteActual.robot || participanteActual.nombre || 'participante';
+    
+    // Limpiar todo
+    limpiarParticipante();
+    
+    // Re-habilitar botón Iniciar
+    desbloquearBotonIniciar();
+    
+    // Status claro
+    document.getElementById('crono-status').textContent = '⏳ ESPERANDO SIGUIENTE PARTICIPANTE';
+    
+    showToast(`✓ ${nombreRobot} completó sus intentos · Esperando QR del siguiente`);
+  }
 
   function saltarParticipante() {
+    // ✅ Confirmar si el participante aún tenía intentos disponibles
+    if (participanteActual && intentosLog.length < maxIntentos) {
+      const intentosHechos = intentosLog.length;
+      const confirmar = confirm(
+        `⚠️ ${participanteActual.robot} solo hizo ${intentosHechos} de ${maxIntentos} intentos.\n\n¿Saltar de todas formas?`
+      );
+      if (!confirmar) return;
+    }
+    
+    // Re-habilitar botón Iniciar
+    desbloquearBotonIniciar();
+    
     limpiarParticipante();
+    document.getElementById('crono-status').textContent = '⏳ ESPERANDO SIGUIENTE PARTICIPANTE';
     showToast('⏭ Esperando siguiente participante del escáner');
   }
 
@@ -1076,6 +1155,11 @@
     intentoActual = 1;
     actualizarBadges();
     reiniciarCrono();
+    
+    // ✅ Re-habilitar botón Iniciar y limpiar botones de acción
+    desbloquearBotonIniciar();
+    document.getElementById('btn-siguiente').classList.remove('visible');
+    document.getElementById('btn-saltar').classList.remove('visible');
     
     const strip = document.getElementById('participante-strip');
     strip.className = 'participante-strip';
@@ -1215,6 +1299,7 @@
       actualizarContadorCompetidos();
       renderTodasRondas();
       limpiarParticipante();
+      desbloquearBotonIniciar();
       guardarEstado();
       showToast('🏁 Ronda ' + ant + ' cerrada · Ronda ' + rondaActual + ' lista');
     } else {
