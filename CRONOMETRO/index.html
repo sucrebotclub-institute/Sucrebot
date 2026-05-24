@@ -56,12 +56,29 @@
       max-width: 1400px; 
       margin: 0 auto; 
       padding: 16px; 
-      padding-top: 48px; /* Más espacio del nav */
+      padding-top: 24px; /* Espacio moderado del nav */
       position: relative; 
       z-index: 1;
-      height: calc(100vh - 228px); /* Restar header + espacio extra */
+      height: calc(100vh - 204px); /* Restar header + espacio */
       display: flex;
       flex-direction: column;
+    }
+    .crono-header-row { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 16px; 
+      flex-wrap: wrap; 
+      gap: 8px; 
+      flex-shrink: 0; 
+    }
+    .crono-section-title { 
+      font-family: var(--font-display); 
+      font-size: 2rem; 
+      letter-spacing: 0.08em; 
+      color: var(--surface); 
+      margin: 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
     .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -497,6 +514,9 @@
         margin: 0 auto;
         overflow-y: visible;
       }
+      .crono-header-row { flex-direction: column; gap: 12px; align-items: stretch; }
+      .crono-section-title { font-size: 1.8rem; text-align: center; }
+      .header-actions { justify-content: center; display: none; }
       #cronometro { font-size: 4rem; }
       .btn-row { grid-template-columns: 1fr; gap: 8px; }
       .competidos-card { 
@@ -521,6 +541,14 @@
 </div>
 
 <div class="crono-wrapper">
+  <div class="crono-header-row">
+    <h1 class="crono-section-title">CRONÓMETRO</h1>
+    <div class="header-actions">
+      <button class="btn-descargar-excel" id="btn-descargar-excel" onclick="exportarExcel()">📊 Descargar Excel</button>
+      <button class="btn-cerrar-categoria" id="btn-cerrar-categoria" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
+    </div>
+  </div>
+
   <div class="crono-layout">
     <!-- ═══════════════════════════════════════════════════════════
          COLUMNA IZQUIERDA: CONFIGURACIÓN Y CONTROLES
