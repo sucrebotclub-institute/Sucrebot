@@ -52,8 +52,17 @@
     }
 
     /* ── LAYOUT ── */
-    .crono-wrapper { max-width: 1100px; margin: 0 auto; padding: 30px 20px 60px; position: relative; z-index: 1; }
-    .crono-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .crono-wrapper { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      position: relative; 
+      z-index: 1;
+      height: calc(100vh - 200px); /* Restar header */
+      display: flex;
+      flex-direction: column;
+    }
+    .crono-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; flex-shrink: 0; }
     .crono-section-title { 
       font-family: var(--font-display); 
       font-size: 2.5rem; 
@@ -87,11 +96,28 @@
     .btn-descargar-excel.visible { display: block; }
     .btn-descargar-excel:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,122,60,0.5); }
     
-    .crono-layout { display: grid; grid-template-columns: 300px 1fr 340px; gap: 20px; align-items: start; }
+    .crono-layout { 
+      display: grid; 
+      grid-template-columns: 280px 1fr 340px; 
+      gap: 20px; 
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
     
     /* ── COLUMNAS ── */
-    .col-config { display: flex; flex-direction: column; gap: 16px; }
-    .col-crono { display: flex; flex-direction: column; gap: 16px; }
+    .col-config { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .col-crono { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 14px;
+      overflow-y: auto;
+    }
     
     /* ── BADGES CONTAINER ── */
     .badges-container {
@@ -184,6 +210,7 @@
       align-items: center; 
       justify-content: space-between;
       box-shadow: 0 4px 16px rgba(13, 40, 71, 0.25);
+      flex-shrink: 0;
     }
     .participante-strip .p-info { flex: 1; min-width: 0; }
     .participante-strip .p-robot { font-size: 1.1rem; font-weight: 700; color: var(--text); }
@@ -197,11 +224,12 @@
       background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%); 
       border: 3px solid var(--border2); 
       border-radius: 16px; 
-      padding: 32px 20px; 
+      padding: 40px 20px; 
       text-align: center; 
       position: relative; 
       overflow: hidden;
       box-shadow: 0 8px 32px rgba(13, 40, 71, 0.4);
+      flex-shrink: 0;
     }
     .crono-display::after { 
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; 
@@ -213,7 +241,7 @@
     
     #cronometro { 
       font-family: var(--font-display); 
-      font-size: 4.5rem; 
+      font-size: 5rem; 
       letter-spacing: 0.08em; 
       color: var(--text); 
       line-height: 1; 
@@ -347,15 +375,22 @@
       border: 2px solid #e2e8f0; 
       border-radius: 16px; 
       padding: 18px; 
-      position: sticky; 
-      top: 20px; 
-      max-height: calc(100vh - 60px); 
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
     .competidos-header { 
       display: flex; align-items: center; justify-content: space-between; 
       margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+    
+    #rondas-container {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
     }
     .competidos-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.15em; color: var(--surface); font-weight: 700; }
     .competidos-count { font-family: var(--font-mono); font-size: 0.72rem; background: var(--cyan); color: var(--surface); padding: 4px 12px; border-radius: 20px; font-weight: 700; }
@@ -450,16 +485,40 @@
     
     /* ── RESPONSIVE ── */
     @media (max-width: 1200px) { 
-      .crono-wrapper { padding: 20px 12px 40px; }
-      .crono-layout { grid-template-columns: 1fr; gap: 20px; }
-      .col-config { max-width: 600px; margin: 0 auto; }
-      .col-crono { max-width: 800px; margin: 0 auto; }
+      .crono-wrapper { 
+        padding: 20px 12px; 
+        height: auto;
+        min-height: calc(100vh - 200px);
+      }
+      .crono-layout { 
+        grid-template-columns: 1fr; 
+        gap: 20px;
+        height: auto;
+      }
+      .col-config { 
+        max-width: 600px; 
+        margin: 0 auto;
+        overflow-y: visible;
+      }
+      .col-crono { 
+        max-width: 800px; 
+        margin: 0 auto;
+        overflow-y: visible;
+      }
       .crono-header-row { flex-direction: column; gap: 12px; align-items: stretch; }
       .crono-section-title { font-size: 2rem; text-align: center; }
       .header-actions { justify-content: center; display: none; }
       #cronometro { font-size: 3.8rem; }
       .btn-row { grid-template-columns: 1fr; gap: 8px; }
-      .competidos-card { position: static; max-height: none; }
+      .competidos-card { 
+        position: static; 
+        max-height: none;
+        height: auto;
+        overflow-y: visible;
+      }
+      #rondas-container {
+        overflow-y: visible;
+      }
       .badges-container { justify-content: center; }
     }
   </style>
