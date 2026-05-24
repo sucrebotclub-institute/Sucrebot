@@ -40,8 +40,6 @@ nav a:hover, nav a.active { color: #ffffff; border-bottom-color: #ffffff; backgr
 .dropdown-menu a:hover { background: rgba(255,255,255,0.07); border-left-color: var(--sucre-blue); }
 .dropdown-menu a svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.6; }
 .dropdown-menu a:hover svg { opacity: 1; }
-.sub-dropdown { display: none; position: absolute; top: -3px; left: 100%; min-width: 210px; background: #1e2030; border: 1px solid #2a2d3e; border-top: 3px solid #ffffff; border-radius: 0 8px 8px 8px; box-shadow: 4px 8px 24px rgba(0,0,0,0.3); z-index: 300; }
-.sub-dropdown.open { display: block; }
 #navStaff { display: none; }
 #navPartDropdown { display: none; }
 
@@ -115,7 +113,7 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     overflow-x: hidden;
   }
   
- /* Top bar móvil - altura fija */
+  /* Top bar móvil - altura fija */
   .top-bar { 
     padding: 10px 12px;
     gap: 12px; 
@@ -130,7 +128,7 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     width: 100vw;
     box-sizing: border-box;
     position: relative;
-    min-height: 44px;  /* Altura mínima fija del top-bar */
+    min-height: 44px;
   }
   .top-bar::-webkit-scrollbar {
     display: none;
@@ -142,7 +140,7 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
   .top-bar a svg { width: 12px; height: 12px; }
   .top-pulse { width: 6px; height: 6px; }
   
- /* Botón login móvil - altura fija */
+  /* Botón login móvil - altura fija */
   .btn-login { 
     padding: 7px 12px;
     font-size: 10px;
@@ -160,7 +158,6 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
     flex-shrink: 0;
     order: -1;  
     min-height: 30px;
-    
   }
   .user-info.visible {
     display: flex !important;
@@ -216,71 +213,40 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
   
   /* Dropdowns en móvil */
   .nav-dropdown {
-    position: relative;
+    position: static !important;
     flex-shrink: 0;
   }
   
- /* Dropdown menu móvil */
+  /* Dropdown menu móvil - posición fija ocupando todo el ancho */
   .dropdown-menu {
-    position: fixed;
-    top: 165px !important;  /* top-bar + header + nav */
-    left: 0;
-    right: 0;
-    min-width: 100%;
-    border-radius: 0;
-    border: none;
-    border-top: 3px solid var(--sucre-blue);
-    border-bottom: 2px solid var(--sucre-blue);
-    max-height: calc(100vh - 165px);
-    overflow-y: auto;
-    z-index: 999;
+    position: fixed !important;
+    top: 165px !important;
+    left: 0 !important;
+    right: 0 !important;
+    min-width: 100% !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-top: 3px solid var(--sucre-blue) !important;
+    border-bottom: 2px solid var(--sucre-blue) !important;
+    max-height: calc(100vh - 165px) !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    z-index: 999 !important;
   }
   .dropdown-menu a {
     padding: 14px 20px;
     font-size: 14px;
   }
   
-  /* Sub-dropdown móvil */
-  .sub-dropdown {
-    position: static;
-    border: none;
-    border-radius: 0;
-    background: rgba(0,0,0,0.25);
-    box-shadow: none;
-  }
-  .sub-dropdown a {
-    padding: 12px 20px 12px 40px;
-    font-size: 13px;
-  }
- /* Fix específico para TODOS los dropdowns en móvil */
-  #menuEventos,
+  /* Fix específico para TODOS los dropdowns en móvil */
+  #menuSucrebot,
   #menuParticipantes,
   #menuStaff {
     top: 165px !important;
   }
   
-  #wrapSucrebot {
-    display: block;
-    position: relative;
-  }
-  
-  #menuSucrebot {
-    position: static !important;
-    display: none;
-    width: 100%;
-    background: rgba(0,0,0,0.4) !important;
-    border: none !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-  }
-  
-  #menuSucrebot.open {
-    display: block !important;
-  }
-  
-  #menuSucrebot a {
-    padding-left: 40px !important;
-  }
   /* Hero móvil */
   .hero {
     min-height: 280px;
@@ -407,28 +373,5 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2
   .footer-links {
     gap: 16px;
     font-size: 11px;
-  }
-}
-/* DROPDOWN MÓVIL - Posicionamiento fixed para que aparezca debajo del nav */
-  @media (max-width: 768px) {
-    .dropdown-menu {
-      position: fixed !important;
-      top: 110px !important; /* Altura del top-bar + header en móvil */
-      left: 0 !important;
-      right: 0 !important;
-      min-width: 100% !important;
-      max-width: 100vw !important;
-      border-radius: 0 !important;
-      margin: 0 !important;
-    }
-    
-    .sub-dropdown {
-      position: static !important;
-      width: 100% !important;
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      border-top: 1px solid rgba(255,255,255,0.1) !important;
-      margin-top: 0 !important;
-    }
   }
 }
