@@ -224,52 +224,6 @@
       }
     }
 
-    /* ── LIVE CRONO (participante actual) ── */
-    .live-crono {
-      background: linear-gradient(135deg, rgba(26, 92, 168, 0.05), rgba(91, 200, 240, 0.05));
-      border: 2px solid #5bc8f0;
-      border-radius: 12px;
-      padding: 16px 24px;
-      margin-bottom: 20px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 12px rgba(91, 200, 240, 0.1);
-    }
-    .live-crono.show { display: flex; }
-    .live-crono-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .live-crono-pulse {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: #5bc8f0;
-      box-shadow: 0 0 10px #5bc8f0;
-      animation: blink 1s ease-in-out infinite;
-    }
-    .live-crono-label {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.14em;
-      color: #1a5ca8;
-      font-weight: 600;
-    }
-    .live-crono-robot {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #0e2a5a;
-    }
-    .live-crono-tiempo {
-      font-family: var(--font-display);
-      font-size: 2.4rem;
-      letter-spacing: 0.06em;
-      color: #1a5ca8;
-      text-shadow: 0 0 24px rgba(26, 92, 168, 0.3);
-      font-weight: 700;
-    }
-
     /* ── TABLA ── */
     .tabla-wrap {
       flex: 1;
@@ -367,29 +321,11 @@
     }
 
     /* Intentos */
-    .td-intentos { min-width: 260px; }
-    .chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .chip {
+    .td-intentos { min-width: 140px; }
+    .intento-num {
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: #f5f7fa;
-      border: 1px solid #d0d4da;
       color: #6a7a94;
-      white-space: nowrap;
-    }
-    .chip.mejor {
-      background: linear-gradient(135deg, #1a5ca8, #2474cc);
-      border-color: #1a5ca8;
-      color: #ffffff;
-      font-weight: 600;
-      box-shadow: 0 2px 8px rgba(26, 92, 168, 0.2);
     }
 
     /* Altura de fila */
@@ -480,18 +416,6 @@
     <!-- Tabs de categorías -->
     <div class="cat-tabs" id="cat-tabs"></div>
 
-    <!-- Live cronómetro (participante actual) -->
-    <div class="live-crono" id="live-crono">
-      <div class="live-crono-left">
-        <div class="live-crono-pulse"></div>
-        <div>
-          <div class="live-crono-label">EN PISTA</div>
-          <div class="live-crono-robot" id="lc-robot">—</div>
-        </div>
-      </div>
-      <div class="live-crono-tiempo" id="lc-tiempo">00:00:00</div>
-    </div>
-
     <!-- Tabla de resultados -->
     <div class="tabla-wrap" id="tv-tabla-wrap">
       <div class="empty-state">
@@ -511,51 +435,25 @@
   <div data-include="../shared/components/footer.html"></div>
 
   <!-- ══════════════════════════════════════════════════════════════
-       LÓGICA DE LA PÁGINA RESULTADOS
+       LÓGICA DE LA PÁGINA RESULTADOS (LEE DESDE JSON DE GITHUB)
        ══════════════════════════════════════════════════════════════ -->
   <script>
-    const GAS_URL = CONFIG.GAS_URL();
+    const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
 
-    // ✅ Mapeo de categorías a rutas (códigos cortos para GAS) - deben coincidir con CATEGORIA_MAP en GAS
-    const RUTAS = {
-      // AMATEUR
-      'Insectos': 'ins',
-      'Trepador (Amateur)': 'trp_a',
-      'Seguidor de línea ST (Amateur)': 'sl_a',
-      // PRO
-      'Seguidor de línea ST (Pro)': 'sl_p',
-      'Minisumo Autónomo': 'ms_a',
-      'Minisumo RC': 'ms_rc',
-      'Bailarín': 'bai',
-      'Batalla': 'bat',
-      'Trepador (Pro)': 'trp_p',
-      'Robot soccer': 'soc',
-      // EXTRA
-      'Cubo Rubik': 'cr'
-    };
-
+    // ✅ Mapeo de categorías
     const RUTAS_NOMBRE = {
-      // AMATEUR
-      'Insectos':                           'Insectos',
-      'Trepador (Amateur)':                 'Trepador (Amateur)',
-      'Seguidor de línea ST (Amateur)':    'Seguidor ST (Amateur)',
-      // PRO
-      'Seguidor de línea ST (Pro)':        'Seguidor ST (Pro)',
-      'Minisumo Autónomo':                  'Minisumo Autónomo',
-      'Minisumo RC':                        'Minisumo RC',
-      'Bailarín':                           'Bailarín',
-      'Batalla':                            'Batalla',
-      'Trepador (Pro)':                     'Trepador (Pro)',
-      'Robot soccer':                       'Robot Soccer',
-      // EXTRA
-      'Cubo Rubik':                         'Cubo Rubik'
+      'ins':   'Insectos',
+      'trp_a': 'Trepador (Amateur)',
+      'sl_a':  'Seguidor ST (Amateur)',
+      'sl_p':  'Seguidor ST (Pro)',
+      'ms_a':  'Minisumo Autónomo',
+      'ms_rc': 'Minisumo RC',
+      'bai':   'Bailarín',
+      'bat':   'Batalla',
+      'trp_p': 'Trepador (Pro)',
+      'soc':   'Robot Soccer',
+      'cr':    'Cubo Rubik'
     };
-
-    async function gasGet(p) {
-      const url = GAS_URL + '?' + new URLSearchParams(p);
-      const r = await fetch(url);
-      return r.json();
-    }
 
     function tiempoASegundos(t) {
       if (!t || t === '—') return Infinity;
@@ -571,8 +469,7 @@
     document.getElementById('tv-hora').textContent = hora();
 
     // ── Estado global ──
-    let todosEstados = {};   // { RUTA: { estado, ts } }
-    let todosActivos = {};   // { RUTA: { raw, ts } }
+    let datosJSON = null;
     let categoriaActiva = null;
     let autoRotarTimer = null;
     let rutasConDatos = [];
@@ -583,7 +480,7 @@
     function iniciarAutoRotar() {
       if (autoRotarTimer) clearInterval(autoRotarTimer);
       autoRotarTimer = setInterval(() => {
-        const activas = rutasConDatos; // solo las que tienen datos
+        const activas = rutasConDatos;
         if (activas.length <= 1) return;
         const idx = activas.indexOf(categoriaActiva);
         const siguiente = activas[(idx + 1) % activas.length];
@@ -597,103 +494,25 @@
       document.querySelectorAll('.cat-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.ruta === ruta);
       });
-      // Renderizar tabla de esa categoría
-      const datos = todosEstados[ruta];
-      if (datos && datos.estado) {
-        renderizarTabla(datos.estado, ruta);
-      } else {
-        mostrarVacio();
-      }
-      // Actualizar live-crono
-      actualizarLiveCrono(ruta);
-    }
-
-    let cronoInterval = null;
-    let cronoInicio = null;
-
-    function actualizarLiveCrono(ruta) {
-      const lc = document.getElementById('live-crono');
-      const activo = todosActivos[ruta];
-      
-      if (!activo || !activo.raw) { 
-        lc.classList.remove('show'); 
-        detenerCronometro();
-        return; 
-      }
-      
-      try {
-        const p = JSON.parse(activo.raw);
-        if (!p || !p.id) { 
-          lc.classList.remove('show'); 
-          detenerCronometro();
-          return; 
-        }
-        
-        document.getElementById('lc-robot').textContent = p.robot || '—';
-        
-        // Iniciar cronómetro si hay timestamp de inicio
-        if (p.inicio && !cronoInterval) {
-          cronoInicio = p.inicio;
-          iniciarCronometro();
-        }
-        
-        lc.classList.add('show');
-      } catch(e) { 
-        lc.classList.remove('show'); 
-        detenerCronometro();
-      }
-    }
-
-    function iniciarCronometro() {
-      if (cronoInterval) clearInterval(cronoInterval);
-      
-      cronoInterval = setInterval(() => {
-        if (!cronoInicio) return;
-        
-        const ahora = Date.now();
-        const transcurrido = ahora - cronoInicio;
-        
-        const centesimas = Math.floor((transcurrido % 1000) / 10);
-        const segundos = Math.floor((transcurrido / 1000) % 60);
-        const minutos = Math.floor(transcurrido / 60000);
-        
-        const tiempo = String(minutos).padStart(2, '0') + ':' +
-                       String(segundos).padStart(2, '0') + ':' +
-                       String(centesimas).padStart(2, '0');
-        
-        document.getElementById('lc-tiempo').textContent = tiempo;
-      }, 10); // Actualizar cada 10ms para suavidad
-    }
-
-    function detenerCronometro() {
-      if (cronoInterval) {
-        clearInterval(cronoInterval);
-        cronoInterval = null;
-        cronoInicio = null;
-        document.getElementById('lc-tiempo').textContent = '00:00:00';
-      }
+      // Renderizar tabla
+      renderizarTabla(ruta);
     }
 
     function renderTabs() {
       const container = document.getElementById('cat-tabs');
       const rutas = Object.keys(RUTAS_NOMBRE);
+      
       container.innerHTML = rutas.map(ruta => {
-        const tieneDatos = todosEstados[ruta] &&
-          todosEstados[ruta].estado &&
-          todosEstados[ruta].estado.rondasData;
-        const tieneParticipantes = tieneDatos && Object.values(todosEstados[ruta].estado.rondasData)
-          .some(r => r.clasificados && r.clasificados.some(c => c.tiempo && c.tiempo !== '—'));
-        return `<button class="cat-tab ${tieneParticipantes ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
+        const tieneDatos = datosJSON && datosJSON.resultados[ruta] && datosJSON.resultados[ruta].length > 0;
+        return `<button class="cat-tab ${tieneDatos ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
           data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">
           ${RUTAS_NOMBRE[ruta]}
         </button>`;
       }).join('');
+      
       // Actualizar lista de rutas con datos
-      rutasConDatos = rutas.filter(ruta =>
-        todosEstados[ruta] &&
-        todosEstados[ruta].estado &&
-        Object.values(todosEstados[ruta].estado.rondasData || {})
-          .some(r => r.clasificados && r.clasificados.some(c => c.tiempo && c.tiempo !== '—'))
+      rutasConDatos = rutas.filter(ruta => 
+        datosJSON && datosJSON.resultados[ruta] && datosJSON.resultados[ruta].length > 0
       );
     }
 
@@ -712,46 +531,53 @@
         </div>`;
     }
 
-    function renderizarTabla(estado, ruta) {
-      if (!estado || !estado.rondasData) { mostrarVacio(); return; }
+    function renderizarTabla(ruta) {
+      if (!datosJSON || !datosJSON.resultados[ruta] || datosJSON.resultados[ruta].length === 0) {
+        mostrarVacio();
+        return;
+      }
 
-      const rondaActual = estado.rondaActual || 1;
-      const rd = estado.rondasData[rondaActual];
-      if (!rd) { mostrarVacio(); return; }
-
-      document.getElementById('tv-ronda').textContent = 'RONDA ' + rondaActual;
+      document.getElementById('tv-ronda').textContent = 'RONDA 1';
       document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[ruta] || ruta;
 
-      const conTiempo = rd.clasificados.filter(c => c.tiempo && c.tiempo !== '—');
-      const ordenados = [...conTiempo].sort((a, b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
+      const datos = datosJSON.resultados[ruta];
+      
+      // Agrupar por robot y encontrar mejor tiempo
+      const porRobot = {};
+      datos.forEach(d => {
+        if (!porRobot[d.robot]) {
+          porRobot[d.robot] = { robot: d.robot, tiempos: [] };
+        }
+        porRobot[d.robot].tiempos.push(d.tiempo);
+      });
+
+      // Calcular mejor tiempo de cada robot
+      const clasificados = Object.values(porRobot).map(r => {
+        const mejorTiempo = r.tiempos.reduce((mejor, actual) => 
+          tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor
+        );
+        return { robot: r.robot, tiempo: mejorTiempo, intentos: r.tiempos.length };
+      });
+
+      // Ordenar por mejor tiempo
+      clasificados.sort((a, b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
 
       const wrap = document.getElementById('tv-tabla-wrap');
 
-      if (ordenados.length === 0) { mostrarVacio(); return; }
-
-      const maxI = Math.max(...ordenados.map(c => (c.tiempos || []).length), 1);
-
-      const filas = ordenados.map((c, i) => {
+      const filas = clasificados.map((c, i) => {
         const pos = i + 1;
         const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
         const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
         const emoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
-
-        const chips = Array.from({length: maxI}, (_, idx) => {
-          const t = c.tiempos && c.tiempos[idx] ? c.tiempos[idx] : '—';
-          const esMejor = t === c.tiempo && t !== '—';
-          return `<span class="chip ${esMejor ? 'mejor' : ''}">${t === '—' ? '—' : 'I'+(idx+1)+': '+t}</span>`;
-        }).join('');
 
         return `
           <tr class="row-altura ${claseRow}">
             <td class="td-pos"><span class="pos-circle ${claseCirc}">${pos <= 3 ? emoji : pos}</span></td>
             <td class="td-robot">
               <div class="robot-name">${c.robot}</div>
-              <div class="robot-inst">${c.institucion || ''}${c.ciudad ? ' · ' + c.ciudad : ''}</div>
             </td>
             <td class="td-mejor"><span class="tiempo-valor">${c.tiempo}</span></td>
-            <td class="td-intentos"><div class="chips">${chips}</div></td>
+            <td class="td-intentos"><span class="intento-num">${c.intentos} intento${c.intentos !== 1 ? 's' : ''}</span></td>
           </tr>`;
       }).join('');
 
@@ -762,54 +588,28 @@
               <th class="c">#</th>
               <th>Robot / Equipo</th>
               <th class="c">Mejor Tiempo</th>
-              <th>Intentos</th>
+              <th class="c">Intentos</th>
             </tr>
           </thead>
           <tbody>${filas}</tbody>
         </table>`;
     }
 
-    // ── Polling principal: trae todos los estados de todas las categorías ──
-    async function pollTodo() {
+    // ── Polling: leer JSON desde GitHub ──
+    async function pollJSON() {
       try {
-        const [estados, activos] = await Promise.all([
-          gasGet({ action: 'getAllEstados' }),
-          gasGet({ action: 'getAllActivos' })
-        ]);
+        const r = await fetch(JSON_URL + '?t=' + Date.now()); // Cache bust
+        datosJSON = await r.json();
 
-        // ✅ Mapear de rutas cortas (ins, trp_a) a nombres completos (Insectos, Trepador Amateur)
-        if (estados && typeof estados === 'object') {
-          todosEstados = {};
-          Object.keys(RUTAS).forEach(categoria => {
-            const rutaCorta = RUTAS[categoria];
-            if (estados[rutaCorta]) {
-              todosEstados[categoria] = estados[rutaCorta];
-            }
-          });
-        }
-        
-        if (activos && typeof activos === 'object') {
-          todosActivos = {};
-          Object.keys(RUTAS).forEach(categoria => {
-            const rutaCorta = RUTAS[categoria];
-            if (activos[rutaCorta]) {
-              todosActivos[categoria] = activos[rutaCorta];
-            }
-          });
-        }
-
-        renderTabs(); // actualiza rutasConDatos
+        renderTabs();
 
         if (!categoriaActiva) {
-          // Primera vez: arrancar en la primera categoría con datos, si no hay ninguna mostrar la primera
           const primera = rutasConDatos[0] || null;
           if (primera) {
             categoriaActiva = primera;
             iniciarAutoRotar();
           }
-          // Si aún no hay datos, no mostrar ninguna tab activa hasta que lleguen
         } else if (rutasConDatos.length > 0 && !rutasConDatos.includes(categoriaActiva)) {
-          // La categoría activa quedó sin datos — saltar a la primera con datos
           categoriaActiva = rutasConDatos[0];
         }
 
@@ -817,13 +617,13 @@
           seleccionarCategoria(categoriaActiva);
         }
       } catch(e) {
-        console.error('Error en pollTodo:', e);
+        console.error('Error al cargar JSON:', e);
       }
     }
 
-    // Polling cada 3s
-    setInterval(pollTodo, 3000);
-    pollTodo();
+    // Polling cada 5s
+    setInterval(pollJSON, 5000);
+    pollJSON();
   </script>
 </body>
 </html>
