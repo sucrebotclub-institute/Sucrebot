@@ -26,9 +26,13 @@
     /* ── ESTILOS ESCÁNER ── */
     .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
     
-    /* Page hero igual que participantes */
-    .page-hero { padding: 40px 0 32px; border-bottom: 1px solid rgba(26,92,168,0.15); margin-bottom: 32px; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
-    .page-hero-content { flex: 1; }
+    /* Page hero COMPACTO - sin robot */
+    .page-hero { 
+      padding: 32px 0 24px; 
+      border-bottom: 1px solid rgba(26,92,168,0.15); 
+      margin-bottom: 24px;
+    }
+    .page-hero-content { width: 100%; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
@@ -37,15 +41,6 @@
     .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; line-height: 1; }
     .page-hero h2 span { color: #1a5ca8; }
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
-
-    /* ── ROBOT ESCÁNER ANIMADO ── */
-    .robot-scanner-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
-    .glow-effect { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 220px; height: 220px; background: radial-gradient(circle, rgba(26,92,168,0.15) 0%, transparent 70%); border-radius: 50%; animation: glow-pulse 3s ease-in-out infinite; pointer-events: none; z-index: -1; }
-    @keyframes glow-pulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.5} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:0.8} }
-    .robot-scanner { width: 180px; height: auto; filter: drop-shadow(0 8px 24px rgba(26,92,168,0.4)); animation: float-robot 4s ease-in-out infinite; z-index: 1; }
-    @keyframes float-robot { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-16px) rotate(2deg)} }
-    .qr-icon { position: absolute; top: -10px; right: -10px; font-size: 48px; z-index: 2; animation: qr-bounce 2s ease-in-out infinite; filter: drop-shadow(0 4px 12px rgba(91,200,240,0.6)); }
-    @keyframes qr-bounce { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-8px) rotate(5deg)} }
 
     /* Contenedor con fondo azul degradado */
     .escaner-container {
@@ -288,6 +283,16 @@
       background: linear-gradient(135deg, #1a5ca8 0%, #0e4a8f 100%);
     }
 
+    /* ── ÍCONO SVG REVISAR ── */
+    .icon-revisar {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      vertical-align: middle;
+      margin-right: 6px;
+      margin-top: -2px;
+    }
+
     /* ── HISTORIAL ── */
     .hist-card {
       background: rgba(255,255,255,0.95);
@@ -377,28 +382,21 @@
     @media (max-width: 768px) {
       .wrapper { padding: 0 12px 40px; }
       
-      /* Hero */
+      /* Hero compacto móvil */
       .page-hero { 
-        grid-template-columns: 1fr; 
-        gap: 20px; 
-        padding: 24px 0 20px;
-        margin-bottom: 20px;
+        padding: 20px 0 16px;
+        margin-bottom: 16px;
       }
       .page-hero h2 { font-size: 2rem; }
       .page-hero p { font-size: 11px; }
       .page-hero-badge { font-size: 8px; padding: 5px 12px; }
-      
-      /* Robot */
-      .robot-scanner-wrapper { width: 140px; height: 140px; margin: 0 auto; }
-      .robot-scanner { width: 120px; }
-      .qr-icon { font-size: 36px; top: -8px; right: -8px; }
-      .glow-effect { width: 160px; height: 160px; }
+      .page-hero-line { flex: 0 0 32px; height: 2px; }
       
       /* Contenedor escáner */
       .escaner-container { 
         padding: 20px 12px; 
         border-radius: 16px;
-        margin-top: 16px;
+        margin-top: 12px;
       }
       
       /* Video card */
@@ -498,11 +496,6 @@
           <p>REGISTRO DE PARTICIPANTES EN TIEMPO REAL</p>
         </div>
       </div>
-      <div class="robot-scanner-wrapper">
-        <div class="glow-effect"></div>
-        <div class="qr-icon">📱</div>
-        <img src="../shared/images/robot-campeon.png" alt="Robot Escáner" class="robot-scanner">
-      </div>
     </div>
 
     <div class="escaner-container">
@@ -543,7 +536,19 @@
             <div><span class="cat-badge" id="res-cat">—</span></div>
           </div>
         </div>
-        <button class="btn-enviar inactivo" id="btn-enviar" onclick="enviarAlCronometro()">⚡ Enviar al cronómetro</button>
+        <button class="btn-enviar inactivo" id="btn-enviar" onclick="enviarAlCronometro()">
+          <svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Documento -->
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="9" y1="13" x2="15" y2="13"></line>
+            <line x1="9" y1="17" x2="15" y2="17"></line>
+            <!-- Lupa -->
+            <circle cx="10" cy="18" r="3"></circle>
+            <line x1="12.5" y1="20.5" x2="15" y2="23"></line>
+          </svg>
+          Enviar a revisión
+        </button>
       </div>
 
       <div class="hist-card">
@@ -775,15 +780,24 @@
       const statusEl = document.getElementById('res-status');
       const btnEnviar = document.getElementById('btn-enviar');
       
+      const iconSVG = `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="9" y1="13" x2="15" y2="13"></line>
+            <line x1="9" y1="17" x2="15" y2="17"></line>
+            <circle cx="10" cy="18" r="3"></circle>
+            <line x1="12.5" y1="20.5" x2="15" y2="23"></line>
+          </svg>`;
+      
       if (yaEnviado) {
         statusEl.textContent = 'YA ENVIADO';
         statusEl.className = 'result-status warning';
-        btnEnviar.textContent = '⚡ Enviar de nuevo al cronómetro';
+        btnEnviar.innerHTML = iconSVG + ' Enviar de nuevo a revisión';
         btnEnviar.classList.remove('inactivo');
       } else {
         statusEl.textContent = 'LISTO';
         statusEl.className = 'result-status success';
-        btnEnviar.textContent = '⚡ Enviar al cronómetro';
+        btnEnviar.innerHTML = iconSVG + ' Enviar a revisión';
         btnEnviar.classList.remove('inactivo');
       }
 
@@ -878,8 +892,11 @@
       const data = await response.json();
 
       if (data.ok) {
-        showToast('✓ ' + participanteActual.robot + ' → cronómetro');
-        btn.textContent = '✓ Enviado al cronómetro';
+        showToast('✓ ' + participanteActual.robot + ' → enviado a revisión');
+        const checkSVG = `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>`;
+        btn.innerHTML = checkSVG + ' Enviado a revisión';
         btn.classList.add('sent');
         
         // Actualizar status
@@ -893,7 +910,15 @@
         // participanteActual = null;
         
         setTimeout(() => {
-          btn.textContent = textoOriginal;
+          const iconSVG = `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="9" y1="13" x2="15" y2="13"></line>
+            <line x1="9" y1="17" x2="15" y2="17"></line>
+            <circle cx="10" cy="18" r="3"></circle>
+            <line x1="12.5" y1="20.5" x2="15" y2="23"></line>
+          </svg>`;
+          btn.innerHTML = iconSVG + ' Enviar a revisión';
           btn.disabled = false;
           btn.classList.remove('sent');
         }, 2000);
@@ -902,7 +927,15 @@
       }
     } catch (error) {
       showToast('Error al enviar: ' + error.message, true);
-      btn.textContent = textoOriginal;
+      const iconSVG = `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="9" y1="13" x2="15" y2="13"></line>
+        <line x1="9" y1="17" x2="15" y2="17"></line>
+        <circle cx="10" cy="18" r="3"></circle>
+        <line x1="12.5" y1="20.5" x2="15" y2="23"></line>
+      </svg>`;
+      btn.innerHTML = iconSVG + ' Enviar a revisión';
       btn.disabled = false;
       btn.classList.remove('inactivo');
     }
