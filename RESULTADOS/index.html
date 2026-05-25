@@ -516,22 +516,22 @@
   <script>
     const GAS_URL = CONFIG.GAS_URL();
 
-    // ✅ Mapeo de categorías a rutas (códigos cortos para GAS)
+    // ✅ Mapeo de categorías a rutas (códigos cortos para GAS) - deben coincidir con CATEGORIA_MAP en GAS
     const RUTAS = {
       // AMATEUR
-      'Insectos': 'INS',
-      'Trepador (Amateur)': 'TRP_A',
-      'Seguidor de línea ST (Amateur)': 'SL_A',
+      'Insectos': 'ins',
+      'Trepador (Amateur)': 'trp_a',
+      'Seguidor de línea ST (Amateur)': 'sl_a',
       // PRO
-      'Seguidor de línea ST (Pro)': 'SL_P',
-      'Minisumo Autónomo': 'MS_A',
-      'Minisumo RC': 'MS_RC',
-      'Bailarín': 'BAI',
-      'Batalla': 'BAT',
-      'Trepador (Pro)': 'TRP_P',
-      'Robot soccer': 'SOC',
+      'Seguidor de línea ST (Pro)': 'sl_p',
+      'Minisumo Autónomo': 'ms_a',
+      'Minisumo RC': 'ms_rc',
+      'Bailarín': 'bai',
+      'Batalla': 'bat',
+      'Trepador (Pro)': 'trp_p',
+      'Robot soccer': 'soc',
       // EXTRA
-      'Cubo Rubik': 'CR'
+      'Cubo Rubik': 'cr'
     };
 
     const RUTAS_NOMBRE = {
@@ -777,7 +777,7 @@
           gasGet({ action: 'getAllActivos' })
         ]);
 
-        // ✅ Mapear de rutas cortas (INS, TRP_A) a nombres completos (Insectos, Trepador Amateur)
+        // ✅ Mapear de rutas cortas (ins, trp_a) a nombres completos (Insectos, Trepador Amateur)
         if (estados && typeof estados === 'object') {
           todosEstados = {};
           Object.keys(RUTAS).forEach(categoria => {
@@ -816,7 +816,9 @@
         if (categoriaActiva) {
           seleccionarCategoria(categoriaActiva);
         }
-      } catch(e) {}
+      } catch(e) {
+        console.error('Error en pollTodo:', e);
+      }
     }
 
     // Polling cada 3s
