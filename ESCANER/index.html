@@ -600,6 +600,56 @@
   let ultimoQrProcesado = null;
   let tiempoUltimoQr = 0;
 
+  // ✅ SISTEMA DE CACHE INTELIGENTE
+  let cacheParticipantes = [];
+  let cacheCategoriasActivas = [];
+  let ultimaActualizacionCache = 0;
+  const INTERVALO_CACHE = 5 * 60 * 1000; // 5 minutos
+
+  // ✅ CARGAR CACHE AL INICIAR
+  window.addEventListener('DOMContentLoaded', async () => {
+    await actualizarCache();
+    // Recargar cache cada 5 minutos
+    setInterval(actualizarCache, INTERVALO_CACHE);
+  });
+
+  async function actualizarCache() {
+    console.log('🔄 Actualizando cache...');
+    try {
+      // Cargar participantes
+      const qsP = new URLSearchParams({ action: 'getParticipantes' }).toString();
+      const rP = await fetch(GAS_URL + '?' + qsP);
+      const participantes = await rP.json();
+      
+      if (Array.isArray(participantes) && participantes.length > 0) {
+        cacheParticipantes = participantes;
+        localStorage.setItem('participantes_cache', JSON.stringify(participantes));
+        console.log(`✅ Cache participantes: ${participantes.length} registros`);
+      }
+
+      // Cargar categorías activas
+      const qsC = new URLSearchParams({ action: 'getCategoriasActivas' }).toString();
+      const rC = await fetch(GAS_URL + '?' + qsC);
+      const categorias = await rC.json();
+      
+      if (Array.isArray(categorias)) {
+        cacheCategoriasActivas = categorias;
+        console.log(`✅ Cache categorías activas: ${categorias.length} categorías`);
+      }
+
+      ultimaActualizacionCache = Date.now();
+      
+    } catch (error) {
+      console.warn('⚠️ Error al actualizar cache, usando datos locales:', error);
+      // Fallback a localStorage si hay error de red
+      const cached = localStorage.getItem('participantes_cache');
+      if (cached) {
+        cacheParticipantes = JSON.parse(cached);
+        console.log('📦 Usando cache local de participantes');
+      }
+    }
+  }
+
   async function toggleScanner() {
     if (scannerActivo) {
       stopScanner();
@@ -682,9 +732,9 @@
   async function procesarQR(qrData) {
     console.log('QR escaneado (RAW):', qrData);
     
-    // ✅ PROTECCIÓN: Evitar procesar el mismo QR en menos de 3 segundos
+    // ✅ PROTECCIÓN: Evitar procesar el mismo QR en menos de 1 segundo
     const ahora = Date.now();
-    if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 3000) {
+    if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 1000) {
       console.log('⏭ Ignorando QR duplicado');
       return;
     }
@@ -704,29 +754,8 @@
         return;
       }
 
-      // ✅ CONSULTAR DATOS COMPLETOS DEL PARTICIPANTE AL GAS
-      let participante = null;
-      
-      try {
-        const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
-        const r = await fetch(GAS_URL + '?' + qs);
-        const lista = await r.json();
-        
-        if (Array.isArray(lista) && lista.length > 0) {
-          // Guardar en caché para uso offline
-          localStorage.setItem('participantes_cache', JSON.stringify(lista));
-          // Buscar el participante por ID
-          participante = lista.find(p => p.id === codigo);
-        }
-      } catch (e) {
-        console.warn('⚠️ Sin conexión, usando caché local');
-        // Fallback: usar caché local
-        const cache = JSON.parse(localStorage.getItem('participantes_cache') || '[]');
-        participante = cache.find(p => p.id === codigo);
-        if (participante) {
-          showToast('⚠️ Usando datos en caché', true);
-        }
-      }
+      // ✅ BUSCAR EN CACHE (INSTANTÁNEO)
+      let participante = cacheParticipantes.find(p => p.id === codigo);
       
       if (!participante) {
         console.error('❌ Participante no encontrado. ID:', codigo);
@@ -745,8 +774,12 @@
         return;
       }
 
-      // Verificar si la categoría está bloqueada (activa en algún cronómetro)
-      const categoriaBloqueada = await verificarCategoriaBloqueada(categoriaParticipante);
+      // ✅ VERIFICAR EN CACHE SI CATEGORÍA ESTÁ BLOQUEADA (INSTANTÁNEO)
+      const categoriaBloqueada = cacheCategoriasActivas.find(c => {
+        const catActiva = String(c.categoria || '').toLowerCase().trim();
+        const catBuscada = String(categoriaParticipante || '').toLowerCase().trim();
+        return catActiva === catBuscada;
+      });
       
       if (!categoriaBloqueada) {
         console.warn('⚠️ Categoría no bloqueada:', categoriaParticipante);
@@ -985,36 +1018,6 @@
         <div class="hist-nombre">${h.nombre || '—'}</div>
       </div>
     `).join('');
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  // VALIDACIÓN DE CATEGORÍA BLOQUEADA
-  // ══════════════════════════════════════════════════════════════
-
-  async function verificarCategoriaBloqueada(categoria) {
-    try {
-      const qs = new URLSearchParams({ action: 'getCategoriasActivas' }).toString();
-      const r = await fetch(GAS_URL + '?' + qs);
-      const activas = await r.json();
-      
-      console.log('Categorías activas:', activas);
-      console.log('Buscando:', categoria);
-      
-      // Buscar si esta categoría está bloqueada
-      const bloqueada = activas.find(c => {
-        // Normalizar ambas strings para comparar
-        const catActiva = String(c.categoria || '').toLowerCase().trim();
-        const catBuscada = String(categoria || '').toLowerCase().trim();
-        return catActiva === catBuscada;
-      });
-      
-      console.log('Categoría bloqueada?', bloqueada);
-      return bloqueada ? true : false;
-      
-    } catch (error) {
-      console.error('Error al verificar categoría bloqueada:', error);
-      return false;
-    }
   }
 
   // ══════════════════════════════════════════════════════════════
