@@ -21,10 +21,10 @@
       color: #1a1c28 !important;
     }
     
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; position: relative; }
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; position: relative; overflow: visible; }
     
     /* ── HERO ── */
-    .page-hero { padding: 28px 0 16px; margin-bottom: 8px; }
+    .page-hero { padding: 48px 0 24px; margin-bottom: 16px; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--r-blue); border: 1px solid var(--r-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
@@ -45,24 +45,24 @@
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
     
     /* ── LAYOUT REORGANIZADO ── */
-    .reg-layout { display: flex; align-items: flex-start; gap: 80px; position: relative; margin-bottom: 60px; }
-    
-    /* Cuadro decorativo izquierdo */
-    .reg-layout::before {
+    /* Cuadro decorativo izquierdo - fijo al viewport */
+    body::before {
       content: '';
-      position: absolute;
-      left: -320px;
-      top: -60px;
-      height: calc(100vh - 280px);
-      width: 320px;
+      position: fixed;
+      left: 0;
+      top: 270px;
+      bottom: 60px;
+      width: 280px;
       background: 
         linear-gradient(135deg, rgba(26,92,168,0.85) 0%, rgba(18,20,26,0.90) 100%),
         url('../shared/images/pumatronix_sucrebot.png') center center / cover no-repeat;
       border-radius: 0 16px 16px 0;
       box-shadow: 0 8px 32px rgba(26,92,168,0.3);
       border-right: 2px solid rgba(91,200,240,0.3);
-      z-index: 0;
+      z-index: 1;
     }
+    
+    .reg-layout { display: flex; align-items: flex-start; gap: 80px; position: relative; margin-bottom: 60px; }
     
     .reg-robot { flex: 0 0 420px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
     .reg-robot img { width: 100%; max-width: 400px; height: auto; filter: drop-shadow(0 8px 32px rgba(91,200,240,0.25)); animation: float-robot 4s ease-in-out infinite; }
