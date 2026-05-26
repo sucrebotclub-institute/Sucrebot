@@ -309,7 +309,155 @@
       transform: none !important;
     }
 
-    /* ── TOAST ── */
+    /* ── MODAL NOMBRE EQUIPO ── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: #1a3a6e;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .modal-subtitle {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+
+    .modal-robots {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      border: 2px solid #e0e7ef;
+    }
+
+    .modal-robot-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .modal-robot-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .modal-robot-emoji {
+      font-size: 1.5rem;
+    }
+
+    .modal-robot-name {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.9rem;
+      color: #1a3a6e;
+      font-weight: 600;
+    }
+
+    .modal-input {
+      width: 100%;
+      background: #f8f9fa;
+      border: 2px solid #e0e7ef;
+      color: #1a3a6e;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 1.1rem;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      transition: all 0.2s;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: #1a5ca8;
+      box-shadow: 0 0 0 3px rgba(26,92,168,0.1);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .modal-btn-cancelar {
+      background: #e5e7eb;
+      color: #6b7280;
+    }
+
+    .modal-btn-cancelar:hover {
+      background: #d1d5db;
+    }
+
+    .modal-btn-confirmar {
+      background: linear-gradient(135deg, #1a5ca8 0%, #0e4a8f 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(26,92,168,0.3);
+    }
+
+    .modal-btn-confirmar:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(26,92,168,0.4);
+    }
+
+    .modal-btn-confirmar:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border: 2px solid rgba(0,255,136,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -434,6 +582,35 @@
   </div>
 </main>
 
+<!-- MODAL NOMBRE EQUIPO -->
+<div class="modal-overlay" id="modal-nombre-equipo">
+  <div class="modal-content">
+    <div class="modal-header" id="modal-title">⚽ Nombre del Equipo A</div>
+    <div class="modal-subtitle">Equipo completo con 2 robots</div>
+    
+    <div class="modal-robots" id="modal-robots-list">
+      <!-- Se llena dinámicamente -->
+    </div>
+    
+    <input 
+      type="text" 
+      class="modal-input" 
+      id="input-nombre-equipo" 
+      placeholder="Ej: Los Tigres"
+      maxlength="30"
+    />
+    
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-cancelar" onclick="cerrarModalNombre()">
+        Cancelar
+      </button>
+      <button class="modal-btn modal-btn-confirmar" id="btn-confirmar-nombre" onclick="confirmarNombreEquipo()">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
 <div data-include="../shared/components/footer.html"></div>
 
 <div class="toast" id="toast"></div>
@@ -448,8 +625,17 @@
   // ESTADO DE EQUIPOS
   // ══════════════════════════════════════════════════════════════
   
-  let equipoA = [null, null]; // [robot1, robot2]
-  let equipoB = [null, null]; // [robot1, robot2]
+  let equipoA = {
+    nombre: '',
+    robots: [null, null]
+  };
+  
+  let equipoB = {
+    nombre: '',
+    robots: [null, null]
+  };
+  
+  let equipoEnEspera = null; // 'A' o 'B' - para saber qué equipo está esperando nombre
   
   let codeReader = null;
   let videoStream = null;
@@ -614,7 +800,7 @@
       }
       
       // Verificar si ya fue agregado
-      const yaAgregado = [...equipoA, ...equipoB].some(r => r && r.id === participante.id);
+      const yaAgregado = [...equipoA.robots, ...equipoB.robots].some(r => r && r.id === participante.id);
       if (yaAgregado) {
         showToast('⚠️ Este robot ya fue escaneado', true);
         return;
@@ -668,25 +854,42 @@
   // ══════════════════════════════════════════════════════════════
   
   function agregarRobot(participante) {
+    // Verificar si ya fue agregado
+    const yaAgregado = [...equipoA.robots, ...equipoB.robots].some(r => r && r.id === participante.id);
+    if (yaAgregado) {
+      showToast('⚠️ Este robot ya fue escaneado', true);
+      return;
+    }
+    
     // Buscar primer slot vacío en Equipo A
-    if (equipoA[0] === null) {
-      equipoA[0] = participante;
+    if (equipoA.robots[0] === null) {
+      equipoA.robots[0] = participante;
       renderSlot('a1', participante);
       showToast(`✓ ${participante.robot} → Equipo A (Robot 1)`);
-    } else if (equipoA[1] === null) {
-      equipoA[1] = participante;
+    } else if (equipoA.robots[1] === null) {
+      equipoA.robots[1] = participante;
       renderSlot('a2', participante);
       showToast(`✓ ${participante.robot} → Equipo A (Robot 2)`);
+      
+      // Equipo A completo - solicitar nombre
+      equipoEnEspera = 'A';
+      mostrarModalNombre('A', equipoA.robots);
+      return; // No actualizar estados hasta que confirme el nombre
     }
     // Buscar primer slot vacío en Equipo B
-    else if (equipoB[0] === null) {
-      equipoB[0] = participante;
+    else if (equipoB.robots[0] === null) {
+      equipoB.robots[0] = participante;
       renderSlot('b1', participante);
       showToast(`✓ ${participante.robot} → Equipo B (Robot 1)`);
-    } else if (equipoB[1] === null) {
-      equipoB[1] = participante;
+    } else if (equipoB.robots[1] === null) {
+      equipoB.robots[1] = participante;
       renderSlot('b2', participante);
       showToast(`✓ ${participante.robot} → Equipo B (Robot 2)`);
+      
+      // Equipo B completo - solicitar nombre
+      equipoEnEspera = 'B';
+      mostrarModalNombre('B', equipoB.robots);
+      return; // No actualizar estados hasta que confirme el nombre
     } else {
       showToast('⚠️ Todos los slots están llenos', true);
       return;
@@ -713,9 +916,17 @@
     const index = parseInt(pos) - 1;
     
     if (equipo === 'a') {
-      equipoA[index] = null;
+      equipoA.robots[index] = null;
+      // Si se remueve un robot, limpiar el nombre del equipo
+      if (equipoA.robots.every(r => r === null)) {
+        equipoA.nombre = '';
+      }
     } else {
-      equipoB[index] = null;
+      equipoB.robots[index] = null;
+      // Si se remueve un robot, limpiar el nombre del equipo
+      if (equipoB.robots.every(r => r === null)) {
+        equipoB.nombre = '';
+      }
     }
     
     const slot = document.getElementById(`slot-${slotId}`);
@@ -734,8 +945,8 @@
   function resetearEquipos() {
     if (!confirm('¿Resetear todos los equipos?')) return;
     
-    equipoA = [null, null];
-    equipoB = [null, null];
+    equipoA = { nombre: '', robots: [null, null] };
+    equipoB = { nombre: '', robots: [null, null] };
     
     ['a1', 'a2', 'b1', 'b2'].forEach(slotId => {
       const slot = document.getElementById(`slot-${slotId}`);
@@ -755,28 +966,116 @@
   
   function actualizarEstados() {
     // Equipo A
-    const countA = equipoA.filter(r => r !== null).length;
+    const countA = equipoA.robots.filter(r => r !== null).length;
     const statusA = document.getElementById('status-a');
-    statusA.textContent = `${countA}/2`;
-    statusA.className = countA === 2 ? 'equipo-status completo' : 'equipo-status incompleto';
+    statusA.textContent = countA === 2 && equipoA.nombre ? equipoA.nombre : `${countA}/2`;
+    statusA.className = countA === 2 && equipoA.nombre ? 'equipo-status completo' : 'equipo-status incompleto';
     
     const cardA = document.getElementById('card-equipo-a');
-    cardA.className = countA === 2 ? 'equipo-card completo' : 'equipo-card';
+    cardA.className = countA === 2 && equipoA.nombre ? 'equipo-card completo' : 'equipo-card';
+    
+    // Actualizar título si tiene nombre
+    const titleA = cardA.querySelector('.equipo-title');
+    titleA.textContent = equipoA.nombre ? `⚽ ${equipoA.nombre}` : '⚽ EQUIPO A';
     
     // Equipo B
-    const countB = equipoB.filter(r => r !== null).length;
+    const countB = equipoB.robots.filter(r => r !== null).length;
     const statusB = document.getElementById('status-b');
-    statusB.textContent = `${countB}/2`;
-    statusB.className = countB === 2 ? 'equipo-status completo' : 'equipo-status incompleto';
+    statusB.textContent = countB === 2 && equipoB.nombre ? equipoB.nombre : `${countB}/2`;
+    statusB.className = countB === 2 && equipoB.nombre ? 'equipo-status completo' : 'equipo-status incompleto';
     
     const cardB = document.getElementById('card-equipo-b');
-    cardB.className = countB === 2 ? 'equipo-card completo' : 'equipo-card';
+    cardB.className = countB === 2 && equipoB.nombre ? 'equipo-card completo' : 'equipo-card';
+    
+    // Actualizar título si tiene nombre
+    const titleB = cardB.querySelector('.equipo-title');
+    titleB.textContent = equipoB.nombre ? `⚽ ${equipoB.nombre}` : '⚽ EQUIPO B';
     
     // Botón iniciar
     const total = countA + countB;
+    const todosCompletos = countA === 2 && countB === 2 && equipoA.nombre && equipoB.nombre;
     const btnIniciar = document.getElementById('btn-iniciar');
     btnIniciar.textContent = `🚀 Iniciar partido (${total}/4 escaneados)`;
-    btnIniciar.disabled = total !== 4;
+    btnIniciar.disabled = !todosCompletos;
+  }
+  
+  // ══════════════════════════════════════════════════════════════
+  // MODAL NOMBRE EQUIPO
+  // ══════════════════════════════════════════════════════════════
+  
+  function mostrarModalNombre(equipoLetra, robots) {
+    const modal = document.getElementById('modal-nombre-equipo');
+    const title = document.getElementById('modal-title');
+    const robotsList = document.getElementById('modal-robots-list');
+    const input = document.getElementById('input-nombre-equipo');
+    
+    // Configurar título
+    title.textContent = `⚽ Nombre del Equipo ${equipoLetra}`;
+    
+    // Listar robots
+    robotsList.innerHTML = robots.map(r => `
+      <div class="modal-robot-item">
+        <div class="modal-robot-emoji">🤖</div>
+        <div class="modal-robot-name">${r.robot} - ${r.nombre}</div>
+      </div>
+    `).join('');
+    
+    // Limpiar input
+    input.value = '';
+    input.focus();
+    
+    // Mostrar modal
+    modal.classList.add('show');
+    
+    // Detener escáner mientras se ingresa el nombre
+    if (scannerActivo) {
+      stopScanner();
+    }
+    
+    // Permitir Enter para confirmar
+    input.onkeypress = (e) => {
+      if (e.key === 'Enter' && input.value.trim()) {
+        confirmarNombreEquipo();
+      }
+    };
+  }
+  
+  function cerrarModalNombre() {
+    const modal = document.getElementById('modal-nombre-equipo');
+    modal.classList.remove('show');
+    equipoEnEspera = null;
+  }
+  
+  function confirmarNombreEquipo() {
+    const input = document.getElementById('input-nombre-equipo');
+    const nombreEquipo = input.value.trim();
+    
+    if (!nombreEquipo) {
+      showToast('⚠️ Ingresa un nombre para el equipo', true);
+      input.focus();
+      return;
+    }
+    
+    if (nombreEquipo.length < 3) {
+      showToast('⚠️ El nombre debe tener al menos 3 caracteres', true);
+      input.focus();
+      return;
+    }
+    
+    // Guardar nombre
+    if (equipoEnEspera === 'A') {
+      equipoA.nombre = nombreEquipo;
+      showToast(`✓ Equipo A nombrado: ${nombreEquipo}`);
+    } else if (equipoEnEspera === 'B') {
+      equipoB.nombre = nombreEquipo;
+      showToast(`✓ Equipo B nombrado: ${nombreEquipo}`);
+    }
+    
+    // Cerrar modal
+    cerrarModalNombre();
+    
+    // Actualizar UI
+    actualizarEstados();
   }
   
   // ══════════════════════════════════════════════════════════════
@@ -784,10 +1083,15 @@
   // ══════════════════════════════════════════════════════════════
   
   async function enviarACronometro() {
-    const total = [...equipoA, ...equipoB].filter(r => r !== null).length;
+    const totalRobots = [...equipoA.robots, ...equipoB.robots].filter(r => r !== null).length;
     
-    if (total !== 4) {
+    if (totalRobots !== 4) {
       showToast('⚠️ Debes escanear 4 robots (2 por equipo)', true);
+      return;
+    }
+    
+    if (!equipoA.nombre || !equipoB.nombre) {
+      showToast('⚠️ Ambos equipos deben tener nombre', true);
       return;
     }
     
@@ -797,18 +1101,24 @@
         action: 'setActivo',
         ruta: 'SOC', // Ruta para Soccer
         partido: {
-          equipoA: equipoA.map(r => ({
-            id: r.id,
-            robot: r.robot,
-            nombre: r.nombre,
-            institucion: r.institucion
-          })),
-          equipoB: equipoB.map(r => ({
-            id: r.id,
-            robot: r.robot,
-            nombre: r.nombre,
-            institucion: r.institucion
-          })),
+          equipoA: {
+            nombre: equipoA.nombre,
+            robots: equipoA.robots.map(r => ({
+              id: r.id,
+              robot: r.robot,
+              nombre: r.nombre,
+              institucion: r.institucion
+            }))
+          },
+          equipoB: {
+            nombre: equipoB.nombre,
+            robots: equipoB.robots.map(r => ({
+              id: r.id,
+              robot: r.robot,
+              nombre: r.nombre,
+              institucion: r.institucion
+            }))
+          },
           timestamp: Date.now()
         }
       };
@@ -822,7 +1132,7 @@
       const data = await response.json();
       
       if (data.ok) {
-        showToast('✓ Equipos enviados al cronómetro');
+        showToast(`✓ Partido ${equipoA.nombre} vs ${equipoB.nombre} enviado`);
         
         // Redirigir al cronómetro Soccer
         setTimeout(() => {
