@@ -41,7 +41,7 @@
     
     .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 100px 60px 100px; overflow: visible; }
     
-    .page-hero { padding: 80px 0 32px; margin-bottom: 32px; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; position: relative; }
+    .page-hero { padding: 80px 0 32px; margin-bottom: 32px; display: flex; gap: 40px; align-items: flex-start; position: relative; }
     .page-hero-content { flex: 1; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--p-blue); border: 1px solid var(--p-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
@@ -82,6 +82,18 @@
     @keyframes float-robot { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-16px) rotate(2deg)} }
     .crown-icon { position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-12deg); font-size: 48px; z-index: 2; animation: crown-bounce 2s ease-in-out infinite; filter: drop-shadow(0 4px 12px rgba(255,215,0,0.6)); }
     @keyframes crown-bounce { 0%,100%{transform:translateX(-50%) rotate(-12deg) translateY(0)} 50%{transform:translateX(-50%) rotate(-12deg) translateY(-8px)} }
+
+    .stats-panel { flex: 0 0 320px; background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 100%); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(26,92,168,0.35); position: sticky; top: 280px; }
+    .stats-panel-title { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--p-cyan-bright); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .stats-grid { display: flex; flex-direction: column; gap: 16px; }
+    .stat-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.15); transition: all 0.3s; }
+    .stat-card:hover { background: rgba(255,255,255,0.15); transform: translateX(4px); }
+    .stat-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #ffffff; line-height: 1; display: flex; align-items: center; gap: 8px; }
+    .stat-icon { font-size: 1.5rem; }
+    .stat-detail { font-family: 'Exo 2', sans-serif; font-size: 11px; color: var(--p-cyan-bright); margin-top: 6px; font-weight: 600; }
+    .stat-bar { height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+    .stat-bar-fill { height: 100%; background: linear-gradient(90deg, var(--p-cyan) 0%, var(--p-cyan-bright) 100%); border-radius: 3px; transition: width 0.6s ease; }
 
     .participantes-container { background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 50%, var(--p-surface) 100%); border-radius: 20px; padding: 36px 32px; margin-top: 24px; box-shadow: 0 12px 40px rgba(26,92,168,0.35); position: relative; overflow: hidden; }
     .participantes-container > * { position: relative; z-index: 1; }
@@ -160,7 +172,8 @@
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     @media (max-width: 768px) {
-      .page-hero { grid-template-columns: 1fr; gap: 24px; }
+      .page-hero { grid-template-columns: 1fr; gap: 24px; flex-direction: column; }
+      .stats-panel { position: relative; top: 0; flex: 1; width: 100%; }
       .robot-champion-wrapper { width: 140px; height: 140px; margin: 0 auto; }
       .robot-champion { width: 120px; }
       .crown-icon { font-size: 36px; top: -8px; }
@@ -199,10 +212,67 @@
           <p>LISTADO DE PARTICIPANTES DEL TORNEO SUCREBOT 2026</p>
         </div>
       </div>
-      <div class="robot-champion-wrapper">
-        <div class="glow-effect"></div>
-        <div class="crown-icon">👑</div>
-        <img src="../shared/images/robot-campeon.png" alt="Robot Campeón" class="robot-champion">
+      <div class="stats-panel">
+        <div class="stats-panel-title">
+          📊 ESTADÍSTICAS EN VIVO
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Participantes</div>
+            <div class="stat-value">
+              <span class="stat-icon">🏁</span>
+              <span id="stat-total">0</span>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-label">Aprobados</div>
+            <div class="stat-value">
+              <span class="stat-icon">✅</span>
+              <span id="stat-aprobados">0</span>
+            </div>
+            <div class="stat-bar">
+              <div class="stat-bar-fill" id="bar-aprobados" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-label">En Revisión</div>
+            <div class="stat-value">
+              <span class="stat-icon">⏳</span>
+              <span id="stat-pendientes">0</span>
+            </div>
+            <div class="stat-bar">
+              <div class="stat-bar-fill" id="bar-pendientes" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-label">Categorías Activas</div>
+            <div class="stat-value">
+              <span class="stat-icon">🏆</span>
+              <span id="stat-categorias">0</span>
+            </div>
+            <div class="stat-detail" id="stat-categoria-popular">—</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-label">Ciudades</div>
+            <div class="stat-value">
+              <span class="stat-icon">🌍</span>
+              <span id="stat-ciudades">0</span>
+            </div>
+            <div class="stat-detail" id="stat-ciudades-lista">—</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-label">Instituciones</div>
+            <div class="stat-value">
+              <span class="stat-icon">🎓</span>
+              <span id="stat-instituciones">0</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -346,6 +416,7 @@
 
   function cargarListaLocal() {
     const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
+    actualizarEstadisticas(lista);
     const filtro = document.getElementById('filtro-categoria').value;
     const busqueda = document.getElementById('busqueda-input').value.toLowerCase();
     let filtrados = lista;
@@ -376,6 +447,52 @@
         '<td><span class="estado-badge ' + estadoClass + '">' + estadoTexto + '</span></td>' +
         '</tr>';
     }).join('');
+  }
+
+  function actualizarEstadisticas(lista) {
+    const total = lista.length;
+    const aprobados = lista.filter(p => p.aprobado === 'APROBADO').length;
+    const pendientes = lista.filter(p => p.aprobado !== 'APROBADO' && p.aprobado !== 'NO CUMPLE').length;
+    
+    // Ciudades únicas
+    const ciudades = [...new Set(lista.map(p => p.ciudad).filter(Boolean))];
+    const numCiudades = ciudades.length;
+    
+    // Instituciones únicas
+    const instituciones = [...new Set(lista.map(p => p.institucion).filter(Boolean))];
+    const numInstituciones = instituciones.length;
+    
+    // Categorías activas y más popular
+    const categorias = {};
+    lista.forEach(p => {
+      if (p.categoria) {
+        categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+      }
+    });
+    const numCategorias = Object.keys(categorias).length;
+    const categoriaPopular = Object.entries(categorias).sort((a, b) => b[1] - a[1])[0];
+    
+    // Actualizar DOM
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-aprobados').textContent = aprobados;
+    document.getElementById('stat-pendientes').textContent = pendientes;
+    document.getElementById('stat-categorias').textContent = numCategorias;
+    document.getElementById('stat-ciudades').textContent = numCiudades;
+    document.getElementById('stat-instituciones').textContent = numInstituciones;
+    
+    // Barras de progreso
+    const porcAprobados = total > 0 ? (aprobados / total * 100).toFixed(0) : 0;
+    const porcPendientes = total > 0 ? (pendientes / total * 100).toFixed(0) : 0;
+    document.getElementById('bar-aprobados').style.width = porcAprobados + '%';
+    document.getElementById('bar-pendientes').style.width = porcPendientes + '%';
+    
+    // Detalles
+    if (categoriaPopular) {
+      document.getElementById('stat-categoria-popular').textContent = '🔥 ' + categoriaPopular[0] + ' (' + categoriaPopular[1] + ')';
+    }
+    if (ciudades.length > 0) {
+      document.getElementById('stat-ciudades-lista').textContent = ciudades.slice(0, 3).join(', ') + (ciudades.length > 3 ? '...' : '');
+    }
   }
 
   function refrescarDatos() {
