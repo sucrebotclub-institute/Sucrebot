@@ -183,8 +183,8 @@
       <button class="btn-action btn-reset" onclick="resetearEquipos()">
         🔄 Resetear equipos
       </button>
-      <button class="btn-action btn-iniciar" id="btn-iniciar" onclick="enviarACronometro()" disabled>
-        🏆 Ir al bracket (0/4 escaneados)
+      <button class="btn-action btn-iniciar" id="btn-iniciar" onclick="enviarEquipo()" disabled>
+        ✅ Enviar equipo (0/4 escaneados)
       </button>
     </div>
 
@@ -435,7 +435,7 @@
     const total = countA + countB;
     const todosCompletos = countA === 2 && countB === 2 && equipoA.nombre && equipoB.nombre;
     const btn = document.getElementById('btn-iniciar');
-    btn.textContent = `🏆 Ir al bracket (${total}/4 escaneados)`;
+    btn.textContent = `✅ Enviar equipo (${total}/4 escaneados)`;
     btn.disabled = !todosCompletos;
   }
 
@@ -472,17 +472,17 @@
   }
 
   // ── Enviar al bracket (CORREGIDO) ──
-  async function enviarACronometro() {
+  async function enviarEquipo() {
     const totalRobots = [...equipoA.robots, ...equipoB.robots].filter(r => r !== null).length;
     if (totalRobots !== 4) { showToast('⚠️ Debes escanear 4 robots (2 por equipo)', true); return; }
     if (!equipoA.nombre || !equipoB.nombre) { showToast('⚠️ Ambos equipos deben tener nombre', true); return; }
 
     const btn = document.getElementById('btn-iniciar');
     btn.disabled = true;
-    btn.textContent = '⏳ Registrando equipos...';
+    btn.textContent = '⏳ Enviando equipos...';
 
     try {
-      // 1. Registrar Equipo A
+      // Registrar Equipo A
       const respA = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -498,7 +498,7 @@
       const dataA = await respA.json();
       if (!dataA.ok) throw new Error(dataA.error || 'Error registrando Equipo A');
 
-      // 2. Registrar Equipo B
+      // Registrar Equipo B
       const respB = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -514,9 +514,9 @@
       const dataB = await respB.json();
       if (!dataB.ok) throw new Error(dataB.error || 'Error registrando Equipo B');
 
-      showToast(`✓ ${equipoA.nombre} y ${equipoB.nombre} registrados. Redirigiendo...`);
+      showToast(`✓ ${equipoA.nombre} y ${equipoB.nombre} enviados al torneo`);
 
-      // Resetear para próxima pareja
+      // Resetear todo para el siguiente par de equipos
       equipoA = { nombre: '', robots: [null, null] };
       equipoB = { nombre: '', robots: [null, null] };
       ['a1','a2','b1','b2'].forEach(slotId => {
@@ -527,13 +527,11 @@
       });
       actualizarEstados();
 
-      setTimeout(() => { window.location.href = '../CRONOMETRO-SOCCER/'; }, 1500);
-
     } catch (error) {
       console.error('Error:', error);
-      showToast('❌ Error al registrar equipos: ' + error.message, true);
+      showToast('❌ Error: ' + error.message, true);
       btn.disabled = false;
-      btn.textContent = '🏆 Ir al bracket (4/4 escaneados)';
+      btn.textContent = '✅ Enviar equipo (4/4 escaneados)';
     }
   }
 
