@@ -21,16 +21,57 @@
     }
     body { background: #ffffff !important; color: #1a1a2e !important; }
     main { min-height: calc(100vh - 174px); background: #ffffff; }
-    .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
     
-    .page-hero { padding: 80px 0 32px; border-bottom: 1px solid rgba(26,92,168,0.15); margin-bottom: 32px; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
+    /* Panel lateral izquierdo decorativo */
+    .wrapper::before {
+      content: '';
+      position: absolute;
+      left: -600px;
+      top: 0;
+      bottom: 0;
+      width: 580px;
+      background: 
+        linear-gradient(135deg, rgba(26,92,168,0.85) 0%, rgba(18,20,26,0.90) 100%),
+        url('https://github.com/sucrebotclub-institute/Sucrebot/blob/main/shared/images/foto3.jpg?raw=true') 5% center / cover no-repeat;
+      border-radius: 0 16px 16px 0;
+      box-shadow: 0 8px 32px rgba(26,92,168,0.3);
+      border-right: 2px solid rgba(91,200,240,0.3);
+      z-index: 0;
+    }
+    
+    .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; overflow: visible; }
+    
+    .page-hero { padding: 80px 0 32px; margin-bottom: 32px; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; position: relative; }
     .page-hero-content { flex: 1; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--p-blue); border: 1px solid var(--p-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
     .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
     .page-hero-line { flex: 0 0 40px; height: 3px; background: var(--p-blue); border-radius: 2px; }
-    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; line-height: 1; }
+    
+    .page-hero h2 { 
+      font-family: 'Bebas Neue', sans-serif; 
+      font-size: 2.8rem; 
+      letter-spacing: 3px; 
+      color: #1a3a6e; 
+      line-height: 1; 
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    
+    /* Línea decorativa cyan debajo del título */
+    .page-hero h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 120px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%);
+      border-radius: 2px;
+    }
+    
     .page-hero h2 span { color: var(--p-blue); }
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
 
