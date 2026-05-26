@@ -10,24 +10,16 @@
   <script src="https://unpkg.com/@zxing/library@latest"></script>
   <script src="../shared/js/config.js"></script>
   
-  <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   
   <style>
-    /* Fondo blanco */
     body { background: #ffffff !important; color: #1a1a2e !important; }
     main { min-height: calc(100vh - 174px); background: #ffffff; }
 
-    /* ── ESTILOS ESCÁNER ── */
     .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
     
-    /* Page hero */
-    .page-hero { 
-      padding: 56px 0 24px; 
-      border-bottom: 1px solid rgba(26,92,168,0.15); 
-      margin-bottom: 24px;
-    }
+    .page-hero { padding: 56px 0 24px; border-bottom: 1px solid rgba(26,92,168,0.15); margin-bottom: 24px; }
     .page-hero-content { width: 100%; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
@@ -38,442 +30,78 @@
     .page-hero h2 span { color: #1a5ca8; }
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
 
-    /* Grid principal */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 400px 1fr;
-      gap: 24px;
-      margin-top: 24px;
-    }
+    .main-grid { display: grid; grid-template-columns: 400px 1fr; gap: 24px; margin-top: 24px; }
 
-    /* ── VIDEO ESCÁNER ── */
-    .video-card {
-      background: #f8f9fa;
-      border-radius: 16px;
-      border: 2px solid #e0e7ef;
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(26,92,168,0.1);
-    }
+    .video-card { background: #f8f9fa; border-radius: 16px; border: 2px solid #e0e7ef; padding: 24px; box-shadow: 0 4px 20px rgba(26,92,168,0.1); }
+    .video-label { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: #1a5ca8; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; font-weight: 700; }
 
-    .video-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      color: #1a5ca8;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-      font-weight: 700;
-    }
+    #qr-reader { width: 100%; background: #0d2a4a; border-radius: 12px; overflow: hidden; min-height: 320px; position: relative; }
+    #qr-video { width: 100%; display: none; border-radius: 12px; }
+    #qr-placeholder { display: flex; align-items: center; justify-content: center; height: 320px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; font-size: 0.85rem; letter-spacing: 0.08em; flex-direction: column; gap: 12px; }
 
-    #qr-reader {
-      width: 100%;
-      background: #0d2a4a;
-      border-radius: 12px;
-      overflow: hidden;
-      min-height: 320px;
-      position: relative;
-    }
+    .btn-camera { width: 100%; margin-top: 16px; background: #1a5ca8; border: none; color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(26,92,168,0.3); }
+    .btn-camera:hover { background: #0e4a8f; transform: translateY(-1px); }
+    .btn-camera.active { background: #d93025; }
+    .btn-camera.active:hover { background: #b71c1c; }
 
-    #qr-video {
-      width: 100%;
-      display: none;
-      border-radius: 12px;
-    }
+    .equipos-container { display: flex; flex-direction: column; gap: 24px; }
 
-    #qr-placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 320px;
-      color: rgba(255,255,255,0.5);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.85rem;
-      letter-spacing: 0.08em;
-      flex-direction: column;
-      gap: 12px;
-    }
+    .equipo-card { background: #f8f9fa; border-radius: 16px; border: 2px solid #e0e7ef; padding: 24px; box-shadow: 0 4px 20px rgba(26,92,168,0.1); transition: all 0.3s; }
+    .equipo-card.completo { border-color: #00d95f; background: #f0fdf4; }
 
-    .btn-camera {
-      width: 100%;
-      margin-top: 16px;
-      background: #1a5ca8;
-      border: none;
-      color: #ffffff;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      padding: 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      box-shadow: 0 4px 12px rgba(26,92,168,0.3);
-    }
+    .equipo-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e0e7ef; }
+    .equipo-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: #1a3a6e; letter-spacing: 1px; }
+    .equipo-status { font-family: 'DM Mono', monospace; font-size: 0.65rem; padding: 4px 12px; border-radius: 20px; font-weight: 700; letter-spacing: 0.1em; }
+    .equipo-status.incompleto { background: #fff3cd; color: #856404; }
+    .equipo-status.completo { background: #e8f5e9; color: #2e7d32; }
 
-    .btn-camera:hover {
-      background: #0e4a8f;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(26,92,168,0.4);
-    }
+    .robot-slot { background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 12px; min-height: 80px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .robot-slot.empty { border-style: dashed; }
+    .robot-slot.filled { border-style: solid; border-color: #1a5ca8; background: #ffffff; }
+    .robot-slot-empty { text-align: center; color: #94a3b8; font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.05em; }
+    .robot-info { flex: 1; }
+    .robot-nombre { font-family: 'Exo 2', sans-serif; font-size: 0.85rem; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .robot-robot { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: #1a3a6e; letter-spacing: 0.5px; }
+    .robot-institucion { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
 
-    .btn-camera.active {
-      background: #d93025;
-    }
+    .btn-remove { background: #ef4444; color: #ffffff; border: none; border-radius: 8px; padding: 8px 12px; font-size: 0.75rem; cursor: pointer; font-family: 'Exo 2', sans-serif; font-weight: 600; transition: all 0.2s; }
+    .btn-remove:hover { background: #dc2626; transform: translateY(-1px); }
 
-    .btn-camera.active:hover {
-      background: #b71c1c;
-    }
+    .controles-card { background: #f8f9fa; border-radius: 16px; border: 2px solid #e0e7ef; padding: 24px; box-shadow: 0 4px 20px rgba(26,92,168,0.1); margin-top: 24px; }
 
-    /* ── EQUIPOS ── */
-    .equipos-container {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
+    .btn-action { width: 100%; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 16px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+    .btn-reset { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(107,114,128,0.3); }
+    .btn-reset:hover { transform: translateY(-1px); }
+    .btn-iniciar { background: linear-gradient(135deg, #00d95f 0%, #00a046 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(0,217,95,0.3); }
+    .btn-iniciar:hover { transform: translateY(-1px); }
+    .btn-iniciar:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 
-    .equipo-card {
-      background: #f8f9fa;
-      border-radius: 16px;
-      border: 2px solid #e0e7ef;
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(26,92,168,0.1);
-      transition: all 0.3s;
-    }
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
+    .modal-overlay.show { display: flex; }
+    .modal-content { background: #ffffff; border-radius: 20px; padding: 32px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: modalSlideIn 0.3s ease; }
+    @keyframes modalSlideIn { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+    .modal-header { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: #1a3a6e; margin-bottom: 8px; letter-spacing: 1px; }
+    .modal-subtitle { font-size: 0.85rem; color: #64748b; margin-bottom: 24px; }
+    .modal-robots { background: #f8f9fa; border-radius: 12px; padding: 16px; margin-bottom: 24px; border: 2px solid #e0e7ef; }
+    .modal-robot-item { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .modal-robot-item:last-child { margin-bottom: 0; }
+    .modal-robot-emoji { font-size: 1.5rem; }
+    .modal-robot-name { font-family: 'Exo 2', sans-serif; font-size: 0.9rem; color: #1a3a6e; font-weight: 600; }
+    .modal-input { width: 100%; background: #f8f9fa; border: 2px solid #e0e7ef; color: #1a3a6e; font-family: 'Exo 2', sans-serif; font-size: 1.1rem; padding: 16px; border-radius: 12px; margin-bottom: 24px; transition: all 0.2s; text-align: center; font-weight: 600; box-sizing: border-box; }
+    .modal-input:focus { outline: none; border-color: #1a5ca8; box-shadow: 0 0 0 3px rgba(26,92,168,0.1); }
+    .modal-buttons { display: flex; gap: 12px; }
+    .modal-btn { flex: 1; font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; padding: 14px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal-btn-cancelar { background: #e5e7eb; color: #6b7280; }
+    .modal-btn-cancelar:hover { background: #d1d5db; }
+    .modal-btn-confirmar { background: linear-gradient(135deg, #1a5ca8 0%, #0e4a8f 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(26,92,168,0.3); }
+    .modal-btn-confirmar:hover { transform: translateY(-1px); }
 
-    .equipo-card.completo {
-      border-color: #00d95f;
-      background: #f0fdf4;
-    }
-
-    .equipo-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #e0e7ef;
-    }
-
-    .equipo-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.5rem;
-      color: #1a3a6e;
-      letter-spacing: 1px;
-    }
-
-    .equipo-status {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-    }
-
-    .equipo-status.incompleto {
-      background: #fff3cd;
-      color: #856404;
-    }
-
-    .equipo-status.completo {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .robot-slot {
-      background: #ffffff;
-      border: 2px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      min-height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .robot-slot.empty {
-      border-style: dashed;
-    }
-
-    .robot-slot.filled {
-      border-style: solid;
-      border-color: #1a5ca8;
-      background: #ffffff;
-    }
-
-    .robot-slot-empty {
-      text-align: center;
-      color: #94a3b8;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-    }
-
-    .robot-info {
-      flex: 1;
-    }
-
-    .robot-nombre {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 0.85rem;
-      color: #64748b;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .robot-robot {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem;
-      color: #1a3a6e;
-      letter-spacing: 0.5px;
-    }
-
-    .robot-institucion {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
-
-    .btn-remove {
-      background: #ef4444;
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-
-    .btn-remove:hover {
-      background: #dc2626;
-      transform: translateY(-1px);
-    }
-
-    /* ── CONTROLES ── */
-    .controles-card {
-      background: #f8f9fa;
-      border-radius: 16px;
-      border: 2px solid #e0e7ef;
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(26,92,168,0.1);
-      margin-top: 24px;
-    }
-
-    .btn-action {
-      width: 100%;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      padding: 16px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 12px;
-    }
-
-    .btn-reset {
-      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(107,114,128,0.3);
-    }
-
-    .btn-reset:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(107,114,128,0.4);
-    }
-
-    .btn-iniciar {
-      background: linear-gradient(135deg, #00d95f 0%, #00a046 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(0,217,95,0.3);
-    }
-
-    .btn-iniciar:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0,217,95,0.4);
-    }
-
-    .btn-iniciar:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-
-    /* ── MODAL NOMBRE EQUIPO ── */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-overlay.show {
-      display: flex;
-    }
-
-    .modal-content {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 32px;
-      max-width: 500px;
-      width: 90%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-      animation: modalSlideIn 0.3s ease;
-    }
-
-    @keyframes modalSlideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .modal-header {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.8rem;
-      color: #1a3a6e;
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-    }
-
-    .modal-subtitle {
-      font-size: 0.85rem;
-      color: #64748b;
-      margin-bottom: 24px;
-    }
-
-    .modal-robots {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 24px;
-      border: 2px solid #e0e7ef;
-    }
-
-    .modal-robot-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-
-    .modal-robot-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .modal-robot-emoji {
-      font-size: 1.5rem;
-    }
-
-    .modal-robot-name {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 0.9rem;
-      color: #1a3a6e;
-      font-weight: 600;
-    }
-
-    .modal-input {
-      width: 100%;
-      background: #f8f9fa;
-      border: 2px solid #e0e7ef;
-      color: #1a3a6e;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 1.1rem;
-      padding: 16px;
-      border-radius: 12px;
-      margin-bottom: 24px;
-      transition: all 0.2s;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .modal-input:focus {
-      outline: none;
-      border-color: #1a5ca8;
-      box-shadow: 0 0 0 3px rgba(26,92,168,0.1);
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 12px;
-    }
-
-    .modal-btn {
-      flex: 1;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .modal-btn-cancelar {
-      background: #e5e7eb;
-      color: #6b7280;
-    }
-
-    .modal-btn-cancelar:hover {
-      background: #d1d5db;
-    }
-
-    .modal-btn-confirmar {
-      background: linear-gradient(135deg, #1a5ca8 0%, #0e4a8f 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(26,92,168,0.3);
-    }
-
-    .modal-btn-confirmar:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(26,92,168,0.4);
-    }
-
-    .modal-btn-confirmar:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-    }
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border: 2px solid rgba(0,255,136,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 1024px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .page-hero h2 { font-size: 2rem; }
-      .video-card { padding: 16px; }
-      .equipo-card { padding: 16px; }
-      .controles-card { padding: 16px; }
-    }
+    @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .page-hero h2 { font-size: 2rem; } .video-card, .equipo-card, .controles-card { padding: 16px; } }
   </style>
 </head>
 <body>
@@ -502,7 +130,7 @@
 
     <div class="main-grid">
       
-      <!-- COLUMNA IZQUIERDA: ESCÁNER -->
+      <!-- ESCÁNER -->
       <div class="video-card">
         <div class="video-label">📷 ESCÁNER QR</div>
         <div id="qr-reader">
@@ -518,55 +146,36 @@
         <button class="btn-camera" id="btn-camera" onclick="toggleScanner()">📷 Activar cámara</button>
       </div>
 
-      <!-- COLUMNA DERECHA: EQUIPOS -->
+      <!-- EQUIPOS -->
       <div class="equipos-container">
         
-        <!-- EQUIPO A -->
         <div class="equipo-card" id="card-equipo-a">
           <div class="equipo-header">
             <div class="equipo-title">⚽ EQUIPO A</div>
             <span class="equipo-status incompleto" id="status-a">0/2</span>
           </div>
-          
           <div class="robot-slot empty" id="slot-a1">
-            <div class="robot-slot-empty">
-              <div>🤖 ROBOT 1</div>
-              <div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div>
-            </div>
+            <div class="robot-slot-empty"><div>🤖 ROBOT 1</div><div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div></div>
           </div>
-          
           <div class="robot-slot empty" id="slot-a2">
-            <div class="robot-slot-empty">
-              <div>🤖 ROBOT 2</div>
-              <div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div>
-            </div>
+            <div class="robot-slot-empty"><div>🤖 ROBOT 2</div><div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div></div>
           </div>
         </div>
 
-        <!-- EQUIPO B -->
         <div class="equipo-card" id="card-equipo-b">
           <div class="equipo-header">
             <div class="equipo-title">⚽ EQUIPO B</div>
             <span class="equipo-status incompleto" id="status-b">0/2</span>
           </div>
-          
           <div class="robot-slot empty" id="slot-b1">
-            <div class="robot-slot-empty">
-              <div>🤖 ROBOT 1</div>
-              <div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div>
-            </div>
+            <div class="robot-slot-empty"><div>🤖 ROBOT 1</div><div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div></div>
           </div>
-          
           <div class="robot-slot empty" id="slot-b2">
-            <div class="robot-slot-empty">
-              <div>🤖 ROBOT 2</div>
-              <div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div>
-            </div>
+            <div class="robot-slot-empty"><div>🤖 ROBOT 2</div><div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div></div>
           </div>
         </div>
 
       </div>
-
     </div>
 
     <!-- CONTROLES -->
@@ -575,7 +184,7 @@
         🔄 Resetear equipos
       </button>
       <button class="btn-action btn-iniciar" id="btn-iniciar" onclick="enviarACronometro()" disabled>
-        🚀 Iniciar partido (0/4 escaneados)
+        🏆 Ir al bracket (0/4 escaneados)
       </button>
     </div>
 
@@ -586,33 +195,17 @@
 <div class="modal-overlay" id="modal-nombre-equipo">
   <div class="modal-content">
     <div class="modal-header" id="modal-title">⚽ Nombre del Equipo A</div>
-    <div class="modal-subtitle">Equipo completo con 2 robots</div>
-    
-    <div class="modal-robots" id="modal-robots-list">
-      <!-- Se llena dinámicamente -->
-    </div>
-    
-    <input 
-      type="text" 
-      class="modal-input" 
-      id="input-nombre-equipo" 
-      placeholder="Ej: Los Tigres"
-      maxlength="30"
-    />
-    
+    <div class="modal-subtitle">Equipo completo con 2 robots. Asigna un nombre.</div>
+    <div class="modal-robots" id="modal-robots-list"></div>
+    <input type="text" class="modal-input" id="input-nombre-equipo" placeholder="Ej: Los Tigres" maxlength="30" />
     <div class="modal-buttons">
-      <button class="modal-btn modal-btn-cancelar" onclick="cerrarModalNombre()">
-        Cancelar
-      </button>
-      <button class="modal-btn modal-btn-confirmar" id="btn-confirmar-nombre" onclick="confirmarNombreEquipo()">
-        Confirmar
-      </button>
+      <button class="modal-btn modal-btn-cancelar" onclick="cerrarModalNombre()">Cancelar</button>
+      <button class="modal-btn modal-btn-confirmar" onclick="confirmarNombreEquipo()">Confirmar</button>
     </div>
   </div>
 </div>
 
 <div data-include="../shared/components/footer.html"></div>
-
 <div class="toast" id="toast"></div>
 
 <script src="../shared/js/load-components.js"></script>
@@ -620,248 +213,131 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  
-  // ══════════════════════════════════════════════════════════════
-  // ESTADO DE EQUIPOS
-  // ══════════════════════════════════════════════════════════════
-  
-  let equipoA = {
-    nombre: '',
-    robots: [null, null]
-  };
-  
-  let equipoB = {
-    nombre: '',
-    robots: [null, null]
-  };
-  
-  let equipoEnEspera = null; // 'A' o 'B' - para saber qué equipo está esperando nombre
-  
+
+  let equipoA = { nombre: '', robots: [null, null] };
+  let equipoB = { nombre: '', robots: [null, null] };
+  let equipoEnEspera = null;
+
   let codeReader = null;
   let videoStream = null;
   let scannerActivo = false;
-  
   let ultimoQrProcesado = null;
   let tiempoUltimoQr = 0;
-  
-  // Cache de participantes
   let cacheParticipantes = [];
-  
-  // ══════════════════════════════════════════════════════════════
-  // CARGAR CACHE
-  // ══════════════════════════════════════════════════════════════
-  
+
+  // ── Cargar cache de participantes Soccer aprobados ──
   window.addEventListener('DOMContentLoaded', async () => {
     await actualizarCache();
   });
-  
+
   async function actualizarCache() {
-    console.log('🔄 Cargando participantes...');
     try {
-      const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
-      const r = await fetch(GAS_URL + '?' + qs);
+      const r = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getParticipantes' }));
       const participantes = await r.json();
-      
-      if (Array.isArray(participantes) && participantes.length > 0) {
-        // Filtrar solo categoría Soccer
-        cacheParticipantes = participantes.filter(p => 
+      if (Array.isArray(participantes)) {
+        cacheParticipantes = participantes.filter(p =>
           p.categoria === 'Robot soccer' && p.aprobado === 'APROBADO'
         );
-        console.log(`✅ ${cacheParticipantes.length} participantes de Soccer disponibles`);
+        console.log(`✅ ${cacheParticipantes.length} participantes Soccer disponibles`);
       }
-    } catch (error) {
-      console.error('❌ Error al cargar participantes:', error);
+    } catch (e) {
+      console.error('Error al cargar participantes:', e);
       showToast('Error al cargar participantes', true);
     }
   }
-  
-  // ══════════════════════════════════════════════════════════════
-  // ESCÁNER
-  // ══════════════════════════════════════════════════════════════
-  
+
+  // ── Scanner ──
   async function toggleScanner() {
-    if (scannerActivo) {
-      stopScanner();
-    } else {
-      await iniciarScanner();
-    }
+    if (scannerActivo) stopScanner(); else await iniciarScanner();
   }
-  
+
   async function iniciarScanner() {
     try {
       codeReader = new ZXing.BrowserMultiFormatReader();
-      const videoInputDevices = await codeReader.listVideoInputDevices();
-      
-      if (videoInputDevices.length === 0) {
-        showToast('No se detectaron cámaras', true);
-        return;
-      }
-      
-      let selectedDeviceId = null;
-      const backCamera = videoInputDevices.find(device =>
-        /back|rear|environment|trasera/i.test(device.label)
-      );
-      
-      if (backCamera) {
-        selectedDeviceId = backCamera.deviceId;
-      } else if (videoInputDevices.length > 1) {
-        selectedDeviceId = videoInputDevices[videoInputDevices.length - 1].deviceId;
-      } else {
-        selectedDeviceId = videoInputDevices[0].deviceId;
-      }
-      
+      const devices = await codeReader.listVideoInputDevices();
+      if (!devices.length) { showToast('No se detectaron cámaras', true); return; }
+
+      const back = devices.find(d => /back|rear|environment|trasera/i.test(d.label));
+      const deviceId = back ? back.deviceId : devices[devices.length - 1].deviceId;
+
       document.getElementById('qr-placeholder').style.display = 'none';
       document.getElementById('qr-video').style.display = 'block';
-      
-      codeReader.decodeFromVideoDevice(selectedDeviceId, 'qr-video', (result, err) => {
-        if (result) {
-          procesarQR(result.text);
-        }
+
+      codeReader.decodeFromVideoDevice(deviceId, 'qr-video', (result) => {
+        if (result) procesarQR(result.text);
       });
-      
-      const video = document.getElementById('qr-video');
-      videoStream = video.srcObject;
-      
+
+      videoStream = document.getElementById('qr-video').srcObject;
       scannerActivo = true;
       const btn = document.getElementById('btn-camera');
       btn.textContent = '⏸ Detener cámara';
       btn.classList.add('active');
-      
-    } catch (error) {
-      console.error('Error al iniciar escáner:', error);
+    } catch (e) {
+      console.error(e);
       showToast('Error al iniciar la cámara', true);
     }
   }
-  
+
   function stopScanner() {
-    if (codeReader) {
-      codeReader.reset();
-    }
-    
-    if (videoStream) {
-      const tracks = videoStream.getTracks();
-      tracks.forEach(track => track.stop());
-      videoStream = null;
-    }
-    
-    const video = document.getElementById('qr-video');
-    if (video.srcObject) {
-      video.srcObject = null;
-    }
-    
-    document.getElementById('qr-video').style.display = 'none';
+    if (codeReader) codeReader.reset();
+    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+    const v = document.getElementById('qr-video');
+    if (v.srcObject) { v.srcObject = null; }
+    v.style.display = 'none';
     document.getElementById('qr-placeholder').style.display = 'flex';
-    
     scannerActivo = false;
     const btn = document.getElementById('btn-camera');
     btn.textContent = '📷 Activar cámara';
     btn.classList.remove('active');
   }
-  
-  // ══════════════════════════════════════════════════════════════
-  // PROCESAR QR
-  // ══════════════════════════════════════════════════════════════
-  
+
+  // ── Procesar QR ──
   async function procesarQR(qrData) {
-    console.log('QR escaneado (RAW):', qrData);
-    
-    // Evitar duplicados
     const ahora = Date.now();
-    if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 1500) {
-      console.log('⏭ Ignorando QR duplicado');
-      return;
-    }
-    
+    if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 1500) return;
     ultimoQrProcesado = qrData;
     tiempoUltimoQr = ahora;
-    
+
     try {
-      // Extraer ID
-      let codigo = extraerIdDelQR(qrData);
-      console.log('ID extraído:', codigo);
-      
-      if (!codigo) {
-        showToast('⚠️ QR inválido', true);
-        return;
-      }
-      
-      // Buscar en cache
-      let participante = cacheParticipantes.find(p => p.id === codigo);
-      
-      if (!participante) {
-        showToast('⚠️ Participante no encontrado o no aprobado', true);
-        return;
-      }
-      
-      // Verificar que sea de Soccer
-      if (participante.categoria !== 'Robot soccer') {
-        showToast('⚠️ Este participante no es de Robot Soccer', true);
-        return;
-      }
-      
-      // Verificar si ya fue agregado
+      const codigo = extraerIdDelQR(qrData);
+      if (!codigo) { showToast('⚠️ QR inválido', true); return; }
+
+      const participante = cacheParticipantes.find(p => p.id === codigo);
+      if (!participante) { showToast('⚠️ Participante no encontrado o no aprobado', true); return; }
+      if (participante.categoria !== 'Robot soccer') { showToast('⚠️ Este participante no es de Robot Soccer', true); return; }
+
       const yaAgregado = [...equipoA.robots, ...equipoB.robots].some(r => r && r.id === participante.id);
-      if (yaAgregado) {
-        showToast('⚠️ Este robot ya fue escaneado', true);
-        return;
-      }
-      
-      // Agregar al primer slot disponible
+      if (yaAgregado) { showToast('⚠️ Este robot ya fue escaneado', true); return; }
+
       agregarRobot(participante);
-      
-    } catch (error) {
-      console.error('❌ Error al procesar QR:', error);
+    } catch (e) {
+      console.error(e);
       showToast('❌ Error al procesar QR', true);
     }
   }
-  
+
   function extraerIdDelQR(rawText) {
     if (!rawText) return null;
-    
     let texto = String(rawText).trim();
-    
-    // JSON
-    try {
-      const json = JSON.parse(texto);
-      if (json && json.id) return String(json.id).trim();
-    } catch(e) {}
-    
-    // URL
+    try { const j = JSON.parse(texto); if (j?.id) return String(j.id).trim(); } catch(e) {}
     if (texto.includes('?id=') || texto.includes('&id=')) {
-      const matchUrl = texto.match(/[?&]id=([^&\s]+)/i);
-      if (matchUrl) return decodeURIComponent(matchUrl[1]).trim();
+      const m = texto.match(/[?&]id=([^&\s]+)/i);
+      if (m) return decodeURIComponent(m[1]).trim();
     }
-    
-    // Etiqueta
-    const matchEtiqueta = texto.match(/ID\s*[:=]\s*([^\|\n\r]+)/i);
-    if (matchEtiqueta) return matchEtiqueta[1].trim();
-    
-    // Patrón sb-YYYY-XXX-NNN
-    const matchPatron = texto.match(/sb-\d{4}-[a-z_]+-\d{3}/i);
-    if (matchPatron) return matchPatron[0].toLowerCase().trim();
-    
-    // Fallback
+    const mEtiqueta = texto.match(/ID\s*[:=]\s*([^\|\n\r]+)/i);
+    if (mEtiqueta) return mEtiqueta[1].trim();
+    const mPatron = texto.match(/sb-\d{4}-[a-z_]+-\d{3}/i);
+    if (mPatron) return mPatron[0].toLowerCase().trim();
     const limpio = texto.replace(/[\r\n]+/g, '').trim();
-    if (limpio && limpio.length < 100 && !limpio.includes(' ')) {
-      return limpio;
-    }
-    
+    if (limpio && limpio.length < 100 && !limpio.includes(' ')) return limpio;
     return null;
   }
-  
-  // ══════════════════════════════════════════════════════════════
-  // GESTIÓN DE EQUIPOS
-  // ══════════════════════════════════════════════════════════════
-  
+
+  // ── Gestión de equipos ──
   function agregarRobot(participante) {
-    // Verificar si ya fue agregado
     const yaAgregado = [...equipoA.robots, ...equipoB.robots].some(r => r && r.id === participante.id);
-    if (yaAgregado) {
-      showToast('⚠️ Este robot ya fue escaneado', true);
-      return;
-    }
-    
-    // Buscar primer slot vacío en Equipo A
+    if (yaAgregado) { showToast('⚠️ Este robot ya fue escaneado', true); return; }
+
     if (equipoA.robots[0] === null) {
       equipoA.robots[0] = participante;
       renderSlot('a1', participante);
@@ -870,14 +346,10 @@
       equipoA.robots[1] = participante;
       renderSlot('a2', participante);
       showToast(`✓ ${participante.robot} → Equipo A (Robot 2)`);
-      
-      // Equipo A completo - solicitar nombre
       equipoEnEspera = 'A';
       mostrarModalNombre('A', equipoA.robots);
-      return; // No actualizar estados hasta que confirme el nombre
-    }
-    // Buscar primer slot vacío en Equipo B
-    else if (equipoB.robots[0] === null) {
+      return;
+    } else if (equipoB.robots[0] === null) {
       equipoB.robots[0] = participante;
       renderSlot('b1', participante);
       showToast(`✓ ${participante.robot} → Equipo B (Robot 1)`);
@@ -885,19 +357,16 @@
       equipoB.robots[1] = participante;
       renderSlot('b2', participante);
       showToast(`✓ ${participante.robot} → Equipo B (Robot 2)`);
-      
-      // Equipo B completo - solicitar nombre
       equipoEnEspera = 'B';
       mostrarModalNombre('B', equipoB.robots);
-      return; // No actualizar estados hasta que confirme el nombre
+      return;
     } else {
       showToast('⚠️ Todos los slots están llenos', true);
       return;
     }
-    
     actualizarEstados();
   }
-  
+
   function renderSlot(slotId, participante) {
     const slot = document.getElementById(`slot-${slotId}`);
     slot.className = 'robot-slot filled';
@@ -910,248 +379,164 @@
       <button class="btn-remove" onclick="removerRobot('${slotId}')">✕</button>
     `;
   }
-  
+
   function removerRobot(slotId) {
     const [equipo, pos] = slotId.split('');
     const index = parseInt(pos) - 1;
-    
     if (equipo === 'a') {
       equipoA.robots[index] = null;
-      // Si se remueve un robot, limpiar el nombre del equipo
-      if (equipoA.robots.every(r => r === null)) {
-        equipoA.nombre = '';
-      }
+      if (equipoA.robots.every(r => r === null)) equipoA.nombre = '';
     } else {
       equipoB.robots[index] = null;
-      // Si se remueve un robot, limpiar el nombre del equipo
-      if (equipoB.robots.every(r => r === null)) {
-        equipoB.nombre = '';
-      }
+      if (equipoB.robots.every(r => r === null)) equipoB.nombre = '';
     }
-    
     const slot = document.getElementById(`slot-${slotId}`);
     slot.className = 'robot-slot empty';
-    slot.innerHTML = `
-      <div class="robot-slot-empty">
-        <div>🤖 ROBOT ${parseInt(pos)}</div>
-        <div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div>
-      </div>
-    `;
-    
+    slot.innerHTML = `<div class="robot-slot-empty"><div>🤖 ROBOT ${parseInt(pos)}</div><div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div></div>`;
     actualizarEstados();
     showToast('Robot removido');
   }
-  
+
   function resetearEquipos() {
     if (!confirm('¿Resetear todos los equipos?')) return;
-    
     equipoA = { nombre: '', robots: [null, null] };
     equipoB = { nombre: '', robots: [null, null] };
-    
-    ['a1', 'a2', 'b1', 'b2'].forEach(slotId => {
-      const slot = document.getElementById(`slot-${slotId}`);
+    ['a1','a2','b1','b2'].forEach(slotId => {
       const pos = slotId.charAt(1);
+      const slot = document.getElementById(`slot-${slotId}`);
       slot.className = 'robot-slot empty';
-      slot.innerHTML = `
-        <div class="robot-slot-empty">
-          <div>🤖 ROBOT ${pos}</div>
-          <div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div>
-        </div>
-      `;
+      slot.innerHTML = `<div class="robot-slot-empty"><div>🤖 ROBOT ${pos}</div><div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div></div>`;
     });
-    
     actualizarEstados();
     showToast('Equipos reseteados');
   }
-  
+
   function actualizarEstados() {
-    // Equipo A
     const countA = equipoA.robots.filter(r => r !== null).length;
+    const countB = equipoB.robots.filter(r => r !== null).length;
+
+    // Equipo A
     const statusA = document.getElementById('status-a');
     statusA.textContent = countA === 2 && equipoA.nombre ? equipoA.nombre : `${countA}/2`;
     statusA.className = countA === 2 && equipoA.nombre ? 'equipo-status completo' : 'equipo-status incompleto';
-    
     const cardA = document.getElementById('card-equipo-a');
     cardA.className = countA === 2 && equipoA.nombre ? 'equipo-card completo' : 'equipo-card';
-    
-    // Actualizar título si tiene nombre
-    const titleA = cardA.querySelector('.equipo-title');
-    titleA.textContent = equipoA.nombre ? `⚽ ${equipoA.nombre}` : '⚽ EQUIPO A';
-    
+    cardA.querySelector('.equipo-title').textContent = equipoA.nombre ? `⚽ ${equipoA.nombre}` : '⚽ EQUIPO A';
+
     // Equipo B
-    const countB = equipoB.robots.filter(r => r !== null).length;
     const statusB = document.getElementById('status-b');
     statusB.textContent = countB === 2 && equipoB.nombre ? equipoB.nombre : `${countB}/2`;
     statusB.className = countB === 2 && equipoB.nombre ? 'equipo-status completo' : 'equipo-status incompleto';
-    
     const cardB = document.getElementById('card-equipo-b');
     cardB.className = countB === 2 && equipoB.nombre ? 'equipo-card completo' : 'equipo-card';
-    
-    // Actualizar título si tiene nombre
-    const titleB = cardB.querySelector('.equipo-title');
-    titleB.textContent = equipoB.nombre ? `⚽ ${equipoB.nombre}` : '⚽ EQUIPO B';
-    
-    // Botón iniciar
+    cardB.querySelector('.equipo-title').textContent = equipoB.nombre ? `⚽ ${equipoB.nombre}` : '⚽ EQUIPO B';
+
+    // Botón
     const total = countA + countB;
     const todosCompletos = countA === 2 && countB === 2 && equipoA.nombre && equipoB.nombre;
-    const btnIniciar = document.getElementById('btn-iniciar');
-    btnIniciar.textContent = `🚀 Iniciar partido (${total}/4 escaneados)`;
-    btnIniciar.disabled = !todosCompletos;
+    const btn = document.getElementById('btn-iniciar');
+    btn.textContent = `🏆 Ir al bracket (${total}/4 escaneados)`;
+    btn.disabled = !todosCompletos;
   }
-  
-  // ══════════════════════════════════════════════════════════════
-  // MODAL NOMBRE EQUIPO
-  // ══════════════════════════════════════════════════════════════
-  
+
+  // ── Modal nombre equipo ──
   function mostrarModalNombre(equipoLetra, robots) {
-    const modal = document.getElementById('modal-nombre-equipo');
-    const title = document.getElementById('modal-title');
-    const robotsList = document.getElementById('modal-robots-list');
-    const input = document.getElementById('input-nombre-equipo');
-    
-    // Configurar título
-    title.textContent = `⚽ Nombre del Equipo ${equipoLetra}`;
-    
-    // Listar robots
-    robotsList.innerHTML = robots.map(r => `
+    document.getElementById('modal-title').textContent = `⚽ Nombre del Equipo ${equipoLetra}`;
+    document.getElementById('modal-robots-list').innerHTML = robots.map(r => `
       <div class="modal-robot-item">
         <div class="modal-robot-emoji">🤖</div>
-        <div class="modal-robot-name">${r.robot} - ${r.nombre}</div>
-      </div>
-    `).join('');
-    
-    // Limpiar input
+        <div class="modal-robot-name">${r.robot} — ${r.nombre}</div>
+      </div>`).join('');
+    const input = document.getElementById('input-nombre-equipo');
     input.value = '';
-    input.focus();
-    
-    // Mostrar modal
-    modal.classList.add('show');
-    
-    // Detener escáner mientras se ingresa el nombre
-    if (scannerActivo) {
-      stopScanner();
-    }
-    
-    // Permitir Enter para confirmar
-    input.onkeypress = (e) => {
-      if (e.key === 'Enter' && input.value.trim()) {
-        confirmarNombreEquipo();
-      }
-    };
+    document.getElementById('modal-nombre-equipo').classList.add('show');
+    if (scannerActivo) stopScanner();
+    setTimeout(() => input.focus(), 100);
+    input.onkeypress = (e) => { if (e.key === 'Enter' && input.value.trim()) confirmarNombreEquipo(); };
   }
-  
+
   function cerrarModalNombre() {
-    const modal = document.getElementById('modal-nombre-equipo');
-    modal.classList.remove('show');
+    document.getElementById('modal-nombre-equipo').classList.remove('show');
     equipoEnEspera = null;
   }
-  
+
   function confirmarNombreEquipo() {
     const input = document.getElementById('input-nombre-equipo');
-    const nombreEquipo = input.value.trim();
-    
-    if (!nombreEquipo) {
-      showToast('⚠️ Ingresa un nombre para el equipo', true);
-      input.focus();
-      return;
-    }
-    
-    if (nombreEquipo.length < 3) {
-      showToast('⚠️ El nombre debe tener al menos 3 caracteres', true);
-      input.focus();
-      return;
-    }
-    
-    // Guardar nombre
-    if (equipoEnEspera === 'A') {
-      equipoA.nombre = nombreEquipo;
-      showToast(`✓ Equipo A nombrado: ${nombreEquipo}`);
-    } else if (equipoEnEspera === 'B') {
-      equipoB.nombre = nombreEquipo;
-      showToast(`✓ Equipo B nombrado: ${nombreEquipo}`);
-    }
-    
-    // Cerrar modal
+    const nombre = input.value.trim();
+    if (!nombre) { showToast('⚠️ Ingresa un nombre', true); input.focus(); return; }
+    if (nombre.length < 2) { showToast('⚠️ Mínimo 2 caracteres', true); input.focus(); return; }
+    if (equipoEnEspera === 'A') { equipoA.nombre = nombre; showToast(`✓ Equipo A: ${nombre}`); }
+    else if (equipoEnEspera === 'B') { equipoB.nombre = nombre; showToast(`✓ Equipo B: ${nombre}`); }
     cerrarModalNombre();
-    
-    // Actualizar UI
     actualizarEstados();
   }
-  
-  // ══════════════════════════════════════════════════════════════
-  // ENVIAR A CRONÓMETRO
-  // ══════════════════════════════════════════════════════════════
-  
+
+  // ── Enviar al bracket (CORREGIDO) ──
   async function enviarACronometro() {
     const totalRobots = [...equipoA.robots, ...equipoB.robots].filter(r => r !== null).length;
-    
-    if (totalRobots !== 4) {
-      showToast('⚠️ Debes escanear 4 robots (2 por equipo)', true);
-      return;
-    }
-    
-    if (!equipoA.nombre || !equipoB.nombre) {
-      showToast('⚠️ Ambos equipos deben tener nombre', true);
-      return;
-    }
-    
+    if (totalRobots !== 4) { showToast('⚠️ Debes escanear 4 robots (2 por equipo)', true); return; }
+    if (!equipoA.nombre || !equipoB.nombre) { showToast('⚠️ Ambos equipos deben tener nombre', true); return; }
+
+    const btn = document.getElementById('btn-iniciar');
+    btn.disabled = true;
+    btn.textContent = '⏳ Registrando equipos...';
+
     try {
-      // Preparar datos para enviar
-      const datosPartido = {
-        action: 'setActivo',
-        ruta: 'SOC', // Ruta para Soccer
-        partido: {
-          equipoA: {
-            nombre: equipoA.nombre,
-            robots: equipoA.robots.map(r => ({
-              id: r.id,
-              robot: r.robot,
-              nombre: r.nombre,
-              institucion: r.institucion
-            }))
-          },
-          equipoB: {
-            nombre: equipoB.nombre,
-            robots: equipoB.robots.map(r => ({
-              id: r.id,
-              robot: r.robot,
-              nombre: r.nombre,
-              institucion: r.institucion
-            }))
-          },
-          timestamp: Date.now()
-        }
-      };
-      
-      const response = await fetch(GAS_URL, {
+      // 1. Registrar Equipo A
+      const respA = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(datosPartido)
+        body: JSON.stringify({
+          action: 'registrarEquipoSoccer',
+          nombre: equipoA.nombre,
+          robots: equipoA.robots.map(r => ({
+            id: r.id, robot: r.robot,
+            nombre: r.nombre, institucion: r.institucion
+          }))
+        })
       });
-      
-      const data = await response.json();
-      
-      if (data.ok) {
-        showToast(`✓ Partido ${equipoA.nombre} vs ${equipoB.nombre} enviado`);
-        
-        // Redirigir al cronómetro Soccer
-        setTimeout(() => {
-          window.location.href = '../CRONOMETRO-SOCCER/';
-        }, 1500);
-      } else {
-        throw new Error(data.error || 'Error al enviar');
-      }
-      
+      const dataA = await respA.json();
+      if (!dataA.ok) throw new Error(dataA.error || 'Error registrando Equipo A');
+
+      // 2. Registrar Equipo B
+      const respB = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'registrarEquipoSoccer',
+          nombre: equipoB.nombre,
+          robots: equipoB.robots.map(r => ({
+            id: r.id, robot: r.robot,
+            nombre: r.nombre, institucion: r.institucion
+          }))
+        })
+      });
+      const dataB = await respB.json();
+      if (!dataB.ok) throw new Error(dataB.error || 'Error registrando Equipo B');
+
+      showToast(`✓ ${equipoA.nombre} y ${equipoB.nombre} registrados. Redirigiendo...`);
+
+      // Resetear para próxima pareja
+      equipoA = { nombre: '', robots: [null, null] };
+      equipoB = { nombre: '', robots: [null, null] };
+      ['a1','a2','b1','b2'].forEach(slotId => {
+        const pos = slotId.charAt(1);
+        const slot = document.getElementById(`slot-${slotId}`);
+        slot.className = 'robot-slot empty';
+        slot.innerHTML = `<div class="robot-slot-empty"><div>🤖 ROBOT ${pos}</div><div style="font-size:0.65rem;margin-top:4px;">Esperando escaneo...</div></div>`;
+      });
+      actualizarEstados();
+
+      setTimeout(() => { window.location.href = '../CRONOMETRO-SOCCER/'; }, 1500);
+
     } catch (error) {
-      console.error('Error al enviar:', error);
-      showToast('❌ Error al enviar equipos', true);
+      console.error('Error:', error);
+      showToast('❌ Error al registrar equipos: ' + error.message, true);
+      btn.disabled = false;
+      btn.textContent = '🏆 Ir al bracket (4/4 escaneados)';
     }
   }
-  
-  // ══════════════════════════════════════════════════════════════
-  // UTILIDADES
-  // ══════════════════════════════════════════════════════════════
-  
+
   function showToast(msg, error = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
