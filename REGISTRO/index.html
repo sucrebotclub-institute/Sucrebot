@@ -31,21 +31,20 @@
     .page-hero h2 span { color: var(--r-blue); }
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
     
-    /* ── LAYOUT ── */
+    /* ── LAYOUT REORGANIZADO ── */
     .reg-layout { display: flex; align-items: flex-start; gap: 40px; position: relative; margin-bottom: 60px; }
-    .reg-robot { position: absolute; right: -100px; top: 40px; pointer-events: none; z-index: 0; }
-    .reg-robot img { width: 480px; height: auto; filter: drop-shadow(0 8px 32px rgba(91,200,240,0.25)); animation: float-robot 4s ease-in-out infinite; opacity: 0.95; }
+    .reg-robot { flex: 0 0 420px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .reg-robot img { width: 100%; max-width: 400px; height: auto; filter: drop-shadow(0 8px 32px rgba(91,200,240,0.25)); animation: float-robot 4s ease-in-out infinite; }
     @keyframes float-robot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
     
-    /* ── CARD FORMULARIO MÁS ANCHO ── */
+    /* ── CARD FORMULARIO ── */
     .form-card { 
       background: linear-gradient(135deg, var(--r-blue) 0%, #14497e 100%); 
       border: 1.5px solid var(--r-blue); 
       border-radius: 16px; 
       padding: 28px; 
       box-shadow: 0 4px 24px rgba(26,92,168,0.25); 
-      flex: 0 0 680px; 
-      max-width: 680px; 
+      flex: 1;
       position: relative; 
       z-index: 1; 
     }
@@ -161,11 +160,16 @@
     }
     .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
     
-    @media (max-width: 860px) { 
-      .reg-layout { flex-direction: column; } 
-      .reg-robot { display: none; } 
+    @media (max-width: 1000px) { 
+      .reg-layout { flex-direction: column; align-items: center; } 
+      .reg-robot { flex: 0 0 auto; }
+      .form-card { width: 100%; max-width: 700px; }
+    }
+    
+    @media (max-width: 768px) { 
+      .reg-robot { display: none; }
       .form-grid { grid-template-columns: 1fr; }
-      .form-card { flex: 1; max-width: 100%; }
+      .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
     }
   </style>
 </head>
