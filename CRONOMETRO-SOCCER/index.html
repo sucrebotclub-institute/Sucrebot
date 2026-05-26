@@ -324,21 +324,18 @@
   // INIT — espera auth.js antes de verificar staff
   // ══════════════════════════════════════════════════════════════
   window.addEventListener('DOMContentLoaded', async () => {
-    await new Promise(r => {
-      document.addEventListener('componentsLoaded', r, { once: true });
-      setTimeout(r, 2500); // fallback
-    });
+    await cargarEquipos();
+  });
 
+  function verificarStaff() {
     const user = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
     const STAFF = window.STAFF_EMAILS || [];
     if (!user.email || !STAFF.includes(user.email)) {
-      showToast('⚠️ Acceso solo para staff', true);
-      setTimeout(() => { window.location.href = '../INICIO/'; }, 2000);
-      return;
+      showToast('⚠️ Solo personal autorizado — inicia sesión', true);
+      return false;
     }
-
-    await cargarEquipos();
-  });
+    return true;
+  }
 
   // ══════════════════════════════════════════════════════════════
   // CARGAR EQUIPOS Y BRACKET
@@ -407,6 +404,7 @@
   // GENERAR BRACKET
   // ══════════════════════════════════════════════════════════════
   async function generarBracket() {
+    if (!verificarStaff()) return;
     if (equiposRegistrados.length < 2) { showToast('⚠️ Se necesitan al menos 2 equipos', true); return; }
     if (bracketBloqueado) { showToast('⚠️ El bracket ya fue generado', true); return; }
     if (!confirm(`¿Generar bracket con ${equiposRegistrados.length} equipos?\nLos emparejamientos serán aleatorios e inmutables.`)) return;
@@ -478,6 +476,7 @@
   // RESET TORNEO
   // ══════════════════════════════════════════════════════════════
   async function resetearTorneo() {
+    if (!verificarStaff()) return;
     if (!confirm('⚠️ ¿Resetear TODO el torneo?\nSe eliminarán todos los equipos y el bracket.\nEsta acción NO se puede deshacer.')) return;
 
     try {
@@ -531,6 +530,7 @@
   // INICIAR PARTIDO
   // ══════════════════════════════════════════════════════════════
   function iniciarPartido(partido) {
+    if (!verificarStaff()) return;
     partidoActual = partido;
 
     document.getElementById('nombre-equipo-a-partido').textContent = partido.equipoA_nombre;
@@ -709,6 +709,7 @@
   }
 
   async function terminarPartido() {
+    if (!verificarStaff()) return;
     if (!partidoActual) { showToast('⚠️ No hay partido en curso', true); return; }
     if (tiempoActual === 'penales' && penalesA === penalesB) { showToast('⚠️ Debes definir el ganador en penales', true); return; }
     if (golesA === golesB && tiempoActual !== 'penales' && tiempoActual !== 'finalizado') {
