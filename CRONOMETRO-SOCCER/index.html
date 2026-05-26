@@ -323,19 +323,36 @@
   // ══════════════════════════════════════════════════════════════
   // INIT — espera auth.js antes de verificar staff
   // ══════════════════════════════════════════════════════════════
-  window.addEventListener('DOMContentLoaded', async () => {
+  // ✅ Igual que CRONOMETRO.html: esperar componentsLoaded
+  document.addEventListener('componentsLoaded', async function() {
+    const savedUser = localStorage.getItem('sucrebot_user');
+    if (!savedUser) {
+      window.location.href = '../INICIO/';
+      return;
+    }
     await cargarEquipos();
   });
 
   function verificarStaff() {
-    const user = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
-    const STAFF = window.STAFF_EMAILS || [];
-    if (!user.email || !STAFF.includes(user.email)) {
-      showToast('⚠️ Solo personal autorizado — inicia sesión', true);
+    const saved = localStorage.getItem('sucrebot_user');
+    if (!saved) {
+      showToast('⚠️ Debes iniciar sesión para continuar', true);
       return false;
     }
-    return true;
+    try {
+      const user = JSON.parse(saved);
+      const STAFF = ['ftipantocta@tecnologicosucre.edu.ec', 'sucrebotclub@tecnologicosucre.edu.ec', 'vandrade@tecnologicosucre.edu.ec'];
+      if (!STAFF.includes(user.email)) {
+        showToast('⚠️ Solo personal autorizado', true);
+        return false;
+      }
+      return true;
+    } catch(e) {
+      showToast('⚠️ Error de sesión, vuelve a iniciar sesión', true);
+      return false;
+    }
   }
+
 
   // ══════════════════════════════════════════════════════════════
   // CARGAR EQUIPOS Y BRACKET
