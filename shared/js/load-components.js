@@ -156,7 +156,7 @@ async function loadComponents() {
            currentPath.includes('/ESCANER/') ||
            currentPath.includes('/CRONOMETRO/') ||
            currentPath.includes('/CRONOMETRO-SOCCER/') ||
-           currentPath.includes('/ESCaNER-SOCCER/') ||
+           currentPath.includes('/ESCANER-SOCCER/') ||
            currentPath.includes('/PANTALLA/') ||
            currentPath.includes('/RESULTADOS/') ||
            currentPath.includes('/GENERAR-CERTIFICADOS/')) {
