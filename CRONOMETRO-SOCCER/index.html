@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Cronómetro Soccer</title>
+  <title>SucreBot — Torneo Soccer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -16,7 +16,7 @@
   <style>
     body { background: #ffffff; color: #1a1a2e; }
     main { min-height: calc(100vh - 174px); padding-bottom: 40px; background: #ffffff; }
-    .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .wrapper { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
 
     /* ═══ HERO ═══ */
     .page-hero { padding: 56px 0 32px; text-align: center; }
@@ -37,7 +37,7 @@
     
     .page-hero h1 { 
       font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; 
-      letter-spacing: 4px; color: var(--text); line-height: 1; margin: 0 0 12px;
+      letter-spacing: 4px; color: #1a3a6e; line-height: 1; margin: 0 0 12px;
     }
     .page-hero h1 span { color: var(--cyan); }
     .page-hero-sub { 
@@ -50,19 +50,287 @@
       border-radius: 2px; 
     }
     .page-hero p { 
-      font-size: 13px; color: var(--muted); 
+      font-size: 13px; color: #6b7280; 
       letter-spacing: 1px; text-transform: uppercase; 
     }
 
-    /* ═══ LAYOUT PRINCIPAL ═══ */
-    .main-grid {
+    /* ═══ VISTAS (OCULTAR/MOSTRAR) ═══ */
+    .vista { display: none; }
+    .vista.active { display: block; }
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* VISTA 1: BRACKET / GESTIÓN DE TORNEO */
+    /* ═══════════════════════════════════════════════════════════ */
+
+    .bracket-container {
+      max-width: 1200px;
+      margin: 32px auto;
+    }
+
+    .equipos-card {
+      background: #f8f9fa;
+      border-radius: 16px;
+      border: 2px solid #e0e7ef;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(26,92,168,0.1);
+    }
+
+    .equipos-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e0e7ef;
+    }
+
+    .equipos-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      color: #1a3a6e;
+      letter-spacing: 1px;
+    }
+
+    .equipos-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      background: var(--blue);
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    .equipos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .equipo-item {
+      background: #ffffff;
+      border: 2px solid #e0e7ef;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+
+    .equipo-item:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 2px 12px rgba(91,200,240,0.2);
+    }
+
+    .equipo-emoji { font-size: 1.5rem; }
+
+    .equipo-info { flex: 1; }
+
+    .equipo-nombre-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      color: #1a3a6e;
+      letter-spacing: 0.5px;
+    }
+
+    .equipo-robots {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .btn-generar-bracket {
+      width: 100%;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-mid) 100%);
+      color: #ffffff;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      box-shadow: 0 4px 16px rgba(26,92,168,0.3);
+    }
+
+    .btn-generar-bracket:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26,92,168,0.4);
+    }
+
+    .btn-generar-bracket:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* ═══ BRACKET VISUAL ═══ */
+    .bracket-visual {
+      background: #f8f9fa;
+      border-radius: 16px;
+      border: 2px solid #e0e7ef;
+      padding: 32px;
+      overflow-x: auto;
+      box-shadow: 0 4px 20px rgba(26,92,168,0.1);
+    }
+
+    .bracket-fases {
+      display: flex;
+      gap: 48px;
+      min-width: max-content;
+    }
+
+    .bracket-fase {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 280px;
+    }
+
+    .fase-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--blue);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .partido-bracket {
+      background: #ffffff;
+      border: 2px solid #e0e7ef;
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .partido-bracket:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 4px 16px rgba(91,200,240,0.2);
+      transform: translateX(4px);
+    }
+
+    .partido-bracket.finalizado {
+      border-color: #00d95f;
+      background: #f0fdf4;
+    }
+
+    .partido-bracket.en-curso {
+      border-color: #fbbf24;
+      background: #fffbeb;
+    }
+
+    .partido-equipos {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .partido-equipo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e0e7ef;
+    }
+
+    .partido-equipo.ganador {
+      background: #e8f5e9;
+      border-color: #00d95f;
+      font-weight: 700;
+    }
+
+    .partido-equipo-nombre {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.9rem;
+      color: #1a3a6e;
+      font-weight: 600;
+    }
+
+    .partido-equipo-goles {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.2rem;
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    .btn-jugar-partido {
+      width: 100%;
+      background: linear-gradient(135deg, #00d95f 0%, #00a046 100%);
+      color: #ffffff;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-jugar-partido:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,217,95,0.4);
+    }
+
+    .btn-jugar-partido:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* BYE */
+    .partido-bye {
+      background: #fffbeb;
+      border: 2px dashed #fbbf24;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .bye-equipo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      color: #1a3a6e;
+      margin-bottom: 4px;
+    }
+
+    .bye-badge {
+      display: inline-block;
+      background: #fbbf24;
+      color: #78350f;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* VISTA 2: PARTIDO / CRONÓMETRO */
+    /* ═══════════════════════════════════════════════════════════ */
+
+    .partido-grid {
       display: grid;
       grid-template-columns: 1fr 400px;
       gap: 24px;
       margin-top: 32px;
     }
 
-    /* ═══ CANCHA (COLUMNA IZQUIERDA) ═══ */
     .cancha-card {
       background: linear-gradient(135deg, var(--bg3) 0%, var(--bg2) 100%);
       border-radius: 20px;
@@ -99,7 +367,7 @@
       font-weight: 700;
     }
 
-    /* ═══ MARCADOR ═══ */
+    /* Marcador */
     .marcador {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -149,7 +417,7 @@
       opacity: 0.5;
     }
 
-    /* ═══ CRONÓMETRO ═══ */
+    /* Cronómetro */
     .cronometro-display {
       text-align: center;
       margin-bottom: 24px;
@@ -188,7 +456,7 @@
       text-transform: uppercase;
     }
 
-    /* ═══ CONTROLES ═══ */
+    /* Controles */
     .controles-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -275,7 +543,29 @@
       box-shadow: 0 6px 20px rgba(91,200,240,0.4);
     }
 
-    /* ═══ PANEL DERECHO ═══ */
+    .btn-volver {
+      width: 100%;
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+      color: #ffffff;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 12px;
+    }
+
+    .btn-volver:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(107,114,128,0.4);
+    }
+
+    /* Panel derecho */
     .panel-derecho {
       display: flex;
       flex-direction: column;
@@ -357,7 +647,7 @@
       box-shadow: 0 6px 20px rgba(26,92,168,0.4);
     }
 
-    /* ═══ HISTORIAL ═══ */
+    /* Historial goles */
     .gol-item {
       background: rgba(10,25,60,0.4);
       border: 1px solid rgba(91,200,240,0.15);
@@ -402,14 +692,14 @@
       font-size: 0.85rem;
     }
 
-    /* ═══ TOAST ═══ */
+    /* Toast */
     .toast {
       position: fixed;
       bottom: 32px;
       left: 50%;
       transform: translateX(-50%) translateY(120px);
       background: rgba(0,0,0,0.92);
-      color: var(--cyan);
+      color: #00ff88;
       padding: 16px 28px;
       border-radius: 12px;
       font-family: 'Exo 2', sans-serif;
@@ -418,7 +708,7 @@
       z-index: 10000;
       opacity: 0;
       transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      border: 2px solid rgba(91,200,240,0.4);
+      border: 2px solid rgba(0,255,136,0.4);
       box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     }
     .toast.show {
@@ -426,9 +716,9 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* ═══ RESPONSIVE ═══ */
+    /* Responsive */
     @media (max-width: 1024px) {
-      .main-grid {
+      .partido-grid {
         grid-template-columns: 1fr;
       }
       .panel-derecho {
@@ -443,6 +733,8 @@
       .equipo-robot { font-size: 1.4rem; }
       .controles-grid { grid-template-columns: 1fr; }
       .btn-terminar { grid-column: span 1; }
+      .bracket-fases { gap: 24px; }
+      .bracket-fase { min-width: 220px; }
     }
   </style>
 </head>
@@ -463,107 +755,139 @@
         <div class="page-hero-badge-dot"></div>
         SUCREBOT 2026 · ROBOT SOCCER
       </div>
-      <h1>CRONÓMETRO <span>PARTIDO</span></h1>
+      <h1 id="hero-title">TORNEO <span>SOCCER</span></h1>
       <div class="page-hero-sub">
         <div class="page-hero-line"></div>
-        <p>Gestión de partidos en tiempo real</p>
+        <p id="hero-subtitle">Gestión completa del torneo</p>
         <div class="page-hero-line"></div>
       </div>
     </div>
 
-    <!-- GRID PRINCIPAL -->
-    <div class="main-grid">
-      
-      <!-- COLUMNA IZQUIERDA: CANCHA -->
-      <div class="cancha-card">
-        <div class="cancha-header">
-          <div class="cancha-title">⚽ PARTIDO EN VIVO</div>
-          <span class="tiempo-badge" id="tiempo-actual">CONFIGURACIÓN</span>
-        </div>
-
-        <!-- MARCADOR -->
-        <div class="marcador">
-          <div class="equipo">
-            <div class="equipo-nombre">Equipo A</div>
-            <div class="equipo-robot" id="nombre-equipo-a">—</div>
-            <div class="goles-display" id="goles-a">0</div>
-          </div>
-          
-          <div class="vs-separator">VS</div>
-          
-          <div class="equipo">
-            <div class="equipo-nombre">Equipo B</div>
-            <div class="equipo-robot" id="nombre-equipo-b">—</div>
-            <div class="goles-display" id="goles-b">0</div>
-          </div>
-        </div>
-
-        <!-- CRONÓMETRO -->
-        <div class="cronometro-display">
-          <div class="tiempo-numero" id="tiempo-display">05:00</div>
-          <div class="tiempo-label">MINUTOS RESTANTES</div>
-        </div>
-
-        <!-- CONTROLES -->
-        <div class="controles-grid">
-          <button class="btn-control btn-iniciar" id="btn-iniciar" onclick="iniciarTiempo()">
-            ▶️ Iniciar
-          </button>
-          <button class="btn-control btn-pausar" id="btn-pausar" onclick="pausarTiempo()" disabled>
-            ⏸️ Pausar
-          </button>
-          <button class="btn-control btn-gol" onclick="registrarGol('A')">
-            ⚽ Gol Equipo A
-          </button>
-          <button class="btn-control btn-gol" onclick="registrarGol('B')">
-            ⚽ Gol Equipo B
-          </button>
-          <button class="btn-control btn-reiniciar" onclick="reiniciarTiempo()" style="grid-column: span 2;">
-            🔄 Reiniciar tiempo
-          </button>
-          <button class="btn-control btn-terminar" id="btn-terminar" onclick="terminarPartido()">
-            🏁 Terminar partido
-          </button>
-        </div>
-      </div>
-
-      <!-- COLUMNA DERECHA: PANEL -->
-      <div class="panel-derecho">
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- VISTA 1: BRACKET -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    
+    <div class="vista active" id="vista-bracket">
+      <div class="bracket-container">
         
-        <!-- CONFIGURACIÓN -->
-        <div class="config-card">
-          <div class="card-title">⚙️ CONFIGURACIÓN</div>
-          
-          <div class="form-group">
-            <label>Nombre Equipo A</label>
-            <input type="text" id="input-equipo-a" placeholder="Robot Equipo A" />
+        <!-- LISTA DE EQUIPOS -->
+        <div class="equipos-card" id="equipos-list-section">
+          <div class="equipos-header">
+            <div class="equipos-title">⚽ EQUIPOS REGISTRADOS</div>
+            <span class="equipos-count" id="equipos-count">0</span>
           </div>
           
-          <div class="form-group">
-            <label>Nombre Equipo B</label>
-            <input type="text" id="input-equipo-b" placeholder="Robot Equipo B" />
+          <div class="equipos-grid" id="equipos-grid">
+            <!-- Se llena dinámicamente -->
           </div>
           
-          <div class="form-group">
-            <label>Duración por tiempo (minutos)</label>
-            <input type="number" id="input-duracion" value="5" min="1" max="10" />
-          </div>
-          
-          <button class="btn-configurar" onclick="configurarPartido()">
-            ✓ Aplicar configuración
+          <button class="btn-generar-bracket" id="btn-generar" onclick="generarBracket()">
+            🏆 Generar Bracket Automático
           </button>
         </div>
 
-        <!-- HISTORIAL DE GOLES -->
-        <div class="historial-card">
-          <div class="card-title">📊 HISTORIAL DE GOLES</div>
-          <div id="historial-goles">
-            <div class="empty-hist">No hay goles registrados</div>
+        <!-- BRACKET VISUAL -->
+        <div class="bracket-visual" id="bracket-section" style="display:none;">
+          <div id="bracket-content">
+            <!-- Se llena dinámicamente con las fases -->
           </div>
         </div>
 
       </div>
+    </div>
 
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- VISTA 2: PARTIDO -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    
+    <div class="vista" id="vista-partido">
+      <div class="partido-grid">
+        
+        <!-- COLUMNA IZQUIERDA: CANCHA -->
+        <div class="cancha-card">
+          <div class="cancha-header">
+            <div class="cancha-title">⚽ PARTIDO EN VIVO</div>
+            <span class="tiempo-badge" id="tiempo-actual">CONFIGURACIÓN</span>
+          </div>
+
+          <!-- MARCADOR -->
+          <div class="marcador">
+            <div class="equipo">
+              <div class="equipo-nombre">Equipo A</div>
+              <div class="equipo-robot" id="nombre-equipo-a-partido">—</div>
+              <div class="goles-display" id="goles-a-partido">0</div>
+            </div>
+            
+            <div class="vs-separator">VS</div>
+            
+            <div class="equipo">
+              <div class="equipo-nombre">Equipo B</div>
+              <div class="equipo-robot" id="nombre-equipo-b-partido">—</div>
+              <div class="goles-display" id="goles-b-partido">0</div>
+            </div>
+          </div>
+
+          <!-- CRONÓMETRO -->
+          <div class="cronometro-display">
+            <div class="tiempo-numero" id="tiempo-display">05:00</div>
+            <div class="tiempo-label">MINUTOS RESTANTES</div>
+          </div>
+
+          <!-- CONTROLES -->
+          <div class="controles-grid">
+            <button class="btn-control btn-iniciar" id="btn-iniciar-partido" onclick="iniciarTiempo()">
+              ▶️ Iniciar
+            </button>
+            <button class="btn-control btn-pausar" id="btn-pausar-partido" onclick="pausarTiempo()" disabled>
+              ⏸️ Pausar
+            </button>
+            <button class="btn-control btn-gol" onclick="registrarGol('A')">
+              ⚽ Gol Equipo A
+            </button>
+            <button class="btn-control btn-gol" onclick="registrarGol('B')">
+              ⚽ Gol Equipo B
+            </button>
+            <button class="btn-control btn-reiniciar" onclick="reiniciarTiempo()" style="grid-column: span 2;">
+              🔄 Reiniciar tiempo
+            </button>
+            <button class="btn-control btn-terminar" id="btn-terminar-partido" onclick="terminarPartido()">
+              🏁 Terminar partido
+            </button>
+          </div>
+          
+          <button class="btn-volver" onclick="volverABracket()">
+            ← Volver al Bracket
+          </button>
+        </div>
+
+        <!-- COLUMNA DERECHA: PANEL -->
+        <div class="panel-derecho">
+          
+          <!-- CONFIGURACIÓN -->
+          <div class="config-card">
+            <div class="card-title">⚙️ CONFIGURACIÓN</div>
+            
+            <div class="form-group">
+              <label>Duración por tiempo (minutos)</label>
+              <input type="number" id="input-duracion-partido" value="5" min="1" max="10" />
+            </div>
+            
+            <button class="btn-configurar" onclick="configurarDuracion()">
+              ✓ Aplicar configuración
+            </button>
+          </div>
+
+          <!-- HISTORIAL DE GOLES -->
+          <div class="historial-card">
+            <div class="card-title">📊 HISTORIAL DE GOLES</div>
+            <div id="historial-goles-partido">
+              <div class="empty-hist">No hay goles registrados</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
     </div>
 
   </div>
@@ -578,105 +902,308 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-
-  // ═══════════════════════════════════════════════════════════
-  // VARIABLES DE ESTADO
-  // ═══════════════════════════════════════════════════════════
   
-  let equipoA = '';
-  let equipoB = '';
-  let golesA = 0;
-  let golesB = 0;
+  // ══════════════════════════════════════════════════════════════
+  // ESTADO GLOBAL
+  // ══════════════════════════════════════════════════════════════
+  
+  let vistaActual = 'bracket'; // 'bracket' | 'partido'
+  let equiposRegistrados = [];
+  let bracketGenerado = null;
+  let partidoActual = null;
+  
+  // Estado del cronómetro
   let duracionMinutos = 5;
   let tiempoRestanteSegundos = 0;
-  let tiempoActual = 'config'; // 'config' | 'tiempo1' | 'descanso' | 'tiempo2' | 'finalizado'
+  let tiempoActual = 'config';
   let corriendo = false;
   let intervalId = null;
   let historialGoles = [];
-
-  // ═══════════════════════════════════════════════════════════
-  // CONFIGURACIÓN
-  // ═══════════════════════════════════════════════════════════
-
-  function configurarPartido() {
-    const inputA = document.getElementById('input-equipo-a').value.trim();
-    const inputB = document.getElementById('input-equipo-b').value.trim();
-    const inputDur = parseInt(document.getElementById('input-duracion').value);
-
-    if (!inputA || !inputB) {
-      showToast('⚠️ Ingresa los nombres de ambos equipos', true);
+  let golesA = 0;
+  let golesB = 0;
+  
+  // ══════════════════════════════════════════════════════════════
+  // INICIALIZACIÓN
+  // ══════════════════════════════════════════════════════════════
+  
+  window.addEventListener('DOMContentLoaded', async () => {
+    // Verificar autenticación staff
+    const user = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
+    const STAFF_EMAILS = window.STAFF_EMAILS || [];
+    
+    if (!user.email || !STAFF_EMAILS.includes(user.email)) {
+      showToast('⚠️ Acceso solo para staff', true);
+      setTimeout(() => {
+        window.location.href = '../INICIO/';
+      }, 2000);
       return;
     }
-
-    if (inputDur < 1 || inputDur > 10) {
-      showToast('⚠️ La duración debe estar entre 1 y 10 minutos', true);
+    
+    // Cargar equipos registrados
+    await cargarEquipos();
+  });
+  
+  // ══════════════════════════════════════════════════════════════
+  // VISTA 1: BRACKET - CARGAR EQUIPOS
+  // ══════════════════════════════════════════════════════════════
+  
+  async function cargarEquipos() {
+    try {
+      const qs = new URLSearchParams({ action: 'getEquiposSoccer' }).toString();
+      const r = await fetch(GAS_URL + '?' + qs);
+      const data = await r.json();
+      
+      if (data.ok && Array.isArray(data.equipos)) {
+        equiposRegistrados = data.equipos.filter(e => e.estado === 'ACTIVO');
+        renderEquipos();
+        
+        // Si ya hay bracket generado, mostrarlo
+        if (data.bracket) {
+          bracketGenerado = data.bracket;
+          mostrarBracket();
+        }
+      } else {
+        equiposRegistrados = [];
+        renderEquipos();
+      }
+    } catch (error) {
+      console.error('Error al cargar equipos:', error);
+      showToast('❌ Error al cargar equipos', true);
+    }
+  }
+  
+  function renderEquipos() {
+    const grid = document.getElementById('equipos-grid');
+    const count = document.getElementById('equipos-count');
+    const btn = document.getElementById('btn-generar');
+    
+    count.textContent = equiposRegistrados.length;
+    
+    if (equiposRegistrados.length === 0) {
+      grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 24px;">No hay equipos registrados aún. Ve al Escáner Soccer para agregar equipos.</p>';
+      btn.disabled = true;
       return;
     }
-
-    equipoA = inputA;
-    equipoB = inputB;
-    duracionMinutos = inputDur;
-    tiempoRestanteSegundos = duracionMinutos * 60;
-
-    // Actualizar UI
-    document.getElementById('nombre-equipo-a').textContent = equipoA;
-    document.getElementById('nombre-equipo-b').textContent = equipoB;
-    actualizarDisplayTiempo();
-
-    // Resetear goles e historial
+    
+    grid.innerHTML = equiposRegistrados.map(eq => `
+      <div class="equipo-item">
+        <div class="equipo-emoji">⚽</div>
+        <div class="equipo-info">
+          <div class="equipo-nombre-item">${eq.nombre}</div>
+          <div class="equipo-robots">${eq.robots.length} robots</div>
+        </div>
+      </div>
+    `).join('');
+    
+    // Habilitar botón si hay al menos 2 equipos
+    btn.disabled = equiposRegistrados.length < 2;
+  }
+  
+  // ══════════════════════════════════════════════════════════════
+  // GENERAR BRACKET
+  // ══════════════════════════════════════════════════════════════
+  
+  async function generarBracket() {
+    if (equiposRegistrados.length < 2) {
+      showToast('⚠️ Se necesitan al menos 2 equipos', true);
+      return;
+    }
+    
+    if (!confirm(`¿Generar bracket con ${equiposRegistrados.length} equipos?\n\nLos emparejamientos serán aleatorios y el bracket será inmutable.`)) {
+      return;
+    }
+    
+    try {
+      // Enviar a GAS para generar bracket
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'generarBracketSoccer',
+          equipos: equiposRegistrados.map(e => e.id)
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.ok) {
+        bracketGenerado = data.bracket;
+        showToast('✓ Bracket generado correctamente');
+        mostrarBracket();
+      } else {
+        throw new Error(data.error || 'Error al generar bracket');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('❌ Error al generar bracket', true);
+    }
+  }
+  
+  function mostrarBracket() {
+    document.getElementById('equipos-list-section').style.display = 'none';
+    document.getElementById('bracket-section').style.display = 'block';
+    
+    renderBracket();
+  }
+  
+  function renderBracket() {
+    const content = document.getElementById('bracket-content');
+    
+    if (!bracketGenerado || !bracketGenerado.fases) {
+      content.innerHTML = '<p>Error: Bracket no válido</p>';
+      return;
+    }
+    
+    // Crear HTML del bracket por fases
+    const fasesHTML = bracketGenerado.fases.map(fase => {
+      const partidosHTML = fase.partidos.map(p => {
+        if (p.tipo === 'BYE') {
+          return `
+            <div class="partido-bye">
+              <div class="bye-equipo">${p.equipoNombre}</div>
+              <div class="bye-badge">BYE - Pasa directo</div>
+            </div>
+          `;
+        }
+        
+        const claseEstado = p.estado === 'FINALIZADO' ? 'finalizado' : p.estado === 'EN_CURSO' ? 'en-curso' : '';
+        
+        return `
+          <div class="partido-bracket ${claseEstado}">
+            <div class="partido-equipos">
+              <div class="partido-equipo ${p.ganador_id === p.equipo_a_id ? 'ganador' : ''}">
+                <span class="partido-equipo-nombre">${p.equipoA_nombre}</span>
+                ${p.marcador ? `<span class="partido-equipo-goles">${p.marcador.split('-')[0]}</span>` : ''}
+              </div>
+              <div class="partido-equipo ${p.ganador_id === p.equipo_b_id ? 'ganador' : ''}">
+                <span class="partido-equipo-nombre">${p.equipoB_nombre}</span>
+                ${p.marcador ? `<span class="partido-equipo-goles">${p.marcador.split('-')[1]}</span>` : ''}
+              </div>
+            </div>
+            ${p.estado === 'PENDIENTE' ? `
+              <button class="btn-jugar-partido" onclick='iniciarPartido(${JSON.stringify(p)})'>
+                ▶️ Jugar Partido
+              </button>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+      
+      return `
+        <div class="bracket-fase">
+          <div class="fase-title">${fase.nombre}</div>
+          ${partidosHTML}
+        </div>
+      `;
+    }).join('');
+    
+    content.innerHTML = `<div class="bracket-fases">${fasesHTML}</div>`;
+  }
+  
+  // ══════════════════════════════════════════════════════════════
+  // CAMBIAR VISTA
+  // ══════════════════════════════════════════════════════════════
+  
+  function cambiarVista(vista) {
+    document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
+    document.getElementById(`vista-${vista}`).classList.add('active');
+    vistaActual = vista;
+    
+    // Actualizar hero
+    if (vista === 'bracket') {
+      document.getElementById('hero-title').innerHTML = 'TORNEO <span>SOCCER</span>';
+      document.getElementById('hero-subtitle').textContent = 'Gestión completa del torneo';
+    } else {
+      document.getElementById('hero-title').innerHTML = 'PARTIDO <span>EN VIVO</span>';
+      document.getElementById('hero-subtitle').textContent = 'Cronómetro y marcador';
+    }
+  }
+  
+  function volverABracket() {
+    if (corriendo) {
+      if (!confirm('¿Volver al bracket? El partido se pausará.')) {
+        return;
+      }
+      pausarTiempo();
+    }
+    
+    cambiarVista('bracket');
+    cargarEquipos(); // Recargar para actualizar bracket
+  }
+  
+  // ══════════════════════════════════════════════════════════════
+  // INICIAR PARTIDO
+  // ══════════════════════════════════════════════════════════════
+  
+  function iniciarPartido(partido) {
+    partidoActual = partido;
+    
+    // Cargar equipos en la vista de partido
+    document.getElementById('nombre-equipo-a-partido').textContent = partido.equipoA_nombre;
+    document.getElementById('nombre-equipo-b-partido').textContent = partido.equipoB_nombre;
+    
+    // Resetear marcador
     golesA = 0;
     golesB = 0;
     historialGoles = [];
-    actualizarMarcador();
-    renderHistorial();
-
+    actualizarMarcadorPartido();
+    renderHistorialPartido();
+    
+    // Configurar tiempo
+    tiempoRestanteSegundos = duracionMinutos * 60;
     tiempoActual = 'tiempo1';
+    actualizarDisplayTiempo();
+    
     document.getElementById('tiempo-actual').textContent = 'TIEMPO 1';
-    document.getElementById('btn-iniciar').disabled = false;
-
-    showToast('✓ Configuración guardada. ¡Listo para empezar!');
+    document.getElementById('btn-iniciar-partido').disabled = false;
+    
+    // Cambiar vista
+    cambiarVista('partido');
   }
-
-  // ═══════════════════════════════════════════════════════════
-  // CONTROL DE TIEMPO
-  // ═══════════════════════════════════════════════════════════
-
-  function iniciarTiempo() {
-    if (!equipoA || !equipoB) {
-      showToast('⚠️ Primero configura el partido', true);
+  
+  // ══════════════════════════════════════════════════════════════
+  // CRONÓMETRO (igual que antes)
+  // ══════════════════════════════════════════════════════════════
+  
+  function configurarDuracion() {
+    const input = parseInt(document.getElementById('input-duracion-partido').value);
+    if (input < 1 || input > 10) {
+      showToast('⚠️ La duración debe estar entre 1 y 10 minutos', true);
       return;
     }
-
+    duracionMinutos = input;
+    tiempoRestanteSegundos = duracionMinutos * 60;
+    actualizarDisplayTiempo();
+    showToast('✓ Duración configurada');
+  }
+  
+  function iniciarTiempo() {
     corriendo = true;
-    document.getElementById('btn-iniciar').disabled = true;
-    document.getElementById('btn-pausar').disabled = false;
-
+    document.getElementById('btn-iniciar-partido').disabled = true;
+    document.getElementById('btn-pausar-partido').disabled = false;
+    
     if (intervalId) clearInterval(intervalId);
-
+    
     intervalId = setInterval(() => {
       if (tiempoRestanteSegundos > 0) {
         tiempoRestanteSegundos--;
         actualizarDisplayTiempo();
-
-        // Alerta cuando quedan 30 segundos
+        
         if (tiempoRestanteSegundos === 30) {
           showToast('⚠️ ¡30 segundos restantes!', true);
         }
       } else {
-        // Tiempo terminado
         pausarTiempo();
         showToast('⏱️ ¡Tiempo terminado!');
         
         if (tiempoActual === 'tiempo1') {
-          // Pasar a descanso
           tiempoActual = 'descanso';
           document.getElementById('tiempo-actual').textContent = 'DESCANSO';
           showToast('⏸️ Descanso. Presiona Iniciar para el Tiempo 2');
           tiempoRestanteSegundos = duracionMinutos * 60;
           actualizarDisplayTiempo();
-          document.getElementById('btn-iniciar').disabled = false;
+          document.getElementById('btn-iniciar-partido').disabled = false;
           
-          // Al iniciar de nuevo, será tiempo 2
           setTimeout(() => {
             if (tiempoActual === 'descanso') {
               tiempoActual = 'tiempo2';
@@ -684,31 +1211,30 @@
             }
           }, 100);
         } else if (tiempoActual === 'tiempo2') {
-          // Partido finalizado
           finalizarPartidoAutomatico();
         }
       }
     }, 1000);
   }
-
+  
   function pausarTiempo() {
     corriendo = false;
     if (intervalId) clearInterval(intervalId);
-    document.getElementById('btn-iniciar').disabled = false;
-    document.getElementById('btn-pausar').disabled = true;
-    document.getElementById('btn-iniciar').innerHTML = '▶️ Reanudar';
+    document.getElementById('btn-iniciar-partido').disabled = false;
+    document.getElementById('btn-pausar-partido').disabled = true;
+    document.getElementById('btn-iniciar-partido').innerHTML = '▶️ Reanudar';
   }
-
+  
   function reiniciarTiempo() {
     if (confirm('¿Reiniciar el tiempo actual?')) {
       pausarTiempo();
       tiempoRestanteSegundos = duracionMinutos * 60;
       actualizarDisplayTiempo();
-      document.getElementById('btn-iniciar').innerHTML = '▶️ Iniciar';
+      document.getElementById('btn-iniciar-partido').innerHTML = '▶️ Iniciar';
       showToast('🔄 Tiempo reiniciado');
     }
   }
-
+  
   function actualizarDisplayTiempo() {
     const minutos = Math.floor(tiempoRestanteSegundos / 60);
     const segundos = tiempoRestanteSegundos % 60;
@@ -716,64 +1242,56 @@
     
     const displayEl = document.getElementById('tiempo-display');
     displayEl.textContent = display;
-
-    // Alerta visual en últimos 30 segundos
+    
     if (tiempoRestanteSegundos <= 30 && tiempoRestanteSegundos > 0) {
       displayEl.classList.add('alerta');
     } else {
       displayEl.classList.remove('alerta');
     }
   }
-
-  // ═══════════════════════════════════════════════════════════
+  
+  // ══════════════════════════════════════════════════════════════
   // GOLES
-  // ═══════════════════════════════════════════════════════════
-
+  // ══════════════════════════════════════════════════════════════
+  
   function registrarGol(equipo) {
-    if (!equipoA || !equipoB) {
-      showToast('⚠️ Primero configura el partido', true);
-      return;
-    }
-
     const minutos = Math.floor((duracionMinutos * 60 - tiempoRestanteSegundos) / 60);
     const segundos = (duracionMinutos * 60 - tiempoRestanteSegundos) % 60;
     const momentoGol = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
-
+    
+    const nombreEquipo = equipo === 'A' ? partidoActual.equipoA_nombre : partidoActual.equipoB_nombre;
+    
     if (equipo === 'A') {
       golesA++;
-      historialGoles.unshift({
-        equipo: equipoA,
-        momento: momentoGol,
-        tiempo: tiempoActual === 'tiempo1' ? 'T1' : 'T2'
-      });
-      showToast(`⚽ ¡Gol de ${equipoA}!`);
+      showToast(`⚽ ¡Gol de ${nombreEquipo}!`);
     } else {
       golesB++;
-      historialGoles.unshift({
-        equipo: equipoB,
-        momento: momentoGol,
-        tiempo: tiempoActual === 'tiempo1' ? 'T1' : 'T2'
-      });
-      showToast(`⚽ ¡Gol de ${equipoB}!`);
+      showToast(`⚽ ¡Gol de ${nombreEquipo}!`);
     }
-
-    actualizarMarcador();
-    renderHistorial();
+    
+    historialGoles.unshift({
+      equipo: nombreEquipo,
+      momento: momentoGol,
+      tiempo: tiempoActual === 'tiempo1' ? 'T1' : 'T2'
+    });
+    
+    actualizarMarcadorPartido();
+    renderHistorialPartido();
   }
-
-  function actualizarMarcador() {
-    document.getElementById('goles-a').textContent = golesA;
-    document.getElementById('goles-b').textContent = golesB;
+  
+  function actualizarMarcadorPartido() {
+    document.getElementById('goles-a-partido').textContent = golesA;
+    document.getElementById('goles-b-partido').textContent = golesB;
   }
-
-  function renderHistorial() {
-    const container = document.getElementById('historial-goles');
+  
+  function renderHistorialPartido() {
+    const container = document.getElementById('historial-goles-partido');
     
     if (historialGoles.length === 0) {
       container.innerHTML = '<div class="empty-hist">No hay goles registrados</div>';
       return;
     }
-
+    
     container.innerHTML = historialGoles.map(g => `
       <div class="gol-item">
         <div class="gol-info">
@@ -784,79 +1302,79 @@
       </div>
     `).join('');
   }
-
-  // ═══════════════════════════════════════════════════════════
+  
+  // ══════════════════════════════════════════════════════════════
   // FINALIZAR PARTIDO
-  // ═══════════════════════════════════════════════════════════
-
+  // ══════════════════════════════════════════════════════════════
+  
   function finalizarPartidoAutomatico() {
     tiempoActual = 'finalizado';
     document.getElementById('tiempo-actual').textContent = 'FINALIZADO';
-    document.getElementById('btn-iniciar').disabled = true;
-    document.getElementById('btn-pausar').disabled = true;
+    document.getElementById('btn-iniciar-partido').disabled = true;
+    document.getElementById('btn-pausar-partido').disabled = true;
     
-    const ganador = golesA > golesB ? equipoA : golesB > golesA ? equipoB : 'Empate';
-    showToast(`🏁 Partido finalizado. Ganador: ${ganador}`);
+    const ganadorNombre = golesA > golesB ? partidoActual.equipoA_nombre : golesB > golesA ? partidoActual.equipoB_nombre : 'Empate';
+    showToast(`🏁 Partido finalizado. ${ganadorNombre}`);
     
     guardarResultado();
   }
-
+  
   async function terminarPartido() {
-    if (!equipoA || !equipoB) {
-      showToast('⚠️ No hay partido configurado', true);
+    if (!partidoActual) {
+      showToast('⚠️ No hay partido en curso', true);
       return;
     }
-
+    
     if (!confirm('¿Terminar el partido y guardar resultado?')) {
       return;
     }
-
-    pausarTiempo();
-    tiempoActual = 'finalizado';
-    document.getElementById('tiempo-actual').textContent = 'FINALIZADO';
     
+    pausarTiempo();
     await guardarResultado();
   }
-
+  
   async function guardarResultado() {
+    if (golesA === golesB) {
+      showToast('⚠️ No puede haber empate. Debe haber un ganador.', true);
+      return;
+    }
+    
     try {
-      const ganador = golesA > golesB ? equipoA : golesB > golesA ? equipoB : 'Empate';
+      const ganador_id = golesA > golesB ? partidoActual.equipo_a_id : partidoActual.equipo_b_id;
+      const ganadorNombre = golesA > golesB ? partidoActual.equipoA_nombre : partidoActual.equipoB_nombre;
+      const marcador = `${golesA}-${golesB}`;
       
-      const resultado = {
-        action: 'pushResultado',
-        categoria: 'Robot soccer',
-        robot: `${equipoA} vs ${equipoB}`,
-        nombre: `Partido Soccer`,
-        tiempo: `${golesA}-${golesB}`,
-        ronda: tiempoActual === 'tiempo1' ? 'Tiempo 1' : tiempoActual === 'tiempo2' ? 'Tiempo 2' : 'Final',
-        intento: 1,
-        estado: 'completado',
-        nota: `Ganador: ${ganador}`
-      };
-
       const response = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(resultado)
+        body: JSON.stringify({
+          action: 'registrarResultadoSoccer',
+          partido_id: partidoActual.id,
+          ganador_id: ganador_id,
+          marcador: marcador
+        })
       });
-
+      
       const data = await response.json();
-
+      
       if (data.ok) {
-        showToast('✓ Resultado guardado correctamente');
+        showToast(`✓ Resultado guardado. Ganador: ${ganadorNombre}`);
+        setTimeout(() => {
+          volverABracket();
+        }, 2000);
       } else {
         throw new Error(data.error || 'Error al guardar');
       }
     } catch (error) {
-      console.error('Error al guardar resultado:', error);
+      console.error('Error:', error);
       showToast('❌ Error al guardar resultado', true);
     }
   }
-
-  // ═══════════════════════════════════════════════════════════
+  
+  // ══════════════════════════════════════════════════════════════
   // UTILIDADES
-  // ═══════════════════════════════════════════════════════════
-
+  // ══════════════════════════════════════════════════════════════
+  
   function showToast(msg, error = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -865,23 +1383,6 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
   }
-
-  // ═══════════════════════════════════════════════════════════
-  // INICIALIZACIÓN
-  // ═══════════════════════════════════════════════════════════
-
-  window.addEventListener('DOMContentLoaded', () => {
-    // Verificar autenticación staff
-    const user = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
-    const STAFF_EMAILS = window.STAFF_EMAILS || [];
-    
-    if (!user.email || !STAFF_EMAILS.includes(user.email)) {
-      showToast('⚠️ Acceso solo para staff', true);
-      setTimeout(() => {
-        window.location.href = '../INICIO/';
-      }, 2000);
-    }
-  });
 </script>
 
 </body>
