@@ -41,8 +41,10 @@
     
     .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 100px 60px 100px; overflow: visible; }
     
-    .page-hero { padding: 80px 0 32px; margin-bottom: 32px; display: flex; gap: 40px; align-items: flex-start; position: relative; }
+    .page-hero { padding: 80px 0 32px; margin-bottom: 32px; }
     .page-hero-content { flex: 1; }
+    
+    .main-layout { display: flex; gap: 32px; align-items: flex-start; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--p-blue); border: 1px solid var(--p-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
@@ -173,7 +175,8 @@
 
     @media (max-width: 768px) {
       .page-hero { grid-template-columns: 1fr; gap: 24px; flex-direction: column; }
-      .stats-panel { position: relative; top: 0; flex: 1; width: 100%; }
+      .stats-panel { display: none; }
+      .main-layout { flex-direction: column; }
       .robot-champion-wrapper { width: 140px; height: 140px; margin: 0 auto; }
       .robot-champion { width: 120px; }
       .crown-icon { font-size: 36px; top: -8px; }
@@ -212,6 +215,62 @@
           <p>LISTADO DE PARTICIPANTES DEL TORNEO SUCREBOT 2026</p>
         </div>
       </div>
+    </div>
+
+    <div class="main-layout">
+      <div style="flex: 1;">
+        <div class="participantes-container">
+          <div class="controles">
+            <div class="controles-left">
+              <select class="filtro-categoria" id="filtro-categoria">
+                <option value="todos">🏆 Todas las categorías</option>
+                <optgroup label="🏅 AMATEUR">
+                  <option value="Insectos">Insectos</option>
+                  <option value="Trepador (Amateur)">Trepador (Amateur)</option>
+                  <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+                </optgroup>
+                <optgroup label="🏆 PRO">
+                  <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+                  <option value="Minisumo Autónomo">Minisumo Autónomo</option>
+                  <option value="Minisumo RC">Minisumo RC</option>
+                  <option value="Bailarín">Bailarín</option>
+                  <option value="Batalla">Batalla</option>
+                  <option value="Trepador (Pro)">Trepador (Pro)</option>
+                  <option value="Robot soccer">Robot soccer</option>
+                </optgroup>
+                <optgroup label="⭐ EXTRA">
+                  <option value="Cubo Rubik">Cubo Rubik</option>
+                </optgroup>
+              </select>
+              <input type="text" class="busqueda-input" id="busqueda-input" placeholder="🔍 Buscar por nombre, robot, ID o institución...">
+            </div>
+            <button class="btn-refrescar" onclick="refrescarDatos()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+              </svg>
+              Refrescar
+            </button>
+          </div>
+
+          <div class="tabla-wrapper">
+            <table class="tabla-participantes">
+              <thead>
+                <tr>
+                  <th>ROBOT</th>
+                  <th>CATEGORÍA</th>
+                  <th>NOMBRE</th>
+                  <th>INSTITUCIÓN</th>
+                  <th>ESTADO</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-body">
+                <tr><td colspan="5" class="vacio-msg">⏳ CARGANDO PARTICIPANTES...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
       <div class="stats-panel">
         <div class="stats-panel-title">
           📊 ESTADÍSTICAS EN VIVO
@@ -273,57 +332,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="participantes-container">
-      <div class="controles">
-        <div class="controles-left">
-          <select class="filtro-categoria" id="filtro-categoria">
-            <option value="todos">🏆 Todas las categorías</option>
-            <optgroup label="🏅 AMATEUR">
-              <option value="Insectos">Insectos</option>
-              <option value="Trepador (Amateur)">Trepador (Amateur)</option>
-              <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
-            </optgroup>
-            <optgroup label="🏆 PRO">
-              <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
-              <option value="Minisumo Autónomo">Minisumo Autónomo</option>
-              <option value="Minisumo RC">Minisumo RC</option>
-              <option value="Bailarín">Bailarín</option>
-              <option value="Batalla">Batalla</option>
-              <option value="Trepador (Pro)">Trepador (Pro)</option>
-              <option value="Robot soccer">Robot soccer</option>
-            </optgroup>
-            <optgroup label="⭐ EXTRA">
-              <option value="Cubo Rubik">Cubo Rubik</option>
-            </optgroup>
-          </select>
-          <input type="text" class="busqueda-input" id="busqueda-input" placeholder="🔍 Buscar por nombre, robot, ID o institución...">
-        </div>
-        <button class="btn-refrescar" onclick="refrescarDatos()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-          </svg>
-          Refrescar
-        </button>
-      </div>
-
-      <div class="tabla-wrapper">
-        <table class="tabla-participantes">
-          <thead>
-            <tr>
-              <th>ROBOT</th>
-              <th>CATEGORÍA</th>
-              <th>NOMBRE</th>
-              <th>INSTITUCIÓN</th>
-              <th>ESTADO</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-body">
-            <tr><td colspan="5" class="vacio-msg">⏳ CARGANDO PARTICIPANTES...</td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
