@@ -413,8 +413,17 @@
         const data = await r.json();
         if (data.ok) {
           bracketSoccer = data.bracket || null;
+          // ✅ Solo actualizar tabs (el puntito) sin tocar el header ni la vista
           renderTabs();
-          if (categoriaActiva === 'soc') renderizarBracketSoccer();
+          // Solo renderizar bracket si el usuario está en esa pestaña
+          if (categoriaActiva === 'soc') {
+            renderizarBracketSoccer();
+          }
+          // Si NO estamos en soc, restaurar el header a la categoría activa
+          if (categoriaActiva && categoriaActiva !== 'soc') {
+            document.getElementById('tv-ronda').textContent = 'RONDA 1';
+            document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[categoriaActiva] || categoriaActiva;
+          }
         }
       } catch(e) {
         console.error('Error al cargar bracket soccer:', e);
