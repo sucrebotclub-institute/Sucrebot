@@ -251,8 +251,8 @@
 
     function seleccionarManual(ruta) {
       if (autoRotarTimer) clearInterval(autoRotarTimer);
+      autoRotarTimer = null;
       seleccionarCategoria(ruta);
-      setTimeout(iniciarAutoRotar, 20000);
     }
 
     function mostrarVacio() {
@@ -423,15 +423,20 @@
 
     function actualizarVista() {
       if (!categoriaActiva) {
+        // Solo al inicio: seleccionar primera con datos
         const primera = rutasConDatos[0] || null;
         if (primera) {
           categoriaActiva = primera;
-          iniciarAutoRotar();
+          seleccionarCategoria(primera);
         }
-      } else if (rutasConDatos.length > 0 && !rutasConDatos.includes(categoriaActiva)) {
-        categoriaActiva = rutasConDatos[0];
+      } else {
+        // Usuario ya eligió: solo refrescar esa vista sin cambiar de pestaña
+        if (categoriaActiva === 'soc') {
+          renderizarBracketSoccer();
+        } else {
+          renderizarTabla(categoriaActiva);
+        }
       }
-      if (categoriaActiva) seleccionarCategoria(categoriaActiva);
     }
 
     // Polling cada 5s para tiempos, cada 8s para bracket soccer
