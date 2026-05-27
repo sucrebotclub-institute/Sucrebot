@@ -463,7 +463,7 @@
           </div>`;
 
         const claseEstado = p.estado === 'FINALIZADO' ? 'finalizado' : p.estado === 'EN_CURSO' ? 'en-curso' : '';
-        const golesArr = p.marcador ? p.marcador.split('-') : ['', ''];
+        const golesArr = p.marcador ? p.marcador.split(/^(\d+)-(\d+)/).filter(x => x !== '' && x !== undefined).slice(0,2) : ['', ''];
         const puedeJugar = p.estado === 'PENDIENTE' && p.equipo_a_id && p.equipo_b_id;
 
         return `
