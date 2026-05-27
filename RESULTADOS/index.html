@@ -119,10 +119,40 @@
     .tv-footer-left { letter-spacing: 0.1em; color: #1a5ca8; font-weight: 600; }
     .tv-footer-right { font-size: 0.85rem; color: #0e2a5a; font-weight: 600; }
 
+    /* DROPDOWN MÓVIL */
+    .cat-select-mobile {
+      display: none;
+      width: 100%;
+      margin-bottom: 20px;
+      background: #2d3748;
+      border: 2px solid #1a5ca8;
+      color: #ffffff;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 14px 16px;
+      border-radius: 10px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235bc8f0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 44px;
+    }
+    .cat-select-mobile option { background: #1a3a6b; color: #ffffff; }
+    .cat-select-mobile optgroup { background: #0e2a5a; color: #5bc8f0; font-weight: 700; }
+
     @media (max-width: 768px) {
       .screen { padding: 12px 16px 32px; }
+      .cat-tabs { display: none; }
+      .cat-select-mobile { display: block; }
       .bracket-fases { gap: 20px; }
       .bracket-fase { min-width: 200px; }
+      .page-header { padding: 16px; }
+      .page-header-title { font-size: 2rem; }
+      .ronda-label { font-size: 1.4rem; }
     }
   </style>
 </head>
@@ -150,6 +180,29 @@
     </div>
 
     <div class="cat-tabs" id="cat-tabs"></div>
+
+    <!-- DROPDOWN MÓVIL -->
+    <select class="cat-select-mobile" id="cat-select-mobile" onchange="seleccionarManual(this.value)">
+      <option value="">⚽ Selecciona una categoría...</option>
+      <optgroup label="🏅 AMATEUR">
+        <option value="ins">Insectos</option>
+        <option value="trp_a">Trepador (Amateur)</option>
+        <option value="sl_a">Seguidor ST (Amateur)</option>
+      </optgroup>
+      <optgroup label="🏆 PRO">
+        <option value="sl_p">Seguidor ST (Pro)</option>
+        <option value="ms_a">Minisumo Autónomo</option>
+        <option value="ms_rc">Minisumo RC</option>
+        <option value="bai">Bailarín</option>
+        <option value="bat">Batalla</option>
+        <option value="trp_p">Trepador (Pro)</option>
+        <option value="soc">Robot Soccer</option>
+      </optgroup>
+      <optgroup label="⭐ EXTRA">
+        <option value="cr">Cubo Rubik</option>
+      </optgroup>
+    </select>
+
     <div class="tabla-wrap" id="tv-tabla-wrap">
       <div class="empty-state">
         <div class="empty-icon">🏁</div>
@@ -216,9 +269,14 @@
 
     function seleccionarCategoria(ruta) {
       categoriaActiva = ruta;
+      // Sincronizar tabs desktop
       document.querySelectorAll('.cat-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.ruta === ruta);
       });
+      // Sincronizar dropdown móvil
+      const sel = document.getElementById('cat-select-mobile');
+      if (sel) sel.value = ruta;
+      // Renderizar vista
       if (ruta === 'soc') {
         renderizarBracketSoccer();
       } else {
