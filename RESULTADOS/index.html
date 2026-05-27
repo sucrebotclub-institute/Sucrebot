@@ -294,7 +294,9 @@
               </div>`;
           }
 
-          const golesArr = p.marcador && p.marcador !== '' ? p.marcador.split('-') : null;
+          // Extraer solo los goles iniciales: "3-1" o "2-1 (pen 4-3)" → ["3","1"]
+        const matchGoles = p.marcador ? p.marcador.match(/^(\d+)-(\d+)/) : null;
+        const golesArr = matchGoles ? [matchGoles[1], matchGoles[2]] : null;
           const finalizado = p.estado === 'FINALIZADO';
           const sinEquipos = !p.equipo_a_id && !p.equipo_b_id;
 
