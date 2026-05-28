@@ -117,6 +117,7 @@
       border-radius: 8px; 
       outline: none; 
       transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
     }
     .field input:focus, .field select:focus { 
       border-color: var(--r-cyan); 
@@ -127,7 +128,7 @@
     .field input[type="file"] { border: 1.5px dashed rgba(255,255,255,0.25); cursor: pointer; padding-left: 36px; }
     .field input[type="file"]:hover { border-color: var(--r-cyan); }
     
-    .field select { background: rgba(10,25,60,0.55); cursor: pointer; }
+    .field select { background: rgba(10,25,60,0.55); cursor: pointer; appearance: auto; }
     .field select option { background: var(--r-blue-deep); color: #e8f0ff; padding: 8px; }
     .field select optgroup { 
       background: var(--r-blue-deep); 
@@ -138,6 +139,8 @@
       letter-spacing: 0.08em; 
       padding: 4px 0; 
     }
+    /* Opción placeholder en gris */
+    .field select option[value=""] { color: rgba(255,255,255,0.35); }
     
     /* ── BOTÓN REGISTRO ── */
     .btn-register { 
@@ -243,9 +246,35 @@
           <input type="text" id="f-institucion" placeholder="Universidad / Club">
         </div>
         <div class="field">
-          <label>Ciudad</label>
+          <label>Provincia</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <input type="text" id="f-ciudad" placeholder="Quito">
+          <select id="f-ciudad">
+            <option value="">— Selecciona —</option>
+            <option value="Azuay">Azuay</option>
+            <option value="Bolívar">Bolívar</option>
+            <option value="Cañar">Cañar</option>
+            <option value="Carchi">Carchi</option>
+            <option value="Chimborazo">Chimborazo</option>
+            <option value="Cotopaxi">Cotopaxi</option>
+            <option value="El Oro">El Oro</option>
+            <option value="Esmeraldas">Esmeraldas</option>
+            <option value="Galápagos">Galápagos</option>
+            <option value="Guayas">Guayas</option>
+            <option value="Imbabura">Imbabura</option>
+            <option value="Loja">Loja</option>
+            <option value="Los Ríos">Los Ríos</option>
+            <option value="Manabí">Manabí</option>
+            <option value="Morona Santiago">Morona Santiago</option>
+            <option value="Napo">Napo</option>
+            <option value="Orellana">Orellana</option>
+            <option value="Pastaza">Pastaza</option>
+            <option value="Pichincha">Pichincha</option>
+            <option value="Santa Elena">Santa Elena</option>
+            <option value="Santo Domingo de los Tsáchilas">Santo Domingo de los Tsáchilas</option>
+            <option value="Sucumbíos">Sucumbíos</option>
+            <option value="Tungurahua">Tungurahua</option>
+            <option value="Zamora Chinchipe">Zamora Chinchipe</option>
+          </select>
         </div>
         <div class="field">
           <label>Contacto / WhatsApp</label>
@@ -319,6 +348,8 @@
         </div>
       </div>
 
+      <button class="btn-register" onclick="registrarParticipante()">⚡ Registrar Participante</button>
+
     </div>
   </div>
 </div>
@@ -369,7 +400,7 @@
     
     if (!nombre) { showToast('El nombre completo es obligatorio',true); return; }
     if (!institucion) { showToast('La institución es obligatoria',true); return; }
-    if (!ciudad) { showToast('La ciudad es obligatoria',true); return; }
+    if (!ciudad) { showToast('Selecciona una provincia',true); return; }
     if (!robot) { showToast('El nombre del robot es obligatorio',true); return; }
     if (!contacto) { showToast('El número de contacto es obligatorio',true); return; }
     if (contacto.length < 10) { showToast('El número debe tener al menos 10 dígitos',true); return; }
@@ -428,7 +459,8 @@
       localStorage.setItem('participantes',JSON.stringify(lista));
       
       showToast('✅ Registrado con ID: ' + idGenerado, false);
-      ['f-nombre','f-institucion','f-ciudad','f-robot','f-contacto','f-correo','f-miembro2','f-miembro3'].forEach(id=>document.getElementById(id).value='');
+      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-miembro2','f-miembro3'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('f-ciudad').value='';
       document.getElementById('f-categoria').value=''; archivoInput.value='';
       
     } catch(e) { 
