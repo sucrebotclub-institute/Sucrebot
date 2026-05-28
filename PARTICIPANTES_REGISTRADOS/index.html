@@ -353,8 +353,21 @@
       <button class="modal-close" onclick="cerrarModalRevisar()">×</button>
     </div>
     <div class="modal-body">
+      <div class="modal-section" id="rev-seccion-equipo" style="display:none;">
+        <div class="modal-section-title">👥 Integrantes del Equipo</div>
+        <div class="modal-grid">
+          <div class="modal-field" id="rev-campo-miembro2" style="display:none;">
+            <div class="modal-field-label">Miembro 2</div>
+            <div class="modal-field-value" id="rev-miembro2">—</div>
+          </div>
+          <div class="modal-field" id="rev-campo-miembro3" style="display:none;">
+            <div class="modal-field-label">Miembro 3</div>
+            <div class="modal-field-value" id="rev-miembro3">—</div>
+          </div>
+        </div>
+      </div>
       <div class="modal-section">
-        <div class="modal-section-title">🆔 Identificación</div>
+        <div class="modal-section-title">💳 Comprobante de Pago</div>
         <div class="modal-grid">
           <div class="modal-field" style="grid-column: 1 / -1;">
             <div class="modal-field-label">ID del Sistema</div>
@@ -548,6 +561,22 @@
     document.getElementById('rev-ciudad').textContent = p.ciudad || '—';
     document.getElementById('rev-correo').textContent = p.correo || '—';
     document.getElementById('rev-contacto').textContent = p.contacto || '—';
+    // Integrantes del equipo
+    const tieneEquipo = p.miembro2 || p.miembro3;
+    document.getElementById('rev-seccion-equipo').style.display = tieneEquipo ? 'block' : 'none';
+    if (p.miembro2) {
+      document.getElementById('rev-miembro2').textContent = p.miembro2;
+      document.getElementById('rev-campo-miembro2').style.display = 'flex';
+    } else {
+      document.getElementById('rev-campo-miembro2').style.display = 'none';
+    }
+    if (p.miembro3) {
+      document.getElementById('rev-miembro3').textContent = p.miembro3;
+      document.getElementById('rev-campo-miembro3').style.display = 'flex';
+    } else {
+      document.getElementById('rev-campo-miembro3').style.display = 'none';
+    }
+
     const imgEl = document.getElementById('rev-comprobante');
     const linkEl = document.getElementById('rev-comprobante-link');
     if (p.archivoUrl) {
