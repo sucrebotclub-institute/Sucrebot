@@ -324,10 +324,17 @@
 
       <!-- COMPROBANTE -->
       <div class="form-section-title">📎 Comprobante de Pago</div>
-      <div class="field" style="margin-bottom:4px;">
-        <label>Imagen o PDF</label>
-        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <input type="file" id="f-archivo" accept="image/*,.pdf" />
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="field">
+          <label>Número de Comprobante</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <input type="text" id="f-comprobante" placeholder="Ej: 0012345678" style="font-family:'DM Mono',monospace;letter-spacing:1px;">
+        </div>
+        <div class="field">
+          <label>Imagen o PDF</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <input type="file" id="f-archivo" accept="image/*,.pdf" />
+        </div>
       </div>
 
       <!-- ACOMPAÑANTES -->
@@ -393,6 +400,7 @@
     const contacto=document.getElementById('f-contacto').value.trim();
     const correo=document.getElementById('f-correo').value.trim();
     const categoria=document.getElementById('f-categoria').value;
+    const comprobante=document.getElementById('f-comprobante').value.trim();
     const archivoInput=document.getElementById('f-archivo');
     const archivo=archivoInput.files[0]||null;
     const miembro2=document.getElementById('f-miembro2').value.trim();
@@ -414,11 +422,11 @@
     
     try {
       // PASO 1: Registrar SIN archivo para obtener el ID del GAS
-     const respuestaRegistro = await gasPost({
+      const respuestaRegistro = await gasPost({
         action:'setParticipante',
         id: '',
         nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, miembro3,
+        miembro2, miembro3, comprobante,
         archivoUrl: ''
       });
       
@@ -447,7 +455,7 @@
         action:'setParticipante',
         id: idGenerado,
         nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, miembro3,
+        miembro2, miembro3, comprobante,
         archivoUrl
       });
       
@@ -459,7 +467,7 @@
       localStorage.setItem('participantes',JSON.stringify(lista));
       
       showToast('✅ Registrado con ID: ' + idGenerado, false);
-      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-miembro2','f-miembro3'].forEach(id=>document.getElementById(id).value='');
+      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3'].forEach(id=>document.getElementById(id).value='');
       document.getElementById('f-ciudad').value='';
       document.getElementById('f-categoria').value=''; archivoInput.value='';
       
