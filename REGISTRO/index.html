@@ -301,7 +301,24 @@
         <input type="file" id="f-archivo" accept="image/*,.pdf" />
       </div>
 
-      <button class="btn-register" onclick="registrarParticipante()">⚡ Registrar Participante</button>
+      <!-- ACOMPAÑANTES -->
+      <div class="form-section-title">👥 Integrantes del Equipo <span style="font-size:9px;opacity:0.6;font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;">(opcional)</span></div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;">
+        Sus nombres aparecerán en los diplomas. El QR se envía únicamente al capitán.
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="field">
+          <label>Nombre — Miembro 2</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="f-miembro2" placeholder="Nombre completo">
+        </div>
+        <div class="field">
+          <label>Nombre — Miembro 3</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="f-miembro3" placeholder="Nombre completo">
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -347,6 +364,8 @@
     const categoria=document.getElementById('f-categoria').value;
     const archivoInput=document.getElementById('f-archivo');
     const archivo=archivoInput.files[0]||null;
+    const miembro2=document.getElementById('f-miembro2').value.trim();
+    const miembro3=document.getElementById('f-miembro3').value.trim();
     
     if (!nombre) { showToast('El nombre completo es obligatorio',true); return; }
     if (!institucion) { showToast('La institución es obligatoria',true); return; }
@@ -364,10 +383,11 @@
     
     try {
       // PASO 1: Registrar SIN archivo para obtener el ID del GAS
-      const respuestaRegistro = await gasPost({
+     const respuestaRegistro = await gasPost({
         action:'setParticipante',
         id: '',
         nombre, institucion, ciudad, robot, contacto, correo, categoria,
+        miembro2, miembro3,
         archivoUrl: ''
       });
       
@@ -396,6 +416,7 @@
         action:'setParticipante',
         id: idGenerado,
         nombre, institucion, ciudad, robot, contacto, correo, categoria,
+        miembro2, miembro3,
         archivoUrl
       });
       
@@ -407,7 +428,7 @@
       localStorage.setItem('participantes',JSON.stringify(lista));
       
       showToast('✅ Registrado con ID: ' + idGenerado, false);
-      ['f-nombre','f-institucion','f-ciudad','f-robot','f-contacto','f-correo'].forEach(id=>document.getElementById(id).value='');
+      ['f-nombre','f-institucion','f-ciudad','f-robot','f-contacto','f-correo','f-miembro2','f-miembro3'].forEach(id=>document.getElementById(id).value='');
       document.getElementById('f-categoria').value=''; archivoInput.value='';
       
     } catch(e) { 
