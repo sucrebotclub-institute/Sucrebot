@@ -24,10 +24,10 @@
     </div>
   </div>
 
-  <!-- PARTICIPANTES: enlace simple sin sesión -->
+  <!-- MI CUENTA: enlace simple sin sesión -->
   <a href="https://sucrebotclub-institute.github.io/Sucrebot/MI-REGISTRO/" id="navPartLink">Mi Cuenta</a>
 
-  <!-- PARTICIPANTES: dropdown con sesión -->
+  <!-- MI CUENTA: dropdown con sesión -->
   <div class="nav-dropdown" id="navPartDropdown" style="display:none;">
     <a href="javascript:void(0)" id="navParticipantesLink">Mi Cuenta</a>
     <div class="dropdown-menu" id="menuParticipantes">
@@ -40,7 +40,7 @@
     </div>
   </div>
 
-  <!-- JUECES (antes: Staff) -->
+  <!-- JUECES -->
   <div class="nav-dropdown" id="navStaff" style="display:none;">
     <a href="javascript:void(0)" id="navStaffLink">Jueces</a>
     <div class="dropdown-menu" id="menuStaff">
@@ -90,13 +90,12 @@
 </nav>
 
 <style>
-  
   /* ── SUBDROPDOWN CONTAINER ── */
   .nav-subdropdown {
     position: relative;
   }
 
-  /* Trigger (fila clickeable con flecha) */
+  /* Trigger */
   .subdropdown-trigger {
     display: flex;
     align-items: center;
@@ -139,16 +138,14 @@
     opacity: 1;
   }
 
-  /* Submenú desplegable — abre hacia la derecha en desktop */
+  /* Submenú desktop — abre a la derecha */
   .subdropdown-menu {
     display: none;
     position: absolute;
     top: 0;
     left: 100%;
     min-width: 190px;
-    background: rgba(14, 18, 30, 0.45) !important;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    background: rgba(14, 18, 30, 0.45);
     border: 1px solid rgba(91, 200, 240, 0.18);
     border-left: 3px solid var(--sucre-blue);
     border-radius: 0 8px 8px 0;
@@ -186,44 +183,55 @@
   }
   .subdropdown-menu a:hover svg { opacity: 1; }
 
-  /* ── MÓVIL: subdropdown se expande inline (no a la derecha) ── */
+  /* ── MÓVIL ── */
   @media (max-width: 768px) {
+    /* Trigger — fondo azul para distinguirlo de items normales */
+    .subdropdown-trigger {
+      padding-left: 24px;
+      background: rgba(10, 40, 90, 0.5);
+      border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+    }
+
+    /* Submenú inline */
     .subdropdown-menu {
-  position: static !important;
-  left: unset !important;
-  top: unset !important;
-  border-radius: 0 !important;
-  border-left: 3px solid var(--cyan) !important;
-  border-top: 1px solid rgba(91,200,240,0.15) !important;
-  box-shadow: none !important;
-  background: rgba(0,0,0,0.45) !important;
-  backdrop-filter: none !important;
-}
-.subdropdown-trigger {
-  padding-left: 24px;
-}
-.subdropdown-menu a {
-  padding-left: 44px;
-  font-size: 13px !important;
-  color: var(--cyan) !important;
-  border-bottom: 1px solid rgba(91,200,240,0.1) !important;
-}
+      position: static !important;
+      left: unset !important;
+      top: unset !important;
+      border-radius: 0 !important;
+      border-left: 3px solid var(--cyan) !important;
+      border-right: none !important;
+      border-top: 1px solid rgba(91,200,240,0.2) !important;
+      border-bottom: 1px solid rgba(91,200,240,0.2) !important;
+      box-shadow: none !important;
+      background: rgba(10, 40, 90, 0.85) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    /* Items del submenú — indentados y en cyan */
+    .subdropdown-menu a {
+      padding-left: 44px !important;
+      font-size: 13px !important;
+      color: var(--cyan) !important;
+      border-bottom: 1px solid rgba(91,200,240,0.15) !important;
+    }
+    .subdropdown-menu a:last-child {
+      border-bottom: none !important;
+    }
   }
 </style>
 
 <script>
-  // ── Helper: cerrar todos los dropdowns ──
   function cerrarTodosLosDropdowns() {
     document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = '');
     document.querySelectorAll('.nav-subdropdown').forEach(s => s.classList.remove('open'));
   }
 
-  // ── Helper: cerrar todos los subdropdowns ──
   function cerrarSubdropdowns() {
     document.querySelectorAll('.nav-subdropdown').forEach(s => s.classList.remove('open'));
   }
 
-  // ── DROPDOWN SUCREBOT 2026 ──
+  // SUCREBOT 2026
   (function() {
     const ns = document.getElementById('navSucrebot'), ms = document.getElementById('menuSucrebot');
     let t;
@@ -239,7 +247,7 @@
     });
   })();
 
-  // ── DROPDOWN PARTICIPANTES (con sesión) ──
+  // MI CUENTA
   (function() {
     const np = document.getElementById('navPartDropdown'), mp = document.getElementById('menuParticipantes');
     if (!np || !mp) return;
@@ -256,24 +264,18 @@
     });
   })();
 
-  // ── DROPDOWN JUECES ──
+  // JUECES
   (function() {
     const ns = document.getElementById('navStaff'), ms = document.getElementById('menuStaff');
     if (!ns || !ms) return;
     let t;
     ns.addEventListener('mouseenter', () => { clearTimeout(t); ms.style.display = 'block'; });
     ns.addEventListener('mouseleave', () => {
-      t = setTimeout(() => {
-        ms.style.display = '';
-        cerrarSubdropdowns();
-      }, 180);
+      t = setTimeout(() => { ms.style.display = ''; cerrarSubdropdowns(); }, 180);
     });
     ms.addEventListener('mouseenter', () => clearTimeout(t));
     ms.addEventListener('mouseleave', () => {
-      t = setTimeout(() => {
-        ms.style.display = '';
-        cerrarSubdropdowns();
-      }, 180);
+      t = setTimeout(() => { ms.style.display = ''; cerrarSubdropdowns(); }, 180);
     });
     document.getElementById('navStaffLink').addEventListener('touchend', (e) => {
       e.preventDefault();
@@ -283,19 +285,15 @@
     });
   })();
 
-  // ── SUBDROPDOWNS (Escáner y Cronómetro) ──
+  // SUBDROPDOWNS
   function setupSubdropdown(triggerId, subdropdownId) {
     const trigger = document.getElementById(triggerId);
     const sub = document.getElementById(subdropdownId);
     if (!trigger || !sub) return;
-
     const isMobile = () => window.innerWidth <= 768;
-
-    // Desktop: hover
     sub.addEventListener('mouseenter', () => { if (!isMobile()) sub.classList.add('open'); });
     sub.addEventListener('mouseleave', () => { if (!isMobile()) sub.classList.remove('open'); });
-
-    // Touch / móvil: toggle al tap
+    trigger.addEventListener('mouseenter', () => { if (!isMobile()) sub.classList.add('open'); });
     trigger.addEventListener('touchend', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -303,15 +301,11 @@
       cerrarSubdropdowns();
       if (!wasOpen) sub.classList.add('open');
     });
-
-    // Desktop: también abrir al hacer mouseenter en el trigger solo
-    trigger.addEventListener('mouseenter', () => { if (!isMobile()) sub.classList.add('open'); });
   }
 
   setupSubdropdown('subEscanerTrigger', 'subEscaner');
   setupSubdropdown('subCronometroTrigger', 'subCronometro');
 
-  // Cerrar dropdowns al tocar fuera
   document.addEventListener('touchend', (e) => {
     if (!e.target.closest('.nav-dropdown') && e.target.id !== 'navPartLink') {
       cerrarTodosLosDropdowns();
