@@ -25,6 +25,7 @@ const CERTIFICADO_TEMPLATE = `
     <div class="cert-conferir">Confiere el presente certificado a:</div>
     
     <div class="cert-nombre">{{NOMBRE_PARTICIPANTE}}</div>
+    <div class="cert-equipo" id="cert-equipo-section">{{INTEGRANTES_EQUIPO}}</div>
     
     <div class="cert-logro">{{TEXTO_LOGRO}}</div>
     
@@ -110,6 +111,7 @@ const CERTIFICADO_CSS = `
 .cert-subtitle { font-size: 14px; color: #666; margin-top: 8px; letter-spacing: 3px; text-transform: uppercase; }
 .cert-conferir { text-align: center; font-size: 18px; color: #333; margin: 25px 0 20px; letter-spacing: 1px; }
 .cert-nombre { text-align: center; font-family: 'Great Vibes', cursive; font-size: 64px; color: #1a3a6b; margin: 20px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); border-bottom: 3px solid #d4af37; padding-bottom: 10px; max-width: 800px; margin-left: auto; margin-right: auto; }
+.cert-equipo { text-align: center; font-size: 15px; color: #555; margin: 6px 0 0; font-style: italic; min-height: 0; }
 .cert-logro { text-align: center; font-size: 18px; color: #333; line-height: 1.8; margin: 25px 0; max-width: 900px; margin-left: auto; margin-right: auto; }
 .cert-logro strong { color: #1a5ca8; font-weight: 900; }
 .cert-detalles { text-align: center; font-size: 16px; color: #555; margin: 20px 0; }
@@ -181,11 +183,18 @@ function previewCertificado(idx) {
   // Generar código de verificación temporal
   const codigoTemp = 'CERT-2026-PREVIEW';
   
+  // Construir texto de integrantes
+  const miembros = [participante.miembro2, participante.miembro3].filter(Boolean);
+  const textoEquipo = miembros.length > 0
+    ? 'junto a: ' + miembros.join(' &amp; ')
+    : '';
+
   // Reemplazar variables en el template
   let htmlCert = CERTIFICADO_TEMPLATE
     .replace(/\{\{TIPO_CLASS\}\}/g, datosTipo.clase)
     .replace(/\{\{TIPO_BADGE\}\}/g, datosTipo.badge)
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, participante.nombre)
+    .replace(/\{\{INTEGRANTES_EQUIPO\}\}/g, textoEquipo)
     .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
     .replace(/\{\{CATEGORIA\}\}/g, participante.categoria)
     .replace(/\{\{EVENTO\}\}/g, 'SucreBot 2026')
@@ -317,10 +326,16 @@ async function descargarCertificadoPDF(participante, tipo, fechaEvento, codigoCe
   const tempDiv = document.createElement('div');
   tempDiv.style.position = 'absolute';
   tempDiv.style.left = '-9999px';
+   const miembrosDescarga = [participante.miembro2, participante.miembro3].filter(Boolean);
+  const textoEquipoDescarga = miembrosDescarga.length > 0
+    ? 'junto a: ' + miembrosDescarga.join(' & ')
+    : '';
+
   tempDiv.innerHTML = CERTIFICADO_TEMPLATE
     .replace(/\{\{TIPO_CLASS\}\}/g, datosTipo.clase)
     .replace(/\{\{TIPO_BADGE\}\}/g, datosTipo.badge)
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, participante.nombre)
+    .replace(/\{\{INTEGRANTES_EQUIPO\}\}/g, textoEquipoDescarga)
     .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
     .replace(/\{\{CATEGORIA\}\}/g, participante.categoria)
     .replace(/\{\{EVENTO\}\}/g, 'SucreBot 2026')
