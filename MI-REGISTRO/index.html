@@ -168,6 +168,15 @@
             <div class="ficha-campo"><span>Contacto</span><strong id="f-contacto">—</strong></div>
           </div>
 
+          <!-- Integrantes del equipo — solo si existen -->
+          <div id="ficha-equipo-section" style="display:none; background:rgba(0,0,0,0.15); border-radius:12px; padding:16px 20px; margin-bottom:24px;">
+            <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.12em;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:12px;">👥 Integrantes del Equipo</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="ficha-campo" id="ficha-campo-miembro2" style="display:none;"><span>Miembro 2</span><strong id="f-miembro2">—</strong></div>
+              <div class="ficha-campo" id="ficha-campo-miembro3" style="display:none;"><span>Miembro 3</span><strong id="f-miembro3">—</strong></div>
+            </div>
+          </div>
+
           <!-- QR — solo si aprobado -->
           <div class="ficha-qr" id="ficha-qr-section" style="display:none;">
             <div class="ficha-qr-label">TU CÓDIGO QR DE ACCESO</div>
@@ -240,6 +249,21 @@
                 <div class="form-field">
                   <label>Teléfono / WhatsApp</label>
                   <input type="text" id="edit-contacto" placeholder="0987654321" />
+                </div>
+
+                <!-- Aviso comprobante — no editable desde web -->
+                <div class="form-field form-field-full" style="border-top:1px solid rgba(255,255,255,0.1);padding-top:14px;margin-top:4px;">
+                  <label style="margin-bottom:8px;">👥 Integrantes del Equipo <span style="opacity:0.6;font-size:0.62rem;">(opcional — para diplomas)</span></label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-field">
+                      <label>Miembro 2</label>
+                      <input type="text" id="edit-miembro2" placeholder="Nombre completo" />
+                    </div>
+                    <div class="form-field">
+                      <label>Miembro 3</label>
+                      <input type="text" id="edit-miembro3" placeholder="Nombre completo" />
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Aviso comprobante — no editable desde web -->
@@ -325,6 +349,18 @@
     document.getElementById('f-nombre').textContent = p.nombre || '—';
     document.getElementById('f-contacto').textContent = p.contacto || '—';
 
+     // Integrantes del equipo
+    const tieneEquipo = p.miembro2 || p.miembro3;
+    document.getElementById('ficha-equipo-section').style.display = tieneEquipo ? 'block' : 'none';
+    if (p.miembro2) {
+      document.getElementById('f-miembro2').textContent = p.miembro2;
+      document.getElementById('ficha-campo-miembro2').style.display = 'flex';
+    }
+    if (p.miembro3) {
+      document.getElementById('f-miembro3').textContent = p.miembro3;
+      document.getElementById('ficha-campo-miembro3').style.display = 'flex';
+    }
+
     const aprobado = p.aprobado === 'APROBADO' || p.aprobado === true || p.aprobado === 'true';
     const nocumple = p.aprobado === 'NO CUMPLE' || p.aprobado === 'NOCUMPLE' || p.aprobado === 'nocumple';
 
@@ -386,6 +422,8 @@
     document.getElementById('edit-ciudad').value = p.ciudad || '';
     document.getElementById('edit-nombre').value = p.nombre || '';
     document.getElementById('edit-contacto').value = p.contacto || '';
+    document.getElementById('edit-miembro2').value = p.miembro2 || '';
+    document.getElementById('edit-miembro3').value = p.miembro3 || '';
   }
 
   async function guardarCambios() {
@@ -403,7 +441,9 @@
       institucion: document.getElementById('edit-institucion').value.trim(),
       ciudad: document.getElementById('edit-ciudad').value.trim(),
       nombre: document.getElementById('edit-nombre').value.trim(),
-      contacto: document.getElementById('edit-contacto').value.trim()
+      contacto: document.getElementById('edit-contacto').value.trim(),
+      miembro2: document.getElementById('edit-miembro2').value.trim(),
+      miembro3: document.getElementById('edit-miembro3').value.trim()
     };
 
     try {
