@@ -4,7 +4,7 @@
 // ════════════════════════════════════════════════════════════════════════
 
 // Template HTML del certificado
-const CERTIFICADO_TEMPLATE = `
+const CERTIFICADO_TEMPLATE = `  
 <div class="certificado-container" id="certificado-preview">
   <div class="certificado-bg"></div>
   <div class="certificado-border"></div>
