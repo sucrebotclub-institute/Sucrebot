@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════════════════
-// CERTIFICADOS.JS - Sistema de generación y descarga de certificados
+// CERTIFICADOS.JS - Sistema de generación y subida de certificados a Drive
 // Ubicación: /shared/js/certificados.js
 // ════════════════════════════════════════════════════════════════════════
 
@@ -142,10 +142,9 @@ const CERTIFICADO_CSS = `
 .cert-modal-close:hover { background: #cc0000; transform: scale(1.1); }
 .cert-modal-actions { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
 .btn-modal { padding: 12px 24px; border: none; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-.btn-descargar-pdf { background: #1a5ca8; color: white; }
-.btn-descargar-pdf:hover { background: #0f3d75; transform: translateY(-2px); }
 .btn-guardar-cert { background: #3dd68c; color: white; }
 .btn-guardar-cert:hover { background: #2ab870; transform: translateY(-2px); }
+.btn-guardar-cert:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 `;
 
 // Función para obtener texto según tipo de certificado
@@ -176,20 +175,15 @@ function previewCertificado(idx) {
   const tipo = document.getElementById('tipo-' + idx).value;
   const fechaEvento = document.getElementById('fecha-evento').value;
   
-  // Obtener datos del tipo
   const datosTipo = obtenerDatosTipo(tipo);
   const textoLogro = obtenerTextoLogro(tipo, participante.categoria);
-  
-  // Generar código de verificación temporal
   const codigoTemp = 'CERT-2026-PREVIEW';
   
-  // Construir texto de integrantes
   const miembros = [participante.miembro2, participante.miembro3].filter(Boolean);
   const textoEquipo = miembros.length > 0
     ? 'junto a: ' + miembros.join(' &amp; ')
     : '';
 
-  // Reemplazar variables en el template
   let htmlCert = CERTIFICADO_TEMPLATE
     .replace(/\{\{TIPO_CLASS\}\}/g, datosTipo.clase)
     .replace(/\{\{TIPO_BADGE\}\}/g, datosTipo.badge)
@@ -233,44 +227,46 @@ function previewCertificado(idx) {
     actions.className = 'cert-modal-actions';
     
     const saveBtn = document.createElement('button');
+    saveBtn.id = 'btn-guardar-cert';
     saveBtn.className = 'btn-modal btn-guardar-cert';
-    saveBtn.textContent = '💾 Guardar y Descargar PDF';
-    saveBtn.onclick = function() { guardarYDescargarCertificado(idx); };
+    saveBtn.textContent = '☁️ Guardar en Drive y enviar al participante';
+    saveBtn.onclick = function() { guardarYSubirCertificado(idx); };
     
     actions.appendChild(saveBtn);
-    
     modalContent.appendChild(modalHeader);
     modalContent.appendChild(previewContainer);
     modalContent.appendChild(actions);
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
+  } else {
+    // Actualizar el botón con el índice correcto
+    const saveBtn = document.getElementById('btn-guardar-cert');
+    if (saveBtn) saveBtn.onclick = function() { guardarYSubirCertificado(idx); };
   }
   
-  // Insertar certificado en el modal
   document.getElementById('cert-preview-container').innerHTML = htmlCert;
-  
-  // Mostrar modal
   modal.classList.add('show');
 }
 
 // Función para cerrar modal
 function cerrarModalCertificado() {
   const modal = document.getElementById('cert-modal');
-  if (modal) {
-    modal.classList.remove('show');
-  }
+  if (modal) modal.classList.remove('show');
 }
 
-// Función para guardar certificado y descargar PDF
-async function guardarYDescargarCertificado(idx) {
+// Función principal: guarda en Sheets + sube PDF a Drive
+async function guardarYSubirCertificado(idx) {
   const participante = participantesAprobados[idx];
   const tipo = document.getElementById('tipo-' + idx).value;
   const fechaEvento = document.getElementById('fecha-evento').value;
-  
+
+  const saveBtn = document.getElementById('btn-guardar-cert');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Guardando...'; }
+
   showToast('⏳ Guardando certificado en el sistema...');
-  
+
   try {
-    // Guardar en Google Sheets
+    // PASO 1: Guardar en Sheets y obtener el código
     const data = {
       action: 'guardarCertificado',
       correo: participante.correo,
@@ -281,93 +277,103 @@ async function guardarYDescargarCertificado(idx) {
       fecha_evento: fechaEvento,
       tipo_certificado: tipo
     };
-    
+
     const response = await fetch(CONFIG.GAS_URL(), {
       method: 'POST',
       body: JSON.stringify(data),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
-    
     const result = await response.json();
-    
-    if (result.ok) {
-      showToast('✅ Certificado guardado. Generando PDF...');
-      
-      // Generar el PDF con el código real
-      await descargarCertificadoPDF(participante, tipo, fechaEvento, result.codigo);
-      
-      cerrarModalCertificado();
-      showToast('✅ PDF descargado correctamente');
-    } else {
-      throw new Error('Error al guardar certificado');
-    }
-    
+
+    if (!result.ok) throw new Error('Error al guardar certificado en Sheets');
+
+    const codigo = result.codigo;
+    showToast('⏳ Generando PDF y subiendo a Drive...');
+    if (saveBtn) saveBtn.textContent = '⏳ Subiendo a Drive...';
+
+    // PASO 2: Generar PDF y subir a Drive
+    const driveUrl = await generarYSubirPDF(participante, tipo, fechaEvento, codigo);
+
+    cerrarModalCertificado();
+    showToast('✅ Diploma guardado en Drive correctamente');
+
+    console.log('Diploma subido a Drive:', driveUrl);
+
   } catch (e) {
     console.error('Error:', e);
     showToast('❌ Error: ' + e.message);
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '☁️ Guardar en Drive y enviar al participante'; }
   }
 }
 
-// Función para descargar certificado como PDF
-async function descargarCertificadoPDF(participante, tipo, fechaEvento, codigoCert) {
-  // Cargar librerías si no están cargadas
+// Genera el PDF como base64 y lo sube a GAS → Drive
+async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert) {
+  // Cargar librerías si no están
   if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
-    showToast('⏳ Cargando librerías PDF...');
     await cargarLibreriasPDF();
   }
-  
-  showToast('🎨 Generando PDF...');
-  
-  // Obtener datos del tipo
+
   const datosTipo = obtenerDatosTipo(tipo);
   const textoLogro = obtenerTextoLogro(tipo, participante.categoria);
-  
-  // Crear elemento temporal con el certificado
+
+  const miembros = [participante.miembro2, participante.miembro3].filter(Boolean);
+  const textoEquipo = miembros.length > 0
+    ? 'junto a: ' + miembros.join(' & ')
+    : '';
+
+  // Crear elemento temporal fuera de pantalla
   const tempDiv = document.createElement('div');
   tempDiv.style.position = 'absolute';
   tempDiv.style.left = '-9999px';
-   const miembrosDescarga = [participante.miembro2, participante.miembro3].filter(Boolean);
-  const textoEquipoDescarga = miembrosDescarga.length > 0
-    ? 'junto a: ' + miembrosDescarga.join(' & ')
-    : '';
-
+  tempDiv.style.top = '0';
   tempDiv.innerHTML = CERTIFICADO_TEMPLATE
     .replace(/\{\{TIPO_CLASS\}\}/g, datosTipo.clase)
     .replace(/\{\{TIPO_BADGE\}\}/g, datosTipo.badge)
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, participante.nombre)
-    .replace(/\{\{INTEGRANTES_EQUIPO\}\}/g, textoEquipoDescarga)
+    .replace(/\{\{INTEGRANTES_EQUIPO\}\}/g, textoEquipo)
     .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
     .replace(/\{\{CATEGORIA\}\}/g, participante.categoria)
     .replace(/\{\{EVENTO\}\}/g, 'SucreBot 2026')
     .replace(/\{\{FECHA_EVENTO\}\}/g, fechaEvento)
     .replace(/\{\{CODIGO_VERIFICACION\}\}/g, codigoCert);
-  
+
   document.body.appendChild(tempDiv);
-  
+
   try {
-    // Convertir a canvas
+    await document.fonts.ready;
+
     const canvas = await html2canvas(tempDiv.firstElementChild, {
       scale: 2,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff'
     });
-    
-    // Crear PDF
+
     const { jsPDF } = jspdf;
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, 210);
+
+    // Obtener base64 del PDF (sin el prefijo data:...)
+    const pdfBase64 = pdf.output('datauristring').split(',')[1];
+    const fileName = 'Diploma_' + participante.nombre.replace(/\s+/g, '_') + '_' + codigoCert + '.pdf';
+
+    // Subir a Drive vía GAS
+    const uploadResp = await fetch(CONFIG.GAS_URL(), {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'uploadDiploma',
+        base64: pdfBase64,
+        fileName: fileName,
+        codigo: codigoCert
+      }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
-    
-    const imgData = canvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
-    
-    // Descargar
-    const nombreArchivo = `Certificado_${participante.nombre.replace(/\s+/g, '_')}_${codigoCert}.pdf`;
-    pdf.save(nombreArchivo);
-    
+    const uploadResult = await uploadResp.json();
+    if (!uploadResult.ok) throw new Error(uploadResult.error || 'Error al subir a Drive');
+
+    return uploadResult.url;
+
   } finally {
     document.body.removeChild(tempDiv);
   }
@@ -376,11 +382,9 @@ async function descargarCertificadoPDF(participante, tipo, fechaEvento, codigoCe
 // Función para cargar librerías PDF
 async function cargarLibreriasPDF() {
   return new Promise((resolve, reject) => {
-    // Cargar html2canvas
     const script1 = document.createElement('script');
     script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
     script1.onload = () => {
-      // Cargar jsPDF
       const script2 = document.createElement('script');
       script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
       script2.onload = resolve;
@@ -394,12 +398,10 @@ async function cargarLibreriasPDF() {
 
 // Inicializar CSS y fuentes al cargar el script
 (function initCertificados() {
-  // Agregar CSS del certificado
   const style = document.createElement('style');
   style.textContent = CERTIFICADO_CSS;
   document.head.appendChild(style);
   
-  // Agregar fuente Great Vibes
   const linkFont = document.createElement('link');
   linkFont.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap';
   linkFont.rel = 'stylesheet';
