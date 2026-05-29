@@ -373,23 +373,28 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  const IMGBB_API_KEY = 'd4391c4e1ace3b11e8a9dcb82da814e0';
 
   async function gasPost(data) {
     const r = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(data), redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'} });
     return r.json();
   }
 
-  async function subirArchivoImgBB(archivo, participanteId) {
-    const base64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(archivo); });
-    const form = new FormData();
-    form.append('key', IMGBB_API_KEY); 
-    form.append('image', base64); 
-    form.append('name', 'TRANSFERENCIA-' + participanteId);
-    const res = await fetch('https://api.imgbb.com/1/upload', {method:'POST',body:form});
-    const data = await res.json();
-    if (data.success) return data.data.url;
-    throw new Error('Error subiendo imagen');
+  // Sube el comprobante a Google Drive vía GAS
+  async function subirComprobanteDrive(archivo, participanteId) {
+    const base64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(archivo);
+    });
+    const resp = await gasPost({
+      action: 'uploadComprobante',
+      base64: base64,
+      mimeType: archivo.type,
+      fileName: 'TRANSFERENCIA-' + participanteId
+    });
+    if (resp.ok && resp.url) return resp.url;
+    throw new Error(resp.error || 'Error al subir comprobante a Drive');
   }
 
   async function registrarParticipante() {
@@ -437,19 +442,19 @@
       const idGenerado = respuestaRegistro.id;
       console.log('ID generado por GAS:', idGenerado);
       
-      // PASO 2: Subir archivo con el ID real
+      // PASO 2: Subir archivo a Google Drive con el ID real
       btn.textContent='⏳ Subiendo comprobante...';
       let archivoUrl = '';
       try { 
-        archivoUrl = await subirArchivoImgBB(archivo, idGenerado); 
+        archivoUrl = await subirComprobanteDrive(archivo, idGenerado); 
       } catch(e) { 
-        showToast('Error al subir comprobante: '+e.message,true); 
+        showToast('Error al subir comprobante: '+e.message, true); 
         btn.disabled=false; 
         btn.textContent='⚡ Registrar Participante'; 
         return; 
       }
       
-      // PASO 3: Actualizar registro con la URL del archivo
+      // PASO 3: Actualizar registro con la URL del archivo en Drive
       btn.textContent='⏳ Finalizando registro...';
       await gasPost({
         action:'setParticipante',
@@ -472,7 +477,7 @@
       document.getElementById('f-categoria').value=''; archivoInput.value='';
       
     } catch(e) { 
-      showToast('Error al registrar: '+e.message,true); 
+      showToast('Error al registrar: '+e.message, true); 
     } finally { 
       btn.disabled=false; 
       btn.textContent='⚡ Registrar Participante'; 
