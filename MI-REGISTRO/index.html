@@ -336,6 +336,17 @@
     }
   }
 
+  // Genera el texto del QR: ID + nombres de integrantes para la manilla
+  // Formato: sb-2026-bai-001|Juan López|María García|Pedro Gómez
+  // El escáner ESC-NER solo lee el primer segmento (antes del primer |)
+  function construirTextoQR(p) {
+    const partes = [p.id];
+    if (p.nombre)   partes.push(p.nombre);
+    if (p.miembro2) partes.push(p.miembro2);
+    if (p.miembro3) partes.push(p.miembro3);
+    return partes.join('|');
+  }
+
   function mostrarFicha(p) {
     document.getElementById('screen-loading').style.display = 'none';
     document.getElementById('screen-ficha').style.display = 'block';
@@ -377,9 +388,8 @@
       qrSection.style.display = 'block';
       pendienteSection.style.display = 'none';
 
-      // ✅ EL QR SOLO CONTIENE EL ID (formato robusto y limpio)
-      // El escáner consulta el GAS para traer datos completos
-      const textoQR = p.id;
+      // QR contiene ID + nombres (capitán + miembros) para las manillas
+      const textoQR = construirTextoQR(p);
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data=${encodeURIComponent(textoQR)}`;
       document.getElementById('f-qr-img').src = qrUrl;
       
