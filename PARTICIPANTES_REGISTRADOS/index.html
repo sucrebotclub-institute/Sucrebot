@@ -88,12 +88,26 @@
     .crown-icon { position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-12deg); font-size: 48px; z-index: 2; animation: crown-bounce 2s ease-in-out infinite; filter: drop-shadow(0 4px 12px rgba(255,215,0,0.6)); }
     @keyframes crown-bounce { 0%,100%{transform:translateX(-50%) rotate(-12deg) translateY(0)} 50%{transform:translateX(-50%) rotate(-12deg) translateY(-8px)} }
 
-    /* Layout principal con flexbox — padding aquí igual que faq-layout en FAQ */
-    .main-layout { display: flex; gap: 40px; align-items: flex-start; padding-left: 100px; padding-right: 40px; }
+    /* Layout principal — content-wrapper ocupa todo el ancho disponible */
+    .main-layout { display: flex; align-items: flex-start; padding-left: 100px; padding-right: 20px; }
+    .content-wrapper { flex: 1; min-width: 0; }
     .content-wrapper { flex: 1; min-width: 0; }
 
-    /* Panel de estadísticas */
-    .stats-panel { flex: 0 0 320px; background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 100%); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(26,92,168,0.35); position: sticky; top: 120px; margin-right: 0; }
+    /* Panel de estadísticas — pegado al borde derecho */
+    .stats-panel { 
+      position: fixed;
+      right: 0;
+      top: 180px;
+      width: 280px;
+      background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 100%); 
+      border-radius: 16px 0 0 16px;
+      padding: 24px; 
+      box-shadow: -4px 8px 32px rgba(26,92,168,0.35);
+      border-left: 2px solid rgba(91,200,240,0.3);
+      z-index: 10;
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+    }
     .stats-panel-title { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--p-cyan-bright); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
     .stats-grid { display: flex; flex-direction: column; gap: 16px; }
     .stat-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.15); transition: all 0.3s; }
@@ -185,6 +199,7 @@
       .wrapper { padding: 0 16px 60px 16px; }
       .wrapper::before { display: none; }
       .main-layout { padding-left: 0; padding-right: 0; }
+      .stats-panel { display: none; }
       .page-hero { padding: 40px 0 24px; }
       .main-layout { flex-direction: column; gap: 24px; }
       .stats-panel { display: none; }
