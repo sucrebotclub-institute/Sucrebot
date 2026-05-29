@@ -26,11 +26,11 @@
     /* Panel lateral izquierdo decorativo — igual que FAQ */
     .wrapper::before {
       content: '';
-      position: absolute;
-      left: -600px;
+      position: fixed;
+      left: 0;
       top: 0;
       bottom: 0;
-      width: 580px;
+      width: 80px;
       background: 
         linear-gradient(135deg, rgba(26,92,168,0.85) 0%, rgba(18,20,26,0.90) 100%),
         url('https://github.com/sucrebotclub-institute/Sucrebot/blob/main/shared/images/foto3.jpg?raw=true') 5% center / cover no-repeat;
@@ -38,10 +38,26 @@
       box-shadow: 0 8px 32px rgba(26,92,168,0.3);
       border-right: 2px solid rgba(91,200,240,0.3);
       z-index: 1;
+      pointer-events: none;
     }
 
-    /* max-width similar al FAQ para que el ::before llegue al borde visible */
     .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; overflow: visible; }
+
+    /* Panel estadísticas — fijo al borde derecho del viewport */
+    .stats-panel {
+      position: fixed;
+      right: 0;
+      top: 180px;
+      width: 260px;
+      background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 100%);
+      border-radius: 16px 0 0 16px;
+      padding: 20px;
+      box-shadow: -4px 8px 32px rgba(26,92,168,0.35);
+      border-left: 2px solid rgba(91,200,240,0.3);
+      z-index: 10;
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+    }
     
     .page-hero { padding: 80px 0 32px; margin-bottom: 32px; text-align: left !important; }
     .page-hero-badge { display: block; width: fit-content; align-items: center; gap: 8px; background: var(--p-blue); border: 1px solid var(--p-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
@@ -89,25 +105,10 @@
     @keyframes crown-bounce { 0%,100%{transform:translateX(-50%) rotate(-12deg) translateY(0)} 50%{transform:translateX(-50%) rotate(-12deg) translateY(-8px)} }
 
     /* Layout principal — mismo espacio a ambos lados */
-    .main-layout { display: flex; align-items: flex-start; padding-left: 80px; padding-right: 80px; }
-    .content-wrapper { flex: 1; min-width: 0; }
+    .main-layout { display: flex; align-items: flex-start; padding-left: 100px; padding-right: 20px; }
     .content-wrapper { flex: 1; min-width: 0; }
 
-    /* Panel de estadísticas — pegado al borde derecho */
-    .stats-panel { 
-      position: fixed;
-      right: 0;
-      top: 180px;
-      width: 280px;
-      background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 100%); 
-      border-radius: 16px 0 0 16px;
-      padding: 24px; 
-      box-shadow: -4px 8px 32px rgba(26,92,168,0.35);
-      border-left: 2px solid rgba(91,200,240,0.3);
-      z-index: 10;
-      max-height: calc(100vh - 200px);
-      overflow-y: auto;
-    }
+
     .stats-panel-title { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--p-cyan-bright); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
     .stats-grid { display: flex; flex-direction: column; gap: 16px; }
     .stat-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.15); transition: all 0.3s; }
