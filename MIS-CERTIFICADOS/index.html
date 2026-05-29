@@ -9,22 +9,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../shared/js/config.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   
-  <!-- CSS específico de MIS-CERTIFICADOS -->
   <style>
-    /* Mantener tema claro (fondo blanco) */
     body {
       background: #ffffff !important;
       color: #1a1c28 !important;
     }
     
-    /* Estilos únicos para MIS-CERTIFICADOS */
     .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; position: relative; }
     .page-hero { padding: 40px 0 32px; border-bottom: 1px solid #e0e4ea; margin-bottom: 32px; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
@@ -35,7 +30,6 @@
     .page-hero h2 { font-family: 'Exo 2', sans-serif; font-size: 2.6rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #1a3a6b; line-height: 1; }
     .page-hero p { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #4a5568; }
     
-    /* Mensaje sin sesión */
     .sin-sesion-card { background: var(--sucre-blue); border: 1.5px solid #1a5ca8; border-radius: 16px; padding: 60px 40px; box-shadow: 0 4px 24px rgba(26,92,168,0.25); text-align: center; max-width: 600px; margin: 0 auto; }
     .sin-sesion-icon { font-size: 72px; margin-bottom: 24px; }
     .sin-sesion-title { font-family: 'Orbitron', monospace; font-size: 1.8rem; letter-spacing: 2px; color: #ffffff; margin-bottom: 12px; }
@@ -43,12 +37,10 @@
     .btn-ir-login { display: inline-flex; align-items: center; gap: 10px; background: #1a3a6b; color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: 10px; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 16px rgba(26,92,168,0.4); }
     .btn-ir-login:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,92,168,0.6); }
     
-    /* Contenedor certificados */
     .certificados-container { max-width: 900px; margin: 0 auto; }
     .certificados-titulo { font-family: 'Orbitron', monospace; font-size: 1.2rem; letter-spacing: 2px; color: #1a3a6b; margin-bottom: 24px; }
     .certificados-grid { display: grid; gap: 20px; }
     
-    /* Tarjeta de certificado */
     .certificado-card { background: #ffffff; border: 2px solid #e0e4ea; border-radius: 16px; padding: 24px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .certificado-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(26,92,168,0.2); border-color: #1a5ca8; }
     .certificado-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; }
@@ -64,83 +56,35 @@
     .certificado-label { color: #7a7a8c; font-weight: 600; }
     .certificado-value { color: #2a3f5f; font-weight: 700; }
     .certificado-actions { display: flex; gap: 12px; }
-    .btn-descargar { flex: 1; background: #1a5ca8; color: #ffffff; border: none; padding: 12px 20px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(26,92,168,0.3); }
+
+    /* Botón Ver Diploma — link */
+    .btn-descargar {
+      flex: 1;
+      background: #1a5ca8;
+      color: #ffffff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(26,92,168,0.3);
+      text-decoration: none;
+    }
     .btn-descargar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.5); }
-    .btn-descargar:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+    .btn-descargar:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
     
     .vacio-msg { text-align: center; padding: 60px 20px; color: #7a7a8c; font-size: 14px; }
     .vacio-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; }
     
-    /* Toast */
     .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); border-left: 5px solid var(--green); color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 0.84rem; font-weight: 600; padding: 14px 18px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 320px; display: flex; align-items: flex-start; gap: 10px; pointer-events: none; }
     .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    
-    /* ═══════════════════════════════════════════════════════════════
-       ESTILOS DEL CERTIFICADO PARA PDF
-       ═══════════════════════════════════════════════════════════════ */
-    .certificado-container {
-      width: 1123px;
-      height: 794px;
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      position: relative;
-      overflow: hidden;
-      font-family: 'Exo 2', sans-serif;
-      margin: 0 auto;
-    }
-    .certificado-bg {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      opacity: 0.08;
-      background-image: 
-        repeating-linear-gradient(45deg, transparent, transparent 35px, #1a5ca8 35px, #1a5ca8 70px),
-        repeating-linear-gradient(-45deg, transparent, transparent 35px, #1a5ca8 35px, #1a5ca8 70px);
-    }
-    .certificado-border {
-      position: absolute;
-      top: 30px;
-      left: 30px;
-      right: 30px;
-      bottom: 30px;
-      border: 8px solid #1a5ca8;
-      border-radius: 20px;
-      box-shadow: inset 0 0 0 4px #ffffff, inset 0 0 0 8px #d4af37;
-    }
-    .certificado-content {
-      position: relative;
-      z-index: 2;
-      padding: 60px 80px;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    .cert-header { text-align: center; margin-bottom: 30px; }
-    .cert-logo { font-size: 48px; margin-bottom: 10px; }
-    .cert-institution { font-size: 16px; font-weight: 700; color: #1a5ca8; letter-spacing: 2px; text-transform: uppercase; }
-    .cert-title { text-align: center; margin: 20px 0; }
-    .cert-title-main { font-size: 56px; font-weight: 900; color: #1a5ca8; letter-spacing: 8px; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
-    .cert-subtitle { font-size: 14px; color: #666; margin-top: 8px; letter-spacing: 3px; text-transform: uppercase; }
-    .cert-conferir { text-align: center; font-size: 18px; color: #333; margin: 25px 0 20px; letter-spacing: 1px; }
-    .cert-nombre { text-align: center; font-family: 'Great Vibes', cursive; font-size: 64px; color: #1a3a6b; margin: 20px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); border-bottom: 3px solid #d4af37; padding-bottom: 10px; max-width: 800px; margin-left: auto; margin-right: auto; }
-    .cert-logro { text-align: center; font-size: 18px; color: #333; line-height: 1.8; margin: 25px 0; max-width: 900px; margin-left: auto; margin-right: auto; }
-    .cert-logro strong { color: #1a5ca8; font-weight: 900; }
-    .cert-detalles { text-align: center; font-size: 16px; color: #555; margin: 20px 0; }
-    .cert-detalles strong { color: #1a5ca8; font-weight: 700; }
-    .cert-footer { margin-top: auto; display: flex; justify-content: space-around; align-items: flex-end; padding: 0 60px; }
-    .cert-firma { text-align: center; flex: 1; }
-    .cert-firma-linea { width: 280px; height: 2px; background: #333; margin: 0 auto 10px; position: relative; }
-    .cert-firma-nombre { font-family: 'Great Vibes', cursive; font-size: 32px; color: #1a3a6b; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); white-space: nowrap; }
-    .cert-firma-cargo { font-size: 13px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-    .cert-auspiciantes { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; align-items: center; }
-    .cert-auspiciante-logo { width: 80px; height: 80px; background: rgba(255,255,255,0.9); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .cert-qr { position: absolute; bottom: 40px; right: 40px; text-align: center; }
-    .cert-qr-code { width: 100px; height: 100px; background: #ffffff; border: 3px solid #1a5ca8; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; margin-bottom: 5px; }
-    .cert-qr-codigo { font-size: 10px; color: #999; font-family: monospace; }
-    .cert-badge { position: absolute; top: 50px; right: 50px; padding: 12px 24px; border-radius: 30px; font-weight: 900; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    .cert-badge.primer { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #8b6914; border: 3px solid #b8860b; }
-    .cert-badge.segundo { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); color: #4a4a4a; border: 3px solid #808080; }
-    .cert-badge.tercer { background: linear-gradient(135deg, #cd7f32 0%, #e89a5d 100%); color: #ffffff; border: 3px solid #8b5a2b; }
-    .cert-badge.participacion { background: linear-gradient(135deg, #1a5ca8 0%, #2980b9 100%); color: #ffffff; border: 3px solid #0d3a6b; }
     
     @media (max-width: 768px) {
       .certificado-card-header { flex-direction: column; gap: 12px; }
@@ -149,10 +93,6 @@
   </style>
 </head>
 <body>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     COMPONENTES COMPARTIDOS
-     ═══════════════════════════════════════════════════════════════ -->
 
 <div id="g_id_onload"
      data-client_id="14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com"
@@ -165,10 +105,6 @@
   <div data-include="../shared/components/header.html"></div>
   <div data-include="../shared/components/nav.html"></div>
 </div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     CONTENIDO ÚNICO DE MIS-CERTIFICADOS
-     ═══════════════════════════════════════════════════════════════ -->
 
 <div class="wrapper">
   <div class="page-hero">
@@ -215,28 +151,15 @@
   <span id="toast-msg"></span>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     FOOTER COMPARTIDO
-     ═══════════════════════════════════════════════════════════════ -->
-
 <div data-include="../shared/components/footer.html"></div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     SCRIPTS COMPARTIDOS
-     ═══════════════════════════════════════════════════════════════ -->
 
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     SCRIPTS ESPECÍFICOS DE MIS-CERTIFICADOS
-     ═══════════════════════════════════════════════════════════════ -->
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
   let userEmail = '';
 
-  // Verificar sesión al cargar componentes
   document.addEventListener('componentsLoaded', function() {
     const savedUser = localStorage.getItem('sucrebot_user');
     if (savedUser) {
@@ -246,7 +169,6 @@
         document.getElementById('certificados-container').style.display = 'block';
         cargarCertificados();
       } catch (e) {
-        console.error('Error al leer sesión:', e);
         document.getElementById('sin-sesion').style.display = 'block';
       }
     } else {
@@ -276,17 +198,24 @@
       lista.innerHTML = certificados.map(cert => {
         let tipoClass = 'participacion';
         let tipoTexto = '🏅 PARTICIPACIÓN';
+        if (cert.tipo_certificado === '1er') { tipoClass = 'primer'; tipoTexto = '🥇 PRIMER LUGAR'; }
+        else if (cert.tipo_certificado === '2do') { tipoClass = 'segundo'; tipoTexto = '🥈 SEGUNDO LUGAR'; }
+        else if (cert.tipo_certificado === '3er') { tipoClass = 'tercer'; tipoTexto = '🥉 TERCER LUGAR'; }
         
-        if (cert.tipo_certificado === '1er') {
-          tipoClass = 'primer';
-          tipoTexto = '🥇 PRIMER LUGAR';
-        } else if (cert.tipo_certificado === '2do') {
-          tipoClass = 'segundo';
-          tipoTexto = '🥈 SEGUNDO LUGAR';
-        } else if (cert.tipo_certificado === '3er') {
-          tipoClass = 'tercer';
-          tipoTexto = '🥉 TERCER LUGAR';
-        }
+        // Botón: si hay URL en Drive → link directo; si no → deshabilitado
+        const botonAccion = cert.archivoUrl
+          ? `<a class="btn-descargar" href="${cert.archivoUrl}" target="_blank" rel="noopener">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+               </svg>
+               Ver Diploma
+             </a>`
+          : `<button class="btn-descargar" disabled>
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+               </svg>
+               Pendiente de generación
+             </button>`;
         
         return `
           <div class="certificado-card">
@@ -308,155 +237,15 @@
               </div>
             </div>
             <div class="certificado-actions">
-              <button class="btn-descargar" onclick='descargarCertificado(${JSON.stringify(cert).replace(/'/g, "&apos;")})'>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                </svg>
-                Descargar PDF
-              </button>
+              ${botonAccion}
             </div>
           </div>
         `;
       }).join('');
       
     } catch (e) {
-      console.error('Error al cargar certificados:', e);
-      lista.innerHTML = `
-        <div class="vacio-msg">
-          <div class="vacio-icon">⚠️</div>
-          Error al cargar certificados.<br>
-          Intenta nuevamente más tarde.
-        </div>
-      `;
+      lista.innerHTML = `<div class="vacio-msg"><div class="vacio-icon">⚠️</div>Error al cargar certificados.<br>Intenta nuevamente más tarde.</div>`;
       showToast('Error al cargar certificados: ' + e.message, true);
-    }
-  }
-
-  async function descargarCertificado(cert) {
-    showToast('🎨 Generando certificado en PDF...', false);
-    
-    // Obtener texto del logro según tipo
-    const textos = {
-      '1er': `Por haber obtenido el <strong>PRIMER LUGAR</strong> en la categoría <strong>${cert.categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.`,
-      '2do': `Por haber obtenido el <strong>SEGUNDO LUGAR</strong> en la categoría <strong>${cert.categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.`,
-      '3er': `Por haber obtenido el <strong>TERCER LUGAR</strong> en la categoría <strong>${cert.categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.`,
-      'participacion': `Por su <strong>DESTACADA PARTICIPACIÓN</strong> en la categoría <strong>${cert.categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.`
-    };
-    
-    const badges = {
-      '1er': { clase: 'primer', badge: '🥇 PRIMER LUGAR' },
-      '2do': { clase: 'segundo', badge: '🥈 SEGUNDO LUGAR' },
-      '3er': { clase: 'tercer', badge: '🥉 TERCER LUGAR' },
-      'participacion': { clase: 'participacion', badge: '🏅 PARTICIPACIÓN' }
-    };
-    
-    const tipoCert = cert.tipo_certificado || 'participacion';
-    const datosTipo = badges[tipoCert] || badges['participacion'];
-    const textoLogro = textos[tipoCert] || textos['participacion'];
-    
-    // Template HTML del certificado
-    const htmlCertificado = `
-      <div class="certificado-container">
-        <div class="certificado-bg"></div>
-        <div class="certificado-border"></div>
-        <div class="cert-badge ${datosTipo.clase}">${datosTipo.badge}</div>
-        
-        <div class="certificado-content">
-          <div class="cert-header">
-            <div class="cert-logo">🏛️</div>
-            <div class="cert-institution">Instituto Superior Universitario Sucre</div>
-            <div class="cert-institution" style="font-size: 13px; margin-top: 5px;">Club de Robótica Sucre</div>
-          </div>
-          
-          <div class="cert-title">
-            <div class="cert-title-main">CERTIFICADO</div>
-            <div class="cert-subtitle">De Reconocimiento</div>
-          </div>
-          
-          <div class="cert-conferir">Confiere el presente certificado a:</div>
-          
-          <div class="cert-nombre">${cert.nombre_completo}</div>
-          
-          <div class="cert-logro">${textoLogro}</div>
-          
-          <div class="cert-detalles">
-            <strong>Categoría:</strong> ${cert.categoria} <br>
-            <strong>Evento:</strong> ${cert.evento} | ${cert.fecha_evento}
-          </div>
-          
-          <div class="cert-footer">
-            <div class="cert-firma">
-              <div class="cert-firma-linea">
-                <span class="cert-firma-nombre">Christian Ortega</span>
-              </div>
-              <div class="cert-firma-cargo">Presidente del Comité Organizador</div>
-            </div>
-            <div class="cert-firma">
-              <div class="cert-firma-linea">
-                <span class="cert-firma-nombre">Fabricio Tipantocta</span>
-              </div>
-              <div class="cert-firma-cargo">Coordinador de Relaciones</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="cert-auspiciantes">
-          <div class="cert-auspiciante-logo" title="Carrera Electrónica">⚡</div>
-          <div class="cert-auspiciante-logo" title="Club Robótica Sucre">🤖</div>
-          <div class="cert-auspiciante-logo" title="EPN">🎓</div>
-          <div class="cert-auspiciante-logo" title="BitBot Team">💻</div>
-          <div class="cert-auspiciante-logo" title="Rivaluz">💡</div>
-        </div>
-        
-        <div class="cert-qr">
-          <div class="cert-qr-code"><span style="font-size: 48px;">⬛</span></div>
-          <div class="cert-qr-codigo">${cert.codigo_verificacion}</div>
-        </div>
-      </div>
-    `;
-    
-    // Crear elemento temporal
-    const tempDiv = document.createElement('div');
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
-    tempDiv.innerHTML = htmlCertificado;
-    document.body.appendChild(tempDiv);
-    
-    try {
-      // Esperar a que las fuentes se carguen
-      await document.fonts.ready;
-      
-      // Convertir a canvas con html2canvas
-      const canvas = await html2canvas(tempDiv.firstElementChild, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-      
-      // Crear PDF con jsPDF
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
-      
-      // Descargar el PDF
-      const nombreArchivo = `Certificado_${cert.nombre_completo.replace(/\s+/g, '_')}_${cert.codigo_verificacion}.pdf`;
-      pdf.save(nombreArchivo);
-      
-      showToast('✅ PDF descargado correctamente', false);
-      
-    } catch (error) {
-      console.error('Error al generar PDF:', error);
-      showToast('❌ Error al generar PDF: ' + error.message, true);
-    } finally {
-      // Limpiar elemento temporal
-      document.body.removeChild(tempDiv);
     }
   }
 
@@ -466,29 +255,11 @@
     const icon = document.getElementById('toast-icon');
     const text = document.getElementById('toast-msg');
     text.textContent = msg;
-    
-    if (error) { 
-      icon.textContent = '⚠'; 
-      t.style.borderLeftColor = '#e05555'; 
-      t.style.color = '#ffb3b3'; 
-      t.style.background = '#2a1a1a'; 
-    } else { 
-      icon.textContent = '✓'; 
-      t.style.borderLeftColor = '#3dd68c'; 
-      t.style.color = '#d0f5e8'; 
-      t.style.background = '#1e2438'; 
-    }
-    
-    if (toastTimer) { 
-      clearTimeout(toastTimer); 
-      t.classList.remove('show'); 
-    }
-    
+    if (error) { icon.textContent = '⚠'; t.style.borderLeftColor = '#e05555'; t.style.color = '#ffb3b3'; t.style.background = '#2a1a1a'; }
+    else { icon.textContent = '✓'; t.style.borderLeftColor = '#3dd68c'; t.style.color = '#d0f5e8'; t.style.background = '#1e2438'; }
+    if (toastTimer) { clearTimeout(toastTimer); t.classList.remove('show'); }
     requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
-    toastTimer = setTimeout(() => { 
-      t.classList.remove('show'); 
-      toastTimer = null; 
-    }, 3500);
+    toastTimer = setTimeout(() => { t.classList.remove('show'); toastTimer = null; }, 3500);
   }
 </script>
 
