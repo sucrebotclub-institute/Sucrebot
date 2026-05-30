@@ -2,7 +2,7 @@
 
 const CONFIG = {
   // ID de deployment actual del Google Apps Script
-  DEPLOYMENT_ID: 'AKfycby1KWTlY0Z_-XAbYlOM8wZbvfwx24d7l91J56se5nzrCUlWarkTH5KgZ8AwkIV32uuZBQ', 
+  DEPLOYMENT_ID: 'AKfycbzxjm9fLlrjVoe2Yy2PsFFzXxGK7vh05qr8z2dfEj9SagJBmyXNY_qt17U4i3MuTrN--Q', 
   
   // Función para obtener la URL completa del GAS
   GAS_URL: function() {
