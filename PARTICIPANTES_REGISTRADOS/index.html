@@ -643,7 +643,12 @@
     const imgEl = document.getElementById('rev-comprobante');
     const linkEl = document.getElementById('rev-comprobante-link');
     if (p.archivoUrl) {
-      imgEl.src = p.archivoUrl; imgEl.style.display = 'block';
+      // Convertir URL de Drive /view a URL de imagen directa
+      const fileIdMatch = p.archivoUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+      const imgSrc = fileIdMatch 
+        ? 'https://drive.google.com/uc?export=view&id=' + fileIdMatch[1]
+        : p.archivoUrl;
+      imgEl.src = imgSrc; imgEl.style.display = 'block';
       linkEl.href = p.archivoUrl; linkEl.style.display = 'inline-block';
     } else { imgEl.style.display = 'none'; linkEl.style.display = 'none'; }
     
