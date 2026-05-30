@@ -3,13 +3,7 @@
 // Archivo: /shared/js/auth.js
 // ═══════════════════════════════════════════════════════════════
 
-const STAFF_EMAILS = [
-  'ftipantocta@tecnologicosucre.edu.ec',
-  'sucrebotclub@tecnologicosucre.edu.ec',
-  'vandrade@tecnologicosucre.edu.ec'
-];
-
-// ✅ EXPORTAR COMO VARIABLE GLOBAL para que otros archivos puedan acceder
+const STAFF_EMAILS = CONFIG.STAFF_EMAILS;
 window.STAFF_EMAILS = STAFF_EMAILS;
 
 // ── FUNCIÓN: Parsear JWT de Google
