@@ -9,7 +9,7 @@ const CERTIFICADO_TEMPLATE = `
   <div class="certificado-bg"></div>
   <div class="certificado-border"></div>
   <div class="cert-badge {{TIPO_CLASS}}">{{TIPO_BADGE}}</div>
-  
+    
   <div class="certificado-content">
     <div class="cert-header">
       <div class="cert-logo">🏛️</div>
