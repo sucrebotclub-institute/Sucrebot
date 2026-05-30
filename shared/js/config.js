@@ -16,6 +16,8 @@ const CONFIG = {
   STAFF_EMAILS: [
   'ftipantocta@tecnologicosucre.edu.ec',
   'sucrebotclub@tecnologicosucre.edu.ec',
-  'vandrade@tecnologicosucre.edu.ec'
+  'vandrade@tecnologicosucre.edu.ec',
+  'gherrera@tecnologicosucre.edu.ec',
+  'lmolina@tecnologicosucre.edu.ec'
 ]
 };
