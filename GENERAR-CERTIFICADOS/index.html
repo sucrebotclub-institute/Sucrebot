@@ -7,18 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="../shared/js/config.js"></script>
-  
-  <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  
-  <!-- CSS específico de GENERAR-CERTIFICADOS -->
   <style>
-    body {
-      background: #ffffff !important;
-      color: #1a1c28 !important;
-    }
-    
+    body { background: #ffffff !important; color: #1a1c28 !important; }
     .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; min-height: 70vh; }
     .page-hero { padding: 40px 0 32px; border-bottom: 1px solid #e0e4ea; margin-bottom: 32px; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
@@ -26,22 +18,19 @@
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
     .page-hero h2 { font-family: 'Exo 2', sans-serif; font-size: 2.6rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #1a3a6b; line-height: 1; }
     .page-hero p { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #4a5568; margin-top: 12px; }
-    
-    /* Acceso denegado */
+
     .acceso-denegado { background: linear-gradient(135deg, #ff3b3b 0%, #c41e3a 100%); border-radius: 16px; padding: 60px 40px; text-align: center; max-width: 600px; margin: 60px auto; box-shadow: 0 8px 32px rgba(196,30,58,0.3); }
     .acceso-denegado-icon { font-size: 72px; margin-bottom: 24px; }
     .acceso-denegado h3 { font-family: 'Orbitron', monospace; font-size: 1.8rem; color: #ffffff; margin-bottom: 12px; }
     .acceso-denegado p { color: rgba(255,255,255,0.9); font-size: 14px; line-height: 1.6; }
-    
-    /* Controles superiores */
-    .controles-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 20px; background: #f8f9fb; border-radius: 12px; }
+
+    .controles-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 20px; background: #f8f9fb; border-radius: 12px; gap: 16px; flex-wrap: wrap; }
     .fecha-evento { display: flex; align-items: center; gap: 12px; }
     .fecha-evento label { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; color: #4a5568; letter-spacing: 1px; }
     .fecha-evento input { padding: 10px 14px; border: 2px solid #e0e4ea; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; color: #1a3a6b; }
     .btn-generar-todos { background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; border: none; padding: 12px 24px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(26,92,168,0.3); }
     .btn-generar-todos:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.5); }
-    
-    /* Tabla */
+
     .participantes-tabla { width: 100%; border-collapse: separate; border-spacing: 0; border: 2px solid #e0e4ea; border-radius: 12px; overflow: hidden; }
     .participantes-tabla thead { background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); }
     .participantes-tabla th { padding: 14px; text-align: left; font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; color: #ffffff; letter-spacing: 1px; text-transform: uppercase; }
@@ -50,14 +39,21 @@
     .participantes-tabla tbody tr:hover { background: #e8f4ff; }
     .participantes-tabla td { padding: 14px; font-size: 13px; color: #2a3f5f; border-bottom: 1px solid #e0e4ea; font-family: 'Exo 2', sans-serif; font-weight: 600; }
     .participantes-tabla tbody tr:last-child td { border-bottom: none; }
-    
+
+    /* Fila de miembro con fondo ligeramente diferente */
+    .participantes-tabla tbody tr.fila-miembro { background: #f0f7ff; }
+    .participantes-tabla tbody tr.fila-miembro:nth-child(even) { background: #e8f2ff; }
+    .participantes-tabla tbody tr.fila-miembro:hover { background: #d8ecff; }
+
     .tipo-select { padding: 8px 12px; border: 2px solid #e0e4ea; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; color: #1a3a6b; cursor: pointer; }
     .btn-preview { background: #5bc8f0; color: #0f3566; border: none; padding: 8px 16px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .btn-preview:hover { background: #90dcff; transform: translateY(-1px); }
-    
+
+    .badge-capitan { display: inline-block; background: #1a5ca8; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
+    .badge-miembro { display: inline-block; background: #5bc8f0; color: #0f3566; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
+
     .vacio-msg { text-align: center; padding: 60px 20px; color: #7a7a8c; font-size: 14px; }
-    
-    /* Toast */
+
     .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); border-left: 5px solid #3dd68c; color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 0.84rem; font-weight: 600; padding: 14px 18px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 320px; }
     .toast.show { transform: translateY(0); opacity: 1; }
   </style>
@@ -76,11 +72,10 @@
       <div class="page-hero-badge-dot"></div>
       SucreBot 2026 · Staff
     </div>
-    <h2>GENERAR <span>CERTIFICADOS</span></h2>
-    <p>Genera certificados para participantes aprobados</p>
+    <h2>GENERAR <span style="color:#1a5ca8;">CERTIFICADOS</span></h2>
+    <p>Genera certificados para participantes aprobados — incluye todos los integrantes del equipo</p>
   </div>
-  
-  <!-- ACCESO DENEGADO -->
+
   <div id="acceso-denegado" style="display:none;">
     <div class="acceso-denegado">
       <div class="acceso-denegado-icon">🔒</div>
@@ -89,9 +84,7 @@
     </div>
   </div>
 
-  <!-- CONTENEDOR PRINCIPAL -->
   <div id="contenido-staff" style="display:none;">
-    
     <div class="controles-top">
       <div class="fecha-evento">
         <label>📅 FECHA DEL EVENTO:</label>
@@ -106,7 +99,7 @@
       <thead>
         <tr>
           <th>ROBOT</th>
-          <th>PARTICIPANTE</th>
+          <th>INTEGRANTE</th>
           <th>CATEGORÍA</th>
           <th>INSTITUCIÓN</th>
           <th>TIPO CERTIFICADO</th>
@@ -114,17 +107,13 @@
         </tr>
       </thead>
       <tbody id="tabla-body">
-        <tr>
-          <td colspan="6" class="vacio-msg">Cargando participantes...</td>
-        </tr>
+        <tr><td colspan="6" class="vacio-msg">Cargando participantes...</td></tr>
       </tbody>
     </table>
-
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
 <div data-include="../shared/components/footer.html"></div>
 
 <script src="../shared/js/load-components.js"></script>
@@ -133,25 +122,22 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  const STAFF_EMAILS_CERTIFICADOS = ['ftipantocta@tecnologicosucre.edu.ec', 'sucrebotclub@tecnologicosucre.edu.ec'];
+  const STAFF_EMAILS_CERTIFICADOS = [
+    'ftipantocta@tecnologicosucre.edu.ec',
+    'sucrebotclub@tecnologicosucre.edu.ec',
+    'vandrade@tecnologicosucre.edu.ec'
+  ];
   let participantesAprobados = [];
 
-  // Verificar acceso al cargar componentes
   document.addEventListener('componentsLoaded', function() {
     const savedUser = localStorage.getItem('sucrebot_user');
-    if (!savedUser) {
-      document.getElementById('acceso-denegado').style.display = 'block';
-      return;
-    }
-    
+    if (!savedUser) { document.getElementById('acceso-denegado').style.display = 'block'; return; }
     try {
       const userData = JSON.parse(savedUser);
       if (!STAFF_EMAILS_CERTIFICADOS.includes(userData.email)) {
         document.getElementById('acceso-denegado').style.display = 'block';
         return;
       }
-      
-      // Usuario es staff
       document.getElementById('contenido-staff').style.display = 'block';
       cargarParticipantes();
     } catch (e) {
@@ -163,79 +149,101 @@
     try {
       const response = await fetch(GAS_URL + '?action=getParticipantes');
       const todos = await response.json();
-      
       participantesAprobados = todos.filter(p => p.aprobado === 'APROBADO');
-      
+
       const tbody = document.getElementById('tabla-body');
       if (participantesAprobados.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="vacio-msg">No hay participantes aprobados aún</td></tr>';
         return;
       }
-      
-      tbody.innerHTML = participantesAprobados.map((p, idx) => `
-        <tr>
-          <td>${p.robot || '—'}</td>
-          <td>${p.nombre || '—'}</td>
-          <td>${p.categoria || '—'}</td>
-          <td>${p.institucion || '—'}</td>
-          <td>
-            <select class="tipo-select" id="tipo-${idx}">
-              <option value="participacion">🏅 Participación</option>
-              <option value="1er">🥇 Primer Lugar</option>
-              <option value="2do">🥈 Segundo Lugar</option>
-              <option value="3er">🥉 Tercer Lugar</option>
-            </select>
-          </td>
-          <td>
-            <button class="btn-preview" onclick="previewCertificado(${idx})">👁️ Preview</button>
-          </td>
-        </tr>
-      `).join('');
-      
+
+      const filas = [];
+      participantesAprobados.forEach((p, idx) => {
+        // Construir lista de integrantes
+        const integrantes = [{ nombre: p.nombre, esCapitan: true }];
+        if (p.miembro2 && p.miembro2.trim()) integrantes.push({ nombre: p.miembro2.trim(), esCapitan: false });
+        if (p.miembro3 && p.miembro3.trim()) integrantes.push({ nombre: p.miembro3.trim(), esCapitan: false });
+
+        integrantes.forEach((integrante, mIdx) => {
+          const badge = integrante.esCapitan
+            ? '<span class="badge-capitan">Capitán</span>'
+            : '<span class="badge-miembro">Miembro ' + (mIdx + 1) + '</span>';
+          const filaClass = integrante.esCapitan ? '' : ' class="fila-miembro"';
+
+          filas.push(`
+            <tr${filaClass}>
+              <td>${mIdx === 0 ? (p.robot || '—') : ''}</td>
+              <td>${integrante.nombre}${badge}</td>
+              <td>${mIdx === 0 ? (p.categoria || '—') : ''}</td>
+              <td>${mIdx === 0 ? (p.institucion || '—') : ''}</td>
+              <td>
+                <select class="tipo-select" id="tipo-${idx}-${mIdx}">
+                  <option value="participacion">🏅 Participación</option>
+                  <option value="1er">🥇 Primer Lugar</option>
+                  <option value="2do">🥈 Segundo Lugar</option>
+                  <option value="3er">🥉 Tercer Lugar</option>
+                </select>
+              </td>
+              <td>
+                <button class="btn-preview" onclick="previewCertificado(${idx}, '${integrante.nombre.replace(/'/g, "\\'")}', null, ${mIdx})">
+                  👁️ Preview
+                </button>
+              </td>
+            </tr>
+          `);
+        });
+      });
+
+      tbody.innerHTML = filas.join('');
+
     } catch (e) {
       console.error('Error al cargar participantes:', e);
       showToast('Error al cargar participantes: ' + e.message);
     }
   }
 
-  // NOTA: La función previewCertificado() está definida en certificados.js
-  // NO la redefinimos aquí para evitar conflictos
-
   async function generarTodos() {
-    if (!confirm(`¿Generar certificados de PARTICIPACIÓN para ${participantesAprobados.length} participantes?`)) {
-      return;
-    }
-    
+    // Contar total de integrantes
+    let totalIntegrantes = 0;
+    participantesAprobados.forEach(p => {
+      totalIntegrantes++;
+      if (p.miembro2 && p.miembro2.trim()) totalIntegrantes++;
+      if (p.miembro3 && p.miembro3.trim()) totalIntegrantes++;
+    });
+
+    if (!confirm(`¿Generar certificados de PARTICIPACIÓN para ${totalIntegrantes} integrantes (de ${participantesAprobados.length} equipos/participantes)?`)) return;
+
     showToast('⏳ Generando certificados...');
-    
     const fechaEvento = document.getElementById('fecha-evento').value;
     let generados = 0;
-    
+
     try {
       for (const p of participantesAprobados) {
-        const data = {
-          action: 'guardarCertificado',
-          correo: p.correo,
-          nombre_completo: p.nombre,
-          categoria: p.categoria,
-          institucion: p.institucion,
-          evento: 'SucreBot 2026',
-          fecha_evento: fechaEvento,
-          tipo_certificado: 'participacion'
-        };
-        
-        const response = await fetch(GAS_URL, {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        });
-        
-        const result = await response.json();
-        if (result.ok) generados++;
+        const integrantes = [p.nombre];
+        if (p.miembro2 && p.miembro2.trim()) integrantes.push(p.miembro2.trim());
+        if (p.miembro3 && p.miembro3.trim()) integrantes.push(p.miembro3.trim());
+
+        for (const nombre of integrantes) {
+          const data = {
+            action: 'guardarCertificado',
+            correo: p.correo,
+            nombre_completo: nombre,
+            categoria: p.categoria,
+            institucion: p.institucion,
+            evento: 'SucreBot 2026',
+            fecha_evento: fechaEvento,
+            tipo_certificado: 'participacion'
+          };
+          const response = await fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+          });
+          const result = await response.json();
+          if (result.ok) generados++;
+        }
       }
-      
       showToast(`✅ ${generados} certificados generados correctamente`);
-      
     } catch (e) {
       console.error('Error al generar certificados:', e);
       showToast('❌ Error al generar certificados: ' + e.message);
