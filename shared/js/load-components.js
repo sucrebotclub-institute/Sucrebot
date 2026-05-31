@@ -159,7 +159,8 @@ async function loadComponents() {
            currentPath.includes('/ESCANER-SOCCER/') ||
            currentPath.includes('/PANTALLA/') ||
            currentPath.includes('/RESULTADOS/') ||
-           currentPath.includes('/GENERAR-CERTIFICADOS/')) {
+           currentPath.includes('/GENERAR-CERTIFICADOS/') ||
+           currentPath.includes('/CERTIFICADOS/')) {
   authPath = '../shared/js/auth.js';
     } else {
       // Por defecto (raíz o páginas no especificadas)
