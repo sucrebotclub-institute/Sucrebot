@@ -51,7 +51,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      width: 100%; height: 100%;
+      width: 100%;
       background: var(--off-white);
       color: var(--text);
       font-family: var(--font-body);
@@ -62,12 +62,13 @@
        LAYOUT PRINCIPAL
     ══════════════════════════════════════ */
     .pant-wrapper {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
+      position: fixed;
+      top: 0; /* JS ajustará esto al alto real del nav */
+      left: 0; right: 0; bottom: 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      z-index: 10;
     }
 
     /* ── Topbar ── */
@@ -753,6 +754,9 @@
     body.modo-tv #shared-footer {
       display: none !important;
     }
+    body.modo-tv .pant-wrapper {
+      top: 0 !important;
+    }
 
     .esc-hint {
       position: fixed;
@@ -1203,6 +1207,27 @@ async function cargarDatos() {
 
 cargarDatos();
 setInterval(cargarDatos, 5000);
+
+/* ── Ajuste dinámico del top según altura del nav ── */
+function ajustarTop() {
+  const nav = document.querySelector('.sticky-header');
+  const wrapper = document.querySelector('.pant-wrapper');
+  if (!wrapper) return;
+  if (document.body.classList.contains('modo-tv')) {
+    wrapper.style.top = '0px';
+    return;
+  }
+  const h = nav ? nav.getBoundingClientRect().height : 0;
+  wrapper.style.top = h + 'px';
+}
+
+// Ajustar inmediatamente y cuando carguen los componentes
+ajustarTop();
+document.addEventListener('componentsLoaded', ajustarTop);
+window.addEventListener('resize', ajustarTop);
+// También con un pequeño delay para que el nav termine de renderizarse
+setTimeout(ajustarTop, 300);
+setTimeout(ajustarTop, 800);
 </script>
 </body>
 </html>
