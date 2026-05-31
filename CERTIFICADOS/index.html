@@ -24,8 +24,8 @@
     .filtros-bar { display: flex; gap: 14px; align-items: center; margin-bottom: 28px; flex-wrap: wrap; background: #f8f9fb; padding: 16px 20px; border-radius: 12px; border: 1px solid #e0e4ea; }
     .filtros-bar label { font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; white-space: nowrap; }
     .filtro-select, .busqueda-input { padding: 10px 14px; border: 2px solid #e0e4ea; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; color: #1a3a6b; outline: none; transition: border-color 0.2s; background: #ffffff; }
-    .filtro-select { cursor: pointer; min-width: 220px; }
-    .busqueda-input { flex: 1; min-width: 200px; }
+    .filtro-select { cursor: pointer; min-width: 180px; }
+    .busqueda-input { flex: 1; min-width: 180px; }
     .filtro-select:focus, .busqueda-input:focus { border-color: #1a5ca8; }
     .busqueda-input::placeholder { color: #aab0be; font-weight: 400; }
 
@@ -48,6 +48,7 @@
     .cert-nombre { font-family: 'Exo 2', sans-serif; font-size: 19px; font-weight: 900; color: #1a3a6b; }
     .cert-categoria { font-size: 13px; color: #1a5ca8; font-weight: 700; margin-top: 2px; }
     .cert-institucion { font-size: 12px; color: #7a7a8c; margin-top: 2px; }
+    .cert-evento { font-size: 11px; color: #aab0be; font-family: 'Orbitron', monospace; letter-spacing: 1px; margin-top: 2px; }
     .cert-fecha { font-size: 11px; color: #aab0be; font-family: 'Exo 2', sans-serif; }
 
     .btn-ver-diploma { display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; border: none; padding: 12px 20px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration: none; box-shadow: 0 4px 12px rgba(26,92,168,0.3); }
@@ -84,15 +85,20 @@
   <div class="page-hero">
     <div class="page-hero-badge">
       <div class="page-hero-badge-dot"></div>
-      SucreBot 2026 · Certificados
+      SucreBot · Certificados
     </div>
     <h2>CERTIFICADOS DE <span>PARTICIPACIÓN</span></h2>
-    <p>Busca y descarga tu diploma del Torneo SucreBot 2026</p>
+    <p>Busca y descarga tu diploma del Torneo SucreBot</p>
   </div>
 
   <div class="filtros-bar">
-    <label>🔍 FILTRAR:</label>
-    <input type="text" class="busqueda-input" id="busqueda" placeholder="Busca por nombre o robot...">
+    <label>🏆 EDICIÓN:</label>
+    <select class="filtro-select" id="filtro-evento">
+      <option value="">Todas las ediciones</option>
+      <option value="SucreBot 2026" selected>SucreBot 2026</option>
+    </select>
+    <label>🔍 BUSCAR:</label>
+    <input type="text" class="busqueda-input" id="busqueda" placeholder="Nombre, robot o institución...">
     <label>📂 CATEGORÍA:</label>
     <select class="filtro-select" id="filtro-categoria">
       <option value="">Todas las categorías</option>
@@ -152,7 +158,7 @@
         const certs = await resCerts.json();
         if (Array.isArray(certs) && certs.length > 0) {
           todosCerts = certs;
-          renderCerts(todosCerts);
+          filtrar();
           return;
         }
       } catch(e) {
@@ -162,7 +168,6 @@
       // Fallback: participantes aprobados
       const resParts = await fetch(GAS_URL + '?action=getParticipantes');
       const participantes = await resParts.json();
-
       if (!Array.isArray(participantes)) throw new Error('Respuesta inválida');
 
       todosCerts = participantes
@@ -171,6 +176,7 @@
           nombre_completo: p.nombre,
           categoria: p.categoria,
           institucion: p.institucion,
+          evento: 'SucreBot 2026',
           tipo_certificado: 'participacion',
           archivoUrl: '',
           codigo_verificacion: '',
@@ -178,7 +184,7 @@
           robot: p.robot
         }));
 
-      renderCerts(todosCerts);
+      filtrar();
 
     } catch (e) {
       console.error('Error:', e);
@@ -186,6 +192,26 @@
         '<div class="vacio-msg"><span class="vacio-icon">⚠️</span>Error al cargar certificados.<br>Intenta nuevamente más tarde.</div>';
       document.getElementById('contador').textContent = '';
     }
+  }
+
+  // Extraer ediciones únicas de los certificados y poblar el select
+  function actualizarFiltroEdiciones() {
+    const ediciones = [...new Set(todosCerts.map(c => c.evento).filter(Boolean))].sort().reverse();
+    const select = document.getElementById('filtro-evento');
+    const valorActual = select.value;
+
+    // Limpiar y reconstruir opciones
+    select.innerHTML = '<option value="">Todas las ediciones</option>';
+    ediciones.forEach(ed => {
+      const opt = document.createElement('option');
+      opt.value = ed;
+      opt.textContent = ed;
+      if (ed === valorActual || ed === 'SucreBot 2026') opt.selected = true;
+      select.appendChild(opt);
+    });
+
+    // Si no había selección, pre-seleccionar SucreBot 2026
+    if (!select.value) select.value = 'SucreBot 2026';
   }
 
   function renderCerts(lista) {
@@ -234,6 +260,7 @@
             <div class="cert-nombre">${cert.nombre_completo || '—'}</div>
             <div class="cert-categoria">📂 ${cert.categoria || '—'}</div>
             <div class="cert-institucion">🎓 ${cert.institucion || '—'}</div>
+            ${cert.evento ? '<div class="cert-evento">🏆 ' + cert.evento + '</div>' : ''}
           </div>
           ${cert.fecha_generacion ? '<div class="cert-fecha">Generado: ' + cert.fecha_generacion + '</div>' : ''}
           ${boton}
@@ -243,18 +270,23 @@
   }
 
   function filtrar() {
+    // Actualizar ediciones disponibles si hay datos
+    if (todosCerts.length > 0) actualizarFiltroEdiciones();
+
     const busqueda  = document.getElementById('busqueda').value.toLowerCase().trim();
     const categoria = document.getElementById('filtro-categoria').value;
     const tipo      = document.getElementById('filtro-tipo').value;
+    const evento    = document.getElementById('filtro-evento').value;
 
     const filtrados = todosCerts.filter(c => {
-      const matchBusqueda = !busqueda ||
+      const matchBusqueda  = !busqueda  ||
         (c.nombre_completo || '').toLowerCase().includes(busqueda) ||
         (c.robot || '').toLowerCase().includes(busqueda) ||
         (c.institucion || '').toLowerCase().includes(busqueda);
       const matchCategoria = !categoria || c.categoria === categoria;
       const matchTipo      = !tipo      || c.tipo_certificado === tipo;
-      return matchBusqueda && matchCategoria && matchTipo;
+      const matchEvento    = !evento    || (c.evento || '') === evento;
+      return matchBusqueda && matchCategoria && matchTipo && matchEvento;
     });
 
     renderCerts(filtrados);
@@ -263,6 +295,7 @@
   document.getElementById('busqueda').addEventListener('input', filtrar);
   document.getElementById('filtro-categoria').addEventListener('change', filtrar);
   document.getElementById('filtro-tipo').addEventListener('change', filtrar);
+  document.getElementById('filtro-evento').addEventListener('change', filtrar);
 
   function showToast(msg) {
     const t = document.getElementById('toast');
