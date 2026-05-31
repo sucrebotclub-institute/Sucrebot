@@ -5,62 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SucreBot — Certificados</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="../shared/js/config.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
+    :root {
+      --c-blue: #1a5ca8; --c-blue-dark: #0e2a5a; --c-blue-deep: #0a193c;
+      --c-surface: #0f3566; --c-surface2: #1a4580; --c-surface3: #2a5a9e;
+      --c-cyan: #5bc8f0; --c-cyan-bright: #90dcff;
+      --c-text: #e8f0ff; --c-muted: rgba(255,255,255,0.6);
+    }
+
     body { background: #ffffff !important; color: #1a1c28 !important; }
+
     .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; position: relative; }
 
-    .page-hero { padding: 40px 0 32px; border-bottom: 1px solid #e0e4ea; margin-bottom: 32px; }
-    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
-    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
+    /* ── HERO ── */
+    .page-hero { padding: 40px 0 32px; margin-bottom: 32px; position: relative; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(91,200,240,0.15); border: 1px solid rgba(91,200,240,0.4); color: var(--c-cyan); font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-cyan); animation: blink 1.6s infinite; box-shadow: 0 0 6px var(--c-cyan); }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
-    .page-hero h2 { font-family: 'Exo 2', sans-serif; font-size: 2.6rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #1a3a6b; line-height: 1; }
-    .page-hero h2 span { color: #1a5ca8; }
-    .page-hero p { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #4a5568; margin-top: 10px; }
+    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #ffffff; line-height: 1; position: relative; padding-bottom: 8px; }
+    .page-hero h2::after { content: ""; position: absolute; bottom: 0; left: 0; width: 120px; height: 3px; background: linear-gradient(90deg, transparent 0%, var(--c-cyan) 50%, transparent 100%); border-radius: 2px; }
+    .page-hero h2 span { color: var(--c-cyan); }
+    .page-hero p { font-size: 13px; color: var(--c-muted); letter-spacing: 0.5px; margin-top: 14px; }
 
-    .filtros-bar { display: flex; gap: 14px; align-items: center; margin-bottom: 28px; flex-wrap: wrap; background: #f8f9fb; padding: 16px 20px; border-radius: 12px; border: 1px solid #e0e4ea; }
-    .filtros-bar label { font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; white-space: nowrap; }
-    .filtro-select, .busqueda-input { padding: 10px 14px; border: 2px solid #e0e4ea; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; color: #1a3a6b; outline: none; transition: border-color 0.2s; background: #ffffff; }
+    /* ── FILTROS ── */
+    .filtros-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 28px; flex-wrap: wrap; background: linear-gradient(135deg, var(--c-surface) 0%, var(--c-surface2) 100%); padding: 16px 20px; border-radius: 12px; border: 1px solid rgba(91,200,240,0.15); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .filtros-bar label { font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; color: var(--c-cyan); letter-spacing: 1px; white-space: nowrap; }
+    .filtro-select, .busqueda-input { padding: 9px 14px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; color: var(--c-text); outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: rgba(10,25,60,0.6); }
     .filtro-select { cursor: pointer; min-width: 180px; }
     .busqueda-input { flex: 1; min-width: 180px; }
-    .filtro-select:focus, .busqueda-input:focus { border-color: #1a5ca8; }
-    .busqueda-input::placeholder { color: #aab0be; font-weight: 400; }
+    .filtro-select:focus, .busqueda-input:focus { border-color: var(--c-cyan); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .busqueda-input::placeholder { color: rgba(255,255,255,0.3); }
+    .filtro-select option { background: var(--c-blue-deep); color: var(--c-text); }
+    .filtro-select optgroup { background: var(--c-blue-deep); color: var(--c-cyan); }
 
-    .resultados-contador { font-family: 'Orbitron', monospace; font-size: 11px; color: #7a7a8c; margin-bottom: 20px; letter-spacing: 1px; }
-    .resultados-contador span { color: #1a5ca8; font-weight: 700; }
+    /* ── CONTADOR ── */
+    .resultados-contador { font-family: 'Orbitron', monospace; font-size: 11px; color: var(--c-muted); margin-bottom: 20px; letter-spacing: 1px; }
+    .resultados-contador span { color: var(--c-cyan); font-weight: 700; }
 
+    /* ── GRID ── */
     .certs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
 
-    .cert-card { background: #ffffff; border: 2px solid #e0e4ea; border-radius: 16px; padding: 22px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 14px; }
-    .cert-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(26,92,168,0.15); border-color: #1a5ca8; }
+    .cert-card { background: linear-gradient(135deg, var(--c-surface3) 0%, var(--c-surface2) 100%); border: 1.5px solid rgba(91,200,240,0.15); border-radius: 16px; padding: 22px; transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 14px; }
+    .cert-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(91,200,240,0.2); border-color: rgba(91,200,240,0.4); }
 
     .cert-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     .cert-tipo { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
-    .cert-tipo.participacion { background: #e8f4ff; color: #1a5ca8; }
-    .cert-tipo.primer  { background: #ffd700; color: #8b6914; }
-    .cert-tipo.segundo { background: #d8d8d8; color: #4a4a4a; }
-    .cert-tipo.tercer  { background: #cd7f32; color: #ffffff; }
-    .cert-codigo { font-family: 'Exo 2', monospace; font-size: 10px; color: #aab0be; background: #f4f7fb; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+    .cert-tipo.participacion { background: rgba(91,200,240,0.2); color: var(--c-cyan-bright); border: 1px solid rgba(91,200,240,0.3); }
+    .cert-tipo.primer  { background: rgba(255,215,0,0.2);  color: #ffd700; border: 1px solid rgba(255,215,0,0.4); }
+    .cert-tipo.segundo { background: rgba(192,192,192,0.2); color: #d8d8d8; border: 1px solid rgba(192,192,192,0.4); }
+    .cert-tipo.tercer  { background: rgba(205,127,50,0.2);  color: #e89a5d; border: 1px solid rgba(205,127,50,0.4); }
+    .cert-codigo { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
 
-    .cert-nombre { font-family: 'Exo 2', sans-serif; font-size: 19px; font-weight: 900; color: #1a3a6b; }
-    .cert-categoria { font-size: 13px; color: #1a5ca8; font-weight: 700; margin-top: 2px; }
-    .cert-institucion { font-size: 12px; color: #7a7a8c; margin-top: 2px; }
-    .cert-evento { font-size: 11px; color: #aab0be; font-family: 'Orbitron', monospace; letter-spacing: 1px; margin-top: 2px; }
-    .cert-fecha { font-size: 11px; color: #aab0be; font-family: 'Exo 2', sans-serif; }
+    .cert-nombre { font-family: 'Exo 2', sans-serif; font-size: 19px; font-weight: 900; color: #ffffff; }
+    .cert-categoria { font-size: 13px; color: var(--c-cyan); font-weight: 700; margin-top: 2px; }
+    .cert-institucion { font-size: 12px; color: var(--c-muted); margin-top: 2px; }
+    .cert-evento { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'Orbitron', monospace; letter-spacing: 1px; margin-top: 4px; }
+    .cert-fecha { font-size: 11px; color: rgba(255,255,255,0.35); font-family: 'Exo 2', sans-serif; }
 
-    .btn-ver-diploma { display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; border: none; padding: 12px 20px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration: none; box-shadow: 0 4px 12px rgba(26,92,168,0.3); }
-    .btn-ver-diploma:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.5); }
-    .btn-ver-diploma.pendiente { background: #e0e4ea; color: #aab0be; cursor: not-allowed; box-shadow: none; }
+    .btn-ver-diploma { display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, var(--c-cyan) 0%, #2a8ec8 100%); color: var(--c-blue-deep); border: none; padding: 12px 20px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-decoration: none; box-shadow: 0 4px 16px rgba(91,200,240,0.3); }
+    .btn-ver-diploma:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(91,200,240,0.5); }
+    .btn-ver-diploma.pendiente { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); cursor: not-allowed; box-shadow: none; border: 1px solid rgba(255,255,255,0.1); }
     .btn-ver-diploma.pendiente:hover { transform: none; }
 
-    .vacio-msg { text-align: center; padding: 80px 20px; color: #7a7a8c; font-size: 14px; grid-column: 1 / -1; }
+    .vacio-msg { text-align: center; padding: 80px 20px; color: var(--c-muted); font-size: 14px; grid-column: 1 / -1; }
     .vacio-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; display: block; }
 
-    .loading { text-align: center; padding: 60px 20px; grid-column: 1 / -1; }
-    .loading-spinner { width: 40px; height: 40px; border: 4px solid #e0e4ea; border-top-color: #1a5ca8; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    .loading { text-align: center; padding: 60px 20px; grid-column: 1 / -1; color: var(--c-muted); }
+    .loading-spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--c-cyan); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 12px; border-left: 5px solid #3dd68c; color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; padding: 14px 18px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 320px; }
@@ -70,6 +85,7 @@
       .filtros-bar { flex-direction: column; align-items: stretch; }
       .filtro-select, .busqueda-input { width: 100%; min-width: unset; }
       .certs-grid { grid-template-columns: 1fr; }
+      .page-hero h2 { font-size: 2rem; }
     }
   </style>
 </head>
@@ -152,7 +168,6 @@
 
   async function cargarTodosCertificados() {
     try {
-      // Intentar primero obtenerTodosCertificados
       try {
         const resCerts = await fetch(GAS_URL + '?action=obtenerTodosCertificados');
         const certs = await resCerts.json();
@@ -165,7 +180,6 @@
         console.warn('obtenerTodosCertificados no disponible, usando fallback');
       }
 
-      // Fallback: participantes aprobados
       const resParts = await fetch(GAS_URL + '?action=getParticipantes');
       const participantes = await resParts.json();
       if (!Array.isArray(participantes)) throw new Error('Respuesta inválida');
@@ -185,7 +199,6 @@
         }));
 
       filtrar();
-
     } catch (e) {
       console.error('Error:', e);
       document.getElementById('certs-grid').innerHTML =
@@ -194,24 +207,18 @@
     }
   }
 
-  // Extraer ediciones únicas de los certificados y poblar el select
   function actualizarFiltroEdiciones() {
     const ediciones = [...new Set(todosCerts.map(c => c.evento).filter(Boolean))].sort().reverse();
     const select = document.getElementById('filtro-evento');
     const valorActual = select.value;
-
-    // Limpiar y reconstruir opciones
     select.innerHTML = '<option value="">Todas las ediciones</option>';
     ediciones.forEach(ed => {
       const opt = document.createElement('option');
       opt.value = ed;
       opt.textContent = ed;
-      if (ed === valorActual || ed === 'SucreBot 2026') opt.selected = true;
       select.appendChild(opt);
     });
-
-    // Si no había selección, pre-seleccionar SucreBot 2026
-    if (!select.value) select.value = 'SucreBot 2026';
+    select.value = valorActual || 'SucreBot 2026';
   }
 
   function renderCerts(lista) {
@@ -270,9 +277,7 @@
   }
 
   function filtrar() {
-    // Actualizar ediciones disponibles si hay datos
     if (todosCerts.length > 0) actualizarFiltroEdiciones();
-
     const busqueda  = document.getElementById('busqueda').value.toLowerCase().trim();
     const categoria = document.getElementById('filtro-categoria').value;
     const tipo      = document.getElementById('filtro-tipo').value;
