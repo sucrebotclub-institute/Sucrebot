@@ -3,980 +3,1206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SucreBot — Pantalla en Vivo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <title>SucreBot 2026 — Pantalla en Vivo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@400;500;600;700;800&family=Orbitron:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../shared/js/config.js"></script>
   <style>
+    /* ══════════════════════════════════════
+       VARIABLES — PALETA OFICIAL SUCREBOT
+    ══════════════════════════════════════ */
     :root {
-      --bg:       #05060e;
-      --surface:  #0c0d1a;
-      --surface2: #121428;
-      --surface3: #181a35;
-      --border:   rgba(255,255,255,0.06);
-      --accent:   #1a5ca8;
-      --accent-light: #2d7de0;
-      --accent2:  #ff6b35;
-      --green:    #00ff88;
-      --green-dim:#00cc6a;
-      --red:      #ff3b3b;
-      --gold:     #FFD700;
-      --silver:   #C0C0C0;
-      --bronze:   #CD7F32;
-      --text:     #eaeaf5;
-      --muted:    #5a5a78;
-      --font-display: 'Orbitron', 'Exo 2', sans-serif;
-      --font-mono:    'Exo 2', sans-serif;
-      --font-body:    'Exo 2', sans-serif;
+      --blue:        #1a5ca8;
+      --blue-dark:   #0e2a5a;
+      --blue-mid:    #1a3a6e;
+      --blue-pale:   #e8f0fb;
+      --cyan:        #5bc8f0;
+      --cyan-bright: #90dcff;
+      --cyan-pale:   #e6f7fd;
+      --white:       #ffffff;
+      --off-white:   #f4f6fa;
+      --border:      #d0daea;
+      --border-dark: #b0c0d8;
+      --text:        #1a2540;
+      --text-mid:    #3a4a6a;
+      --muted:       #7a8aaa;
+      --gold:        #c8860a;
+      --gold-bg:     #fff8e6;
+      --gold-border: #e8c060;
+      --silver:      #5a6a80;
+      --silver-bg:   #f0f2f6;
+      --silver-border:#aab0c0;
+      --bronze:      #8a5020;
+      --bronze-bg:   #fdf0e6;
+      --bronze-border:#c89060;
+      --green:       #0a8a50;
+      --green-bg:    #e6f8f0;
+      --green-border:#60c898;
+      --red:         #c82020;
+      --red-bg:      #fef0f0;
+      --red-border:  #f09090;
+      --font-title:  'Bebas Neue', sans-serif;
+      --font-label:  'Orbitron', sans-serif;
+      --font-body:   'Exo 2', sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      width: 100%;
-      background: var(--bg);
+      width: 100%; height: 100%;
+      background: var(--off-white);
       color: var(--text);
       font-family: var(--font-body);
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
-    body { overflow-y: auto; }
-
-    /* ── Animated grid background ── */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(26,92,168,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(26,92,168,0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── Top glow ── */
-    body::after {
-      content: '';
-      position: fixed;
-      top: -200px; left: 50%;
-      transform: translateX(-50%);
-      width: 1200px; height: 500px;
-      background: radial-gradient(ellipse, rgba(26,92,168,0.1) 0%, transparent 65%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── PANTALLA WRAPPER ── */
-    .pantalla-wrapper {
-      min-height: 100vh;
+    /* ══════════════════════════════════════
+       LAYOUT PRINCIPAL
+    ══════════════════════════════════════ */
+    .pant-wrapper {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-top: 20px;
+      overflow: hidden;
     }
 
-    /* ── TOOLBAR ── */
-    .pantalla-bar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      padding: 12px 48px;
-      position: relative;
-      z-index: 2;
-      background: linear-gradient(180deg, rgba(5,6,14,0.9) 0%, rgba(5,6,14,0.5) 100%);
-      border-bottom: 1px solid rgba(26,92,168,0.1);
-    }
-
-    .btn-fullscreen {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-display);
-      font-size: 0.6rem;
-      font-weight: 600;
-      letter-spacing: 0.16em;
-      color: var(--accent-light);
-      background: rgba(26,92,168,0.08);
-      border: 1px solid rgba(26,92,168,0.2);
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.25s;
-      text-transform: uppercase;
-    }
-    .btn-fullscreen:hover {
-      background: rgba(26,92,168,0.18);
-      border-color: var(--accent-light);
-      box-shadow: 0 0 20px rgba(26,92,168,0.15), inset 0 0 20px rgba(26,92,168,0.05);
-    }
-    .btn-fullscreen svg {
-      width: 14px; height: 14px;
-      flex-shrink: 0;
-    }
-
-    /* ── ESC HINT ── */
-    .esc-hint {
-      position: fixed;
-      top: 18px; right: 18px;
-      font-family: var(--font-display);
-      font-size: 0.55rem;
-      font-weight: 600;
-      letter-spacing: 0.16em;
-      color: var(--muted);
-      background: rgba(12,13,26,0.95);
-      border: 1px solid var(--border);
-      padding: 8px 16px;
-      border-radius: 6px;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.4s;
-      pointer-events: none;
-      backdrop-filter: blur(8px);
-    }
-    .esc-hint.show { opacity: 1; }
-
-    /* ── SCREEN ── */
-    .screen {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      padding: 32px 48px 24px;
-      min-height: calc(100vh - 200px);
-    }
-
-    /* ── FULLSCREEN MODE ── */
-    body.pantalla-fullscreen .sticky-header,
-    body.pantalla-fullscreen #shared-footer,
-    body.pantalla-fullscreen .pantalla-bar {
-      display: none !important;
-    }
-    body.pantalla-fullscreen .screen {
-      min-height: 100vh;
-      padding-top: 32px;
-    }
-    body.pantalla-fullscreen { overflow: hidden; }
-    body.pantalla-fullscreen .pantalla-wrapper { padding-top: 0; }
-
-    /* ── HEADER ── */
-    .header {
+    /* ── Topbar ── */
+    .pant-topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 28px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid rgba(26,92,168,0.12);
-      position: relative;
+      padding: 0 36px;
+      height: 70px;
       flex-shrink: 0;
+      background: var(--blue);
+      box-shadow: 0 3px 16px rgba(14,42,90,0.18);
+      position: relative;
     }
 
-    /* Accent line under header */
-    .header::after {
+    /* Franja cyan bajo el topbar */
+    .pant-topbar::after {
       content: '';
       position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 120px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent-light), transparent);
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--cyan-bright), var(--cyan));
     }
 
-    .header-left {
+    .topbar-brand {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 14px;
     }
-    .header-left img {
-      width: 52px;
-      filter: drop-shadow(0 0 16px rgba(26,92,168,0.5));
+    .topbar-logo {
+      width: 42px;
+      filter: brightness(0) invert(1);
+      opacity: 0.92;
     }
-    .header-titles {}
-    .header-title {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      color: var(--text);
+    .topbar-name {
+      font-family: var(--font-title);
+      font-size: 2.2rem;
+      letter-spacing: 0.12em;
+      color: #fff;
       line-height: 1;
     }
-    .header-title span {
-      color: var(--accent-light);
-    }
-    .header-sub {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      font-weight: 400;
-      color: var(--muted);
-      letter-spacing: 0.18em;
-      margin-top: 6px;
+    .topbar-name span { color: var(--cyan); }
+    .topbar-sub {
+      font-family: var(--font-label);
+      font-size: 0.48rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.55);
+      margin-top: 5px;
     }
 
-    .header-right {
+    /* Centro: barra de rotación + dots */
+    .topbar-center {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 18px;
+    }
+    .rotation-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-width: 200px;
+    }
+    .rotation-label {
+      font-family: var(--font-label);
+      font-size: 0.44rem;
+      letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.45);
+    }
+    .rotation-bar-bg {
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .rotation-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--cyan-bright));
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.15s linear;
     }
 
-    /* ── LIVE BADGE ── */
+    .cat-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .cat-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cat-dot.tiene-datos {
+      background: rgba(255,255,255,0.35);
+      border-color: rgba(255,255,255,0.4);
+    }
+    .cat-dot.active {
+      background: var(--cyan);
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 6px rgba(91,200,240,0.6);
+      transform: scale(1.2);
+    }
+
+    /* Derecha: live badge + reloj + botón */
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
     .live-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-family: var(--font-display);
-      font-size: 0.6rem;
+      gap: 7px;
+      font-family: var(--font-label);
+      font-size: 0.52rem;
       font-weight: 700;
       letter-spacing: 0.18em;
-      color: var(--green);
-      background: rgba(0,255,136,0.06);
-      border: 1px solid rgba(0,255,136,0.2);
-      padding: 8px 16px;
-      border-radius: 6px;
+      color: #fff;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 7px 13px;
+      border-radius: 5px;
     }
     .live-dot {
-      width: 8px; height: 8px;
+      width: 7px; height: 7px;
       border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 8px rgba(0,255,136,0.6);
+      background: var(--cyan);
+      box-shadow: 0 0 6px var(--cyan);
       animation: blink 1.2s ease-in-out infinite;
     }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
 
-    .ronda-info {
-      text-align: right;
-    }
-    .ronda-label {
-      font-family: var(--font-display);
-      font-size: 1.4rem;
+    .topbar-clock {
+      font-family: var(--font-label);
+      font-size: 1.1rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
-      color: var(--text);
-      line-height: 1;
-    }
-    .cat-label {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--accent2);
       letter-spacing: 0.08em;
-      margin-top: 5px;
-    }
-
-    /* ── CATEGORÍAS TABS ── */
-    .cat-tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      flex-shrink: 0;
-      padding: 4px;
-      background: var(--surface);
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-    .cat-tab {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--muted);
-      font-family: var(--font-mono);
-      font-size: 0.66rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      padding: 9px 16px;
-      border-radius: 7px;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .cat-tab.tiene-datos {
-      color: var(--text);
-    }
-    .cat-tab.tiene-datos::after {
-      content: '';
-      position: absolute;
-      top: 6px; right: 6px;
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--accent-light);
-    }
-    .cat-tab.active {
-      background: var(--accent);
       color: #fff;
-      border-color: var(--accent-light);
-      box-shadow: 0 2px 12px rgba(26,92,168,0.3);
-    }
-    .cat-tab.active::after { display: none; }
-    .cat-tab:hover:not(.active) {
-      background: var(--surface2);
-      border-color: rgba(26,92,168,0.15);
-      color: var(--text);
     }
 
-    /* ── TABLA ── */
-    .tabla-wrap {
-      flex: 1;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-      background: var(--surface);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead tr {
-      background: var(--surface2);
-    }
-    thead th {
-      font-family: var(--font-display);
-      font-size: 0.58rem;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      color: var(--muted);
-      padding: 14px 20px;
-      text-align: left;
-      border-bottom: 1px solid rgba(26,92,168,0.1);
-      text-transform: uppercase;
-    }
-    thead th:first-child { border-radius: 12px 0 0 0; }
-    thead th:last-child  { border-radius: 0 12px 0 0; }
-    thead th.c { text-align: center; }
-
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      transition: background 0.3s;
-    }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: rgba(26,92,168,0.04); }
-
-    /* Podium rows */
-    tr.pos-1 { background: rgba(255,215,0,0.04); }
-    tr.pos-1:hover { background: rgba(255,215,0,0.07); }
-    tr.pos-2 { background: rgba(192,192,192,0.03); }
-    tr.pos-3 { background: rgba(205,127,50,0.03); }
-
-    td {
-      padding: 14px 20px;
-      vertical-align: middle;
-    }
-
-    /* Position column */
-    .td-pos { width: 72px; text-align: center; }
-    .pos-circle {
+    .btn-tv {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 42px; height: 42px;
-      border-radius: 10px;
-      font-family: var(--font-display);
-      font-size: 1.1rem;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-    }
-    .pc-1 {
-      background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.08));
-      color: var(--gold);
-      border: 1.5px solid rgba(255,215,0,0.4);
-      box-shadow: 0 0 20px rgba(255,215,0,0.15);
-    }
-    .pc-2 {
-      background: linear-gradient(135deg, rgba(192,192,192,0.15), rgba(192,192,192,0.06));
-      color: var(--silver);
-      border: 1.5px solid rgba(192,192,192,0.3);
-    }
-    .pc-3 {
-      background: linear-gradient(135deg, rgba(205,127,50,0.15), rgba(205,127,50,0.06));
-      color: var(--bronze);
-      border: 1.5px solid rgba(205,127,50,0.3);
-    }
-    .pc-n {
-      background: var(--surface2);
-      color: var(--muted);
-      border: 1px solid var(--border);
-    }
-
-    /* Robot column */
-    .td-robot { min-width: 200px; }
-    .robot-name {
-      font-family: var(--font-body);
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1.25;
-    }
-    tr.pos-1 .robot-name {
-      color: var(--gold);
-      text-shadow: 0 0 20px rgba(255,215,0,0.15);
-    }
-    .robot-inst {
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-top: 3px;
-      font-family: var(--font-mono);
-      letter-spacing: 0.02em;
-    }
-
-    /* Best time column */
-    .td-mejor { text-align: center; min-width: 150px; }
-    .tiempo-valor {
-      font-family: var(--font-display);
-      font-size: 1.6rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      color: var(--green);
-    }
-    tr.pos-1 .tiempo-valor {
-      font-size: 2rem;
-      color: var(--green);
-      text-shadow: 0 0 24px rgba(0,255,136,0.4);
-    }
-
-    /* Attempts column */
-    .td-intentos { min-width: 260px; }
-    .chips {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .chip {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
+      gap: 7px;
+      font-family: var(--font-label);
+      font-size: 0.48rem;
       font-weight: 600;
-      padding: 5px 10px;
-      border-radius: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      letter-spacing: 0.02em;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .chip.mejor {
-      background: rgba(0,255,136,0.1);
-      border-color: rgba(0,255,136,0.25);
-      color: var(--green);
+    .btn-tv:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .btn-tv svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    /* ── Cuerpo ── */
+    .pant-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      padding: 20px 28px 16px;
+      gap: 20px;
+      background: var(--off-white);
     }
 
-    /* ── FOOTER ── */
-    .footer {
+    /* ══════════════════════════════════════
+       PANEL IZQUIERDO — ACTIVO + CATEGORÍAS
+    ══════════════════════════════════════ */
+    .panel-izq {
+      width: 300px;
+      flex-shrink: 0;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Etiqueta de sección */
+    .section-label {
+      font-family: var(--font-label);
+      font-size: 0.46rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      text-transform: uppercase;
+      display: flex;
       align-items: center;
-      padding-top: 16px;
-      margin-top: 16px;
-      border-top: 1px solid rgba(26,92,168,0.08);
+      gap: 8px;
+    }
+    .section-label::before {
+      content: '';
+      width: 3px; height: 12px;
+      background: var(--cyan);
+      border-radius: 2px;
       flex-shrink: 0;
     }
-    .footer-left {
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
+
+    /* Card participante activo */
+    .card-activo {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-top: 3px solid var(--blue);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(26,92,168,0.06);
+      transition: border-color 0.3s;
     }
-    .footer-hora {
-      font-family: var(--font-display);
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--accent-light);
-      letter-spacing: 0.12em;
+    .card-activo.tiene-activo {
+      border-top-color: var(--cyan);
     }
 
-    /* ── LIVE CRONO OVERLAY ── */
-    .live-crono {
-      position: fixed;
-      bottom: 80px; right: 48px;
-      background: rgba(12,13,26,0.95);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(0,255,136,0.25);
-      border-radius: 12px;
-      padding: 18px 24px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(0,255,136,0.1);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      pointer-events: none;
-      z-index: 100;
+    .activo-cat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-label);
+      font-size: 0.44rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--blue);
+      background: var(--blue-pale);
+      border: 1px solid rgba(26,92,168,0.2);
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      align-self: flex-start;
     }
-    .live-crono.show {
-      opacity: 1;
-      transform: translateY(0);
+    .activo-cat-badge .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: blink 1s infinite;
     }
-    .live-crono-label {
-      font-family: var(--font-display);
-      font-size: 0.5rem;
+
+    .activo-robot {
+      font-family: var(--font-title);
+      font-size: 1.8rem;
+      letter-spacing: 0.06em;
+      color: var(--blue-dark);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .activo-nombre {
+      font-size: 0.85rem;
       font-weight: 600;
+      color: var(--blue);
+      margin-bottom: 3px;
+    }
+    .activo-inst {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .activo-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 0;
+      opacity: 0.5;
+    }
+    .activo-empty-icon { font-size: 2rem; }
+    .activo-empty-text {
+      font-family: var(--font-label);
+      font-size: 0.48rem;
       letter-spacing: 0.2em;
       color: var(--muted);
-      margin-bottom: 4px;
-    }
-    .live-crono-robot {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--accent-light);
-      font-family: var(--font-mono);
-    }
-    .live-crono-tiempo {
-      font-family: var(--font-display);
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--green);
-      letter-spacing: 0.06em;
-      margin-top: 6px;
-      text-shadow: 0 0 20px rgba(0,255,136,0.35);
     }
 
-    /* ── EMPTY STATE ── */
-    .empty-state {
+    /* Separador */
+    .divider {
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Lista de categorías */
+    .cats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      flex: 1;
+    }
+    .cats-list::-webkit-scrollbar { display: none; }
+
+    .cat-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .cat-item:hover {
+      background: var(--blue-pale);
+      border-color: rgba(26,92,168,0.25);
+    }
+    .cat-item.active {
+      background: var(--blue);
+      border-color: var(--blue-dark);
+    }
+
+    .cat-ind {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--border-dark);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .cat-item.tiene-activo .cat-ind {
+      background: var(--green);
+      box-shadow: 0 0 5px rgba(10,138,80,0.4);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    .cat-item.tiene-datos:not(.active) .cat-ind {
+      background: var(--cyan);
+    }
+    .cat-item.active .cat-ind {
+      background: var(--cyan-bright);
+    }
+
+    .cat-item-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-mid);
+      flex: 1;
+      line-height: 1.2;
+    }
+    .cat-item.active .cat-item-name { color: #fff; }
+
+    .cat-item-n {
+      font-family: var(--font-label);
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: var(--white);
+      background: var(--blue);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .cat-item.active .cat-item-n {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* ══════════════════════════════════════
+       PANEL DERECHO — RANKING
+    ══════════════════════════════════════ */
+    .panel-ranking {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header del ranking */
+    .ranking-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .ranking-header::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0;
+      width: 120px; height: 2px;
+      background: var(--cyan);
+    }
+
+    .ranking-cat-name {
+      font-family: var(--font-title);
+      font-size: 2.4rem;
+      letter-spacing: 0.08em;
+      color: var(--blue-dark);
+      line-height: 1;
+    }
+    .ranking-cat-name span { color: var(--blue); }
+
+    .ranking-meta { text-align: right; }
+    .ranking-ronda {
+      font-family: var(--font-label);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+    }
+    .ranking-count {
+      font-size: 0.62rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-top: 3px;
+    }
+
+    /* Tabla */
+    .ranking-tabla {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(26,92,168,0.06);
+    }
+
+    .tabla-thead {
+      display: grid;
+      grid-template-columns: 68px 1fr 160px 220px;
+      background: var(--blue);
+      border-radius: 9px 9px 0 0;
+      flex-shrink: 0;
+    }
+    .th-cell {
+      font-family: var(--font-label);
+      font-size: 0.48rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.7);
+      padding: 12px 16px;
+      text-transform: uppercase;
+    }
+    .th-cell.c { text-align: center; }
+
+    .tabla-body {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-dark) transparent;
+    }
+
+    /* Filas */
+    .ranking-row {
+      display: grid;
+      grid-template-columns: 68px 1fr 160px 220px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      transition: background 0.15s;
+      animation: rowIn 0.3s ease-out backwards;
+    }
+    .ranking-row:last-child { border-bottom: none; }
+    .ranking-row:hover { background: var(--off-white); }
+
+    /* Podio */
+    .ranking-row.p1 { background: var(--gold-bg); }
+    .ranking-row.p1:hover { background: #fff4d0; }
+    .ranking-row.p2 { background: var(--silver-bg); }
+    .ranking-row.p3 { background: var(--bronze-bg); }
+
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateX(10px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .ranking-row:nth-child(1) { animation-delay: 0.04s; }
+    .ranking-row:nth-child(2) { animation-delay: 0.08s; }
+    .ranking-row:nth-child(3) { animation-delay: 0.12s; }
+    .ranking-row:nth-child(4) { animation-delay: 0.16s; }
+    .ranking-row:nth-child(5) { animation-delay: 0.20s; }
+    .ranking-row:nth-child(6) { animation-delay: 0.24s; }
+
+    .cell-pos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 0;
+    }
+    .pos-badge {
+      width: 42px; height: 42px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-label);
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .pos-badge.g {
+      background: var(--gold-bg);
+      color: var(--gold);
+      border: 2px solid var(--gold-border);
+    }
+    .pos-badge.s {
+      background: var(--silver-bg);
+      color: var(--silver);
+      border: 2px solid var(--silver-border);
+    }
+    .pos-badge.b {
+      background: var(--bronze-bg);
+      color: var(--bronze);
+      border: 2px solid var(--bronze-border);
+    }
+    .pos-badge.n {
+      background: var(--off-white);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .cell-robot { padding: 12px 16px; }
+    .robot-name {
+      font-family: var(--font-title);
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+      color: var(--blue-dark);
+      line-height: 1.2;
+    }
+    .ranking-row.p1 .robot-name { color: var(--gold); }
+
+    .robot-inst {
+      font-size: 0.67rem;
+      color: var(--muted);
+      margin-top: 2px;
+      letter-spacing: 0.02em;
+    }
+
+    .en-pista {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-label);
+      font-size: 0.4rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+    .en-pista::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blink 1s infinite;
+    }
+
+    .cell-tiempo {
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .tiempo-val {
+      font-family: var(--font-label);
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--blue);
+    }
+    .ranking-row.p1 .tiempo-val {
+      font-size: 1.75rem;
+      color: var(--gold);
+    }
+    .tiempo-dnf {
+      font-family: var(--font-label);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--red);
+      letter-spacing: 0.1em;
+    }
+
+    .cell-intentos {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .chip {
+      font-family: var(--font-body);
+      font-size: 0.66rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 5px;
+      background: var(--off-white);
+      border: 1px solid var(--border);
+      color: var(--text-mid);
+    }
+    .chip.mejor {
+      background: var(--cyan-pale);
+      border-color: rgba(91,200,240,0.5);
+      color: #0a6a90;
+    }
+    .chip.dnf {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+      color: var(--red);
+    }
+
+    /* Empty state */
+    .empty-ranking {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100%;
-      min-height: 320px;
-      gap: 20px;
+      gap: 14px;
+      opacity: 0.5;
     }
-    .empty-icon {
-      width: 64px; height: 64px;
-      border-radius: 16px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-    }
+    .empty-icon { font-size: 2.4rem; }
     .empty-text {
-      font-family: var(--font-display);
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.2em;
+      font-family: var(--font-label);
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
       color: var(--muted);
     }
-
-    /* ── Loader animation for empty state ── */
     .loader-bar {
-      width: 120px;
-      height: 3px;
-      background: var(--surface2);
+      width: 90px; height: 3px;
+      background: var(--border);
       border-radius: 3px;
       overflow: hidden;
     }
     .loader-bar::after {
       content: '';
       display: block;
-      width: 40%;
-      height: 100%;
-      background: var(--accent);
+      width: 40%; height: 100%;
+      background: var(--cyan);
       border-radius: 3px;
-      animation: loader-slide 1.5s ease-in-out infinite;
+      animation: loadSlide 1.5s ease-in-out infinite;
     }
-    @keyframes loader-slide {
+    @keyframes loadSlide {
       0%   { transform: translateX(-100%); }
       100% { transform: translateX(350%); }
     }
 
-    /* ── Row entrance animation ── */
-    @keyframes fadeInRow {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+    /* ── Footer ── */
+    .pant-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 28px;
+      height: 36px;
+      flex-shrink: 0;
+      background: var(--white);
+      border-top: 1px solid var(--border);
     }
-    tbody tr {
-      animation: fadeInRow 0.3s ease-out backwards;
+    .footer-text {
+      font-family: var(--font-label);
+      font-size: 0.44rem;
+      letter-spacing: 0.18em;
+      color: var(--muted);
     }
-    tbody tr:nth-child(1) { animation-delay: 0.05s; }
-    tbody tr:nth-child(2) { animation-delay: 0.10s; }
-    tbody tr:nth-child(3) { animation-delay: 0.15s; }
-    tbody tr:nth-child(4) { animation-delay: 0.20s; }
-    tbody tr:nth-child(5) { animation-delay: 0.25s; }
-    tbody tr:nth-child(6) { animation-delay: 0.30s; }
-    tbody tr:nth-child(7) { animation-delay: 0.35s; }
-    tbody tr:nth-child(8) { animation-delay: 0.40s; }
+    .footer-update {
+      font-family: var(--font-label);
+      font-size: 0.44rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+    .footer-update span { color: var(--blue); }
 
-    /* ── MOBILE ADJUSTMENTS ── */
-    @media (max-width: 768px) {
-      .pantalla-wrapper { padding-top: 190px; }
-      .pantalla-bar { padding: 8px 20px; }
-      .screen { padding: 20px 16px; }
+    /* ══════════════════════════════════════
+       MODO TV — oculta nav compartido
+    ══════════════════════════════════════ */
+    body.modo-tv .sticky-header,
+    body.modo-tv #shared-footer {
+      display: none !important;
+    }
 
-      .header {
-        flex-direction: column;
-        gap: 16px;
-        text-align: center;
-      }
-      .header::after { left: 50%; transform: translateX(-50%); }
-      .header-left {
-        flex-direction: column;
-        gap: 12px;
-      }
-      .header-left img { width: 44px; }
-      .header-title { font-size: 1.4rem; }
-      .header-sub { font-size: 0.6rem; }
-      .header-right {
-        justify-content: center;
-        gap: 16px;
-      }
-      .ronda-info { text-align: center; }
-      .ronda-label { font-size: 1.1rem; }
+    .esc-hint {
+      position: fixed;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-label);
+      font-size: 0.48rem;
+      letter-spacing: 0.2em;
+      color: var(--text);
+      background: rgba(255,255,255,0.95);
+      border: 1px solid var(--border-dark);
+      padding: 7px 18px;
+      border-radius: 5px;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+      box-shadow: 0 2px 12px rgba(26,92,168,0.12);
+    }
+    .esc-hint.show { opacity: 1; }
 
-      .cat-tabs {
-        gap: 4px;
-        padding: 3px;
-      }
-      .cat-tab {
-        font-size: 0.58rem;
-        padding: 7px 10px;
-      }
-
-      .tabla-wrap { overflow-x: auto; }
-      table { min-width: 680px; }
-      thead th { font-size: 0.52rem; padding: 10px 14px; }
-      td { padding: 10px 14px; }
-
-      .pos-circle { width: 36px; height: 36px; font-size: 1rem; border-radius: 8px; }
-      .robot-name { font-size: 1rem; }
-      .robot-inst { font-size: 0.62rem; }
-      .tiempo-valor { font-size: 1.3rem; }
-      tr.pos-1 .tiempo-valor { font-size: 1.5rem; }
-      .chip { font-size: 0.6rem; padding: 3px 8px; }
-
-      .footer {
-        flex-direction: column;
-        gap: 8px;
-        text-align: center;
-      }
-      .footer-left { font-size: 0.56rem; }
-      .footer-hora { font-size: 0.62rem; }
-
-      .live-crono {
-        bottom: 60px; right: 16px;
-        padding: 14px 18px;
-      }
-      .live-crono-tiempo { font-size: 1.4rem; }
-
-      .btn-fullscreen {
-        font-size: 0.55rem;
-        padding: 8px 14px;
-      }
-      .btn-fullscreen svg { width: 12px; height: 12px; }
+    /* ── Transición al cambiar categoría ── */
+    .panel-ranking.cambiando {
+      animation: catSwitch 0.35s ease;
+    }
+    @keyframes catSwitch {
+      0%   { opacity: 1; transform: translateY(0); }
+      35%  { opacity: 0; transform: translateY(-6px); }
+      65%  { opacity: 0; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-<div class="pantalla-wrapper">
-  <!-- Componentes compartidos -->
-  <div class="sticky-header">
-    <div data-include="../shared/components/topbar.html"></div>
-    <div data-include="../shared/components/header.html"></div>
-    <div data-include="../shared/components/nav.html"></div>
-  </div>
-
-  <!-- Barra con botón de pantalla completa -->
-  <div class="pantalla-bar" id="pantalla-bar">
-    <button class="btn-fullscreen" onclick="entrarPantalla()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-      </svg>
-      PANTALLA COMPLETA
-    </button>
-  </div>
-
-  <!-- Hint ESC -->
-  <div class="esc-hint" id="esc-hint">ESC — SALIR DE PANTALLA COMPLETA</div>
-
-  <div class="screen">
-    <div class="header">
-      <div class="header-left">
-        <div class="header-titles">
-          <div class="header-title">SUCRE<span>BOT</span></div>
-          <div class="header-sub">TORNEO DE ROBÓTICA 2026 — RESULTADOS EN VIVO</div>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="live-badge"><span class="live-dot"></span>EN VIVO</div>
-        <div class="ronda-info">
-          <div class="ronda-label" id="tv-ronda">RONDA 1</div>
-          <div class="cat-label" id="tv-cat">—</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cat-tabs" id="cat-tabs"></div>
-
-    <div class="tabla-wrap" id="tv-tabla-wrap">
-      <div class="empty-state">
-        <div class="empty-icon">🏁</div>
-        <div class="empty-text">CARGANDO RESULTADOS</div>
-        <div class="loader-bar"></div>
-      </div>
-    </div>
-
-    <div class="footer">
-      <div class="footer-left">INSTITUTO SUPERIOR UNIVERSITARIO SUCRE • CLUB DE ROBÓTICA</div>
-      <div class="footer-hora" id="tv-hora">00:00:00</div>
-    </div>
-  </div>
-
-  <!-- Live cronómetro -->
-  <div class="live-crono" id="live-crono">
-    <div class="live-crono-label">COMPITIENDO AHORA</div>
-    <div class="live-crono-robot" id="lc-robot">—</div>
-    <div class="live-crono-tiempo" id="lc-tiempo">00:00.00</div>
-  </div>
-
-  <!-- Footer compartido -->
-  <div id="shared-footer" data-include="../shared/components/footer.html"></div>
+<!-- Shared nav (oculto en modo TV) -->
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
 </div>
+
+<div class="esc-hint" id="esc-hint">PRESIONA ESC PARA SALIR DEL MODO TV</div>
+
+<!-- ══════════ PANTALLA PRINCIPAL ══════════ -->
+<div class="pant-wrapper">
+
+  <!-- Topbar -->
+  <div class="pant-topbar">
+    <div class="topbar-brand">
+      <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/club-robotica-fondo-blanco.png"
+           alt="SucreBot" class="topbar-logo" onerror="this.style.display='none'">
+      <div>
+        <div class="topbar-name">SUCRE<span>BOT</span></div>
+        <div class="topbar-sub">TORNEO DE ROBÓTICA 2026 · RESULTADOS EN VIVO</div>
+      </div>
+    </div>
+
+    <div class="topbar-center">
+      <div class="rotation-wrap">
+        <div class="rotation-label">ROTACIÓN AUTOMÁTICA</div>
+        <div class="rotation-bar-bg">
+          <div class="rotation-bar-fill" id="rot-bar"></div>
+        </div>
+      </div>
+      <div class="cat-dots" id="cat-dots"></div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="live-badge"><span class="live-dot"></span>EN VIVO</div>
+      <div class="topbar-clock" id="topbar-clock">00:00:00</div>
+      <button class="btn-tv" onclick="toggleTV()">
+        <svg id="fs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+        <span id="fs-label">TV</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Cuerpo -->
+  <div class="pant-body">
+
+    <!-- Panel izquierdo -->
+    <div class="panel-izq">
+      <div class="section-label">COMPITIENDO AHORA</div>
+      <div class="card-activo vacio" id="card-activo">
+        <div class="activo-empty">
+          <div class="activo-empty-icon">🤖</div>
+          <div class="activo-empty-text">SIN PARTICIPANTE ACTIVO</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">CATEGORÍAS</div>
+      <div class="cats-list" id="cats-list"></div>
+    </div>
+
+    <!-- Panel ranking -->
+    <div class="panel-ranking" id="panel-ranking">
+      <div class="ranking-header">
+        <div class="ranking-cat-name" id="rank-cat-name">SELECCIONA UNA <span>CATEGORÍA</span></div>
+        <div class="ranking-meta">
+          <div class="ranking-ronda" id="rank-ronda">—</div>
+          <div class="ranking-count" id="rank-count">—</div>
+        </div>
+      </div>
+
+      <div class="ranking-tabla">
+        <div class="tabla-thead">
+          <div class="th-cell c">POS</div>
+          <div class="th-cell">ROBOT / PARTICIPANTE</div>
+          <div class="th-cell c">MEJOR TIEMPO</div>
+          <div class="th-cell">INTENTOS</div>
+        </div>
+        <div class="tabla-body" id="tabla-body">
+          <div class="empty-ranking">
+            <div class="empty-icon">🏁</div>
+            <div class="empty-text">CARGANDO RESULTADOS</div>
+            <div class="loader-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="pant-footer">
+    <div class="footer-text">INSTITUTO SUPERIOR UNIVERSITARIO SUCRE · CLUB DE ROBÓTICA</div>
+    <div class="footer-update">ÚLTIMA ACTUALIZACIÓN: <span id="ultima-act">—</span></div>
+  </div>
+
+</div>
+
+<div id="shared-footer" data-include="../shared/components/footer.html"></div>
 
 <script src="../shared/js/auth.js"></script>
 <script src="../shared/js/load-components.js"></script>
 <script>
-  // ── Pantalla completa ──
-  function entrarPantalla() {
-    document.body.classList.add('pantalla-fullscreen');
-    const hint = document.getElementById('esc-hint');
-    hint.classList.add('show');
-    setTimeout(() => hint.classList.remove('show'), 3000);
+/* ════════════════════════════════════════
+   SUCREBOT — PANTALLA EN VIVO
+════════════════════════════════════════ */
+
+const GAS = CONFIG.GAS_URL();
+
+const CATEGORIAS = [
+  { id: 'ins',   nombre: 'Insectos',             grupo: 'AMATEUR' },
+  { id: 'trp_a', nombre: 'Trepador (Amateur)',    grupo: 'AMATEUR' },
+  { id: 'sl_a',  nombre: 'Seguidor ST (Amateur)', grupo: 'AMATEUR' },
+  { id: 'sl_p',  nombre: 'Seguidor ST (Pro)',     grupo: 'PRO'     },
+  { id: 'ms_a',  nombre: 'Minisumo Autónomo',     grupo: 'PRO'     },
+  { id: 'ms_rc', nombre: 'Minisumo RC',           grupo: 'PRO'     },
+  { id: 'bai',   nombre: 'Bailarín',              grupo: 'PRO'     },
+  { id: 'bat',   nombre: 'Batalla',               grupo: 'PRO'     },
+  { id: 'trp_p', nombre: 'Trepador (Pro)',         grupo: 'PRO'     },
+  { id: 'soc',   nombre: 'Robot Soccer',          grupo: 'PRO'     },
+  { id: 'cr',    nombre: 'Cubo Rubik',            grupo: 'EXTRA'   }
+];
+
+let estadoPorCat  = {};
+let activoPorCat  = {};
+let catActiva     = null;
+let rotInterval   = null;
+let rotProgress   = 0;
+let pausaRot      = false;
+let pausaTimer    = null;
+const ROT_SEG     = 12;
+
+/* ── Reloj ── */
+function tickClock() {
+  document.getElementById('topbar-clock').textContent =
+    new Date().toLocaleTimeString('es-EC', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ── Parse tiempo MM:SS:CC ── */
+function parseT(t) {
+  if (!t || t === '—' || t === 'DNF') return Infinity;
+  const p = t.split(':').map(Number);
+  if (p.length === 3) return p[0] * 60 + p[1] + p[2] / 100;
+  if (p.length === 2) return p[0] * 60 + p[1];
+  return Infinity;
+}
+
+/* ── Escape HTML ── */
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Modo TV ── */
+let modoTV = false;
+function toggleTV() {
+  modoTV = !modoTV;
+  document.body.classList.toggle('modo-tv', modoTV);
+  document.getElementById('fs-label').textContent = modoTV ? 'SALIR' : 'TV';
+  document.getElementById('fs-icon').innerHTML = modoTV
+    ? '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>'
+    : '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+  if (modoTV) {
+    const h = document.getElementById('esc-hint');
+    h.classList.add('show');
+    setTimeout(() => h.classList.remove('show'), 3000);
+    document.documentElement.requestFullscreen?.().catch(()=>{});
+  } else {
+    document.exitFullscreen?.().catch(()=>{});
   }
-
-  function salirPantalla() {
-    document.body.classList.remove('pantalla-fullscreen');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && modoTV) {
+    modoTV = false;
+    document.body.classList.remove('modo-tv');
+    document.getElementById('fs-label').textContent = 'TV';
+    document.getElementById('fs-icon').innerHTML =
+      '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
   }
+});
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') salirPantalla();
-  });
-
-  // ── Lógica en vivo ──
-  const GAS_URL = CONFIG.GAS_URL();
-
-  // ✅ Mapeo de categorías a rutas (códigos cortos para GAS)
-  const RUTAS = {
-    // AMATEUR
-    'Insectos': 'INS',
-    'Trepador (Amateur)': 'TRP_A',
-    'Seguidor de línea ST (Amateur)': 'SL_A',
-    // PRO
-    'Seguidor de línea ST (Pro)': 'SL_P',
-    'Minisumo Autónomo': 'MS_A',
-    'Minisumo RC': 'MS_RC',
-    'Bailarín': 'BAI',
-    'Batalla': 'BAT',
-    'Trepador (Pro)': 'TRP_P',
-    'Robot soccer': 'SOC',
-    // EXTRA
-    'Cubo Rubik': 'CR'
-  };
-
-  const RUTAS_NOMBRE = {
-    // AMATEUR
-    'Insectos': 'Insectos',
-    'Trepador (Amateur)': 'Trepador (Amateur)',
-    'Seguidor de línea ST (Amateur)': 'Seguidor ST (Amateur)',
-    // PRO
-    'Seguidor de línea ST (Pro)': 'Seguidor ST (Pro)',
-    'Minisumo Autónomo': 'Minisumo Autónomo',
-    'Minisumo RC': 'Minisumo RC',
-    'Bailarín': 'Bailarín',
-    'Batalla': 'Batalla',
-    'Trepador (Pro)': 'Trepador (Pro)',
-    'Robot soccer': 'Robot Soccer',
-    // EXTRA
-    'Cubo Rubik': 'Cubo Rubik'
-  };
-
-  function parseTime(t) {
-    if (!t || t === '—') return Infinity;
-    const p = t.split(':').map(Number);
-    return p[0] * 60 + p[1] + p[2] / 100;
-  }
-
-  function hora() {
-    return new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }
-
-  setInterval(() => { document.getElementById('tv-hora').textContent = hora(); }, 1000);
-  document.getElementById('tv-hora').textContent = hora();
-
-  let todosEstados = {};
-  let todosActivos = {};
-  let categoriaActiva = null;
-  let autoRotarTimer = null;
-  let rutasConDatos = [];
-
-  const TIEMPO_ROTACION = 10000;
-
-  function iniciarAutoRotar() {
-    if (autoRotarTimer) clearInterval(autoRotarTimer);
-    autoRotarTimer = setInterval(() => {
-      const activas = rutasConDatos;
-      if (activas.length <= 1) return;
-      const idx = activas.indexOf(categoriaActiva);
-      const siguiente = activas[(idx + 1) % activas.length];
-      seleccionarCategoria(siguiente);
-    }, TIEMPO_ROTACION);
-  }
-
-  function seleccionarCategoria(ruta) {
-    categoriaActiva = ruta;
-    document.querySelectorAll('.cat-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.ruta === ruta);
-    });
-    const datos = todosEstados[ruta];
-    if (datos && datos.estado) {
-      renderizarTabla(datos.estado, ruta);
-    } else {
-      mostrarVacio();
-    }
-    actualizarLiveCrono(ruta);
-  }
-
-  function actualizarLiveCrono(ruta) {
-    const lc = document.getElementById('live-crono');
-    const activo = todosActivos[ruta];
-    if (!activo || !activo.raw) { lc.classList.remove('show'); return; }
-    try {
-      const p = JSON.parse(activo.raw);
-      if (!p || !p.id) { lc.classList.remove('show'); return; }
-      document.getElementById('lc-robot').textContent = p.robot || '—';
-      lc.classList.add('show');
-    } catch(e) { lc.classList.remove('show'); }
-  }
-
-  function renderTabs() {
-    const container = document.getElementById('cat-tabs');
-    const rutas = Object.keys(RUTAS_NOMBRE);
-    container.innerHTML = rutas.map(ruta => {
-      const tieneDatos = todosEstados[ruta] &&
-        todosEstados[ruta].estado &&
-        todosEstados[ruta].estado.rondasData;
-      const tieneParticipantes = tieneDatos && Object.values(todosEstados[ruta].estado.rondasData)
-        .some(r => r.clasificados && r.clasificados.some(c => c.tiempo && c.tiempo !== '—'));
-      return `<button class="cat-tab ${tieneParticipantes ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
-        data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">
-        ${RUTAS_NOMBRE[ruta]}
-      </button>`;
-    }).join('');
-    rutasConDatos = rutas.filter(ruta =>
-      todosEstados[ruta] &&
-      todosEstados[ruta].estado &&
-      Object.values(todosEstados[ruta].estado.rondasData || {})
-        .some(r => r.clasificados && r.clasificados.some(c => c.tiempo && c.tiempo !== '—'))
+/* ── Categorías con datos ── */
+function catsConDatos() {
+  return CATEGORIAS.map(c => c.id).filter(id => {
+    const e = estadoPorCat[id];
+    if (!e || !e.rondasData) return false;
+    return Object.values(e.rondasData).some(r =>
+      (r.clasificados || []).some(c => c.tiempo && c.tiempo !== '—' && c.tiempo !== 'DNF')
     );
-  }
+  });
+}
 
-  function seleccionarManual(ruta) {
-    if (autoRotarTimer) clearInterval(autoRotarTimer);
-    seleccionarCategoria(ruta);
-    setTimeout(iniciarAutoRotar, 20000);
-  }
+/* ── Rotación ── */
+function iniciarRotacion() {
+  if (rotInterval) clearInterval(rotInterval);
+  rotProgress = 0;
+  rotInterval = setInterval(() => {
+    if (pausaRot) return;
+    rotProgress += 100 / (ROT_SEG * 10);
+    document.getElementById('rot-bar').style.width = Math.min(rotProgress, 100) + '%';
+    if (rotProgress >= 100) {
+      rotProgress = 0;
+      const lista = catsConDatos();
+      if (lista.length <= 1) return;
+      const idx = lista.indexOf(catActiva);
+      const sig = lista[(idx + 1) % lista.length];
+      if (sig !== catActiva) mostrarCategoria(sig, true);
+    }
+  }, 100);
+}
 
-  function mostrarVacio() {
-    document.getElementById('tv-tabla-wrap').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🏁</div>
+/* ── Renderizar activo ── */
+function renderActivo(catId) {
+  const card = document.getElementById('card-activo');
+  const p = activoPorCat[catId];
+  const cat = CATEGORIAS.find(c => c.id === catId);
+  if (!p || !p.id) {
+    card.className = 'card-activo vacio';
+    card.innerHTML = `<div class="activo-empty"><div class="activo-empty-icon">🤖</div><div class="activo-empty-text">SIN PARTICIPANTE ACTIVO</div></div>`;
+    return;
+  }
+  card.className = 'card-activo tiene-activo';
+  card.innerHTML = `
+    <div class="activo-cat-badge"><span class="dot"></span>${esc(cat ? cat.nombre : catId)}</div>
+    <div class="activo-robot">${esc(p.robot || '—')}</div>
+    <div class="activo-nombre">${esc(p.nombre || p.id)}</div>
+    <div class="activo-inst">${esc(p.institucion || '—')}</div>`;
+}
+
+/* ── Contar clasificados ── */
+function contarClasificados(catId) {
+  const e = estadoPorCat[catId];
+  if (!e || !e.rondasData) return 0;
+  const ids = new Set();
+  Object.values(e.rondasData).forEach(r =>
+    (r.clasificados || []).forEach(c => { if (c.tiempo && c.tiempo !== '—') ids.add(c.id); })
+  );
+  return ids.size;
+}
+
+/* ── Renderizar lista de categorías ── */
+function renderCatsList() {
+  const conDatos = new Set(catsConDatos());
+  const conActivo = new Set(
+    Object.entries(activoPorCat).filter(([, p]) => p?.id).map(([id]) => id)
+  );
+  // Dots en topbar
+  const dotsEl = document.getElementById('cat-dots');
+  const dotsCats = CATEGORIAS.filter(c => conDatos.has(c.id) || conActivo.has(c.id));
+  dotsEl.innerHTML = dotsCats.map(c => {
+    const cls = ['cat-dot', conDatos.has(c.id) ? 'tiene-datos':'', c.id === catActiva ? 'active':''].filter(Boolean).join(' ');
+    return `<div class="${cls}" title="${esc(c.nombre)}" onclick="seleccionarManual('${c.id}')"></div>`;
+  }).join('');
+
+  // Lista
+  document.getElementById('cats-list').innerHTML = CATEGORIAS.map(cat => {
+    const n = contarClasificados(cat.id);
+    const isActive = catActiva === cat.id;
+    const tieneActivo = conActivo.has(cat.id);
+    const tieneDatos = conDatos.has(cat.id);
+    const clases = ['cat-item',
+      isActive     ? 'active'       : '',
+      tieneActivo  ? 'tiene-activo' : (tieneDatos ? 'tiene-datos' : '')
+    ].filter(Boolean).join(' ');
+    return `
+      <div class="${clases}" onclick="seleccionarManual('${cat.id}')">
+        <div class="cat-ind"></div>
+        <div class="cat-item-name">${esc(cat.nombre)}</div>
+        ${n > 0 ? `<div class="cat-item-n">${n}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+/* ── Renderizar ranking ── */
+function renderRanking(catId) {
+  const cat    = CATEGORIAS.find(c => c.id === catId);
+  const estado = estadoPorCat[catId];
+  const activo = activoPorCat[catId];
+
+  const partes = (cat ? cat.nombre : catId).split(' ');
+  const ult = partes.pop();
+  document.getElementById('rank-cat-name').innerHTML = `${esc(partes.join(' '))} <span>${esc(ult)}</span>`;
+
+  if (!estado || !estado.rondasData) {
+    document.getElementById('rank-ronda').textContent = '—';
+    document.getElementById('rank-count').textContent = '—';
+    document.getElementById('tabla-body').innerHTML = `
+      <div class="empty-ranking">
+        <div class="empty-icon">⏳</div>
         <div class="empty-text">ESPERANDO RESULTADOS</div>
         <div class="loader-bar"></div>
       </div>`;
+    return;
   }
 
-  function renderizarTabla(estado, ruta) {
-    if (!estado || !estado.rondasData) { mostrarVacio(); return; }
+  // Consolidar por participante
+  const porId = {};
+  Object.values(estado.rondasData).forEach(ronda => {
+    (ronda.clasificados || []).forEach(c => {
+      if (!porId[c.id]) porId[c.id] = { id:c.id, robot:c.robot||'—', nombre:c.nombre||c.id, institucion:c.institucion||'—', intentos:[] };
+      if (c.tiempo) porId[c.id].intentos.push(c.tiempo);
+    });
+  });
 
-    const rondas = Object.values(estado.rondasData);
-    const clasificados = rondas.flatMap(r => r.clasificados || [])
-      .reduce((acc, c) => {
-        if (!acc[c.id]) acc[c.id] = { ...c, intentos: [] };
-        if (c.tiempo && c.tiempo !== '—') acc[c.id].intentos.push(c.tiempo);
-        return acc;
-      }, {});
+  const lista = Object.values(porId).map(p => {
+    const validos = p.intentos.filter(t => t !== '—' && t !== 'DNF');
+    const mejor = validos.length ? validos.reduce((a,b) => parseT(a) <= parseT(b) ? a : b) : null;
+    return { ...p, mejor };
+  }).filter(p => p.intentos.length > 0)
+    .sort((a,b) => {
+      if (!a.mejor && !b.mejor) return 0;
+      if (!a.mejor) return 1;
+      if (!b.mejor) return -1;
+      return parseT(a.mejor) - parseT(b.mejor);
+    });
 
-    const lista = Object.values(clasificados)
-      .map(c => ({
-        ...c,
-        mejor: c.intentos.length ? c.intentos.reduce((a, b) => parseTime(a) < parseTime(b) ? a : b) : '—'
-      }))
-      .filter(c => c.mejor !== '—')
-      .sort((a, b) => parseTime(a.mejor) - parseTime(b.mejor));
+  document.getElementById('rank-ronda').textContent = `RONDA ${estado.rondaActual || 1}`;
+  document.getElementById('rank-count').textContent = `${lista.length} PARTICIPANTE${lista.length !== 1 ? 'S' : ''}`;
 
-    if (!lista.length) { mostrarVacio(); return; }
-
-    document.getElementById('tv-ronda').textContent = `RONDA ${estado.rondaActual || 1}`;
-    document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[ruta] || ruta;
-
-    const html = `
-      <table>
-        <thead>
-          <tr>
-            <th class="c">POS</th>
-            <th>ROBOT</th>
-            <th class="c">MEJOR TIEMPO</th>
-            <th>INTENTOS</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${lista.map((c, i) => `
-            <tr class="pos-${i + 1}">
-              <td class="td-pos">
-                <div class="pos-circle pc-${i < 3 ? i + 1 : 'n'}">${i + 1}</div>
-              </td>
-              <td class="td-robot">
-                <div class="robot-name">${c.robot || '—'}</div>
-                <div class="robot-inst">${c.institucion || '—'}</div>
-              </td>
-              <td class="td-mejor">
-                <div class="tiempo-valor">${c.mejor}</div>
-              </td>
-              <td class="td-intentos">
-                <div class="chips">
-                  ${c.intentos.map(t => `<span class="chip ${t === c.mejor ? 'mejor' : ''}">${t}</span>`).join('')}
-                </div>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-    document.getElementById('tv-tabla-wrap').innerHTML = html;
+  if (!lista.length) {
+    document.getElementById('tabla-body').innerHTML = `
+      <div class="empty-ranking">
+        <div class="empty-icon">🏁</div>
+        <div class="empty-text">SIN RESULTADOS AÚN</div>
+        <div class="loader-bar"></div>
+      </div>`;
+    return;
   }
 
-  async function cargarDatos() {
+  const posMap = ['','g','s','b'];
+  document.getElementById('tabla-body').innerHTML = lista.map((p, i) => {
+    const posClase = ['','p1','p2','p3'][i+1] || '';
+    const badgeCls = posMap[i+1] || 'n';
+    const esActivo = activo?.id === p.id;
+    const chips = p.intentos.map(t => {
+      const isDNF = t === 'DNF' || t === '—';
+      const isMejor = !isDNF && t === p.mejor;
+      return `<span class="chip ${isDNF ? 'dnf' : isMejor ? 'mejor' : ''}">${isDNF ? 'DNF' : esc(t)}</span>`;
+    }).join('');
+    const tiempoHtml = p.mejor
+      ? `<div class="tiempo-val">${esc(p.mejor)}</div>`
+      : `<div class="tiempo-dnf">DNF</div>`;
+    const enpista = esActivo ? `<div class="en-pista">EN PISTA</div>` : '';
+    return `
+      <div class="ranking-row ${posClase}" style="animation-delay:${i*0.04}s">
+        <div class="cell-pos"><div class="pos-badge ${badgeCls}">${i+1}</div></div>
+        <div class="cell-robot">
+          <div class="robot-name">${esc(p.robot)}</div>
+          <div class="robot-inst">${esc(p.institucion)}</div>
+          ${enpista}
+        </div>
+        <div class="cell-tiempo">${tiempoHtml}</div>
+        <div class="cell-intentos">${chips}</div>
+      </div>`;
+  }).join('');
+}
+
+/* ── Mostrar categoría ── */
+function mostrarCategoria(catId, animacion) {
+  catActiva = catId;
+  renderActivo(catId);
+  renderCatsList();
+  if (animacion) {
+    const p = document.getElementById('panel-ranking');
+    p.classList.remove('cambiando');
+    void p.offsetWidth;
+    p.classList.add('cambiando');
+    setTimeout(() => p.classList.remove('cambiando'), 350);
+  }
+  renderRanking(catId);
+}
+
+function seleccionarManual(catId) {
+  pausaRot = true;
+  rotProgress = 0;
+  document.getElementById('rot-bar').style.width = '0%';
+  mostrarCategoria(catId, true);
+  if (pausaTimer) clearTimeout(pausaTimer);
+  pausaTimer = setTimeout(() => { pausaRot = false; }, 20000);
+}
+
+/* ── Carga de datos ── */
+async function cargarDatos() {
+  await Promise.all(CATEGORIAS.map(async cat => {
     try {
-      const categorias = Object.keys(RUTAS_NOMBRE);
-      await Promise.all(categorias.map(async categoria => {
-        const rutaCorta = RUTAS[categoria] || categoria; // usar código corto para GAS
-        const qs = new URLSearchParams({ action: 'getEstado', ruta: rutaCorta }).toString();
-        const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
-        const data = await r.json();
-        todosEstados[categoria] = data; // guardar con nombre completo como key
+      const [rE, rA] = await Promise.all([
+        fetch(`${GAS}?action=getEstado&ruta=${cat.id}`, { redirect:'follow' }),
+        fetch(`${GAS}?action=getActivo&ruta=${cat.id}`,  { redirect:'follow' })
+      ]);
+      const [dE, dA] = await Promise.all([rE.json(), rA.json()]);
+      estadoPorCat[cat.id] = dE?.estado || dE || null;
+      activoPorCat[cat.id] = dA?.raw ? (() => { try { return JSON.parse(dA.raw); } catch { return null; } })() : null;
+    } catch { /* silenciar por cat */ }
+  }));
 
-        const qs2 = new URLSearchParams({ action: 'getActivo', ruta: rutaCorta }).toString();
-        const r2 = await fetch(GAS_URL + '?' + qs2, { redirect: 'follow' });
-        const data2 = await r2.json();
-        todosActivos[categoria] = data2; // guardar con nombre completo como key
-      }));
-
-      renderTabs();
-
-      if (!categoriaActiva) {
-        const primera = rutasConDatos[0] || Object.keys(RUTAS_NOMBRE)[0];
-        seleccionarCategoria(primera);
-        iniciarAutoRotar();
-      } else {
-        seleccionarCategoria(categoriaActiva);
-      }
-    } catch (error) {
-      console.error('Error al cargar datos:', error);
-    }
+  if (!catActiva) {
+    const conDatos = catsConDatos();
+    const conActivo = CATEGORIAS.map(c=>c.id).find(id => activoPorCat[id]?.id);
+    mostrarCategoria(conActivo || conDatos[0] || CATEGORIAS[0].id, false);
+    iniciarRotacion();
+  } else {
+    mostrarCategoria(catActiva, false);
+    renderCatsList();
   }
 
-  cargarDatos();
-  setInterval(cargarDatos, 5000);
-</script>
+  document.getElementById('ultima-act').textContent =
+    new Date().toLocaleTimeString('es-EC');
+}
 
+cargarDatos();
+setInterval(cargarDatos, 5000);
+</script>
 </body>
 </html>
