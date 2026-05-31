@@ -3,7 +3,6 @@
 // Ubicación: /shared/js/certificados.js
 // ════════════════════════════════════════════════════════════════════════
 
-// Template HTML del certificado
 const CERTIFICADO_TEMPLATE = `
 <div class="certificado-container" id="certificado-preview">
   <div class="certificado-bg"></div>
@@ -65,7 +64,6 @@ const CERTIFICADO_TEMPLATE = `
 </div>
 `;
 
-// CSS del certificado
 const CERTIFICADO_CSS = `
 .certificado-container {
   width: 1123px;
@@ -132,7 +130,6 @@ const CERTIFICADO_CSS = `
 .cert-badge.tercer { background: linear-gradient(135deg, #cd7f32 0%, #e89a5d 100%); color: #ffffff; border: 3px solid #8b5a2b; }
 .cert-badge.participacion { background: linear-gradient(135deg, #1a5ca8 0%, #2980b9 100%); color: #ffffff; border: 3px solid #0d3a6b; }
 
-/* Modal para preview */
 .cert-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
 .cert-modal.show { display: flex; }
 .cert-modal-content { background: #ffffff; border-radius: 16px; padding: 30px; max-width: 1200px; width: 100%; max-height: 90vh; overflow: auto; position: relative; }
@@ -147,7 +144,6 @@ const CERTIFICADO_CSS = `
 .btn-guardar-cert:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 `;
 
-// Función para obtener texto según tipo de certificado
 function obtenerTextoLogro(tipo, categoria) {
   const textos = {
     '1er': `Por haber obtenido el <strong>PRIMER LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.`,
@@ -158,7 +154,6 @@ function obtenerTextoLogro(tipo, categoria) {
   return textos[tipo] || textos['participacion'];
 }
 
-// Función para obtener clase y badge según tipo
 function obtenerDatosTipo(tipo) {
   const datos = {
     '1er': { clase: 'primer', badge: '🥇 PRIMER LUGAR' },
@@ -169,96 +164,115 @@ function obtenerDatosTipo(tipo) {
   return datos[tipo] || datos['participacion'];
 }
 
-// Función para preview del certificado
-function previewCertificado(idx) {
+// ── PREVIEW ──────────────────────────────────────────────────────────────
+// idx        → índice en participantesAprobados
+// nombreOverride → nombre del integrante (opcional, si es miembro 2 o 3)
+// tipoOverride   → tipo del select (opcional)
+// mIdxOverride   → índice del miembro para leer el select correcto
+function previewCertificado(idx, nombreOverride, tipoOverride, mIdxOverride) {
   const participante = participantesAprobados[idx];
-  const tipo = document.getElementById('tipo-' + idx).value;
+  
+  // Determinar qué select leer
+  const selectId = mIdxOverride !== undefined
+    ? 'tipo-' + idx + '-' + mIdxOverride
+    : 'tipo-' + idx;
+  const tipo = tipoOverride || document.getElementById(selectId)?.value || 'participacion';
+  
+  const nombreFinal = nombreOverride || participante.nombre;
   const fechaEvento = document.getElementById('fecha-evento').value;
   
-  const datosTipo = obtenerDatosTipo(tipo);
+  const datosTipo  = obtenerDatosTipo(tipo);
   const textoLogro = obtenerTextoLogro(tipo, participante.categoria);
   const codigoTemp = 'CERT-2026-PREVIEW';
-  
-  const miembros = [participante.miembro2, participante.miembro3].filter(Boolean);
-  const textoEquipo = miembros.length > 0
-    ? 'junto a: ' + miembros.join(' &amp; ')
+
+  // Para el certificado individual: los otros integrantes aparecen en "junto a:"
+  const todosIntegrantes = [participante.nombre];
+  if (participante.miembro2 && participante.miembro2.trim()) todosIntegrantes.push(participante.miembro2.trim());
+  if (participante.miembro3 && participante.miembro3.trim()) todosIntegrantes.push(participante.miembro3.trim());
+  const otrosIntegrantes = todosIntegrantes.filter(n => n !== nombreFinal);
+  const textoEquipo = otrosIntegrantes.length > 0
+    ? 'junto a: ' + otrosIntegrantes.join(' &amp; ')
     : '';
 
   let htmlCert = CERTIFICADO_TEMPLATE
     .replace(/\{\{TIPO_CLASS\}\}/g, datosTipo.clase)
     .replace(/\{\{TIPO_BADGE\}\}/g, datosTipo.badge)
-    .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, participante.nombre)
+    .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
     .replace(/\{\{INTEGRANTES_EQUIPO\}\}/g, textoEquipo)
     .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
     .replace(/\{\{CATEGORIA\}\}/g, participante.categoria)
     .replace(/\{\{EVENTO\}\}/g, 'SucreBot 2026')
     .replace(/\{\{FECHA_EVENTO\}\}/g, fechaEvento)
     .replace(/\{\{CODIGO_VERIFICACION\}\}/g, codigoTemp);
-  
-  // Crear modal si no existe
+
   let modal = document.getElementById('cert-modal');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'cert-modal';
     modal.className = 'cert-modal';
-    
+
     const modalContent = document.createElement('div');
     modalContent.className = 'cert-modal-content';
-    
+
     const modalHeader = document.createElement('div');
     modalHeader.className = 'cert-modal-header';
-    
+
     const modalTitle = document.createElement('div');
     modalTitle.className = 'cert-modal-title';
     modalTitle.textContent = '📜 VISTA PREVIA DEL CERTIFICADO';
-    
+
     const closeBtn = document.createElement('button');
     closeBtn.className = 'cert-modal-close';
     closeBtn.textContent = '×';
     closeBtn.onclick = cerrarModalCertificado;
-    
+
     modalHeader.appendChild(modalTitle);
     modalHeader.appendChild(closeBtn);
-    
+
     const previewContainer = document.createElement('div');
     previewContainer.id = 'cert-preview-container';
-    
+
     const actions = document.createElement('div');
     actions.className = 'cert-modal-actions';
-    
+
     const saveBtn = document.createElement('button');
     saveBtn.id = 'btn-guardar-cert';
     saveBtn.className = 'btn-modal btn-guardar-cert';
     saveBtn.textContent = '☁️ Guardar en Drive y enviar al participante';
-    saveBtn.onclick = function() { guardarYSubirCertificado(idx); };
-    
+
     actions.appendChild(saveBtn);
     modalContent.appendChild(modalHeader);
     modalContent.appendChild(previewContainer);
     modalContent.appendChild(actions);
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
-  } else {
-    // Actualizar el botón con el índice correcto
-    const saveBtn = document.getElementById('btn-guardar-cert');
-    if (saveBtn) saveBtn.onclick = function() { guardarYSubirCertificado(idx); };
   }
-  
+
+  // Guardar datos del integrante actual en el botón
+  const saveBtn = document.getElementById('btn-guardar-cert');
+  if (saveBtn) {
+    saveBtn.onclick = function() {
+      guardarYSubirCertificado(idx, nombreFinal, tipo);
+    };
+  }
+
   document.getElementById('cert-preview-container').innerHTML = htmlCert;
   modal.classList.add('show');
 }
 
-// Función para cerrar modal
 function cerrarModalCertificado() {
   const modal = document.getElementById('cert-modal');
   if (modal) modal.classList.remove('show');
 }
 
-// Función principal: guarda en Sheets + sube PDF a Drive
-async function guardarYSubirCertificado(idx) {
+// ── GUARDAR Y SUBIR ───────────────────────────────────────────────────────
+// nombreOverride → nombre del integrante específico
+// tipoOverride   → tipo de certificado
+async function guardarYSubirCertificado(idx, nombreOverride, tipoOverride) {
   const participante = participantesAprobados[idx];
-  const tipo = document.getElementById('tipo-' + idx).value;
-  const fechaEvento = document.getElementById('fecha-evento').value;
+  const nombreFinal  = nombreOverride || participante.nombre;
+  const tipo         = tipoOverride   || 'participacion';
+  const fechaEvento  = document.getElementById('fecha-evento').value;
 
   const saveBtn = document.getElementById('btn-guardar-cert');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Guardando...'; }
@@ -266,11 +280,11 @@ async function guardarYSubirCertificado(idx) {
   showToast('⏳ Guardando certificado en el sistema...');
 
   try {
-    // PASO 1: Guardar en Sheets y obtener el código
+    // PASO 1: Guardar en Sheets
     const data = {
       action: 'guardarCertificado',
       correo: participante.correo,
-      nombre_completo: participante.nombre,
+      nombre_completo: nombreFinal,
       categoria: participante.categoria,
       institucion: participante.institucion,
       evento: 'SucreBot 2026',
@@ -284,19 +298,17 @@ async function guardarYSubirCertificado(idx) {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
     const result = await response.json();
-
     if (!result.ok) throw new Error('Error al guardar certificado en Sheets');
 
     const codigo = result.codigo;
     showToast('⏳ Generando PDF y subiendo a Drive...');
     if (saveBtn) saveBtn.textContent = '⏳ Subiendo a Drive...';
 
-    // PASO 2: Generar PDF y subir a Drive
-    const driveUrl = await generarYSubirPDF(participante, tipo, fechaEvento, codigo);
+    // PASO 2: Generar PDF con el nombre correcto del integrante
+    const driveUrl = await generarYSubirPDF(participante, tipo, fechaEvento, codigo, nombreFinal);
 
     cerrarModalCertificado();
-    showToast('✅ Diploma guardado en Drive correctamente');
-
+    showToast('✅ Diploma de ' + nombreFinal + ' guardado en Drive');
     console.log('Diploma subido a Drive:', driveUrl);
 
   } catch (e) {
@@ -307,22 +319,25 @@ async function guardarYSubirCertificado(idx) {
   }
 }
 
-// Genera el PDF como base64 y lo sube a GAS → Drive
-async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert) {
-  // Cargar librerías si no están
+// ── GENERAR PDF ───────────────────────────────────────────────────────────
+async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert, nombreOverride) {
   if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
     await cargarLibreriasPDF();
   }
 
-  const datosTipo = obtenerDatosTipo(tipo);
-  const textoLogro = obtenerTextoLogro(tipo, participante.categoria);
+  const nombreFinal = nombreOverride || participante.nombre;
+  const datosTipo   = obtenerDatosTipo(tipo);
+  const textoLogro  = obtenerTextoLogro(tipo, participante.categoria);
 
-  const miembros = [participante.miembro2, participante.miembro3].filter(Boolean);
-  const textoEquipo = miembros.length > 0
-    ? 'junto a: ' + miembros.join(' & ')
+  // "junto a:" con los otros integrantes
+  const todosIntegrantes = [participante.nombre];
+  if (participante.miembro2 && participante.miembro2.trim()) todosIntegrantes.push(participante.miembro2.trim());
+  if (participante.miembro3 && participante.miembro3.trim()) todosIntegrantes.push(participante.miembro3.trim());
+  const otrosIntegrantes = todosIntegrantes.filter(n => n !== nombreFinal);
+  const textoEquipo = otrosIntegrantes.length > 0
+    ? 'junto a: ' + otrosIntegrantes.join(' & ')
     : '';
 
-  // Crear elemento temporal fuera de pantalla
   const tempDiv = document.createElement('div');
   tempDiv.style.position = 'absolute';
   tempDiv.style.left = '-9999px';
@@ -330,7 +345,7 @@ async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert) {
   tempDiv.innerHTML = CERTIFICADO_TEMPLATE
     .replace(/\{\{TIPO_CLASS\}\}/g, datosTipo.clase)
     .replace(/\{\{TIPO_BADGE\}\}/g, datosTipo.badge)
-    .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, participante.nombre)
+    .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
     .replace(/\{\{INTEGRANTES_EQUIPO\}\}/g, textoEquipo)
     .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
     .replace(/\{\{CATEGORIA\}\}/g, participante.categoria)
@@ -344,21 +359,16 @@ async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert) {
     await document.fonts.ready;
 
     const canvas = await html2canvas(tempDiv.firstElementChild, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff'
+      scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff'
     });
 
     const { jsPDF } = jspdf;
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, 210);
 
-    // Obtener base64 del PDF (sin el prefijo data:...)
     const pdfBase64 = pdf.output('datauristring').split(',')[1];
-    const fileName = 'Diploma_' + participante.nombre.replace(/\s+/g, '_') + '_' + codigoCert + '.pdf';
+    const fileName  = 'Diploma_' + nombreFinal.replace(/\s+/g, '_') + '_' + codigoCert + '.pdf';
 
-    // Subir a Drive vía GAS
     const uploadResp = await fetch(CONFIG.GAS_URL(), {
       method: 'POST',
       body: JSON.stringify({
@@ -379,7 +389,6 @@ async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert) {
   }
 }
 
-// Función para cargar librerías PDF
 async function cargarLibreriasPDF() {
   return new Promise((resolve, reject) => {
     const script1 = document.createElement('script');
@@ -396,16 +405,15 @@ async function cargarLibreriasPDF() {
   });
 }
 
-// Inicializar CSS y fuentes al cargar el script
 (function initCertificados() {
   const style = document.createElement('style');
   style.textContent = CERTIFICADO_CSS;
   document.head.appendChild(style);
-  
+
   const linkFont = document.createElement('link');
   linkFont.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap';
   linkFont.rel = 'stylesheet';
   document.head.appendChild(linkFont);
-  
+
   console.log('✅ Sistema de certificados inicializado');
 })();
