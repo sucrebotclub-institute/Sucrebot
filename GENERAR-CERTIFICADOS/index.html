@@ -5,19 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SucreBot — Generar Certificados</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="../shared/js/config.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
     body { background: #ffffff !important; color: #1a1c28 !important; }
     .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; min-height: 70vh; }
-    .page-hero { padding: 40px 0 32px; border-bottom: 1px solid #e0e4ea; margin-bottom: 32px; }
-    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
-    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
+
+    /* ── HERO igual que Participantes Registrados ── */
+    .page-hero { padding: 80px 0 32px; margin-bottom: 32px; text-align: left; }
+    .page-hero-badge { display: block; width: fit-content; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; margin-right: 8px; vertical-align: middle; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
-    .page-hero h2 { font-family: 'Exo 2', sans-serif; font-size: 2.6rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #1a3a6b; line-height: 1; }
-    .page-hero p { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #4a5568; margin-top: 12px; }
+    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; line-height: 1; position: relative; display: block; margin-bottom: 20px; }
+    .page-hero h2::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%); border-radius: 2px; }
+    .page-hero h2 span { color: #1a5ca8; }
+    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
 
     .acceso-denegado { background: linear-gradient(135deg, #ff3b3b 0%, #c41e3a 100%); border-radius: 16px; padding: 60px 40px; text-align: center; max-width: 600px; margin: 60px auto; box-shadow: 0 8px 32px rgba(196,30,58,0.3); }
     .acceso-denegado-icon { font-size: 72px; margin-bottom: 24px; }
@@ -40,7 +44,6 @@
     .participantes-tabla td { padding: 14px; font-size: 13px; color: #2a3f5f; border-bottom: 1px solid #e0e4ea; font-family: 'Exo 2', sans-serif; font-weight: 600; }
     .participantes-tabla tbody tr:last-child td { border-bottom: none; }
 
-    /* Fila de miembro con fondo ligeramente diferente */
     .participantes-tabla tbody tr.fila-miembro { background: #f0f7ff; }
     .participantes-tabla tbody tr.fila-miembro:nth-child(even) { background: #e8f2ff; }
     .participantes-tabla tbody tr.fila-miembro:hover { background: #d8ecff; }
@@ -56,6 +59,12 @@
 
     .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); border-left: 5px solid #3dd68c; color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 0.84rem; font-weight: 600; padding: 14px 18px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 320px; }
     .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 768px) {
+      .page-hero { padding: 40px 0 24px; }
+      .page-hero h2 { font-size: 1.8rem; }
+      .controles-top { flex-direction: column; align-items: stretch; }
+    }
   </style>
 </head>
 <body>
@@ -70,10 +79,10 @@
   <div class="page-hero">
     <div class="page-hero-badge">
       <div class="page-hero-badge-dot"></div>
-      SucreBot 2026 · Staff
+      SUCREBOT 2026 · STAFF
     </div>
-    <h2>GENERAR <span style="color:#1a5ca8;">CERTIFICADOS</span></h2>
-    <p>Genera certificados para participantes aprobados — incluye todos los integrantes del equipo</p>
+    <h2>GENERAR <span>CERTIFICADOS</span></h2>
+    <p>GENERA CERTIFICADOS PARA PARTICIPANTES APROBADOS — INCLUYE TODOS LOS INTEGRANTES DEL EQUIPO</p>
   </div>
 
   <div id="acceso-denegado" style="display:none;">
@@ -159,7 +168,6 @@
 
       const filas = [];
       participantesAprobados.forEach((p, idx) => {
-        // Construir lista de integrantes
         const integrantes = [{ nombre: p.nombre, esCapitan: true }];
         if (p.miembro2 && p.miembro2.trim()) integrantes.push({ nombre: p.miembro2.trim(), esCapitan: false });
         if (p.miembro3 && p.miembro3.trim()) integrantes.push({ nombre: p.miembro3.trim(), esCapitan: false });
@@ -195,7 +203,6 @@
       });
 
       tbody.innerHTML = filas.join('');
-
     } catch (e) {
       console.error('Error al cargar participantes:', e);
       showToast('Error al cargar participantes: ' + e.message);
@@ -203,7 +210,6 @@
   }
 
   async function generarTodos() {
-    // Contar total de integrantes
     let totalIntegrantes = 0;
     participantesAprobados.forEach(p => {
       totalIntegrantes++;
@@ -224,19 +230,18 @@
         if (p.miembro3 && p.miembro3.trim()) integrantes.push(p.miembro3.trim());
 
         for (const nombre of integrantes) {
-          const data = {
-            action: 'guardarCertificado',
-            correo: p.correo,
-            nombre_completo: nombre,
-            categoria: p.categoria,
-            institucion: p.institucion,
-            evento: 'SucreBot 2026',
-            fecha_evento: fechaEvento,
-            tipo_certificado: 'participacion'
-          };
           const response = await fetch(GAS_URL, {
             method: 'POST',
-            body: JSON.stringify(data),
+            body: JSON.stringify({
+              action: 'guardarCertificado',
+              correo: p.correo,
+              nombre_completo: nombre,
+              categoria: p.categoria,
+              institucion: p.institucion,
+              evento: 'SucreBot 2026',
+              fecha_evento: fechaEvento,
+              tipo_certificado: 'participacion'
+            }),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }
           });
           const result = await response.json();
