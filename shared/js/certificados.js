@@ -3,133 +3,321 @@
 // Ubicación: /shared/js/certificados.js
 // ════════════════════════════════════════════════════════════════════════
 
+const LOGO_SUCRE = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/logosucre.png';
+const LOGO_CLUB  = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/club-robotica-fondo-blanco.png';
+
+// ── TEMPLATE HTML DEL DIPLOMA ─────────────────────────────────────────
 const CERTIFICADO_TEMPLATE = `
-<div class="certificado-container" id="certificado-preview">
-  <div class="certificado-bg"></div>
-  <div class="certificado-border"></div>
-  <div class="cert-badge {{TIPO_CLASS}}">{{TIPO_BADGE}}</div>
-    
-  <div class="certificado-content">
-    <div class="cert-header">
-      <div class="cert-logo">🏛️</div>
-      <div class="cert-institution">Instituto Superior Universitario Sucre</div>
-      <div class="cert-institution" style="font-size: 13px; margin-top: 5px;">Club de Robótica Sucre</div>
+<div class="cert-wrap" id="certificado-preview">
+
+  <!-- Fondo geométrico decorativo -->
+  <div class="cert-geo">
+    <div class="cert-geo-tri cert-geo-tri1"></div>
+    <div class="cert-geo-tri cert-geo-tri2"></div>
+    <div class="cert-geo-tri cert-geo-tri3"></div>
+    <div class="cert-geo-tri cert-geo-tri4"></div>
+  </div>
+
+  <!-- Columna izquierda: contenido principal -->
+  <div class="cert-main">
+
+    <!-- Logo Instituto Sucre -->
+    <div class="cert-logo-top">
+      <img src="${LOGO_SUCRE}" alt="Instituto Superior Universitario Sucre" class="cert-logo-sucre"/>
     </div>
-    
-    <div class="cert-title">
-      <div class="cert-title-main">CERTIFICADO</div>
-      <div class="cert-subtitle">De Reconocimiento</div>
+
+    <!-- Texto central -->
+    <div class="cert-body">
+      <p class="cert-confiere">Confiere el presente</p>
+
+      <div class="cert-titulo-wrap">
+        <p class="cert-titulo">CERTIFICADO A:</p>
+      </div>
+
+      <p class="cert-nombre">{{NOMBRE_PARTICIPANTE}}</p>
+      <p class="cert-equipo">{{INTEGRANTES_EQUIPO}}</p>
+
+      <p class="cert-logro">{{TEXTO_LOGRO}}</p>
     </div>
-    
-    <div class="cert-conferir">Confiere el presente certificado a:</div>
-    
-    <div class="cert-nombre">{{NOMBRE_PARTICIPANTE}}</div>
-    <div class="cert-equipo" id="cert-equipo-section">{{INTEGRANTES_EQUIPO}}</div>
-    
-    <div class="cert-logro">{{TEXTO_LOGRO}}</div>
-    
-    <div class="cert-detalles">
-      <strong>Categoría:</strong> {{CATEGORIA}} <br>
-      <strong>Evento:</strong> {{EVENTO}} | {{FECHA_EVENTO}}
+
+    <!-- Fecha y lugar -->
+    <div class="cert-fecha-wrap">
+      <p class="cert-fecha">Quito D.M., {{FECHA_EVENTO}}</p>
     </div>
-    
-    <div class="cert-footer">
+
+    <!-- Firmas -->
+    <div class="cert-firmas">
       <div class="cert-firma">
-        <div class="cert-firma-linea">
-          <span class="cert-firma-nombre">Christian Ortega</span>
-        </div>
-        <div class="cert-firma-cargo">Presidente del Comité Organizador</div>
+        <div class="cert-firma-linea"></div>
+        <p class="cert-firma-nombre">Ing. Christian Ortega MSc.</p>
+        <p class="cert-firma-cargo">PRESIDENTE DEL COMITÉ ORGANIZADOR<br>SUCREBOT</p>
       </div>
       <div class="cert-firma">
-        <div class="cert-firma-linea">
-          <span class="cert-firma-nombre">Fabricio Tipantocta</span>
-        </div>
-        <div class="cert-firma-cargo">Coordinador de Relaciones</div>
+        <div class="cert-firma-linea"></div>
+        <p class="cert-firma-nombre">Ing. Fabricio Tipantocta MSc.</p>
+        <p class="cert-firma-cargo">RELACIONES INTERINSTITUCIONALES<br>DEL COMITÉ ORGANIZADOR SUCREBOT</p>
       </div>
     </div>
+
+    <!-- Código verificación -->
+    <div class="cert-codigo-wrap">
+      <p class="cert-codigo">{{CODIGO_VERIFICACION}}</p>
+    </div>
   </div>
-  
-  <div class="cert-auspiciantes">
-    <div class="cert-auspiciante-logo" title="Carrera Electrónica">⚡</div>
-    <div class="cert-auspiciante-logo" title="Club Robótica Sucre">🤖</div>
-    <div class="cert-auspiciante-logo" title="EPN">🎓</div>
-    <div class="cert-auspiciante-logo" title="BitBot Team">💻</div>
-    <div class="cert-auspiciante-logo" title="Rivaluz">💡</div>
+
+  <!-- Columna derecha: organiza / auspician -->
+  <div class="cert-sidebar">
+    <p class="cert-sidebar-title">ORGANIZA</p>
+    <div class="cert-sidebar-logo-wrap">
+      <span class="cert-sidebar-carrera">Carrera<br><strong>Electrónica</strong></span>
+    </div>
+
+    <p class="cert-sidebar-title" style="margin-top:24px;">AUSPICIAN</p>
+    <div class="cert-sidebar-logo-wrap">
+      <img src="${LOGO_CLUB}" alt="Club Robótica Sucre" class="cert-sidebar-logo"/>
+    </div>
   </div>
-  
-  <div class="cert-qr">
-    <div class="cert-qr-code"><span style="font-size: 48px;">⬛</span></div>
-    <div class="cert-qr-codigo">{{CODIGO_VERIFICACION}}</div>
-  </div>
+
 </div>
 `;
 
+// ── CSS DEL DIPLOMA ───────────────────────────────────────────────────
 const CERTIFICADO_CSS = `
-.certificado-container {
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;900&display=swap');
+
+.cert-wrap {
   width: 1123px;
   height: 794px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #f0f0f0;
+  display: flex;
   position: relative;
   overflow: hidden;
-  font-family: 'Exo 2', sans-serif;
-  margin: 0 auto;
+  font-family: 'Exo 2', Arial, sans-serif;
+  box-sizing: border-box;
 }
-.certificado-bg {
+
+/* ── Fondo geométrico ── */
+.cert-geo {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  opacity: 0.08;
-  background-image: 
-    repeating-linear-gradient(45deg, transparent, transparent 35px, #1a5ca8 35px, #1a5ca8 70px),
-    repeating-linear-gradient(-45deg, transparent, transparent 35px, #1a5ca8 35px, #1a5ca8 70px);
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
 }
-.certificado-border {
+.cert-geo-tri {
   position: absolute;
-  top: 30px;
-  left: 30px;
-  right: 30px;
-  bottom: 30px;
-  border: 8px solid #1a5ca8;
-  border-radius: 20px;
-  box-shadow: inset 0 0 0 4px #ffffff, inset 0 0 0 8px #d4af37;
+  background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(220,225,235,0.4) 100%);
 }
-.certificado-content {
-  position: relative;
-  z-index: 2;
-  padding: 60px 80px;
-  height: 100%;
+.cert-geo-tri1 {
+  width: 480px; height: 480px;
+  top: -80px; left: -60px;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  transform: rotate(-10deg);
+}
+.cert-geo-tri2 {
+  width: 380px; height: 380px;
+  top: 60px; left: 80px;
+  clip-path: polygon(0 0, 100% 30%, 20% 100%);
+  transform: rotate(5deg);
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(200,210,225,0.3) 100%);
+}
+.cert-geo-tri3 {
+  width: 300px; height: 600px;
+  bottom: -100px; left: -40px;
+  clip-path: polygon(40% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, rgba(180,195,215,0.25) 0%, rgba(150,170,200,0.15) 100%);
+}
+.cert-geo-tri4 {
+  width: 200px; height: 300px;
+  bottom: 100px; left: 200px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: rgba(255,255,255,0.5);
+  transform: rotate(-15deg);
+}
+
+/* ── Columna principal ── */
+.cert-main {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  padding: 36px 48px 28px 48px;
+  position: relative;
+  z-index: 1;
+  border-right: 1px solid rgba(26,92,168,0.15);
 }
-.cert-header { text-align: center; margin-bottom: 30px; }
-.cert-logo { font-size: 48px; margin-bottom: 10px; }
-.cert-institution { font-size: 16px; font-weight: 700; color: #1a5ca8; letter-spacing: 2px; text-transform: uppercase; }
-.cert-title { text-align: center; margin: 20px 0; }
-.cert-title-main { font-size: 56px; font-weight: 900; color: #1a5ca8; letter-spacing: 8px; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
-.cert-subtitle { font-size: 14px; color: #666; margin-top: 8px; letter-spacing: 3px; text-transform: uppercase; }
-.cert-conferir { text-align: center; font-size: 18px; color: #333; margin: 25px 0 20px; letter-spacing: 1px; }
-.cert-nombre { text-align: center; font-family: 'Great Vibes', cursive; font-size: 64px; color: #1a3a6b; margin: 20px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); border-bottom: 3px solid #d4af37; padding-bottom: 10px; max-width: 800px; margin-left: auto; margin-right: auto; }
-.cert-equipo { text-align: center; font-size: 15px; color: #555; margin: 6px 0 0; font-style: italic; min-height: 0; }
-.cert-logro { text-align: center; font-size: 18px; color: #333; line-height: 1.8; margin: 25px 0; max-width: 900px; margin-left: auto; margin-right: auto; }
-.cert-logro strong { color: #1a5ca8; font-weight: 900; }
-.cert-detalles { text-align: center; font-size: 16px; color: #555; margin: 20px 0; }
-.cert-detalles strong { color: #1a5ca8; font-weight: 700; }
-.cert-footer { margin-top: auto; display: flex; justify-content: space-around; align-items: flex-end; padding: 0 60px; }
-.cert-firma { text-align: center; flex: 1; }
-.cert-firma-linea { width: 280px; height: 2px; background: #333; margin: 0 auto 10px; position: relative; }
-.cert-firma-nombre { font-family: 'Great Vibes', cursive; font-size: 32px; color: #1a3a6b; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); white-space: nowrap; }
-.cert-firma-cargo { font-size: 13px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-.cert-auspiciantes { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; align-items: center; }
-.cert-auspiciante-logo { width: 80px; height: 80px; background: rgba(255,255,255,0.9); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.cert-qr { position: absolute; bottom: 40px; right: 40px; text-align: center; }
-.cert-qr-code { width: 100px; height: 100px; background: #ffffff; border: 3px solid #1a5ca8; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; margin-bottom: 5px; }
-.cert-qr-codigo { font-size: 10px; color: #999; font-family: monospace; }
-.cert-badge { position: absolute; top: 50px; right: 50px; padding: 12px 24px; border-radius: 30px; font-weight: 900; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-.cert-badge.primer { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #8b6914; border: 3px solid #b8860b; }
-.cert-badge.segundo { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); color: #4a4a4a; border: 3px solid #808080; }
-.cert-badge.tercer { background: linear-gradient(135deg, #cd7f32 0%, #e89a5d 100%); color: #ffffff; border: 3px solid #8b5a2b; }
-.cert-badge.participacion { background: linear-gradient(135deg, #1a5ca8 0%, #2980b9 100%); color: #ffffff; border: 3px solid #0d3a6b; }
 
+/* Logo Sucre */
+.cert-logo-top {
+  margin-bottom: 12px;
+}
+.cert-logo-sucre {
+  height: 90px;
+  object-fit: contain;
+}
+
+/* Cuerpo */
+.cert-body {
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cert-confiere {
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 8px 0;
+  font-weight: 400;
+}
+
+.cert-titulo-wrap {
+  margin-bottom: 10px;
+}
+.cert-titulo {
+  font-size: 36px;
+  font-weight: 900;
+  color: #1a5ca8;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.cert-nombre {
+  font-size: 42px;
+  font-weight: 900;
+  color: #1a3a6b;
+  margin: 4px 0;
+  line-height: 1.1;
+  text-align: center;
+  max-width: 680px;
+}
+
+.cert-equipo {
+  font-size: 15px;
+  color: #555;
+  font-style: italic;
+  margin: 0 0 16px 0;
+  min-height: 0;
+}
+
+.cert-logro {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.cert-logro strong { color: #1a5ca8; font-weight: 700; }
+
+/* Fecha */
+.cert-fecha-wrap {
+  width: 100%;
+  text-align: right;
+  padding-right: 20px;
+  margin-bottom: 16px;
+}
+.cert-fecha {
+  font-size: 15px;
+  color: #444;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Firmas */
+.cert-firmas {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 40px;
+  margin-bottom: 12px;
+}
+.cert-firma {
+  flex: 1;
+  text-align: center;
+}
+.cert-firma-linea {
+  width: 100%;
+  height: 1.5px;
+  background: #333;
+  margin-bottom: 8px;
+}
+.cert-firma-nombre {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a3a6b;
+  margin: 0 0 3px 0;
+}
+.cert-firma-cargo {
+  font-size: 10px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Código */
+.cert-codigo-wrap { width: 100%; text-align: center; }
+.cert-codigo { font-size: 9px; color: #aaa; font-family: monospace; margin: 0; letter-spacing: 1px; }
+
+/* ── Sidebar derecha ── */
+.cert-sidebar {
+  width: 200px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.cert-sidebar-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #1a3a6b;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0 0 16px 0;
+  text-align: center;
+}
+
+.cert-sidebar-logo-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.cert-sidebar-carrera {
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+  line-height: 1.4;
+  border-left: 3px solid #1a5ca8;
+  padding-left: 8px;
+}
+.cert-sidebar-carrera strong {
+  font-size: 18px;
+  font-style: italic;
+  color: #1a3a6b;
+  display: block;
+}
+
+.cert-sidebar-logo {
+  width: 140px;
+  object-fit: contain;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* ── Modal ── */
 .cert-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
 .cert-modal.show { display: flex; }
 .cert-modal-content { background: #ffffff; border-radius: 16px; padding: 30px; max-width: 1200px; width: 100%; max-height: 90vh; overflow: auto; position: relative; }
@@ -144,6 +332,7 @@ const CERTIFICADO_CSS = `
 .btn-guardar-cert:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 `;
 
+// ── HELPERS ───────────────────────────────────────────────────────────
 function obtenerTextoLogro(tipo, categoria) {
   const textos = {
     '1er': `Por haber obtenido el <strong>PRIMER LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.`,
@@ -164,46 +353,28 @@ function obtenerDatosTipo(tipo) {
   return datos[tipo] || datos['participacion'];
 }
 
-// ── PREVIEW ──────────────────────────────────────────────────────────────
-// idx        → índice en participantesAprobados
-// nombreOverride → nombre del integrante (opcional, si es miembro 2 o 3)
-// tipoOverride   → tipo del select (opcional)
-// mIdxOverride   → índice del miembro para leer el select correcto
+// ── PREVIEW ───────────────────────────────────────────────────────────
 function previewCertificado(idx, nombreOverride, tipoOverride, mIdxOverride) {
   const participante = participantesAprobados[idx];
-  
-  // Determinar qué select leer
-  const selectId = mIdxOverride !== undefined
-    ? 'tipo-' + idx + '-' + mIdxOverride
-    : 'tipo-' + idx;
+  const selectId = mIdxOverride !== undefined ? 'tipo-' + idx + '-' + mIdxOverride : 'tipo-' + idx;
   const tipo = tipoOverride || document.getElementById(selectId)?.value || 'participacion';
-  
   const nombreFinal = nombreOverride || participante.nombre;
   const fechaEvento = document.getElementById('fecha-evento').value;
-  
-  const datosTipo  = obtenerDatosTipo(tipo);
-  const textoLogro = obtenerTextoLogro(tipo, participante.categoria);
-  const codigoTemp = 'CERT-2026-PREVIEW';
 
-  // Para el certificado individual: los otros integrantes aparecen en "junto a:"
+  const textoLogro = obtenerTextoLogro(tipo, participante.categoria);
+
   const todosIntegrantes = [participante.nombre];
   if (participante.miembro2 && participante.miembro2.trim()) todosIntegrantes.push(participante.miembro2.trim());
   if (participante.miembro3 && participante.miembro3.trim()) todosIntegrantes.push(participante.miembro3.trim());
   const otrosIntegrantes = todosIntegrantes.filter(n => n !== nombreFinal);
-  const textoEquipo = otrosIntegrantes.length > 0
-    ? 'junto a: ' + otrosIntegrantes.join(' &amp; ')
-    : '';
+  const textoEquipo = otrosIntegrantes.length > 0 ? 'junto a: ' + otrosIntegrantes.join(' &amp; ') : '';
 
   let htmlCert = CERTIFICADO_TEMPLATE
-    .replace(/\{\{TIPO_CLASS\}\}/g, datosTipo.clase)
-    .replace(/\{\{TIPO_BADGE\}\}/g, datosTipo.badge)
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
     .replace(/\{\{INTEGRANTES_EQUIPO\}\}/g, textoEquipo)
     .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
-    .replace(/\{\{CATEGORIA\}\}/g, participante.categoria)
-    .replace(/\{\{EVENTO\}\}/g, 'SucreBot 2026')
     .replace(/\{\{FECHA_EVENTO\}\}/g, fechaEvento)
-    .replace(/\{\{CODIGO_VERIFICACION\}\}/g, codigoTemp);
+    .replace(/\{\{CODIGO_VERIFICACION\}\}/g, 'CERT-2026-PREVIEW');
 
   let modal = document.getElementById('cert-modal');
   if (!modal) {
@@ -231,6 +402,7 @@ function previewCertificado(idx, nombreOverride, tipoOverride, mIdxOverride) {
 
     const previewContainer = document.createElement('div');
     previewContainer.id = 'cert-preview-container';
+    previewContainer.style.cssText = 'overflow-x:auto;';
 
     const actions = document.createElement('div');
     actions.className = 'cert-modal-actions';
@@ -248,12 +420,9 @@ function previewCertificado(idx, nombreOverride, tipoOverride, mIdxOverride) {
     document.body.appendChild(modal);
   }
 
-  // Guardar datos del integrante actual en el botón
   const saveBtn = document.getElementById('btn-guardar-cert');
   if (saveBtn) {
-    saveBtn.onclick = function() {
-      guardarYSubirCertificado(idx, nombreFinal, tipo);
-    };
+    saveBtn.onclick = function() { guardarYSubirCertificado(idx, nombreFinal, tipo); };
   }
 
   document.getElementById('cert-preview-container').innerHTML = htmlCert;
@@ -265,9 +434,7 @@ function cerrarModalCertificado() {
   if (modal) modal.classList.remove('show');
 }
 
-// ── GUARDAR Y SUBIR ───────────────────────────────────────────────────────
-// nombreOverride → nombre del integrante específico
-// tipoOverride   → tipo de certificado
+// ── GUARDAR Y SUBIR ───────────────────────────────────────────────────
 async function guardarYSubirCertificado(idx, nombreOverride, tipoOverride) {
   const participante = participantesAprobados[idx];
   const nombreFinal  = nombreOverride || participante.nombre;
@@ -276,11 +443,9 @@ async function guardarYSubirCertificado(idx, nombreOverride, tipoOverride) {
 
   const saveBtn = document.getElementById('btn-guardar-cert');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Guardando...'; }
-
   showToast('⏳ Guardando certificado en el sistema...');
 
   try {
-    // PASO 1: Guardar en Sheets
     const data = {
       action: 'guardarCertificado',
       correo: participante.correo,
@@ -304,12 +469,11 @@ async function guardarYSubirCertificado(idx, nombreOverride, tipoOverride) {
     showToast('⏳ Generando PDF y subiendo a Drive...');
     if (saveBtn) saveBtn.textContent = '⏳ Subiendo a Drive...';
 
-    // PASO 2: Generar PDF con el nombre correcto del integrante
     const driveUrl = await generarYSubirPDF(participante, tipo, fechaEvento, codigo, nombreFinal);
 
     cerrarModalCertificado();
     showToast('✅ Diploma de ' + nombreFinal + ' guardado en Drive');
-    console.log('Diploma subido a Drive:', driveUrl);
+    console.log('Diploma subido:', driveUrl);
 
   } catch (e) {
     console.error('Error:', e);
@@ -319,37 +483,29 @@ async function guardarYSubirCertificado(idx, nombreOverride, tipoOverride) {
   }
 }
 
-// ── GENERAR PDF ───────────────────────────────────────────────────────────
+// ── GENERAR PDF ───────────────────────────────────────────────────────
 async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert, nombreOverride) {
   if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
     await cargarLibreriasPDF();
   }
 
   const nombreFinal = nombreOverride || participante.nombre;
-  const datosTipo   = obtenerDatosTipo(tipo);
   const textoLogro  = obtenerTextoLogro(tipo, participante.categoria);
 
-  // "junto a:" con los otros integrantes
   const todosIntegrantes = [participante.nombre];
   if (participante.miembro2 && participante.miembro2.trim()) todosIntegrantes.push(participante.miembro2.trim());
   if (participante.miembro3 && participante.miembro3.trim()) todosIntegrantes.push(participante.miembro3.trim());
   const otrosIntegrantes = todosIntegrantes.filter(n => n !== nombreFinal);
-  const textoEquipo = otrosIntegrantes.length > 0
-    ? 'junto a: ' + otrosIntegrantes.join(' & ')
-    : '';
+  const textoEquipo = otrosIntegrantes.length > 0 ? 'junto a: ' + otrosIntegrantes.join(' & ') : '';
 
   const tempDiv = document.createElement('div');
   tempDiv.style.position = 'absolute';
   tempDiv.style.left = '-9999px';
   tempDiv.style.top = '0';
   tempDiv.innerHTML = CERTIFICADO_TEMPLATE
-    .replace(/\{\{TIPO_CLASS\}\}/g, datosTipo.clase)
-    .replace(/\{\{TIPO_BADGE\}\}/g, datosTipo.badge)
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
     .replace(/\{\{INTEGRANTES_EQUIPO\}\}/g, textoEquipo)
     .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
-    .replace(/\{\{CATEGORIA\}\}/g, participante.categoria)
-    .replace(/\{\{EVENTO\}\}/g, 'SucreBot 2026')
     .replace(/\{\{FECHA_EVENTO\}\}/g, fechaEvento)
     .replace(/\{\{CODIGO_VERIFICACION\}\}/g, codigoCert);
 
@@ -359,31 +515,25 @@ async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert, nom
     await document.fonts.ready;
 
     const canvas = await html2canvas(tempDiv.firstElementChild, {
-      scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff'
+      scale: 2, useCORS: true, logging: false, backgroundColor: '#f0f0f0'
     });
 
     const { jsPDF } = jspdf;
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, 210);
 
-    const pdfBase64 = pdf.output('datauristring').split(',')[1];
-    const fileName  = 'Diploma_' + nombreFinal.replace(/\s+/g, '_') + '_' + codigoCert + '.pdf';
+    const pdfBase64  = pdf.output('datauristring').split(',')[1];
+    const fileName   = 'Diploma_' + nombreFinal.replace(/\s+/g, '_') + '_' + codigoCert + '.pdf';
 
     const uploadResp = await fetch(CONFIG.GAS_URL(), {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'uploadDiploma',
-        base64: pdfBase64,
-        fileName: fileName,
-        codigo: codigoCert
-      }),
+      body: JSON.stringify({ action: 'uploadDiploma', base64: pdfBase64, fileName, codigo: codigoCert }),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
     const uploadResult = await uploadResp.json();
     if (!uploadResult.ok) throw new Error(uploadResult.error || 'Error al subir a Drive');
 
     return uploadResult.url;
-
   } finally {
     document.body.removeChild(tempDiv);
   }
@@ -391,29 +541,24 @@ async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert, nom
 
 async function cargarLibreriasPDF() {
   return new Promise((resolve, reject) => {
-    const script1 = document.createElement('script');
-    script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    script1.onload = () => {
-      const script2 = document.createElement('script');
-      script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-      script2.onload = resolve;
-      script2.onerror = reject;
-      document.head.appendChild(script2);
+    const s1 = document.createElement('script');
+    s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s1.onload = () => {
+      const s2 = document.createElement('script');
+      s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s2.onload = resolve;
+      s2.onerror = reject;
+      document.head.appendChild(s2);
     };
-    script1.onerror = reject;
-    document.head.appendChild(script1);
+    s1.onerror = reject;
+    document.head.appendChild(s1);
   });
 }
 
+// ── INICIALIZAR CSS ───────────────────────────────────────────────────
 (function initCertificados() {
   const style = document.createElement('style');
   style.textContent = CERTIFICADO_CSS;
   document.head.appendChild(style);
-
-  const linkFont = document.createElement('link');
-  linkFont.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap';
-  linkFont.rel = 'stylesheet';
-  document.head.appendChild(linkFont);
-
   console.log('✅ Sistema de certificados inicializado');
 })();
