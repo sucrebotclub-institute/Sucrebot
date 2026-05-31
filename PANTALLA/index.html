@@ -1189,23 +1189,58 @@ function seleccionarManual(catId) {
   pausaTimer = setTimeout(() => { pausaRot = false; }, 20000);
 }
 
-/* ── Carga de datos ── */
+/* ── Carga de datos — 2 requests en lugar de 22 ── */
 async function cargarDatos() {
-  await Promise.all(CATEGORIAS.map(async cat => {
-    try {
-      const [rE, rA] = await Promise.all([
-        fetch(`${GAS}?action=getEstado&ruta=${cat.id}`, { redirect:'follow' }),
-        fetch(`${GAS}?action=getActivo&ruta=${cat.id}`,  { redirect:'follow' })
-      ]);
-      const [dE, dA] = await Promise.all([rE.json(), rA.json()]);
-      estadoPorCat[cat.id] = dE?.estado || dE || null;
-      activoPorCat[cat.id] = dA?.raw ? (() => { try { return JSON.parse(dA.raw); } catch { return null; } })() : null;
-    } catch { /* silenciar por cat */ }
-  }));
+  try {
+    // Un solo request para todos los estados + uno para todos los activos
+    const [rEstados, rActivos] = await Promise.all([
+      fetch(`${GAS}?action=getAllEstados`, { redirect: 'follow' }),
+      fetch(`${GAS}?action=getAllActivos`,  { redirect: 'follow' })
+    ]);
 
+    const [dEstados, dActivos] = await Promise.all([
+      rEstados.json(),
+      rActivos.json()
+    ]);
+
+    // getAllEstados devuelve { ruta: { rondasData, rondaActual }, ... }
+    if (dEstados && typeof dEstados === 'object') {
+      Object.entries(dEstados).forEach(([ruta, estado]) => {
+        estadoPorCat[ruta] = estado;
+      });
+    }
+
+    // getAllActivos devuelve { ruta: { raw, ts }, ... }
+    if (dActivos && typeof dActivos === 'object') {
+      Object.entries(dActivos).forEach(([ruta, activo]) => {
+        activoPorCat[ruta] = activo?.raw
+          ? (() => { try { return JSON.parse(activo.raw); } catch { return null; } })()
+          : null;
+      });
+    }
+
+  } catch (err) {
+    console.warn('[PANTALLA] Error en carga bulk, reintentando individual...', err);
+    // Fallback: si el bulk falla, intentar individualmente
+    await Promise.all(CATEGORIAS.map(async cat => {
+      try {
+        const [rE, rA] = await Promise.all([
+          fetch(`${GAS}?action=getEstado&ruta=${cat.id}`, { redirect: 'follow' }),
+          fetch(`${GAS}?action=getActivo&ruta=${cat.id}`,  { redirect: 'follow' })
+        ]);
+        const [dE, dA] = await Promise.all([rE.json(), rA.json()]);
+        estadoPorCat[cat.id] = dE?.estado || dE || null;
+        activoPorCat[cat.id] = dA?.raw
+          ? (() => { try { return JSON.parse(dA.raw); } catch { return null; } })()
+          : null;
+      } catch { /* silenciar por cat */ }
+    }));
+  }
+
+  // Primera carga: seleccionar categoría inicial y arrancar rotación
   if (!catActiva) {
     const conDatos = catsConDatos();
-    const conActivo = CATEGORIAS.map(c=>c.id).find(id => activoPorCat[id]?.id);
+    const conActivo = CATEGORIAS.map(c => c.id).find(id => activoPorCat[id]?.id);
     mostrarCategoria(conActivo || conDatos[0] || CATEGORIAS[0].id, false);
     iniciarRotacion();
   } else {
