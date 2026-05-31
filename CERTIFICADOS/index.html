@@ -11,10 +11,8 @@
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
     body { background: #ffffff !important; color: #1a1c28 !important; }
-
     .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; position: relative; }
 
-    /* ── HERO ── */
     .page-hero { padding: 40px 0 32px; border-bottom: 1px solid #e0e4ea; margin-bottom: 32px; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
@@ -23,114 +21,47 @@
     .page-hero h2 span { color: #1a5ca8; }
     .page-hero p { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #4a5568; margin-top: 10px; }
 
-    /* ── FILTROS ── */
-    .filtros-bar {
-      display: flex;
-      gap: 14px;
-      align-items: center;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-      background: #f8f9fb;
-      padding: 16px 20px;
-      border-radius: 12px;
-      border: 1px solid #e0e4ea;
-    }
+    .filtros-bar { display: flex; gap: 14px; align-items: center; margin-bottom: 28px; flex-wrap: wrap; background: #f8f9fb; padding: 16px 20px; border-radius: 12px; border: 1px solid #e0e4ea; }
     .filtros-bar label { font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; white-space: nowrap; }
-    .filtro-select, .busqueda-input {
-      padding: 10px 14px;
-      border: 2px solid #e0e4ea;
-      border-radius: 8px;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      color: #1a3a6b;
-      outline: none;
-      transition: border-color 0.2s;
-      background: #ffffff;
-    }
+    .filtro-select, .busqueda-input { padding: 10px 14px; border: 2px solid #e0e4ea; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; color: #1a3a6b; outline: none; transition: border-color 0.2s; background: #ffffff; }
     .filtro-select { cursor: pointer; min-width: 220px; }
     .busqueda-input { flex: 1; min-width: 200px; }
     .filtro-select:focus, .busqueda-input:focus { border-color: #1a5ca8; }
     .busqueda-input::placeholder { color: #aab0be; font-weight: 400; }
 
-    /* ── CONTADOR ── */
-    .resultados-contador {
-      font-family: 'Orbitron', monospace;
-      font-size: 11px;
-      color: #7a7a8c;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
+    .resultados-contador { font-family: 'Orbitron', monospace; font-size: 11px; color: #7a7a8c; margin-bottom: 20px; letter-spacing: 1px; }
     .resultados-contador span { color: #1a5ca8; font-weight: 700; }
 
-    /* ── GRID DE TARJETAS ── */
-    .certs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
-    }
+    .certs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
 
-    .cert-card {
-      background: #ffffff;
-      border: 2px solid #e0e4ea;
-      border-radius: 16px;
-      padding: 22px;
-      transition: all 0.3s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+    .cert-card { background: #ffffff; border: 2px solid #e0e4ea; border-radius: 16px; padding: 22px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 14px; }
     .cert-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(26,92,168,0.15); border-color: #1a5ca8; }
 
     .cert-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-
     .cert-tipo { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
     .cert-tipo.participacion { background: #e8f4ff; color: #1a5ca8; }
     .cert-tipo.primer  { background: #ffd700; color: #8b6914; }
     .cert-tipo.segundo { background: #d8d8d8; color: #4a4a4a; }
     .cert-tipo.tercer  { background: #cd7f32; color: #ffffff; }
-
     .cert-codigo { font-family: 'Exo 2', monospace; font-size: 10px; color: #aab0be; background: #f4f7fb; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
 
     .cert-nombre { font-family: 'Exo 2', sans-serif; font-size: 19px; font-weight: 900; color: #1a3a6b; }
     .cert-categoria { font-size: 13px; color: #1a5ca8; font-weight: 700; margin-top: 2px; }
     .cert-institucion { font-size: 12px; color: #7a7a8c; margin-top: 2px; }
-
     .cert-fecha { font-size: 11px; color: #aab0be; font-family: 'Exo 2', sans-serif; }
 
-    .btn-ver-diploma {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%);
-      color: #ffffff;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 10px;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      box-shadow: 0 4px 12px rgba(26,92,168,0.3);
-    }
+    .btn-ver-diploma { display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; border: none; padding: 12px 20px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration: none; box-shadow: 0 4px 12px rgba(26,92,168,0.3); }
     .btn-ver-diploma:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.5); }
     .btn-ver-diploma.pendiente { background: #e0e4ea; color: #aab0be; cursor: not-allowed; box-shadow: none; }
     .btn-ver-diploma.pendiente:hover { transform: none; }
 
-    /* ── VACÍO ── */
     .vacio-msg { text-align: center; padding: 80px 20px; color: #7a7a8c; font-size: 14px; grid-column: 1 / -1; }
     .vacio-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; display: block; }
 
-    /* ── LOADING ── */
     .loading { text-align: center; padding: 60px 20px; grid-column: 1 / -1; }
     .loading-spinner { width: 40px; height: 40px; border: 4px solid #e0e4ea; border-top-color: #1a5ca8; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── TOAST ── */
     .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 12px; border-left: 5px solid #3dd68c; color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; padding: 14px 18px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 320px; }
     .toast.show { transform: translateY(0); opacity: 1; }
 
@@ -159,7 +90,6 @@
     <p>Busca y descarga tu diploma del Torneo SucreBot 2026</p>
   </div>
 
-  <!-- FILTROS -->
   <div class="filtros-bar">
     <label>🔍 FILTRAR:</label>
     <input type="text" class="busqueda-input" id="busqueda" placeholder="Busca por nombre o robot...">
@@ -214,48 +144,50 @@
   const GAS_URL = CONFIG.GAS_URL();
   let todosCerts = [];
 
-  // ── Cargar todos los certificados al iniciar ──
   async function cargarTodosCertificados() {
     try {
-      // Traemos todos los participantes aprobados para cruzar con certificados
-      const [resParts, resCerts] = await Promise.all([
-        fetch(GAS_URL + '?action=getParticipantes'),
-        fetch(GAS_URL + '?action=obtenerTodosCertificados')
-      ]);
-
-      const participantes = await resParts.json();
-      const certs = await resCerts.json();
-
-      // Si GAS no tiene la acción obtenerTodosCertificados aún,
-      // mostramos los certificados disponibles directamente
-      if (Array.isArray(certs) && certs.length > 0) {
-        todosCerts = certs;
-      } else {
-        // Fallback: cruzar participantes aprobados con certs vacíos
-        todosCerts = participantes
-          .filter(p => p.aprobado === 'APROBADO')
-          .map(p => ({
-            nombre_completo: p.nombre,
-            categoria: p.categoria,
-            institucion: p.institucion,
-            tipo_certificado: 'participacion',
-            archivoUrl: '',
-            codigo_verificacion: '',
-            fecha_generacion: '',
-            robot: p.robot
-          }));
+      // Intentar primero obtenerTodosCertificados
+      try {
+        const resCerts = await fetch(GAS_URL + '?action=obtenerTodosCertificados');
+        const certs = await resCerts.json();
+        if (Array.isArray(certs) && certs.length > 0) {
+          todosCerts = certs;
+          renderCerts(todosCerts);
+          return;
+        }
+      } catch(e) {
+        console.warn('obtenerTodosCertificados no disponible, usando fallback');
       }
 
+      // Fallback: participantes aprobados
+      const resParts = await fetch(GAS_URL + '?action=getParticipantes');
+      const participantes = await resParts.json();
+
+      if (!Array.isArray(participantes)) throw new Error('Respuesta inválida');
+
+      todosCerts = participantes
+        .filter(p => p.aprobado === 'APROBADO')
+        .map(p => ({
+          nombre_completo: p.nombre,
+          categoria: p.categoria,
+          institucion: p.institucion,
+          tipo_certificado: 'participacion',
+          archivoUrl: '',
+          codigo_verificacion: '',
+          fecha_generacion: '',
+          robot: p.robot
+        }));
+
       renderCerts(todosCerts);
+
     } catch (e) {
       console.error('Error:', e);
       document.getElementById('certs-grid').innerHTML =
-        '<div class="vacio-msg"><span class="vacio-icon">⚠️</span>Error al cargar certificados.<br>Intenta nuevamente.</div>';
+        '<div class="vacio-msg"><span class="vacio-icon">⚠️</span>Error al cargar certificados.<br>Intenta nuevamente más tarde.</div>';
       document.getElementById('contador').textContent = '';
     }
   }
 
-  // ── Renderizar tarjetas ──
   function renderCerts(lista) {
     const grid    = document.getElementById('certs-grid');
     const counter = document.getElementById('contador');
@@ -285,7 +217,9 @@
            </a>`
         : `<div class="btn-ver-diploma pendiente">
              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+               <circle cx="12" cy="12" r="10"/>
+               <line x1="12" y1="8" x2="12" y2="12"/>
+               <line x1="12" y1="16" x2="12.01" y2="16"/>
              </svg>
              Pendiente de generación
            </div>`;
@@ -308,7 +242,6 @@
     }).join('');
   }
 
-  // ── Filtrar ──
   function filtrar() {
     const busqueda  = document.getElementById('busqueda').value.toLowerCase().trim();
     const categoria = document.getElementById('filtro-categoria').value;
