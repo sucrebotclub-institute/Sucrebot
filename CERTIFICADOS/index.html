@@ -3,64 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Mis Certificados</title>
+  <title>SucreBot — Certificados</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../shared/js/config.js"></script>
-   
-  <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  
   <style>
-    body {
-      background: #ffffff !important;
-      color: #1a1c28 !important;
-    }
-    
+    body { background: #ffffff !important; color: #1a1c28 !important; }
+
     .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; position: relative; }
+
+    /* ── HERO ── */
     .page-hero { padding: 40px 0 32px; border-bottom: 1px solid #e0e4ea; margin-bottom: 32px; }
-    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; border: 1px solid #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
-    .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-    .page-hero-line { flex: 0 0 40px; height: 3px; background: #1a5ca8; border-radius: 2px; }
     .page-hero h2 { font-family: 'Exo 2', sans-serif; font-size: 2.6rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #1a3a6b; line-height: 1; }
-    .page-hero p { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #4a5568; }
-    
-    .sin-sesion-card { background: var(--sucre-blue); border: 1.5px solid #1a5ca8; border-radius: 16px; padding: 60px 40px; box-shadow: 0 4px 24px rgba(26,92,168,0.25); text-align: center; max-width: 600px; margin: 0 auto; }
-    .sin-sesion-icon { font-size: 72px; margin-bottom: 24px; }
-    .sin-sesion-title { font-family: 'Orbitron', monospace; font-size: 1.8rem; letter-spacing: 2px; color: #ffffff; margin-bottom: 12px; }
-    .sin-sesion-subtitle { font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 32px; line-height: 1.6; }
-    .btn-ir-login { display: inline-flex; align-items: center; gap: 10px; background: #1a3a6b; color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: 10px; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 16px rgba(26,92,168,0.4); }
-    .btn-ir-login:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,92,168,0.6); }
-    
-    .certificados-container { max-width: 900px; margin: 0 auto; }
-    .certificados-titulo { font-family: 'Orbitron', monospace; font-size: 1.2rem; letter-spacing: 2px; color: #1a3a6b; margin-bottom: 24px; }
-    .certificados-grid { display: grid; gap: 20px; }
-    
-    .certificado-card { background: #ffffff; border: 2px solid #e0e4ea; border-radius: 16px; padding: 24px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .certificado-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(26,92,168,0.2); border-color: #1a5ca8; }
-    .certificado-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; }
-    .certificado-tipo { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1px; padding: 6px 14px; border-radius: 8px; }
-    .certificado-tipo.participacion { background: #e8f4ff; color: #1a5ca8; }
-    .certificado-tipo.primer { background: #ffd700; color: #8b6914; }
-    .certificado-tipo.segundo { background: #c0c0c0; color: #4a4a4a; }
-    .certificado-tipo.tercer { background: #cd7f32; color: #ffffff; }
-    .certificado-codigo { font-family: 'Exo 2', sans-serif; font-size: 11px; color: #7a7a8c; background: #f4f7fb; padding: 4px 10px; border-radius: 6px; }
-    .certificado-info { margin-bottom: 20px; }
-    .certificado-evento { font-family: 'Exo 2', sans-serif; font-size: 20px; font-weight: 900; letter-spacing: 1px; color: #1a3a6b; margin-bottom: 12px; text-transform: uppercase; }
-    .certificado-detalles { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 13px; }
-    .certificado-label { color: #7a7a8c; font-weight: 600; }
-    .certificado-value { color: #2a3f5f; font-weight: 700; }
-    .certificado-actions { display: flex; gap: 12px; }
+    .page-hero h2 span { color: #1a5ca8; }
+    .page-hero p { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #4a5568; margin-top: 10px; }
 
-    /* Botón Ver Diploma — link */
-    .btn-descargar {
-      flex: 1;
-      background: #1a5ca8;
+    /* ── FILTROS ── */
+    .filtros-bar {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      background: #f8f9fb;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e4ea;
+    }
+    .filtros-bar label { font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; white-space: nowrap; }
+    .filtro-select, .busqueda-input {
+      padding: 10px 14px;
+      border: 2px solid #e0e4ea;
+      border-radius: 8px;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a3a6b;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #ffffff;
+    }
+    .filtro-select { cursor: pointer; min-width: 220px; }
+    .busqueda-input { flex: 1; min-width: 200px; }
+    .filtro-select:focus, .busqueda-input:focus { border-color: #1a5ca8; }
+    .busqueda-input::placeholder { color: #aab0be; font-weight: 400; }
+
+    /* ── CONTADOR ── */
+    .resultados-contador {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: #7a7a8c;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+    .resultados-contador span { color: #1a5ca8; font-weight: 700; }
+
+    /* ── GRID DE TARJETAS ── */
+    .certs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .cert-card {
+      background: #ffffff;
+      border: 2px solid #e0e4ea;
+      border-radius: 16px;
+      padding: 22px;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .cert-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(26,92,168,0.15); border-color: #1a5ca8; }
+
+    .cert-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+
+    .cert-tipo { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
+    .cert-tipo.participacion { background: #e8f4ff; color: #1a5ca8; }
+    .cert-tipo.primer  { background: #ffd700; color: #8b6914; }
+    .cert-tipo.segundo { background: #d8d8d8; color: #4a4a4a; }
+    .cert-tipo.tercer  { background: #cd7f32; color: #ffffff; }
+
+    .cert-codigo { font-family: 'Exo 2', monospace; font-size: 10px; color: #aab0be; background: #f4f7fb; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+
+    .cert-nombre { font-family: 'Exo 2', sans-serif; font-size: 19px; font-weight: 900; color: #1a3a6b; }
+    .cert-categoria { font-size: 13px; color: #1a5ca8; font-weight: 700; margin-top: 2px; }
+    .cert-institucion { font-size: 12px; color: #7a7a8c; margin-top: 2px; }
+
+    .cert-fecha { font-size: 11px; color: #aab0be; font-family: 'Exo 2', sans-serif; }
+
+    .btn-ver-diploma {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%);
       color: #ffffff;
       border: none;
       padding: 12px 20px;
@@ -70,35 +114,34 @@
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 16px rgba(26,92,168,0.3);
       text-decoration: none;
+      box-shadow: 0 4px 12px rgba(26,92,168,0.3);
     }
-    .btn-descargar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.5); }
-    .btn-descargar:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
-    
-    .vacio-msg { text-align: center; padding: 60px 20px; color: #7a7a8c; font-size: 14px; }
-    .vacio-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; }
-    
-    .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); border-left: 5px solid var(--green); color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 0.84rem; font-weight: 600; padding: 14px 18px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 320px; display: flex; align-items: flex-start; gap: 10px; pointer-events: none; }
-    .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    
+    .btn-ver-diploma:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.5); }
+    .btn-ver-diploma.pendiente { background: #e0e4ea; color: #aab0be; cursor: not-allowed; box-shadow: none; }
+    .btn-ver-diploma.pendiente:hover { transform: none; }
+
+    /* ── VACÍO ── */
+    .vacio-msg { text-align: center; padding: 80px 20px; color: #7a7a8c; font-size: 14px; grid-column: 1 / -1; }
+    .vacio-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; display: block; }
+
+    /* ── LOADING ── */
+    .loading { text-align: center; padding: 60px 20px; grid-column: 1 / -1; }
+    .loading-spinner { width: 40px; height: 40px; border: 4px solid #e0e4ea; border-top-color: #1a5ca8; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 12px; border-left: 5px solid #3dd68c; color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; padding: 14px 18px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 320px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
     @media (max-width: 768px) {
-      .certificado-card-header { flex-direction: column; gap: 12px; }
-      .certificado-detalles { grid-template-columns: 1fr; }
+      .filtros-bar { flex-direction: column; align-items: stretch; }
+      .filtro-select, .busqueda-input { width: 100%; min-width: unset; }
+      .certs-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-
-<div id="g_id_onload"
-     data-client_id="14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com"
-     data-callback="handleCredentialResponse"
-     data-auto_prompt="false">
-</div>
 
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
@@ -112,45 +155,56 @@
       <div class="page-hero-badge-dot"></div>
       SucreBot 2026 · Certificados
     </div>
-    <h2>MIS <span>CERTIFICADOS</span></h2>
-    <div class="page-hero-sub">
-      <div class="page-hero-line"></div>
-      <p>CONSULTA Y DESCARGA TUS CERTIFICADOS DE PARTICIPACIÓN</p>
-    </div>
-  </div>
-  
-  <!-- MENSAJE SIN SESIÓN -->
-  <div id="sin-sesion" style="display:none;">
-    <div class="sin-sesion-card">
-      <div class="sin-sesion-icon">🔒</div>
-      <h3 class="sin-sesion-title">SESIÓN REQUERIDA</h3>
-      <p class="sin-sesion-subtitle">Para ver tus certificados, primero debes iniciar sesión en el sistema SucreBot con el correo con el que te registraste.</p>
-      <a href="../MI-REGISTRO/" class="btn-ir-login">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
-        </svg>
-        Ir a iniciar sesión
-      </a>
-    </div>
+    <h2>CERTIFICADOS DE <span>PARTICIPACIÓN</span></h2>
+    <p>Busca y descarga tu diploma del Torneo SucreBot 2026</p>
   </div>
 
-  <!-- CONTENEDOR CERTIFICADOS -->
-  <div id="certificados-container" class="certificados-container" style="display:none;">
-    <div class="certificados-titulo">📜 TUS CERTIFICADOS</div>
-    <div class="certificados-grid" id="certificados-lista">
-      <div class="vacio-msg">
-        <div class="vacio-icon">⏳</div>
-        Cargando certificados...
-      </div>
+  <!-- FILTROS -->
+  <div class="filtros-bar">
+    <label>🔍 FILTRAR:</label>
+    <input type="text" class="busqueda-input" id="busqueda" placeholder="Busca por nombre o robot...">
+    <label>📂 CATEGORÍA:</label>
+    <select class="filtro-select" id="filtro-categoria">
+      <option value="">Todas las categorías</option>
+      <optgroup label="🏅 AMATEUR">
+        <option value="Insectos">Insectos</option>
+        <option value="Trepador (Amateur)">Trepador (Amateur)</option>
+        <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+      </optgroup>
+      <optgroup label="🏆 PRO">
+        <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+        <option value="Minisumo Autónomo">Minisumo Autónomo</option>
+        <option value="Minisumo RC">Minisumo RC</option>
+        <option value="Bailarín">Bailarín</option>
+        <option value="Batalla">Batalla</option>
+        <option value="Trepador (Pro)">Trepador (Pro)</option>
+        <option value="Robot soccer">Robot soccer</option>
+      </optgroup>
+      <optgroup label="⭐ EXTRA">
+        <option value="Cubo Rubik">Cubo Rubik</option>
+      </optgroup>
+    </select>
+    <label>🏅 TIPO:</label>
+    <select class="filtro-select" id="filtro-tipo" style="min-width:160px;">
+      <option value="">Todos los tipos</option>
+      <option value="participacion">Participación</option>
+      <option value="1er">Primer Lugar</option>
+      <option value="2do">Segundo Lugar</option>
+      <option value="3er">Tercer Lugar</option>
+    </select>
+  </div>
+
+  <div class="resultados-contador" id="contador">Cargando...</div>
+
+  <div class="certs-grid" id="certs-grid">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      Cargando certificados...
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">
-  <span id="toast-icon">✓</span>
-  <span id="toast-msg"></span>
-</div>
-
+<div class="toast" id="toast"></div>
 <div data-include="../shared/components/footer.html"></div>
 
 <script src="../shared/js/load-components.js"></script>
@@ -158,109 +212,133 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  let userEmail = '';
+  let todosCerts = [];
 
-  document.addEventListener('componentsLoaded', function() {
-    const savedUser = localStorage.getItem('sucrebot_user');
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        userEmail = userData.email;
-        document.getElementById('certificados-container').style.display = 'block';
-        cargarCertificados();
-      } catch (e) {
-        document.getElementById('sin-sesion').style.display = 'block';
-      }
-    } else {
-      document.getElementById('sin-sesion').style.display = 'block';
-    }
-  });
-
-  async function cargarCertificados() {
-    const lista = document.getElementById('certificados-lista');
-    lista.innerHTML = '<div class="vacio-msg"><div class="vacio-icon">⏳</div>Cargando certificados...</div>';
-    
+  // ── Cargar todos los certificados al iniciar ──
+  async function cargarTodosCertificados() {
     try {
-      const response = await fetch(GAS_URL + '?action=obtenerCertificados&correo=' + encodeURIComponent(userEmail));
-      const certificados = await response.json();
-      
-      if (!Array.isArray(certificados) || certificados.length === 0) {
-        lista.innerHTML = `
-          <div class="vacio-msg">
-            <div class="vacio-icon">📭</div>
-            No tienes certificados registrados aún.<br>
-            Los certificados se generan después del evento.
-          </div>
-        `;
-        return;
+      // Traemos todos los participantes aprobados para cruzar con certificados
+      const [resParts, resCerts] = await Promise.all([
+        fetch(GAS_URL + '?action=getParticipantes'),
+        fetch(GAS_URL + '?action=obtenerTodosCertificados')
+      ]);
+
+      const participantes = await resParts.json();
+      const certs = await resCerts.json();
+
+      // Si GAS no tiene la acción obtenerTodosCertificados aún,
+      // mostramos los certificados disponibles directamente
+      if (Array.isArray(certs) && certs.length > 0) {
+        todosCerts = certs;
+      } else {
+        // Fallback: cruzar participantes aprobados con certs vacíos
+        todosCerts = participantes
+          .filter(p => p.aprobado === 'APROBADO')
+          .map(p => ({
+            nombre_completo: p.nombre,
+            categoria: p.categoria,
+            institucion: p.institucion,
+            tipo_certificado: 'participacion',
+            archivoUrl: '',
+            codigo_verificacion: '',
+            fecha_generacion: '',
+            robot: p.robot
+          }));
       }
-      
-      lista.innerHTML = certificados.map(cert => {
-        let tipoClass = 'participacion';
-        let tipoTexto = '🏅 PARTICIPACIÓN';
-        if (cert.tipo_certificado === '1er') { tipoClass = 'primer'; tipoTexto = '🥇 PRIMER LUGAR'; }
-        else if (cert.tipo_certificado === '2do') { tipoClass = 'segundo'; tipoTexto = '🥈 SEGUNDO LUGAR'; }
-        else if (cert.tipo_certificado === '3er') { tipoClass = 'tercer'; tipoTexto = '🥉 TERCER LUGAR'; }
-        
-        // Botón: si hay URL en Drive → link directo; si no → deshabilitado
-        const botonAccion = cert.archivoUrl
-          ? `<a class="btn-descargar" href="${cert.archivoUrl}" target="_blank" rel="noopener">
-               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
-               </svg>
-               Ver Diploma
-             </a>`
-          : `<button class="btn-descargar" disabled>
-               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-               </svg>
-               Pendiente de generación
-             </button>`;
-        
-        return `
-          <div class="certificado-card">
-            <div class="certificado-card-header">
-              <span class="certificado-tipo ${tipoClass}">${tipoTexto}</span>
-              <span class="certificado-codigo">${cert.codigo_verificacion || '—'}</span>
-            </div>
-            <div class="certificado-info">
-              <div class="certificado-evento">${cert.evento || 'SucreBot 2026'}</div>
-              <div class="certificado-detalles">
-                <span class="certificado-label">Categoría:</span>
-                <span class="certificado-value">${cert.categoria || '—'}</span>
-                <span class="certificado-label">Institución:</span>
-                <span class="certificado-value">${cert.institucion || '—'}</span>
-                <span class="certificado-label">Fecha del evento:</span>
-                <span class="certificado-value">${cert.fecha_evento || '—'}</span>
-                <span class="certificado-label">Generado el:</span>
-                <span class="certificado-value">${cert.fecha_generacion || '—'}</span>
-              </div>
-            </div>
-            <div class="certificado-actions">
-              ${botonAccion}
-            </div>
-          </div>
-        `;
-      }).join('');
-      
+
+      renderCerts(todosCerts);
     } catch (e) {
-      lista.innerHTML = `<div class="vacio-msg"><div class="vacio-icon">⚠️</div>Error al cargar certificados.<br>Intenta nuevamente más tarde.</div>`;
-      showToast('Error al cargar certificados: ' + e.message, true);
+      console.error('Error:', e);
+      document.getElementById('certs-grid').innerHTML =
+        '<div class="vacio-msg"><span class="vacio-icon">⚠️</span>Error al cargar certificados.<br>Intenta nuevamente.</div>';
+      document.getElementById('contador').textContent = '';
     }
   }
 
-  let toastTimer = null;
-  function showToast(msg, error = false) {
-    const t = document.getElementById('toast');
-    const icon = document.getElementById('toast-icon');
-    const text = document.getElementById('toast-msg');
-    text.textContent = msg;
-    if (error) { icon.textContent = '⚠'; t.style.borderLeftColor = '#e05555'; t.style.color = '#ffb3b3'; t.style.background = '#2a1a1a'; }
-    else { icon.textContent = '✓'; t.style.borderLeftColor = '#3dd68c'; t.style.color = '#d0f5e8'; t.style.background = '#1e2438'; }
-    if (toastTimer) { clearTimeout(toastTimer); t.classList.remove('show'); }
-    requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
-    toastTimer = setTimeout(() => { t.classList.remove('show'); toastTimer = null; }, 3500);
+  // ── Renderizar tarjetas ──
+  function renderCerts(lista) {
+    const grid    = document.getElementById('certs-grid');
+    const counter = document.getElementById('contador');
+
+    if (lista.length === 0) {
+      grid.innerHTML = '<div class="vacio-msg"><span class="vacio-icon">📭</span>No se encontraron certificados con esos filtros.</div>';
+      counter.innerHTML = 'Mostrando <span>0</span> certificados';
+      return;
+    }
+
+    counter.innerHTML = 'Mostrando <span>' + lista.length + '</span> certificado' + (lista.length !== 1 ? 's' : '');
+
+    grid.innerHTML = lista.map(cert => {
+      let tipoClass = 'participacion', tipoTexto = '🏅 PARTICIPACIÓN';
+      if (cert.tipo_certificado === '1er') { tipoClass = 'primer';  tipoTexto = '🥇 PRIMER LUGAR'; }
+      if (cert.tipo_certificado === '2do') { tipoClass = 'segundo'; tipoTexto = '🥈 SEGUNDO LUGAR'; }
+      if (cert.tipo_certificado === '3er') { tipoClass = 'tercer';  tipoTexto = '🥉 TERCER LUGAR'; }
+
+      const boton = cert.archivoUrl
+        ? `<a class="btn-ver-diploma" href="${cert.archivoUrl}" target="_blank" rel="noopener">
+             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+               <polyline points="7 10 12 15 17 10"/>
+               <line x1="12" y1="15" x2="12" y2="3"/>
+             </svg>
+             Descargar Diploma
+           </a>`
+        : `<div class="btn-ver-diploma pendiente">
+             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+             </svg>
+             Pendiente de generación
+           </div>`;
+
+      return `
+        <div class="cert-card">
+          <div class="cert-card-top">
+            <span class="cert-tipo ${tipoClass}">${tipoTexto}</span>
+            ${cert.codigo_verificacion ? '<span class="cert-codigo">' + cert.codigo_verificacion + '</span>' : ''}
+          </div>
+          <div>
+            <div class="cert-nombre">${cert.nombre_completo || '—'}</div>
+            <div class="cert-categoria">📂 ${cert.categoria || '—'}</div>
+            <div class="cert-institucion">🎓 ${cert.institucion || '—'}</div>
+          </div>
+          ${cert.fecha_generacion ? '<div class="cert-fecha">Generado: ' + cert.fecha_generacion + '</div>' : ''}
+          ${boton}
+        </div>
+      `;
+    }).join('');
   }
+
+  // ── Filtrar ──
+  function filtrar() {
+    const busqueda  = document.getElementById('busqueda').value.toLowerCase().trim();
+    const categoria = document.getElementById('filtro-categoria').value;
+    const tipo      = document.getElementById('filtro-tipo').value;
+
+    const filtrados = todosCerts.filter(c => {
+      const matchBusqueda = !busqueda ||
+        (c.nombre_completo || '').toLowerCase().includes(busqueda) ||
+        (c.robot || '').toLowerCase().includes(busqueda) ||
+        (c.institucion || '').toLowerCase().includes(busqueda);
+      const matchCategoria = !categoria || c.categoria === categoria;
+      const matchTipo      = !tipo      || c.tipo_certificado === tipo;
+      return matchBusqueda && matchCategoria && matchTipo;
+    });
+
+    renderCerts(filtrados);
+  }
+
+  document.getElementById('busqueda').addEventListener('input', filtrar);
+  document.getElementById('filtro-categoria').addEventListener('change', filtrar);
+  document.getElementById('filtro-tipo').addEventListener('change', filtrar);
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  document.addEventListener('componentsLoaded', cargarTodosCertificados);
 </script>
 
 </body>
