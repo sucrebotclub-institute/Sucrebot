@@ -1203,14 +1203,15 @@ async function cargarDatos() {
       rActivos.json()
     ]);
 
-    // getAllEstados devuelve { ruta: { rondasData, rondaActual }, ... }
+    // getAllEstados devuelve { ruta: { estado: { rondasData, rondaActual }, ts }, ... }
     if (dEstados && typeof dEstados === 'object') {
-      Object.entries(dEstados).forEach(([ruta, estado]) => {
-        estadoPorCat[ruta] = estado;
+      Object.entries(dEstados).forEach(([ruta, wrapper]) => {
+        // GAS envuelve en { estado: {...}, ts: }
+        estadoPorCat[ruta] = wrapper?.estado || wrapper || null;
       });
     }
 
-    // getAllActivos devuelve { ruta: { raw, ts }, ... }
+    // getAllActivos devuelve { ruta: { raw: "JSON_string", ts }, ... }
     if (dActivos && typeof dActivos === 'object') {
       Object.entries(dActivos).forEach(([ruta, activo]) => {
         activoPorCat[ruta] = activo?.raw
@@ -1220,21 +1221,27 @@ async function cargarDatos() {
     }
 
   } catch (err) {
-    console.warn('[PANTALLA] Error en carga bulk, reintentando individual...', err);
-    // Fallback: si el bulk falla, intentar individualmente
-    await Promise.all(CATEGORIAS.map(async cat => {
-      try {
-        const [rE, rA] = await Promise.all([
-          fetch(`${GAS}?action=getEstado&ruta=${cat.id}`, { redirect: 'follow' }),
-          fetch(`${GAS}?action=getActivo&ruta=${cat.id}`,  { redirect: 'follow' })
-        ]);
-        const [dE, dA] = await Promise.all([rE.json(), rA.json()]);
-        estadoPorCat[cat.id] = dE?.estado || dE || null;
-        activoPorCat[cat.id] = dA?.raw
-          ? (() => { try { return JSON.parse(dA.raw); } catch { return null; } })()
-          : null;
-      } catch { /* silenciar por cat */ }
-    }));
+    console.warn('[PANTALLA] Error en carga bulk, reintentando...', err);
+    // Fallback: reintentar los mismos endpoints bulk
+    try {
+      const [rE2, rA2] = await Promise.all([
+        fetch(`${GAS}?action=getAllEstados`, { redirect: 'follow' }),
+        fetch(`${GAS}?action=getAllActivos`,  { redirect: 'follow' })
+      ]);
+      const [dE2, dA2] = await Promise.all([rE2.json(), rA2.json()]);
+      if (dE2 && typeof dE2 === 'object') {
+        Object.entries(dE2).forEach(([ruta, wrapper]) => {
+          estadoPorCat[ruta] = wrapper?.estado || wrapper || null;
+        });
+      }
+      if (dA2 && typeof dA2 === 'object') {
+        Object.entries(dA2).forEach(([ruta, activo]) => {
+          activoPorCat[ruta] = activo?.raw
+            ? (() => { try { return JSON.parse(activo.raw); } catch { return null; } })()
+            : null;
+        });
+      }
+    } catch { /* fallback también falló */ }
   }
 
   // Primera carga: seleccionar categoría inicial y arrancar rotación
