@@ -36,8 +36,16 @@
     .fecha-evento input { padding: 10px 14px; border: 2px solid #e0e4ea; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; color: #1a3a6b; outline: none; }
     .fecha-evento input:focus { border-color: #1a5ca8; }
     .btn-generar-todos { background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; border: none; padding: 12px 24px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(26,92,168,0.3); }
-    .btn-generar-todos:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.5); }
-    .btn-generar-todos:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-generar-todos:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,168,0.5); }
+    .btn-generar-todos:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── BARRA DE PROGRESO ── */
+    .progreso-wrap { display: none; background: #f8f9fb; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #e0e4ea; }
+    .progreso-wrap.visible { display: block; }
+    .progreso-label { font-family: 'Orbitron', monospace; font-size: 11px; color: #1a5ca8; margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
+    .progreso-bar-bg { background: #e0e4ea; border-radius: 8px; height: 10px; overflow: hidden; }
+    .progreso-bar-fill { height: 100%; background: linear-gradient(90deg, #1a5ca8, #5bc8f0); border-radius: 8px; transition: width 0.3s ease; width: 0%; }
+    .progreso-texto { font-family: 'DM Mono', monospace; font-size: 11px; color: #7a7a8c; margin-top: 6px; }
 
     /* ── SECCIONES ── */
     .seccion { margin-bottom: 40px; }
@@ -56,19 +64,17 @@
     .tabla tbody tr { background: #ffffff; transition: all 0.2s; }
     .tabla tbody tr:nth-child(even) { background: #f8f9fb; }
     .tabla tbody tr:hover { background: #e8f4ff; }
-    .tabla td { padding: 13px 14px; font-size: 13px; color: #2a3f5f; border-bottom: 1px solid #e0e4ea; font-family: 'Exo 2', sans-serif; font-weight: 600; }
+    .tabla td { padding: 13px 14px; font-size: 13px; color: #2a3f5f; border-bottom: 1px solid #e0e4ea; font-family: 'Exo 2', sans-serif; font-weight: 600; vertical-align: middle; }
     .tabla tbody tr:last-child td { border-bottom: none; }
-
-    /* Filas de miembro */
     .tabla tbody tr.fila-miembro { background: #f0f7ff; }
     .tabla tbody tr.fila-miembro:nth-child(even) { background: #e8f2ff; }
     .tabla tbody tr.fila-miembro:hover { background: #d8ecff; }
 
-    /* Tabla generados */
     .tabla.generados thead { background: linear-gradient(135deg, #0e9f6e 0%, #057a55 100%); }
     .tabla.generados tbody tr { background: #ffffff; }
     .tabla.generados tbody tr:nth-child(even) { background: #f0fdf4; }
     .tabla.generados tbody tr:hover { background: #dcfce7; }
+    .tabla.generados tbody tr.fila-miembro { background: #f0fdf4; }
 
     /* ── BADGES ── */
     .badge-capitan { display: inline-block; background: #1a5ca8; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
@@ -76,8 +82,16 @@
 
     /* ── TIPO SELECT ── */
     .tipo-select { padding: 7px 10px; border: 2px solid #e0e4ea; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 600; color: #1a3a6b; cursor: pointer; }
-    .btn-preview { background: #5bc8f0; color: #0f3566; border: none; padding: 7px 14px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-    .btn-preview:hover { background: #90dcff; transform: translateY(-1px); }
+
+    /* ── BOTONES ACCIÓN ── */
+    .btn-preview { background: #e8f4ff; color: #1a5ca8; border: 1.5px solid #5bc8f0; padding: 7px 12px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-preview:hover { background: #5bc8f0; color: #0f3566; }
+
+    .btn-generar-uno { background: linear-gradient(135deg, #1a5ca8 0%, #0f3d75 100%); color: #ffffff; border: none; padding: 7px 12px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(26,92,168,0.3); white-space: nowrap; }
+    .btn-generar-uno:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,92,168,0.5); }
+    .btn-generar-uno:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .acciones-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
     /* ── CÓDIGO Y LINK ── */
     .cert-codigo-tag { font-family: 'DM Mono', monospace; font-size: 11px; background: #f0f4f8; color: #1a5ca8; padding: 3px 8px; border-radius: 6px; }
@@ -95,6 +109,7 @@
       .page-hero { padding: 40px 0 24px; }
       .page-hero h2 { font-size: 1.8rem; }
       .controles-top { flex-direction: column; align-items: stretch; }
+      .acciones-cell { flex-direction: column; }
     }
   </style>
 </head>
@@ -133,12 +148,21 @@
         <input type="text" id="fecha-evento" value="16 de julio de 2026" />
       </div>
       <button class="btn-generar-todos" id="btn-generar-todos" onclick="generarTodos()">
-        ⚡ Generar pendientes como PARTICIPACIÓN
+        ⚡ Generar todos los pendientes
       </button>
     </div>
 
-    <!-- SECCIÓN: PENDIENTES -->
-    <div class="seccion" id="seccion-pendientes">
+    <!-- Barra de progreso -->
+    <div class="progreso-wrap" id="progreso-wrap">
+      <div class="progreso-label" id="progreso-label">Generando certificados...</div>
+      <div class="progreso-bar-bg">
+        <div class="progreso-bar-fill" id="progreso-bar"></div>
+      </div>
+      <div class="progreso-texto" id="progreso-texto">0 / 0</div>
+    </div>
+
+    <!-- PENDIENTES -->
+    <div class="seccion">
       <div class="seccion-header">
         <span class="seccion-titulo pendientes">⏳ Pendientes de certificado</span>
         <span class="seccion-count pendientes" id="count-pendientes">0</span>
@@ -150,7 +174,7 @@
             <th>INTEGRANTE</th>
             <th>CATEGORÍA</th>
             <th>INSTITUCIÓN</th>
-            <th>TIPO CERTIFICADO</th>
+            <th>TIPO</th>
             <th>ACCIONES</th>
           </tr>
         </thead>
@@ -160,8 +184,8 @@
       </table>
     </div>
 
-    <!-- SECCIÓN: GENERADOS -->
-    <div class="seccion" id="seccion-generados">
+    <!-- GENERADOS -->
+    <div class="seccion">
       <div class="seccion-header">
         <span class="seccion-titulo generados">✅ Certificados generados</span>
         <span class="seccion-count generados" id="count-generados">0</span>
@@ -203,10 +227,9 @@
 
   let participantesAprobados = [];
   let certificadosExistentes = [];
-
-  // Estructura: { nombre, robot, categoria, institucion, idx, mIdx, esCapitan }
-  let integrantesPendientes = [];
-  let integrantesGenerados  = [];
+  let integrantesPendientes  = [];
+  let integrantesGenerados   = [];
+  let generandoEnMasa        = false;
 
   document.addEventListener('componentsLoaded', function() {
     const savedUser = localStorage.getItem('sucrebot_user');
@@ -214,34 +237,25 @@
     try {
       const userData = JSON.parse(savedUser);
       if (!STAFF_EMAILS_CERTIFICADOS.includes(userData.email)) {
-        document.getElementById('acceso-denegado').style.display = 'block';
-        return;
+        document.getElementById('acceso-denegado').style.display = 'block'; return;
       }
       document.getElementById('contenido-staff').style.display = 'block';
       cargarDatos();
-    } catch (e) {
-      document.getElementById('acceso-denegado').style.display = 'block';
-    }
+    } catch (e) { document.getElementById('acceso-denegado').style.display = 'block'; }
   });
 
+  // ── CARGAR Y CLASIFICAR ──────────────────────────────────────────────
   async function cargarDatos() {
     document.getElementById('tabla-pendientes').innerHTML = '<tr><td colspan="6" class="vacio-msg">Cargando...</td></tr>';
     document.getElementById('tabla-generados').innerHTML  = '<tr><td colspan="6" class="vacio-msg">Cargando...</td></tr>';
-
     try {
       const [resParts, resCerts] = await Promise.all([
         fetch(GAS_URL + '?action=getParticipantes'),
         fetch(GAS_URL + '?action=obtenerTodosCertificados')
       ]);
-
       participantesAprobados = (await resParts.json()).filter(p => p.aprobado === 'APROBADO');
       const certsRaw = await resCerts.json();
       certificadosExistentes = Array.isArray(certsRaw) ? certsRaw : [];
-
-      // Conjunto de nombres con certificado (en minúsculas para comparación)
-      const nombresConCert = new Set(
-        certificadosExistentes.map(c => (c.nombre_completo || '').toLowerCase().trim())
-      );
 
       integrantesPendientes = [];
       integrantesGenerados  = [];
@@ -252,59 +266,41 @@
         if (p.miembro3 && p.miembro3.trim()) integrantes.push({ nombre: p.miembro3.trim(), esCapitan: false });
 
         integrantes.forEach((integrante, mIdx) => {
-          const nombreNorm = integrante.nombre.toLowerCase().trim();
           const cert = certificadosExistentes.find(
-            c => (c.nombre_completo || '').toLowerCase().trim() === nombreNorm
+            c => (c.nombre_completo || '').toLowerCase().trim() === integrante.nombre.toLowerCase().trim()
           );
-
-          const entrada = {
-            nombre: integrante.nombre,
-            esCapitan: integrante.esCapitan,
-            robot: p.robot,
-            categoria: p.categoria,
-            institucion: p.institucion,
-            idx, mIdx,
-            cert: cert || null
-          };
-
-          if (cert) {
-            integrantesGenerados.push(entrada);
-          } else {
-            integrantesPendientes.push(entrada);
-          }
+          const entrada = { nombre: integrante.nombre, esCapitan: integrante.esCapitan, robot: p.robot, categoria: p.categoria, institucion: p.institucion, correo: p.correo, idx, mIdx, cert: cert || null };
+          if (cert) integrantesGenerados.push(entrada);
+          else integrantesPendientes.push(entrada);
         });
       });
 
       renderPendientes();
       renderGenerados();
-
     } catch (e) {
-      console.error('Error al cargar:', e);
+      console.error(e);
       showToast('❌ Error al cargar datos: ' + e.message);
     }
   }
 
-  // ── RENDER PENDIENTES ──
+  // ── RENDER PENDIENTES ────────────────────────────────────────────────
   function renderPendientes() {
     const tbody = document.getElementById('tabla-pendientes');
     document.getElementById('count-pendientes').textContent = integrantesPendientes.length;
+    document.getElementById('btn-generar-todos').disabled = integrantesPendientes.length === 0 || generandoEnMasa;
 
     if (integrantesPendientes.length === 0) {
       tbody.innerHTML = '<tr><td colspan="6" class="vacio-msg">🎉 Todos los integrantes tienen certificado</td></tr>';
-      document.getElementById('btn-generar-todos').disabled = true;
       return;
     }
-
-    document.getElementById('btn-generar-todos').disabled = false;
 
     tbody.innerHTML = integrantesPendientes.map((item, i) => {
       const badge = item.esCapitan
         ? '<span class="badge-capitan">Capitán</span>'
         : '<span class="badge-miembro">Miembro</span>';
       const filaClass = item.esCapitan ? '' : ' class="fila-miembro"';
-
       return `
-        <tr${filaClass}>
+        <tr${filaClass} id="fila-pendiente-${i}">
           <td>${item.robot || '—'}</td>
           <td>${item.nombre}${badge}</td>
           <td>${item.categoria || '—'}</td>
@@ -318,16 +314,20 @@
             </select>
           </td>
           <td>
-            <button class="btn-preview" onclick="previewCertificado(${item.idx}, '${item.nombre.replace(/'/g, "\\'")}', null, ${item.mIdx})">
-              👁️ Preview
-            </button>
+            <div class="acciones-cell">
+              <button class="btn-preview" onclick="previewCertificado(${item.idx}, '${item.nombre.replace(/'/g, "\\'")}', null, ${item.mIdx})">
+                👁️ Preview
+              </button>
+              <button class="btn-generar-uno" id="btn-uno-${i}" onclick="generarUno(${i})">
+                📄 Generar diploma
+              </button>
+            </div>
           </td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
   }
 
-  // ── RENDER GENERADOS ──
+  // ── RENDER GENERADOS ─────────────────────────────────────────────────
   function renderGenerados() {
     const tbody = document.getElementById('tabla-generados');
     document.getElementById('count-generados').textContent = integrantesGenerados.length;
@@ -337,31 +337,18 @@
       return;
     }
 
-    const tipoTextos = {
-      'participacion': '🏅 Participación',
-      '1er': '🥇 Primer Lugar',
-      '2do': '🥈 Segundo Lugar',
-      '3er': '🥉 Tercer Lugar'
-    };
+    const tipoTextos = { 'participacion': '🏅 Participación', '1er': '🥇 Primer Lugar', '2do': '🥈 Segundo Lugar', '3er': '🥉 Tercer Lugar' };
 
     tbody.innerHTML = integrantesGenerados.map(item => {
       const cert = item.cert;
-      const badge = item.esCapitan
-        ? '<span class="badge-capitan">Capitán</span>'
-        : '<span class="badge-miembro">Miembro</span>';
+      const badge = item.esCapitan ? '<span class="badge-capitan">Capitán</span>' : '<span class="badge-miembro">Miembro</span>';
       const filaClass = item.esCapitan ? '' : ' class="fila-miembro"';
-
       const linkDiploma = cert.archivoUrl
         ? `<a class="cert-link" href="${cert.archivoUrl}" target="_blank" rel="noopener">
-             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-               <polyline points="7 10 12 15 17 10"/>
-               <line x1="12" y1="15" x2="12" y2="3"/>
-             </svg>
+             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
              Ver Diploma
            </a>`
         : `<span class="cert-link-pendiente">⏳ Sin PDF aún</span>`;
-
       return `
         <tr${filaClass}>
           <td>${item.robot || '—'}</td>
@@ -370,32 +357,93 @@
           <td>${tipoTextos[cert.tipo_certificado] || cert.tipo_certificado || '—'}</td>
           <td><span class="cert-codigo-tag">${cert.codigo_verificacion || '—'}</span></td>
           <td>${linkDiploma}</td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
   }
 
-  // ── GENERAR TODOS LOS PENDIENTES ──
-  async function generarTodos() {
-    if (integrantesPendientes.length === 0) {
-      showToast('✅ No hay pendientes');
-      return;
-    }
+  // ── GENERAR UNO (guardar + PDF + Drive) ──────────────────────────────
+  async function generarUno(i) {
+    const item = integrantesPendientes[i];
+    if (!item) return;
 
-    if (!confirm(`¿Generar certificados de PARTICIPACIÓN para ${integrantesPendientes.length} integrantes pendientes?`)) return;
+    const btn = document.getElementById('btn-uno-' + i);
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generando...'; }
 
-    const btn = document.getElementById('btn-generar-todos');
-    btn.disabled = true;
-    btn.textContent = '⏳ Generando...';
-
+    const p = participantesAprobados[item.idx];
+    const tipo = document.getElementById('tipo-' + item.idx + '-' + item.mIdx)?.value || 'participacion';
     const fechaEvento = document.getElementById('fecha-evento').value;
-    let generados = 0;
-    let errores   = 0;
 
-    for (const item of integrantesPendientes) {
+    try {
+      // PASO 1: Guardar en Sheets
+      const resp = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'guardarCertificado',
+          correo: p.correo,
+          nombre_completo: item.nombre,
+          categoria: item.categoria,
+          institucion: item.institucion,
+          evento: 'SucreBot 2026',
+          fecha_evento: fechaEvento,
+          tipo_certificado: tipo
+        }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+      const result = await resp.json();
+      if (!result.ok) throw new Error('Error al guardar en Sheets');
+
+      const codigo = result.codigo;
+      if (btn) btn.textContent = '⏳ Subiendo PDF...';
+
+      // PASO 2: Generar PDF y subir a Drive
+      const driveUrl = await generarYSubirPDF(p, tipo, fechaEvento, codigo, item.nombre);
+
+      showToast('✅ Diploma de ' + item.nombre + ' generado');
+
+      // Mover de pendientes a generados sin recargar todo
+      const entrada = { ...item, cert: { tipo_certificado: tipo, codigo_verificacion: codigo, archivoUrl: driveUrl, nombre_completo: item.nombre } };
+      integrantesPendientes.splice(i, 1);
+      integrantesGenerados.unshift(entrada);
+      renderPendientes();
+      renderGenerados();
+
+    } catch (e) {
+      console.error(e);
+      showToast('❌ Error con ' + item.nombre + ': ' + e.message);
+      if (btn) { btn.disabled = false; btn.textContent = '📄 Generar diploma'; }
+    }
+  }
+
+  // ── GENERAR TODOS (secuencial con barra de progreso) ─────────────────
+  async function generarTodos() {
+    if (integrantesPendientes.length === 0) { showToast('✅ No hay pendientes'); return; }
+    if (!confirm(`¿Generar diplomas para ${integrantesPendientes.length} integrantes pendientes?\n\nEsto puede tomar varios minutos.`)) return;
+
+    generandoEnMasa = true;
+    document.getElementById('btn-generar-todos').disabled = true;
+    document.getElementById('progreso-wrap').classList.add('visible');
+
+    const total = integrantesPendientes.length;
+    let completados = 0;
+    let errores = 0;
+
+    // Procesamos una copia para no mutar mientras iteramos
+    const pendientesCopia = [...integrantesPendientes];
+
+    for (let i = 0; i < pendientesCopia.length; i++) {
+      const item = pendientesCopia[i];
       const p = participantesAprobados[item.idx];
+      const tipo = document.getElementById('tipo-' + item.idx + '-' + item.mIdx)?.value || 'participacion';
+      const fechaEvento = document.getElementById('fecha-evento').value;
+
+      // Actualizar progreso
+      const pct = Math.round((i / total) * 100);
+      document.getElementById('progreso-bar').style.width = pct + '%';
+      document.getElementById('progreso-label').textContent = 'Generando: ' + item.nombre;
+      document.getElementById('progreso-texto').textContent = i + ' / ' + total + ' completados';
+
       try {
-        const response = await fetch(GAS_URL, {
+        const resp = await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify({
             action: 'guardarCertificado',
@@ -405,31 +453,47 @@
             institucion: item.institucion,
             evento: 'SucreBot 2026',
             fecha_evento: fechaEvento,
-            tipo_certificado: 'participacion'
+            tipo_certificado: tipo
           }),
           headers: { 'Content-Type': 'text/plain;charset=utf-8' }
         });
-        const result = await response.json();
-        if (result.ok) generados++;
-        else errores++;
-      } catch(e) {
+        const result = await resp.json();
+        if (!result.ok) throw new Error('Error Sheets');
+
+        const driveUrl = await generarYSubirPDF(p, tipo, fechaEvento, result.codigo, item.nombre);
+
+        const entrada = { ...item, cert: { tipo_certificado: tipo, codigo_verificacion: result.codigo, archivoUrl: driveUrl, nombre_completo: item.nombre } };
+        integrantesGenerados.unshift(entrada);
+        completados++;
+      } catch (e) {
+        console.error('Error con ' + item.nombre + ':', e);
         errores++;
       }
     }
 
-    showToast(`✅ ${generados} certificados generados${errores > 0 ? ' · ⚠️ ' + errores + ' errores' : ''}`);
+    // Limpiar pendientes que se procesaron
+    integrantesPendientes = integrantesPendientes.filter(item =>
+      !pendientesCopia.includes(item)
+    );
 
-    // Recargar datos para actualizar ambas tablas
-    await cargarDatos();
+    // Progreso al 100%
+    document.getElementById('progreso-bar').style.width = '100%';
+    document.getElementById('progreso-label').textContent = '¡Completado!';
+    document.getElementById('progreso-texto').textContent = completados + ' generados' + (errores > 0 ? ' · ' + errores + ' errores' : '');
 
-    btn.textContent = '⚡ Generar pendientes como PARTICIPACIÓN';
+    generandoEnMasa = false;
+    renderPendientes();
+    renderGenerados();
+    showToast(`✅ ${completados} diplomas generados${errores > 0 ? ' · ⚠️ ' + errores + ' errores' : ''}`);
+
+    setTimeout(() => document.getElementById('progreso-wrap').classList.remove('visible'), 4000);
   }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3500);
+    setTimeout(() => t.classList.remove('show'), 4000);
   }
 </script>
 
