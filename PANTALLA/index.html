@@ -1149,10 +1149,12 @@ function renderRanking(catId) {
     const posClase = ['','p1','p2','p3'][i+1] || '';
     const badgeCls = posMap[i+1] || 'n';
     const esActivo = activo?.id === p.id;
-    const chips = p.intentos.map(t => {
-      const isDNF = t === 'DNF' || t === '—';
+    const chips = p.intentos.map((t, idx) => {
+      const isDNF   = t === 'DNF';
       const isMejor = !isDNF && t === p.mejor;
-      return `<span class="chip ${isDNF ? 'dnf' : isMejor ? 'mejor' : ''}">${isDNF ? 'DNF' : esc(t)}</span>`;
+      const label   = isDNF ? 'DNF' : esc(t);
+      const star    = isMejor ? ' ★' : '';
+      return `<span class="chip ${isDNF ? 'dnf' : isMejor ? 'mejor' : ''}"><span style="opacity:0.55;font-size:0.6em;margin-right:2px;">I${idx+1}</span>${label}${star}</span>`;
     }).join('');
     const tiempoHtml = p.mejor
       ? `<div class="tiempo-val">${esc(p.mejor)}</div>`
