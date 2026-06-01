@@ -1042,9 +1042,13 @@ function contarClasificados(catId) {
   const e = estadoPorCat[catId];
   if (!e || !e.rondasData) return 0;
   const ids = new Set();
-  Object.values(e.rondasData).forEach(r =>
-    (r.clasificados || []).forEach(c => { if (c.tiempo && c.tiempo !== '—') ids.add(c.id); })
-  );
+  Object.values(e.rondasData).forEach(r => {
+    (r.clasificados || []).forEach(c => {
+      // Solo contar si tiene intentos reales (no solo '—')
+      const arr = (c.tiempos && c.tiempos.length > 0) ? c.tiempos : [c.tiempo];
+      if (arr.some(t => t && t !== '—')) ids.add(c.id);
+    });
+  });
   return ids.size;
 }
 
@@ -1108,7 +1112,10 @@ function renderRanking(catId) {
   Object.values(estado.rondasData).forEach(ronda => {
     (ronda.clasificados || []).forEach(c => {
       if (!porId[c.id]) porId[c.id] = { id:c.id, robot:c.robot||'—', nombre:c.nombre||c.id, institucion:c.institucion||'—', intentos:[] };
-      if (c.tiempo) porId[c.id].intentos.push(c.tiempo);
+      // Usar tiempos[] si existe (array completo de intentos), sino tiempo individual
+      // Ignorar '—' (participantes que aún no han competido)
+      const arr = (c.tiempos && c.tiempos.length > 0) ? c.tiempos : [c.tiempo];
+      arr.forEach(t => { if (t && t !== '—') porId[c.id].intentos.push(t); });
     });
   });
 
@@ -1116,7 +1123,7 @@ function renderRanking(catId) {
     const validos = p.intentos.filter(t => t !== '—' && t !== 'DNF');
     const mejor = validos.length ? validos.reduce((a,b) => parseT(a) <= parseT(b) ? a : b) : null;
     return { ...p, mejor };
-  }).filter(p => p.intentos.length > 0)
+  }).filter(p => p.intentos.length > 0)  // solo quienes tienen al menos 1 intento real
     .sort((a,b) => {
       if (!a.mejor && !b.mejor) return 0;
       if (!a.mejor) return 1;
