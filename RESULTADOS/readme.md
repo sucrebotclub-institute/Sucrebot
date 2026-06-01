@@ -1,3 +1,10 @@
+# RESULTADOS
+
+## ⚠️ Para resetear resultados.json (borrar datos de prueba)
+
+Reemplazar el contenido de `resultados.json` con:
+
+```json
 {
   "ts": 0,
   "actualizado": "—",
@@ -15,3 +22,7 @@
     "cr": []
   }
 }
+```
+
+## Nota
+Este archivo es actualizado automáticamente por GAS cada vez que se guarda un resultado.
