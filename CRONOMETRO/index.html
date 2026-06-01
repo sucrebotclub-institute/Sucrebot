@@ -16,214 +16,176 @@
       --cyan: #5bc8f0; --cyan-dark: #2b8ab8; --blue: #1a5ca8;
       --text: #ffffff; --text-dark: #0d1f42; --muted: #64748b;
       --border: #2d4a6e;
-      --sucre-blue: #1a5ca8;
-      --bg-gradient-start: #f0f4f8; --bg-gradient-end: #e1e8ed;
       --surface: #0d2847; --surface2: #1a3a6b; --surface-light: #ffffff;
-      --border2: #2d4a6e;
-      --accent: #5bc8f0; --accent2: #ff6b35;
+      --accent2: #ff6b35;
       --green: #3dd68c; --green-dark: #2ab870;
       --red: #ff3b3b; --red-dark: #cc2f2f;
       --yellow: #fbbf24;
       --font-display: 'Bebas Neue', sans-serif;
       --font-mono: 'DM Mono', monospace;
       --font-body: 'DM Sans', sans-serif;
+      --bg-start: #f0f4f8; --bg-end: #e1e8ed;
     }
     body {
-      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%) !important;
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%) !important;
       color: var(--text-dark) !important;
       min-height: 100vh;
-      position: relative;
     }
     body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background:
-        radial-gradient(circle at 20% 80%, rgba(91, 200, 240, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(26, 92, 168, 0.08) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: 0;
+      content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at 20% 80%, rgba(91,200,240,0.07) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(26,92,168,0.07) 0%, transparent 50%);
+      pointer-events: none; z-index: 0;
     }
+
+    /* ── Layout ── */
     .crono-wrapper {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 16px;
-      padding-top: 52px;
-      position: relative;
-      z-index: 1;
-      height: calc(100vh - 232px);
-      display: flex;
-      flex-direction: column;
+      max-width: 1400px; margin: 0 auto;
+      padding: 52px 16px 24px;
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      min-height: calc(100vh - 180px);
     }
-    .crono-header-row {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 8px;
-      flex-shrink: 0;
+    .crono-title {
+      font-family: var(--font-display); font-size: 2.2rem;
+      letter-spacing: 0.12em; color: var(--surface);
+      text-align: center; margin-bottom: 20px;
+      position: relative; padding-left: 48px;
+      display: inline-flex; align-items: center; align-self: center;
     }
-    .crono-section-title {
-      font-family: var(--font-display);
-      font-size: 2.2rem;
-      letter-spacing: 0.12em;
-      color: var(--surface);
-      margin: 0;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.2), 0 0 20px rgba(26,92,168,0.3);
-      position: relative;
-      padding-left: 48px;
-      display: inline-flex;
-      align-items: center;
-    }
-    .crono-section-title::before {
-      content: "⏱️";
-      position: absolute;
-      left: 0;
-      font-size: 2rem;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-    }
-    .crono-section-title::after {
-      content: "";
-      position: absolute;
-      bottom: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 3px;
+    .crono-title::before { content: "⏱️"; position: absolute; left: 0; font-size: 2rem; }
+    .crono-title::after {
+      content: ""; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 3px;
       background: linear-gradient(90deg, transparent 0%, var(--cyan) 50%, transparent 100%);
       border-radius: 2px;
     }
-    .header-actions { display: none; }
-    .btn-cerrar-categoria, .btn-descargar-excel {
-      width: 100%;
-      color: #ffffff;
-      border: 2px solid rgba(255,255,255,0.3);
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: none;
-      text-align: center;
-    }
-    .btn-cerrar-categoria { background: linear-gradient(135deg, #ff6b35 0%, #e05a2f 100%); box-shadow: 0 4px 16px rgba(255,107,53,0.3); }
-    .btn-cerrar-categoria.visible { display: block; }
-    .btn-cerrar-categoria:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,107,53,0.5); }
-    .btn-descargar-excel { background: linear-gradient(135deg, #1a7a3c 0%, #0e5a28 100%); box-shadow: 0 4px 16px rgba(26,122,60,0.3); }
-    .btn-descargar-excel.visible { display: block; }
-    .btn-descargar-excel:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,122,60,0.5); }
     .crono-layout {
-      display: grid;
-      grid-template-columns: 260px 1fr 320px;
-      gap: 16px;
-      align-items: stretch;
-      flex: 1;
-      min-height: 0;
+      display: grid; grid-template-columns: 260px 1fr 320px;
+      gap: 16px; flex: 1;
     }
-    .col-config { display: flex; flex-direction: column; gap: 10px; overflow: visible; }
-    .col-crono  { display: flex; flex-direction: column; gap: 12px; overflow: visible; }
-    .badges-container {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 10px 12px;
-      background: var(--surface);
-      border: 2px solid var(--border2);
-      border-radius: 8px;
-    }
-    .ronda-badge, .intento-badge {
-      width: 100%;
-      text-align: center;
-      padding: 6px 10px;
-      border-radius: 6px;
-    }
-    .evento-row {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .col-config { display: flex; flex-direction: column; gap: 10px; }
+    .col-crono  { display: flex; flex-direction: column; gap: 12px; }
+    .col-ranking { display: flex; flex-direction: column; }
+
+    /* ── Tarjetas config ── */
+    .card-dark {
       background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-      border: 2px solid var(--border2);
-      border-left: 6px solid var(--cyan);
-      border-radius: 10px;
-      padding: 10px 12px;
-      box-shadow: 0 4px 20px rgba(13,40,71,0.3);
-      transition: all 0.3s;
+      border: 2px solid var(--border); border-radius: 10px;
+      padding: 12px 14px;
     }
-    .evento-row:hover { box-shadow: 0 8px 32px rgba(13,40,71,0.4); transform: translateY(-2px); }
-    .evento-row label {
-      font-size: 0.65rem;
-      color: var(--cyan);
-      font-family: var(--font-mono);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .card-label {
+      font-family: var(--font-mono); font-size: 0.65rem;
+      letter-spacing: 0.2em; color: var(--cyan); font-weight: 700;
+      text-transform: uppercase; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
     }
-    .evento-row label::before { content: '⚡'; font-size: 1.1rem; }
-    .evento-row select {
-      width: 100%;
-      background: var(--surface-light);
-      border: 2px solid #e2e8f0;
-      color: var(--surface);
-      font-family: var(--font-body);
-      font-size: 0.9rem;
-      font-weight: 700;
-      padding: 10px 12px;
-      border-radius: 8px;
-      outline: none;
-      cursor: pointer;
-      transition: all 0.2s;
+    .card-label::before { content: '⚡'; font-size: 1rem; }
+    .cat-select {
+      width: 100%; background: var(--surface-light);
+      border: 2px solid #e2e8f0; color: var(--surface);
+      font-family: var(--font-body); font-size: 0.9rem; font-weight: 700;
+      padding: 10px 12px; border-radius: 8px; outline: none; cursor: pointer;
+      transition: border-color 0.2s;
     }
-    .evento-row select:hover { border-color: var(--cyan); }
-    .evento-row select:focus { border-color: var(--cyan); box-shadow: 0 0 0 4px rgba(91,200,240,0.15); }
-    .evento-row select:disabled { opacity: 0.7; cursor: not-allowed; }
+    .cat-select:hover { border-color: var(--cyan); }
+    .cat-select:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .cat-select:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── Aviso sensor ── */
+    .aviso-sensor {
+      background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+      border: 2px solid #f59e0b; border-radius: 8px;
+      padding: 10px 12px; display: none;
+      font-family: var(--font-body); font-size: 0.72rem;
+      font-weight: 600; color: #78350f;
+      align-items: flex-start; gap: 8px;
+    }
+    .aviso-sensor.visible { display: flex; }
+    .aviso-sensor-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .aviso-sensor-texto b { display: block; font-size: 0.78rem; margin-bottom: 2px; }
+
+    /* ── Aviso categoría ── */
     .aviso-categoria {
       background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-      border: 2px solid #ffc107;
-      border-radius: 8px;
-      padding: 8px 10px;
-      color: #856404;
-      font-family: var(--font-body);
-      font-size: 0.7rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-align: center;
+      border: 2px solid #ffc107; border-radius: 8px;
+      padding: 8px 10px; color: #856404;
+      font-family: var(--font-body); font-size: 0.7rem; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
     }
+
+    /* ── Config rondas/intentos ── */
+    .config-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .config-row label { font-size: 0.75rem; color: var(--text); font-family: var(--font-body); font-weight: 600; }
+    .config-input {
+      width: 60px; background: var(--surface-light);
+      border: 2px solid #e2e8f0; color: var(--surface);
+      font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700;
+      padding: 6px 8px; border-radius: 8px; outline: none; text-align: center;
+    }
+    .config-input:focus { border-color: var(--cyan); }
+    .config-title { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--cyan); font-weight: 700; margin-bottom: 8px; }
+
+    /* ── Badges ronda/intento ── */
+    .badges-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .badge-ronda {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      padding: 6px 14px; border-radius: 6px;
+      background: var(--cyan); color: var(--surface); font-weight: 700;
+      text-align: center; width: 100%;
+    }
+    .badge-intento {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      padding: 6px 14px; border-radius: 6px;
+      background: var(--accent2); color: var(--text); font-weight: 700;
+      text-align: center; width: 100%;
+    }
+
+    /* ── Botones config ── */
+    .btn-bloque {
+      width: 100%; padding: 10px 12px; border-radius: 8px;
+      font-family: var(--font-body); font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; border: 2px solid; transition: all 0.2s;
+      text-transform: uppercase; letter-spacing: 0.03em; display: none;
+    }
+    .btn-bloque.visible { display: block; }
+    .btn-bloque:hover { transform: translateY(-2px); }
+    .btn-iniciar-comp {
+      width: 100%; padding: 10px 14px; border-radius: 8px;
+      font-family: var(--font-body); font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border: 2px solid #f59e0b; color: #78350f;
+      box-shadow: 0 4px 12px rgba(251,191,36,0.3);
+    }
+    .btn-iniciar-comp:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251,191,36,0.5); }
+    .btn-iniciar-comp.oculto { display: none; }
+    .btn-cerrar-cat { background: linear-gradient(135deg, #ff6b35 0%, #e05a2f 100%); border-color: #e05a2f; color: #fff; }
+    .btn-cerrar-cat:hover { box-shadow: 0 6px 20px rgba(255,107,53,0.4); }
+    .btn-excel { background: linear-gradient(135deg, #1a7a3c 0%, #0e5a28 100%); border-color: #0e5a28; color: #fff; }
+    .btn-excel:hover { box-shadow: 0 6px 20px rgba(26,122,60,0.4); }
+
+    /* ── Strip participante ── */
     .participante-strip {
       background: linear-gradient(135deg, var(--surface) 0%, #0f2d52 100%);
-      border: 2px solid var(--border2);
-      border-left: 5px solid var(--cyan);
-      border-radius: 10px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(13,40,71,0.25);
-      flex-shrink: 0;
+      border: 2px solid var(--border); border-left: 5px solid var(--cyan);
+      border-radius: 10px; padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 4px 16px rgba(13,40,71,0.25); flex-shrink: 0;
     }
-    .participante-strip .p-info { flex: 1; min-width: 0; }
-    .participante-strip .p-robot { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-    .participante-strip .p-inst  { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
-    .participante-strip .p-badge { font-family: var(--font-mono); font-size: 0.75rem; background: var(--cyan); color: var(--surface); padding: 6px 14px; border-radius: 20px; font-weight: 700; }
     .participante-strip.empty { border-left-color: var(--muted); background: linear-gradient(135deg, #1a2b47 0%, #0f1d35 100%); }
+    .p-robot { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .p-inst  { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+    .p-badge { font-family: var(--font-mono); font-size: 0.75rem; background: var(--cyan); color: var(--surface); padding: 6px 14px; border-radius: 20px; font-weight: 700; white-space: nowrap; }
     .participante-strip.empty .p-robot { color: var(--muted); font-weight: 500; }
+
+    /* ── Display cronómetro ── */
     .crono-display {
       background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%);
-      border: 3px solid var(--border2);
-      border-radius: 14px;
-      padding: 50px 20px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(13,40,71,0.4);
-      flex-shrink: 0;
+      border: 3px solid var(--border); border-radius: 14px;
+      padding: 50px 20px; text-align: center;
+      position: relative; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(13,40,71,0.4); flex-shrink: 0;
     }
     .crono-display::after {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
@@ -233,258 +195,167 @@
     .crono-display.running::after { opacity: 1; animation: scanline 2s linear infinite; }
     @keyframes scanline { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
     #cronometro {
-      font-family: var(--font-display);
-      font-size: 6rem;
-      letter-spacing: 0.08em;
-      color: var(--text);
-      line-height: 1;
-      transition: all 0.3s;
-      text-shadow: 0 0 20px rgba(91,200,240,0.3);
+      font-family: var(--font-display); font-size: 6rem;
+      letter-spacing: 0.08em; color: var(--text); line-height: 1;
+      transition: all 0.3s; text-shadow: 0 0 20px rgba(91,200,240,0.3);
     }
-    .crono-display.running #cronometro { color: var(--cyan); text-shadow: 0 0 30px rgba(91,200,240,0.6); }
-    .crono-display.stopped #cronometro { color: var(--accent2); text-shadow: 0 0 30px rgba(255,107,53,0.5); }
-    .crono-display.dnf #cronometro { color: var(--red); text-shadow: 0 0 30px rgba(255,59,59,0.5); font-size: 5rem; }
+    .crono-display.running  #cronometro { color: var(--cyan);   text-shadow: 0 0 30px rgba(91,200,240,0.6); }
+    .crono-display.stopped  #cronometro { color: var(--accent2); text-shadow: 0 0 30px rgba(255,107,53,0.5); }
+    .crono-display.dnf      #cronometro { color: var(--red);    text-shadow: 0 0 30px rgba(255,59,59,0.5); font-size: 5rem; }
     .crono-status { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.2em; color: var(--muted); margin-top: 12px; }
+
+    /* ── Botones cronómetro ── */
     .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .btn {
+    .btn-crono {
       border: 2px solid; background: var(--surface); color: var(--text);
       font-family: var(--font-body); font-size: 0.9rem; font-weight: 700;
       padding: 14px 10px; border-radius: 12px; cursor: pointer;
       transition: all 0.2s; text-transform: uppercase;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-    .btn:active:not(:disabled) { transform: translateY(0); }
-    .btn:disabled { cursor: not-allowed; opacity: 0.4; }
-    .btn.start { border-color: var(--green); background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); }
-    .btn.stop  { border-color: var(--red);   background: linear-gradient(135deg, var(--red)   0%, var(--red-dark)   100%); }
-    .btn.reset { border-color: var(--accent2); background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); }
-    .btn.dnf {
-      border-color: #ff3b3b;
-      background: linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 100%);
-      color: #ff6b6b;
-      font-size: 0.85rem;
+    .btn-crono:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+    .btn-crono:disabled { cursor: not-allowed; opacity: 0.4; }
+    .btn-start  { border-color: var(--green);   background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); }
+    .btn-stop   { border-color: var(--red);     background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%); }
+    .btn-reset  { border-color: var(--accent2); background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); }
+    .btn-dnf {
+      border-color: var(--red); background: linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 100%);
+      color: #ff6b6b; font-size: 0.85rem; grid-column: 1 / -1; display: none;
     }
-    .btn.dnf:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ff3b3b 0%, #cc2f2f 100%);
-      color: #ffffff;
-    }
-    .ronda-config {
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-      border: 2px solid var(--border2);
-      border-radius: 10px;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .ronda-config-title { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--cyan); font-weight: 700; }
-    .ronda-control { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .ronda-control label { font-size: 0.75rem; color: var(--text); font-family: var(--font-body); font-weight: 600; }
-    .ronda-control input {
-      width: 60px; background: var(--surface-light); border: 2px solid #e2e8f0;
-      color: var(--surface); font-family: var(--font-mono); font-size: 0.9rem;
-      font-weight: 700; padding: 6px 8px; border-radius: 8px; outline: none; text-align: center;
-    }
-    .ronda-control input:focus { border-color: var(--cyan); }
-    .ronda-badge   { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; background: var(--cyan);    color: var(--surface); font-weight: 700; }
-    .intento-badge { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; background: var(--accent2); color: var(--text);    font-weight: 700; }
-    .intentos-log {
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-      border: 2px solid var(--border2);
-      border-radius: 10px;
-      padding: 12px 16px;
+    .btn-dnf:hover:not(:disabled) { background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%); color: #fff; }
+
+    /* ── Botones acción ── */
+    .btn-accion {
+      width: 100%; font-family: var(--font-body); font-weight: 700;
+      padding: 10px; border-radius: 8px; cursor: pointer;
+      transition: all 0.2s; text-transform: uppercase; font-size: 0.8rem;
       display: none;
     }
-    .intentos-log-title { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; color: var(--cyan); margin-bottom: 10px; font-weight: 700; }
-    .intento-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border2); }
-    .intento-row:last-child { border-bottom: none; }
-    .intento-label { color: var(--muted); font-family: var(--font-mono); font-size: 0.78rem; }
-    .intento-tiempo { color: var(--text); font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; }
-    .intento-mejor { color: var(--green); }
-    .btn-siguiente, .btn-saltar, .btn-cerrar-ronda {
-      width: 100%;
-      font-family: var(--font-body);
-      font-weight: 700;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      font-size: 0.8rem;
-    }
-    .btn-siguiente {
+    .btn-accion.visible { display: block; }
+    .btn-accion:hover { transform: translateY(-2px); }
+    .btn-siguiente-intento {
       background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
       border: 2px solid var(--green-dark); color: var(--text);
       box-shadow: 0 4px 12px rgba(61,214,140,0.3);
-      display: none;
     }
-    .btn-siguiente.visible { display: block; }
-    .btn-siguiente:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(61,214,140,0.5); }
+    .btn-siguiente-participante {
+      background: linear-gradient(135deg, #1a5ca8 0%, #0e4a8f 100%);
+      border: 2px solid #0e4a8f; color: var(--text);
+      box-shadow: 0 4px 12px rgba(26,92,168,0.3);
+    }
     .btn-saltar {
       background: linear-gradient(135deg, #e8f4ff 0%, #d0e8ff 100%);
       border: 2px solid var(--cyan); color: var(--blue);
-      display: none;
     }
-    .btn-saltar.visible { display: block; }
-    .btn-saltar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(91,200,240,0.3); }
     .btn-cerrar-ronda {
       background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%);
       border: 2px solid #e05a2f; color: var(--text);
       box-shadow: 0 4px 12px rgba(255,107,53,0.3);
+      width: 100%; font-family: var(--font-body); font-weight: 700;
+      padding: 10px; border-radius: 8px; cursor: pointer;
+      transition: all 0.2s; text-transform: uppercase; font-size: 0.8rem;
     }
     .btn-cerrar-ronda:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,53,0.5); }
-    .btn-cerrar-ronda:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-iniciar-competencia {
-      width: 100%;
-      font-family: var(--font-body);
-      font-weight: 700;
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      font-size: 0.75rem;
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      border: 2px solid #f59e0b;
-      color: #78350f;
-      box-shadow: 0 4px 12px rgba(251,191,36,0.3);
-      display: block;
-      margin-top: auto;
-    }
-    .btn-iniciar-competencia:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251,191,36,0.5); }
-    .btn-iniciar-competencia.oculto { display: none; }
-    .competidos-card {
+    .btn-cerrar-ronda:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── Ranking ── */
+    .ranking-card {
       background: linear-gradient(135deg, var(--surface-light) 0%, #f8fafc 100%);
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
+      border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px;
+      display: flex; flex-direction: column; height: 100%; overflow: hidden;
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
-    .competidos-header {
+    .ranking-header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;
       flex-shrink: 0;
     }
+    .ranking-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.15em; color: var(--surface); font-weight: 700; }
+    .ranking-count { font-family: var(--font-mono); font-size: 0.72rem; background: var(--cyan); color: var(--surface); padding: 4px 12px; border-radius: 20px; font-weight: 700; }
     #rondas-container { flex: 1; overflow-y: auto; min-height: 0; }
-    .competidos-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.15em; color: var(--surface); font-weight: 700; }
-    .competidos-count { font-family: var(--font-mono); font-size: 0.72rem; background: var(--cyan); color: var(--surface); padding: 4px 12px; border-radius: 20px; font-weight: 700; }
-    .ronda-section { margin-bottom: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
-    .ronda-section-header {
+    .ronda-seccion { margin-bottom: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .ronda-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px 14px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     }
-    .ronda-section-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--blue); font-weight: 700; }
-    .ronda-section-title.cerrada { color: var(--muted); }
-    .ronda-section-badge { font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; background: var(--cyan); color: var(--surface); font-weight: 700; }
-    .ronda-section-badge.cerrada { background: var(--muted); }
-    .ronda-section-body { padding: 8px 12px; background: #ffffff; }
-    .competido-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 8px;
-      border-bottom: 1px solid #e8f0ff;
-      background: #e8f4ff;
-      transition: all 0.2s;
+    .ronda-header-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--blue); font-weight: 700; }
+    .ronda-header-title.cerrada { color: var(--muted); }
+    .ronda-header-badge { font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; background: var(--cyan); color: var(--surface); font-weight: 700; }
+    .ronda-header-badge.cerrada { background: var(--muted); }
+    .ronda-body { padding: 8px 12px; background: #fff; }
+    .comp-item {
+      display: flex; align-items: center; gap: 8px; padding: 10px 8px;
+      border-bottom: 1px solid #e8f0ff; background: #e8f4ff; transition: all 0.2s;
     }
-    .competido-item:nth-child(even) { background: #f1f5f9; }
-    .competido-item:hover { background: #d0e8ff; transform: translateX(3px); }
-    .competido-item:last-child { border-bottom: none; }
-    .competido-item.es-dnf { background: #fff0f0; }
-    .competido-item.es-dnf:nth-child(even) { background: #ffe8e8; }
-    .competido-item.es-dnf:hover { background: #ffd0d0; }
-    .competido-num {
+    .comp-item:nth-child(even) { background: #f1f5f9; }
+    .comp-item:hover { background: #d0e8ff; transform: translateX(3px); }
+    .comp-item:last-child { border-bottom: none; }
+    .comp-item.es-dnf { background: #fff0f0; }
+    .comp-item.es-dnf:nth-child(even) { background: #ffe8e8; }
+    .comp-num {
       font-family: var(--font-mono); font-size: 0.75rem; color: #0d2847;
       min-width: 28px; flex-shrink: 0; font-weight: 700;
       background: rgba(26,92,168,0.2); padding: 4px 8px; border-radius: 6px; text-align: center;
     }
-    .competido-num.dnf-num { background: rgba(255,59,59,0.15); color: var(--red); }
-    .competido-info { flex: 1; min-width: 0; }
-    .competido-robot { font-size: 0.9rem; font-weight: 700; color: #0d2847; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .competido-tiempos { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
-    .competido-tiempo-tag {
+    .comp-num.dnf { background: rgba(255,59,59,0.15); color: var(--red); }
+    .comp-info { flex: 1; min-width: 0; }
+    .comp-robot { font-size: 0.9rem; font-weight: 700; color: #0d2847; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .comp-tiempos { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
+    .comp-tag {
       font-size: 0.65rem; font-family: var(--font-mono); color: #475569;
       background: rgba(100,116,139,0.12); padding: 3px 7px; border-radius: 4px; font-weight: 500;
     }
-    .competido-tiempo-tag.mejor { color: #16a34a; font-weight: 700; background: rgba(34,197,94,0.2); }
-    .competido-tiempo-tag.es-dnf { color: var(--red); font-weight: 700; background: rgba(255,59,59,0.15); }
-    .competido-actions { display: flex; gap: 4px; flex-shrink: 0; }
-    .competido-sel {
-      background: var(--cyan); border: none; color: var(--surface);
-      font-size: 0.72rem; padding: 5px 9px; border-radius: 6px; cursor: pointer;
-      transition: all 0.2s; font-weight: 700;
-    }
-    .competido-sel:hover { background: var(--cyan-dark); }
-    .competido-del {
-      background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.3);
-      color: var(--red); font-size: 0.72rem; padding: 5px 9px; border-radius: 6px;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .competido-del:hover { background: rgba(255,59,59,0.2); }
-    .ronda-eliminados { padding: 8px 12px; background: #fef5f5; border-top: 1px dashed #fecaca; }
-    .ronda-eliminados-title { font-family: var(--font-mono); font-size: 0.62rem; color: var(--red); margin-bottom: 6px; font-weight: 700; letter-spacing: 0.1em; }
-    .eliminado-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #fecaca; opacity: 0.85; }
-    .eliminado-item:last-child { border-bottom: none; }
-    .eliminado-robot { font-size: 0.8rem; font-weight: 500; color: var(--muted); flex: 1; text-decoration: line-through; }
-    .btn-recuperar {
-      background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3);
-      color: var(--green-dark); font-size: 0.68rem; padding: 4px 8px; border-radius: 6px;
-      cursor: pointer; transition: all 0.2s; font-weight: 700;
-    }
+    .comp-tag.mejor { color: #16a34a; font-weight: 700; background: rgba(34,197,94,0.2); }
+    .comp-tag.es-dnf { color: var(--red); font-weight: 700; background: rgba(255,59,59,0.15); }
+    .comp-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .btn-sel { background: var(--cyan); border: none; color: var(--surface); font-size: 0.72rem; padding: 5px 9px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 700; }
+    .btn-sel:hover { background: var(--cyan-dark); }
+    .btn-del { background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.3); color: var(--red); font-size: 0.72rem; padding: 5px 9px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+    .btn-del:hover { background: rgba(255,59,59,0.2); }
+    .eliminados-wrap { padding: 8px 12px; background: #fef5f5; border-top: 1px dashed #fecaca; }
+    .eliminados-title { font-family: var(--font-mono); font-size: 0.62rem; color: var(--red); margin-bottom: 6px; font-weight: 700; letter-spacing: 0.1em; }
+    .elim-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #fecaca; opacity: 0.85; }
+    .elim-item:last-child { border-bottom: none; }
+    .elim-robot { font-size: 0.8rem; font-weight: 500; color: var(--muted); flex: 1; text-decoration: line-through; }
+    .btn-recuperar { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green-dark); font-size: 0.68rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 700; }
     .btn-recuperar:hover { background: rgba(0,255,136,0.2); }
-    .competidos-empty { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 20px 0; }
-    .modal {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.6); z-index: 10000;
-      display: none; align-items: center; justify-content: center; padding: 20px;
-    }
+    .ranking-empty { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 20px 0; }
+
+    /* ── Modales ── */
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal.show { display: flex; }
-    .modal-content {
-      background: #ffffff; border-radius: 16px; padding: 28px;
-      max-width: 420px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    .modal-title { font-family: var(--font-display); font-size: 1.6rem; color: var(--surface); margin-bottom: 12px; letter-spacing: 0.04em; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 28px; max-width: 420px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-title { font-family: var(--font-display); font-size: 1.6rem; color: var(--surface); margin-bottom: 12px; }
     .modal-text  { color: var(--muted); font-size: 0.92rem; margin-bottom: 22px; line-height: 1.5; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-    .modal-btn {
-      padding: 10px 20px; border-radius: 10px; font-family: var(--font-body);
-      font-weight: 700; font-size: 0.88rem; cursor: pointer; border: 2px solid;
-      transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.02em;
-    }
-    .modal-btn.cancel  { background: #ffffff; border-color: #cbd5e1; color: var(--muted); }
+    .modal-btns  { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-btn { padding: 10px 20px; border-radius: 10px; font-family: var(--font-body); font-weight: 700; font-size: 0.88rem; cursor: pointer; border: 2px solid; transition: all 0.2s; text-transform: uppercase; }
+    .modal-btn.cancel  { background: #fff; border-color: #cbd5e1; color: var(--muted); }
     .modal-btn.cancel:hover { background: #f1f5f9; }
-    .modal-btn.confirm { background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); border-color: #e05a2f; color: #ffffff; }
+    .modal-btn.confirm { background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); border-color: #e05a2f; color: #fff; }
     .modal-btn.confirm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,53,0.4); }
+
+    /* ── Toast ── */
     .toast {
       position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
       background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
       border: 2px solid var(--green); color: var(--text);
       font-family: var(--font-body); font-size: 0.9rem; font-weight: 600;
-      padding: 14px 28px; border-radius: 30px;
-      transition: transform 0.3s; z-index: 9999;
+      padding: 14px 28px; border-radius: 30px; transition: transform 0.3s; z-index: 9999;
       box-shadow: 0 8px 32px rgba(13,40,71,0.5);
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: var(--red); }
+
+    /* ── Responsive ── */
     @media (max-width: 1200px) {
-      .crono-wrapper { padding: 20px 12px; height: auto; min-height: calc(100vh - 200px); }
-      .crono-layout { grid-template-columns: 1fr; gap: 20px; height: auto; }
-      .col-config { max-width: 600px; margin: 0 auto; overflow-y: visible; }
-      .col-crono  { max-width: 800px; margin: 0 auto; overflow-y: visible; }
-      .crono-header-row { flex-direction: column; gap: 12px; align-items: stretch; }
-      .crono-section-title { font-size: 1.8rem; text-align: center; }
-      .header-actions { justify-content: center; display: none; }
+      .crono-wrapper { padding: 20px 12px; }
+      .crono-layout { grid-template-columns: 1fr; gap: 20px; }
+      .col-config, .col-crono { max-width: 700px; margin: 0 auto; width: 100%; }
+      .col-ranking { max-width: 700px; margin: 0 auto; width: 100%; }
+      .ranking-card { height: auto; }
+      #rondas-container { overflow-y: visible; }
       #cronometro { font-size: 4rem; }
       .btn-row { grid-template-columns: 1fr; gap: 8px; }
-      .competidos-card { position: static; max-height: none; height: auto; overflow-y: visible; }
-      #rondas-container { overflow-y: visible; }
-      .badges-container { justify-content: center; }
     }
   </style>
 </head>
@@ -497,131 +368,142 @@
 </div>
 
 <div class="crono-wrapper">
-  <div class="crono-header-row">
-    <h1 class="crono-section-title">CRONÓMETRO</h1>
-  </div>
+  <h1 class="crono-title">CRONÓMETRO</h1>
 
   <div class="crono-layout">
+
+    <!-- ══ COLUMNA CONFIG ══ -->
     <div class="col-config">
-      <div class="evento-row">
-        <label>CATEGORÍA</label>
-        <select id="select-categoria">
+
+      <!-- Categoría -->
+      <div class="card-dark">
+        <div class="card-label">CATEGORÍA</div>
+        <select class="cat-select" id="select-categoria">
           <option value="">— Selecciona —</option>
-          <optgroup label="🏅 AMATEUR">
+          <optgroup label="⏱ CON CRONÓMETRO">
             <option value="Insectos">Insectos</option>
             <option value="Trepador (Amateur)">Trepador (Amateur)</option>
-            <option value="Seguidor de línea ST (Amateur)">Seguidor ST (Amateur)</option>
-          </optgroup>
-          <optgroup label="🏆 PRO">
-            <option value="Seguidor de línea ST (Pro)">Seguidor ST (Pro)</option>
-            <option value="Minisumo Autónomo">Minisumo Autónomo</option>
-            <option value="Minisumo RC">Minisumo RC</option>
-            <option value="Bailarín">Bailarín</option>
-            <option value="Batalla">Batalla</option>
             <option value="Trepador (Pro)">Trepador (Pro)</option>
-            <option value="Robot soccer">Robot Soccer</option>
-          </optgroup>
-          <optgroup label="⭐ EXTRA">
+            <option value="Seguidor de línea ST (Amateur)">Seguidor ST (Amateur)</option>
+            <option value="Seguidor de línea ST (Pro)">Seguidor ST (Pro)</option>
             <option value="Cubo Rubik">Cubo Rubik</option>
             <option value="Lego Kids">Lego Kids</option>
-            <option value="Desarrollo Tecnológico">Desarrollo Tecnológico</option>
           </optgroup>
         </select>
       </div>
 
+      <!-- Aviso categoría -->
       <div class="aviso-categoria" id="aviso-categoria">
         ⚠️ Selecciona una categoría para empezar
       </div>
 
-      <div class="ronda-config">
-        <div class="ronda-config-title">CONFIG</div>
-        <div class="ronda-control">
+      <!-- Aviso sensor -->
+      <div class="aviso-sensor" id="aviso-sensor">
+        <div class="aviso-sensor-icon">🔌</div>
+        <div class="aviso-sensor-texto">
+          <b id="aviso-sensor-titulo">CONECTA EL DISPOSITIVO</b>
+          <span id="aviso-sensor-desc">Antes de iniciar la competencia, conecta el ESP32 usando el botón de abajo.</span>
+        </div>
+      </div>
+
+      <!-- Config rondas/intentos -->
+      <div class="card-dark">
+        <div class="config-title">CONFIG</div>
+        <div class="config-row">
           <label>Rondas:</label>
-          <input type="number" id="cfg-rondas" value="3" min="1" max="10" />
+          <input type="number" class="config-input" id="cfg-rondas" value="3" min="1" max="10" />
         </div>
-        <div class="ronda-control">
+        <div style="height:8px"></div>
+        <div class="config-row">
           <label>Intentos:</label>
-          <input type="number" id="cfg-intentos" value="2" min="1" max="5" />
+          <input type="number" class="config-input" id="cfg-intentos" value="2" min="1" max="5" />
         </div>
       </div>
 
-      <div class="badges-container">
-        <span class="ronda-badge"   id="badge-ronda">RONDA 0 · REVISIÓN</span>
-        <span class="intento-badge" id="badge-intento">—</span>
+      <!-- Badges ronda/intento -->
+      <div class="card-dark badges-wrap">
+        <span class="badge-ronda" id="badge-ronda">RONDA 0 · REVISIÓN</span>
+        <span class="badge-intento" id="badge-intento">—</span>
       </div>
 
-      <button class="btn-iniciar-competencia" id="btn-iniciar-competencia" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
-      <button class="btn-cerrar-categoria"   id="btn-cerrar-categoria"   onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
-      <button class="btn-descargar-excel"    id="btn-descargar-excel"    onclick="exportarExcel()">📊 Descargar Excel</button>
+      <!-- Botones -->
+      <button class="btn-iniciar-comp" id="btn-iniciar-comp" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
+      <button class="btn-bloque btn-cerrar-cat visible" id="btn-cerrar-cat" style="display:none" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
+      <button class="btn-bloque btn-excel" id="btn-excel" onclick="exportarExcel()">📊 Descargar Excel</button>
     </div>
 
+    <!-- ══ COLUMNA CRONÓMETRO ══ -->
     <div class="col-crono">
+
+      <!-- Strip participante -->
       <div class="participante-strip empty" id="participante-strip">
-        <div class="p-info">
+        <div>
           <div class="p-robot">Sin participante</div>
           <div class="p-inst">Esperando escáner...</div>
         </div>
         <div class="p-badge">—</div>
       </div>
 
+      <!-- Display -->
       <div class="crono-display" id="crono-display">
         <div id="cronometro">00:00:00</div>
         <div class="crono-status" id="crono-status">LISTO</div>
       </div>
 
+      <!-- Botones cronómetro -->
       <div class="btn-row">
-        <button class="btn start" id="btn-start" onclick="iniciarCrono()">▶ Iniciar</button>
-        <button class="btn stop"  onclick="detenerCrono()">⏸ Detener</button>
-        <button class="btn reset" onclick="reiniciarCrono()">↻ Reiniciar</button>
+        <button class="btn-crono btn-start" id="btn-start" onclick="iniciarCrono()">▶ Iniciar</button>
+        <button class="btn-crono btn-stop"  onclick="detenerCrono()">⏸ Detener</button>
+        <button class="btn-crono btn-reset" onclick="reiniciarCrono()">↻ Reiniciar</button>
+      </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn-crono btn-dnf" id="btn-dnf" onclick="marcarDNF()">⛔ DNF — No completó</button>
       </div>
 
-      <div class="btn-row" style="margin-top: 8px;">
-        <button class="btn dnf" id="btn-dnf" onclick="marcarDNF()" style="grid-column: 1 / -1; display: none;">
-          ⛔ DNF — No completó
-        </button>
-      </div>
-
-      <div class="intentos-log" id="intentos-log">
-        <div class="intentos-log-title">INTENTOS DEL PARTICIPANTE</div>
-        <div id="intentos-lista"></div>
-      </div>
-
-      <button class="btn-siguiente"  id="btn-siguiente"  onclick="siguienteIntento()">➜ Siguiente intento</button>
-      <button class="btn-saltar"     id="btn-saltar"     onclick="saltarParticipante()">⏭ Saltar participante</button>
-      <button class="btn-cerrar-ronda" id="btn-cerrar-ronda" onclick="pedirCerrarRonda()">
+      <!-- Botones acción -->
+      <button class="btn-accion btn-siguiente-intento"    id="btn-sig-intento"  onclick="siguienteIntento()">➜ Siguiente intento</button>
+      <button class="btn-accion btn-siguiente-participante" id="btn-sig-part" onclick="pasarSiguienteParticipante()">⏭ Siguiente participante</button>
+      <button class="btn-accion btn-saltar"               id="btn-saltar"       onclick="saltarParticipante()">⏭ Saltar participante</button>
+      <button class="btn-cerrar-ronda" id="btn-cerrar-ronda" onclick="pedirCerrarRonda()" style="display:none">
         🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>
       </button>
     </div>
 
-    <div class="competidos-card">
-      <div class="competidos-header">
-        <div class="competidos-title">RANKING</div>
-        <div class="competidos-count" id="competidos-count">0</div>
-      </div>
-      <div id="rondas-container">
-        <p class="competidos-empty">Sin participantes aún</p>
+    <!-- ══ COLUMNA RANKING ══ -->
+    <div class="col-ranking">
+      <div class="ranking-card">
+        <div class="ranking-header">
+          <div class="ranking-title">RANKING</div>
+          <div class="ranking-count" id="ranking-count">0</div>
+        </div>
+        <div id="rondas-container">
+          <p class="ranking-empty">Sin participantes aún</p>
+        </div>
       </div>
     </div>
+
   </div>
 </div>
 
+<!-- Modal cerrar ronda -->
 <div class="modal" id="modal-ronda">
-  <div class="modal-content">
-    <div class="modal-title">Cerrar <span id="modal-ronda-nombre">Ronda 1</span></div>
-    <div class="modal-text">Los participantes clasificados pasarán a la siguiente ronda. Los eliminados quedarán fuera de la competencia. ¿Confirmar?</div>
-    <div class="modal-actions">
-      <button class="modal-btn cancel"  onclick="cerrarModalRonda()">Cancelar</button>
-      <button class="modal-btn confirm" onclick="confirmarCerrarRonda()">Sí, cerrar ronda</button>
+  <div class="modal-box">
+    <div class="modal-title">Cerrar <span id="modal-ronda-nom">Ronda 1</span></div>
+    <div class="modal-text">Los clasificados pasan a la siguiente ronda. Los eliminados quedan fuera. ¿Confirmar?</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="cerrarModal('modal-ronda')">Cancelar</button>
+      <button class="modal-btn confirm" onclick="confirmarCerrarRonda()">Sí, cerrar</button>
     </div>
   </div>
 </div>
 
-<div class="modal" id="modal-cerrar-cat">
-  <div class="modal-content">
+<!-- Modal cerrar categoría -->
+<div class="modal" id="modal-cat">
+  <div class="modal-box">
     <div class="modal-title">Cerrar Categoría</div>
-    <div class="modal-text">¿Cerrar "<span id="modal-cat-nombre"></span>"? Esto liberará la categoría y borrará el progreso local.</div>
-    <div class="modal-actions">
-      <button class="modal-btn cancel"  onclick="cerrarModalCerrarCat()">Cancelar</button>
+    <div class="modal-text">¿Cerrar "<span id="modal-cat-nom"></span>"? Se liberará la categoría y se borrará el progreso local.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="cerrarModal('modal-cat')">Cancelar</button>
       <button class="modal-btn confirm" onclick="confirmarCerrarCategoria()">Sí, cerrar</button>
     </div>
   </div>
@@ -633,1029 +515,751 @@
 <script src="../shared/js/auth.js"></script>
 
 <script>
-  const GAS_URL = CONFIG.GAS_URL();
+const GAS_URL = CONFIG.GAS_URL();
 
-  // ✅ RUTAS EN MINÚSCULAS — deben coincidir con GAS y PANTALLA
-  const RUTAS = {
-    'Insectos':                        'ins',
-    'Trepador (Amateur)':              'trp_a',
-    'Seguidor de línea ST (Amateur)':  'sl_a',
-    'Seguidor de línea ST (Pro)':      'sl_p',
-    'Minisumo Autónomo':               'ms_a',
-    'Minisumo RC':                     'ms_rc',
-    'Bailarín':                        'bai',
-    'Batalla':                         'bat',
-    'Trepador (Pro)':                  'trp_p',
-    'Robot soccer':                    'soc',
-    'Cubo Rubik':                      'cr',
-    'Lego Kids':                       'lk',
-    'Desarrollo Tecnológico':          'dt'
-  };
+// ── Rutas (minúsculas — deben coincidir con GAS y resultados.json) ──
+const RUTAS = {
+  'Insectos':                       'ins',
+  'Trepador (Amateur)':             'trp_a',
+  'Trepador (Pro)':                 'trp_p',
+  'Seguidor de línea ST (Amateur)': 'sl_a',
+  'Seguidor de línea ST (Pro)':     'sl_p',
+  'Cubo Rubik':                     'cr',
+  'Lego Kids':                      'lk'
+};
 
-  let categoriaActual    = null;
-  let participanteActual = null;
-  let pollingInterval    = null;
-  let cronoInterval      = null;
-  let cronoInicio        = null;
-  let rondaActual        = 0;
-  let intentoActual      = 1;
-  let maxRondas          = 3;
-  let maxIntentos        = 2;
-  let rondasData         = { 0: { clasificados: [], eliminados: [], cerrada: false } };
-  let intentosLog        = [];
-  let competenciaIniciada = false;
+// ── Categorías que requieren dispositivo serial ──
+const CATS_SENSOR   = ['Trepador (Amateur)', 'Trepador (Pro)', 'Seguidor de línea ST (Amateur)', 'Seguidor de línea ST (Pro)'];
+const CATS_PULSADOR = ['Cubo Rubik', 'Lego Kids'];
+const CATS_SERIAL   = [...CATS_SENSOR, ...CATS_PULSADOR];
 
-  function bloquearBotonIniciar() {
-    const btn = document.getElementById('btn-start');
-    if (btn) btn.disabled = true;
+// ── Info del aviso sensor por categoría ──
+const AVISO_SENSOR = {
+  'Trepador (Amateur)':             { titulo: 'SENSOR REQUERIDO (E18-D80NK)', desc: 'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.' },
+  'Trepador (Pro)':                 { titulo: 'SENSOR REQUERIDO (E18-D80NK)', desc: 'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.' },
+  'Seguidor de línea ST (Amateur)': { titulo: 'SENSOR REQUERIDO (TOGGLE)', desc: 'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.' },
+  'Seguidor de línea ST (Pro)':     { titulo: 'SENSOR REQUERIDO (TOGGLE)', desc: 'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.' },
+  'Cubo Rubik':                     { titulo: 'PULSADOR REQUERIDO', desc: 'Conecta el ESP32. El pulsador inicia y detiene el tiempo manualmente.' },
+  'Lego Kids':                      { titulo: 'PULSADOR REQUERIDO', desc: 'Conecta el ESP32. El pulsador inicia y detiene el tiempo manualmente.' }
+};
+
+// ── Estado ──
+let categoriaActual    = null;
+let participanteActual = null;
+let pollingInterval    = null;
+let cronoInterval      = null;
+let cronoInicio        = null;
+let rondaActual        = 0;
+let intentoActual      = 1;
+let maxRondas          = 3;
+let maxIntentos        = 2;
+let rondasData         = { 0: { clasificados: [], eliminados: [], cerrada: false } };
+let intentosLog        = [];
+let competenciaIniciada = false;
+
+// ── Helpers ──
+function getRuta()     { return RUTAS[categoriaActual] || null; }
+function getKey()      { return 'sucrebot_estado_' + (getRuta() || 'general'); }
+function bloquearBtn() { const b = document.getElementById('btn-start'); if (b) b.disabled = true; }
+function desbloquearBtn() { const b = document.getElementById('btn-start'); if (b) b.disabled = false; }
+
+function tiempoASegundos(t) {
+  if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
+  const p = t.split(':').map(Number);
+  return p[0] * 60 + p[1] + p[2] / 100;
+}
+
+// ── Selector de categoría ──
+document.getElementById('select-categoria').addEventListener('change', async function() {
+  const nueva = this.value;
+  if (!nueva) return;
+  const bloqueada = await verificarBloqueo(nueva);
+  const userData  = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
+  if (bloqueada && bloqueada.usuario !== userData.email) {
+    showToast(`⚠️ Categoría en uso por ${bloqueada.usuario}`, true);
+    this.value = categoriaActual || '';
+    return;
   }
-  function desbloquearBotonIniciar() {
-    const btn = document.getElementById('btn-start');
-    if (btn) btn.disabled = false;
+  if (categoriaActual && categoriaActual !== nueva) {
+    await desbloquearCategoria(categoriaActual);
+    localStorage.removeItem('cronometro_categoria_activa');
   }
-
-  function getEstadoKey() {
-    const ruta = RUTAS[categoriaActual] || 'general';
-    return 'sucrebot_estado_' + ruta;
+  const ok = await bloquearCategoria(nueva);
+  if (ok) {
+    categoriaActual = nueva;
+    localStorage.setItem('cronometro_categoria_activa', nueva);
+    activarUI();
+    cargarEstado();
+    showToast(`✓ Categoría "${nueva}" bloqueada`);
+  } else {
+    showToast('❌ No se pudo bloquear la categoría', true);
+    this.value = '';
   }
-  function getRutaActual() {
-    return RUTAS[categoriaActual] || null;
+});
+
+// ── UI categoría ──
+function activarUI() {
+  document.getElementById('btn-cerrar-cat').style.display = 'block';
+  document.getElementById('aviso-categoria').style.display = 'none';
+  document.getElementById('select-categoria').disabled = true;
+  // Aviso sensor
+  const aviso = document.getElementById('aviso-sensor');
+  if (CATS_SERIAL.includes(categoriaActual)) {
+    const info = AVISO_SENSOR[categoriaActual] || { titulo: 'DISPOSITIVO REQUERIDO', desc: 'Conecta el ESP32 antes de iniciar.' };
+    document.getElementById('aviso-sensor-titulo').textContent = info.titulo;
+    document.getElementById('aviso-sensor-desc').textContent   = info.desc;
+    aviso.classList.add('visible');
+  } else {
+    aviso.classList.remove('visible');
   }
-
-  document.getElementById('select-categoria').addEventListener('change', async function() {
-    const nuevaCategoria = this.value;
-    if (!nuevaCategoria) return;
-    const bloqueada = await verificarBloqueoCategoria(nuevaCategoria);
-    if (bloqueada) {
-      const userData = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
-      if (bloqueada.usuario !== userData.email) {
-        showToast(`⚠️ Esta categoría la está usando ${bloqueada.usuario}`);
-        this.value = categoriaActual || '';
-        return;
-      }
-    }
-    if (categoriaActual && categoriaActual !== nuevaCategoria) {
-      await desbloquearCategoria(categoriaActual);
-      localStorage.removeItem('cronometro_categoria_activa');
-    }
-    const bloqueado = await bloquearCategoria(nuevaCategoria);
-    if (bloqueado) {
-      categoriaActual = nuevaCategoria;
-      localStorage.setItem('cronometro_categoria_activa', nuevaCategoria);
-      activarUICategoria();
-      cargarEstado();
-      showToast(`✓ Categoría "${nuevaCategoria}" bloqueada`);
-    } else {
-      showToast('❌ No se pudo bloquear la categoría');
-      this.value = '';
-    }
-  });
-
-  // ✅ FIX 2: activarUICategoria también muestra el botón serial
-  function activarUICategoria() {
-    document.getElementById('btn-cerrar-categoria').classList.add('visible');
-    document.getElementById('aviso-categoria').style.display = 'none';
-    document.getElementById('select-categoria').disabled = true;
-    // Mostrar botón serial si la categoría lo requiere
-    if (typeof mostrarBotonSerial === 'function' && categoriaActual) {
-      const CATS_SERIAL = ['Trepador (Amateur)', 'Trepador (Pro)', 'Cubo Rubik', 'Lego Kids'];
-      setTimeout(() => mostrarBotonSerial(CATS_SERIAL.includes(categoriaActual)), 100);
-    }
+  // Botón serial
+  if (typeof mostrarBotonSerial === 'function') {
+    setTimeout(() => mostrarBotonSerial(CATS_SERIAL.includes(categoriaActual)), 100);
   }
+}
 
-  function desactivarUICategoria() {
-    document.getElementById('btn-cerrar-categoria').classList.remove('visible');
-    document.getElementById('btn-descargar-excel').classList.remove('visible');
-    document.getElementById('aviso-categoria').style.display = 'flex';
-    document.getElementById('select-categoria').disabled = false;
-    document.getElementById('select-categoria').value = '';
-    if (typeof mostrarBotonSerial === 'function') mostrarBotonSerial(false);
-  }
+function desactivarUI() {
+  document.getElementById('btn-cerrar-cat').style.display = 'none';
+  document.getElementById('btn-excel').classList.remove('visible');
+  document.getElementById('aviso-categoria').style.display = 'flex';
+  document.getElementById('aviso-sensor').classList.remove('visible');
+  document.getElementById('select-categoria').disabled = false;
+  document.getElementById('select-categoria').value = '';
+  if (typeof mostrarBotonSerial === 'function') mostrarBotonSerial(false);
+}
 
-  async function bloquearCategoria(categoria) {
-    const savedUser = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
+// ── GAS — bloqueo categoría ──
+async function bloquearCategoria(cat) {
+  const user = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
+  try {
+    const r = await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'bloquearCategoria', categoria:cat, usuario:user.email }) });
+    const d = await r.json(); return d.ok;
+  } catch(e) { return false; }
+}
+async function desbloquearCategoria(cat) {
+  try { await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'desbloquearCategoria', categoria:cat }) }); } catch(e) {}
+}
+async function verificarBloqueo(cat) {
+  try {
+    const r = await fetch(GAS_URL + '?' + new URLSearchParams({ action:'getCategoriasActivas' }));
+    const a = await r.json();
+    return a.find(c => String(c.categoria||'').toLowerCase().trim() === String(cat||'').toLowerCase().trim());
+  } catch(e) { return null; }
+}
+
+// ── Polling ──
+function iniciarPolling() {
+  if (pollingInterval) return;
+  pollingInterval = setInterval(async () => {
+    if (!categoriaActual) return;
     try {
-      const r = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'bloquearCategoria', categoria, usuario: savedUser.email })
-      });
+      const r    = await fetch(GAS_URL + '?' + new URLSearchParams({ action:'getActivo', ruta: getRuta()||'general' }));
       const data = await r.json();
-      return data.ok;
-    } catch(e) { console.error('Error al bloquear:', e); return false; }
+      if (!data?.raw || data.raw === '') return;
+      let nuevoP;
+      try { nuevoP = JSON.parse(data.raw); } catch { return; }
+      if (cronoInterval) return; // no interrumpir mientras corre
+      const marcaActual = participanteActual ? (participanteActual.inicio || participanteActual.timestamp || 0) : 0;
+      const marcaNueva  = nuevoP.inicio || nuevoP.timestamp || 0;
+      if (!participanteActual || participanteActual.id !== nuevoP.id || marcaNueva > marcaActual) {
+        recibirParticipante(nuevoP);
+      }
+    } catch(e) {}
+  }, 2000);
+}
+
+function recibirParticipante(p) {
+  participanteActual = p;
+  intentosLog   = [];
+  intentoActual = 1;
+  actualizarBadges();
+  reiniciarCrono();
+  desbloquearBtn();
+  ocultarBotonesAccion();
+  // Strip
+  const strip = document.getElementById('participante-strip');
+  strip.className = 'participante-strip';
+  strip.innerHTML = `<div><div class="p-robot">${p.robot||'—'}</div><div class="p-inst">${p.institucion||''}${p.ciudad?' · '+p.ciudad:''}</div></div><div class="p-badge">${rondaActual===0?'REVISIÓN ✓':'LISTO ✓'}</div>`;
+  // Ronda 0 — agregar al registro
+  if (rondaActual === 0) {
+    const rd = getRonda(0);
+    if (rd.clasificados.some(c => c.robot === p.robot)) { showToast('⚠️ '+p.robot+' ya está en el registro'); return; }
+    rd.clasificados.push({ id:p.id, robot:p.robot, nombre:p.nombre||'', institucion:p.institucion||'', ciudad:p.ciudad||'', categoria:p.categoria||'', tiempo:'—', tiempos:[], esDNF:false, ts:Date.now()+rd.clasificados.length });
+    actualizarContador();
+    renderRondas();
+    guardarEstado();
   }
+  showToast(rondaActual===0 ? '✓ Revisión: '+p.robot : '✓ Nuevo: '+p.robot);
+}
 
-  async function desbloquearCategoria(categoria) {
-    try {
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'desbloquearCategoria', categoria })
-      });
-    } catch(e) { console.error('Error al desbloquear:', e); }
+function limpiarParticipante() {
+  participanteActual = null;
+  intentosLog   = [];
+  intentoActual = 1;
+  actualizarBadges();
+  const strip = document.getElementById('participante-strip');
+  strip.className = 'participante-strip empty';
+  strip.innerHTML = `<div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner...</div></div><div class="p-badge">—</div>`;
+  ocultarBotonesAccion();
+  if (categoriaActual) {
+    fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'clearActivo', ruta: getRuta()||'general' }) }).catch(()=>{});
   }
+}
 
-  async function verificarBloqueoCategoria(categoria) {
-    try {
-      const qs = new URLSearchParams({ action: 'getCategoriasActivas' }).toString();
-      const r  = await fetch(GAS_URL + '?' + qs);
-      const activas = await r.json();
-      return activas.find(c =>
-        String(c.categoria||'').toLowerCase().trim() === String(categoria||'').toLowerCase().trim()
-      );
-    } catch(e) { console.error('Error al verificar bloqueo:', e); return null; }
-  }
+// ── Cronómetro ──
+function iniciarCrono() {
+  if (rondaActual === 0)         { showToast('⚠️ Ronda 0 es solo revisión', true); return; }
+  if (!participanteActual)       { showToast('⚠️ Sin participante', true); return; }
+  if (cronoInterval)             return;
+  if (intentosLog.length >= maxIntentos) { showToast(`⚠️ ${participanteActual.robot} ya completó sus ${maxIntentos} intentos`, true); return; }
+  cronoInicio   = Date.now();
+  cronoInterval = setInterval(tickCrono, 10);
+  document.getElementById('crono-display').className  = 'crono-display running';
+  document.getElementById('crono-status').textContent = `EN MARCHA · Intento ${intentoActual} de ${maxIntentos}`;
+  document.getElementById('btn-dnf').style.display    = 'block';
+  ocultarBotonesAccion();
+  enviarSerial('R');
+}
 
-  function pedirCerrarCategoria() {
-    if (!categoriaActual) return;
-    document.getElementById('modal-cat-nombre').textContent = categoriaActual;
-    document.getElementById('modal-cerrar-cat').classList.add('show');
-  }
-  function cerrarModalCerrarCat() { document.getElementById('modal-cerrar-cat').classList.remove('show'); }
-
-  async function confirmarCerrarCategoria() {
-    cerrarModalCerrarCat();
-    if (!categoriaActual) return;
-    try {
-      await desbloquearCategoria(categoriaActual);
-      localStorage.removeItem(getEstadoKey());
-      localStorage.removeItem('cronometro_categoria_activa');
-      const rutaActual = getRutaActual() || 'general';
-      await Promise.all([
-        fetch(GAS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'clearActivo', ruta: rutaActual })
-        }),
-        fetch(GAS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'setEstado', ruta: rutaActual, estado: null })
-        })
-      ]);
-      categoriaActual      = null;
-      participanteActual   = null;
-      rondaActual          = 0;
-      intentoActual        = 1;
-      maxRondas            = 3;
-      maxIntentos          = 2;
-      rondasData           = { 0: { clasificados: [], eliminados: [], cerrada: false } };
-      intentosLog          = [];
-      competenciaIniciada  = false;
-      desactivarUICategoria();
-      reiniciarCrono();
-      limpiarParticipante();
-      actualizarBadges();
-      renderTodasRondas();
-      document.getElementById('cfg-rondas').value     = 3;
-      document.getElementById('cfg-intentos').value   = 2;
-      document.getElementById('cfg-rondas').disabled  = false;
-      document.getElementById('cfg-intentos').disabled = false;
-      document.getElementById('cfg-rondas').style.opacity   = '';
-      document.getElementById('cfg-intentos').style.opacity = '';
-      document.getElementById('btn-iniciar-competencia').classList.remove('oculto');
-      document.getElementById('competidos-count').textContent = '0';
-      document.getElementById('btn-cerrar-ronda').disabled = false;
-      document.getElementById('btn-cerrar-ronda').innerHTML = '🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>';
-      showToast('✅ Categoría cerrada');
-    } catch(e) { console.error(e); showToast('❌ Error al cerrar categoría'); }
-  }
-
-  function iniciarPolling() {
-    if (pollingInterval) return;
-    pollingInterval = setInterval(async () => {
-      if (!categoriaActual) return;
-      try {
-        const ruta = getRutaActual() || 'general';
-        const qs   = new URLSearchParams({ action: 'getActivo', ruta }).toString();
-        const r    = await fetch(GAS_URL + '?' + qs);
-        const data = await r.json();
-        if (data && data.raw && data.raw !== '') {
-          let nuevoP;
-          try { nuevoP = JSON.parse(data.raw); } catch(e) { return; }
-
-          // No interrumpir si el cronómetro está corriendo
-          if (cronoInterval) return;
-
-          const marcaActual = participanteActual ? (participanteActual.inicio || participanteActual.timestamp || 0) : 0;
-          const marcaNueva  = nuevoP.inicio || nuevoP.timestamp || 0;
-
-          // Solo recibir si es un participante diferente O tiene una marca de inicio nueva
-          if (!participanteActual || participanteActual.id !== nuevoP.id || marcaNueva > marcaActual) {
-            recibirParticipante(nuevoP);
-          }
-        }
-      } catch(e) { console.error('Error en polling:', e); }
-    }, 2000);
-  }
-
-  function recibirParticipante(p) {
-    participanteActual = p;
-    // NO llamar setActivo aquí — viene del polling y crearía un loop infinito
-    // setActivo solo se llama desde seleccionarCompetido (selección manual)
-    intentosLog   = [];
-    intentoActual = 1;
-    actualizarBadges();
-    reiniciarCrono();
-    renderIntentosLog();
-    document.getElementById('intentos-log').style.display = 'none';
-    desbloquearBotonIniciar();
-    document.getElementById('btn-siguiente').classList.remove('visible');
-    document.getElementById('btn-saltar').classList.remove('visible');
-    document.getElementById('btn-dnf').style.display = 'none';
-    const strip = document.getElementById('participante-strip');
-    strip.className = 'participante-strip';
-    const badgeText = rondaActual === 0 ? 'REVISIÓN ✓' : 'LISTO ✓';
-    strip.innerHTML = `
-      <div class="p-info">
-        <div class="p-robot">${p.robot || '—'}</div>
-        <div class="p-inst">${p.institucion || ''}${p.ciudad ? ' · ' + p.ciudad : ''}</div>
-      </div>
-      <div class="p-badge">${badgeText}</div>
-    `;
-    if (rondaActual === 0) {
-      const rd = getRonda(0);
-      const yaExiste = rd.clasificados.some(c => c.robot === p.robot);
-      if (yaExiste) { showToast('⚠️ ' + p.robot + ' ya está en el ranking'); return; }
-      rd.clasificados.push({
-        id: p.id, robot: p.robot, nombre: p.nombre || '',
-        institucion: p.institucion || '', ciudad: p.ciudad || '',
-        categoria: p.categoria || '', tiempo: '—', ronda: 0, intento: 0,
-        tiempos: ['—'], esDNF: false,
-        ts: Date.now() + rd.clasificados.length
-      });
-      actualizarContadorCompetidos();
-      renderTodasRondas();
-      guardarEstado();
-    }
-    const mensaje = rondaActual === 0
-      ? '✓ Revisión: ' + (p.robot || p.nombre) + ' agregado al ranking'
-      : '✓ Nuevo participante: ' + (p.robot || p.nombre);
-    showToast(mensaje);
-  }
-
-  function limpiarParticipante() {
-    participanteActual = null;
-    intentosLog   = [];
-    intentoActual = 1;
-    actualizarBadges();
-    const strip = document.getElementById('participante-strip');
-    strip.className = 'participante-strip empty';
-    strip.innerHTML = `
-      <div class="p-info">
-        <div class="p-robot">Sin participante</div>
-        <div class="p-inst">Esperando escáner...</div>
-      </div>
-      <div class="p-badge">—</div>
-    `;
-    document.getElementById('intentos-log').style.display = 'none';
-    document.getElementById('intentos-lista').innerHTML   = '';
-    document.getElementById('btn-siguiente').classList.remove('visible');
-    document.getElementById('btn-saltar').classList.remove('visible');
-    document.getElementById('btn-dnf').style.display = 'none';
-    if (categoriaActual) {
-      fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
-      }).catch(() => {});
-    }
-  }
-
-  function iniciarCrono() {
-    if (rondaActual === 0) { showToast('⚠️ Ronda 0 es solo para REVISIÓN · Inicia la competencia primero'); return; }
-    if (!participanteActual) { showToast('⚠️ No hay participante seleccionado'); return; }
-    if (cronoInterval) return;
-    if (intentosLog.length >= maxIntentos) { showToast(`⚠️ ${participanteActual.robot} ya completó sus ${maxIntentos} intentos`); return; }
-    cronoInicio   = Date.now();
-    cronoInterval = setInterval(actualizarCronometro, 10);
-    document.getElementById('crono-display').className  = 'crono-display running';
-    document.getElementById('crono-status').textContent = `EN MARCHA · Intento ${intentoActual} de ${maxIntentos}`;
-    document.getElementById('btn-dnf').style.display = 'block';
-    document.getElementById('btn-siguiente').classList.remove('visible');
-    document.getElementById('btn-saltar').classList.remove('visible');
-    enviarSerial('R');
-  }
-
-  function detenerCrono() {
-    if (!cronoInterval) return;
-    clearInterval(cronoInterval);
-    cronoInterval = null;
-    const tiempo = document.getElementById('cronometro').textContent;
-    // No registrar si nunca arrancó de verdad (tiempo en cero)
-    if (tiempo === '00:00:00') {
-      document.getElementById('crono-display').className  = 'crono-display';
-      document.getElementById('crono-status').textContent = participanteActual
-        ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
-      document.getElementById('btn-dnf').style.display = 'none';
-      showToast('⚠️ El cronómetro no arrancó — intento no registrado');
-      enviarSerial('S');
-      return;
-    }
-    document.getElementById('crono-display').className  = 'crono-display stopped';
-    document.getElementById('crono-status').textContent = 'DETENIDO';
-    document.getElementById('btn-dnf').style.display = 'none';
-    registrarIntento(tiempo);
-    enviarSerial('S');
-  }
-
-  function reiniciarCrono() {
-    if (cronoInterval) clearInterval(cronoInterval);
-    cronoInterval = null;
-    cronoInicio   = null;
-    document.getElementById('cronometro').textContent    = '00:00:00';
+function detenerCrono() {
+  if (!cronoInterval) return;
+  clearInterval(cronoInterval);
+  cronoInterval = null;
+  const tiempo = document.getElementById('cronometro').textContent;
+  // No registrar si nunca arrancó
+  if (tiempo === '00:00:00') {
     document.getElementById('crono-display').className  = 'crono-display';
-    document.getElementById('crono-status').textContent = participanteActual
-      ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
-    document.getElementById('btn-dnf').style.display = 'none';
-  }
-
-  function marcarDNF() {
-    if (!participanteActual) return;
-    // Evitar doble registro: si ya completó sus intentos, ignorar
-    if (intentosLog.length >= maxIntentos) {
-      showToast(`⚠️ ${participanteActual.robot} ya completó sus intentos`);
-      return;
-    }
-    if (cronoInterval) { clearInterval(cronoInterval); cronoInterval = null; }
-    document.getElementById('crono-display').className  = 'crono-display dnf';
-    document.getElementById('cronometro').textContent   = 'DNF';
-    document.getElementById('crono-status').textContent = 'DID NOT FINISH';
+    document.getElementById('crono-status').textContent = participanteActual ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
     document.getElementById('btn-dnf').style.display    = 'none';
-    bloquearBotonIniciar();
-    registrarIntento('DNF');
+    showToast('⚠️ El cronómetro no arrancó — intento no registrado', true);
     enviarSerial('S');
-    showToast(`⛔ DNF registrado — ${participanteActual.robot}`);
+    return;
   }
+  document.getElementById('crono-display').className  = 'crono-display stopped';
+  document.getElementById('crono-status').textContent = 'DETENIDO';
+  document.getElementById('btn-dnf').style.display    = 'none';
+  registrarIntento(tiempo);
+  enviarSerial('S');
+}
 
-  function actualizarCronometro() {
-    if (!cronoInicio) return;
-    const transcurrido = Date.now() - cronoInicio;
-    const cs = Math.floor((transcurrido % 1000) / 10);
-    const sg = Math.floor((transcurrido / 1000) % 60);
-    const mn = Math.floor(transcurrido / 60000);
-    document.getElementById('cronometro').textContent =
-      String(mn).padStart(2,'0') + ':' + String(sg).padStart(2,'0') + ':' + String(cs).padStart(2,'0');
+function reiniciarCrono() {
+  if (cronoInterval) clearInterval(cronoInterval);
+  cronoInterval = null; cronoInicio = null;
+  document.getElementById('cronometro').textContent    = '00:00:00';
+  document.getElementById('crono-display').className  = 'crono-display';
+  document.getElementById('crono-status').textContent = participanteActual ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
+  document.getElementById('btn-dnf').style.display    = 'none';
+}
+
+function marcarDNF() {
+  if (!participanteActual) return;
+  if (intentosLog.length >= maxIntentos) { showToast(`⚠️ ${participanteActual.robot} ya completó sus intentos`, true); return; }
+  if (cronoInterval) { clearInterval(cronoInterval); cronoInterval = null; }
+  document.getElementById('crono-display').className  = 'crono-display dnf';
+  document.getElementById('cronometro').textContent   = 'DNF';
+  document.getElementById('crono-status').textContent = 'DID NOT FINISH';
+  document.getElementById('btn-dnf').style.display    = 'none';
+  bloquearBtn();
+  registrarIntento('DNF');
+  enviarSerial('S');
+  showToast(`⛔ DNF — ${participanteActual.robot}`);
+}
+
+function tickCrono() {
+  if (!cronoInicio) return;
+  const t  = Date.now() - cronoInicio;
+  const cs = Math.floor((t % 1000) / 10);
+  const sg = Math.floor((t / 1000) % 60);
+  const mn = Math.floor(t / 60000);
+  document.getElementById('cronometro').textContent =
+    String(mn).padStart(2,'0')+':'+String(sg).padStart(2,'0')+':'+String(cs).padStart(2,'0');
+}
+
+// ── Registrar intento ──
+function registrarIntento(tiempo) {
+  if (!participanteActual) return;
+  const esDNF = tiempo === 'DNF';
+  intentosLog.push({ ronda:rondaActual, intento:intentoActual, tiempo, esDNF });
+  agregarAlRanking(tiempo, esDNF);
+  guardarResultadoGAS(tiempo);
+  // Determinar botones siguientes
+  ocultarBotonesAccion();
+  if (intentosLog.length < maxIntentos) {
+    // Quedan intentos
+    document.getElementById('btn-sig-intento').classList.add('visible');
+    document.getElementById('crono-status').textContent = esDNF ? `DNF · ${maxIntentos - intentosLog.length} intento(s) restante(s)` : `⏸ ${maxIntentos - intentosLog.length} intento(s) restante(s)`;
+  } else {
+    // Completó todos los intentos
+    bloquearBtn();
+    document.getElementById('btn-sig-part').classList.add('visible');
+    document.getElementById('crono-status').textContent = esDNF ? `⛔ DNF · ${maxIntentos}/${maxIntentos} intentos` : `✓ COMPLETÓ ${maxIntentos}/${maxIntentos} INTENTOS`;
   }
+  guardarEstado();
+}
 
-  function registrarIntento(tiempo) {
-    if (!participanteActual) return;
-    const esDNF = (tiempo === 'DNF');
-    intentosLog.push({ ronda: rondaActual, intento: intentoActual, tiempo, esDNF });
-    renderIntentosLog();
-    agregarCompetido(participanteActual.robot, tiempo, rondaActual, intentoActual, esDNF);
-    guardarResultadoGAS(tiempo);
-    const btnSiguiente = document.getElementById('btn-siguiente');
-    const btnSaltar    = document.getElementById('btn-saltar');
-    if (intentosLog.length < maxIntentos) {
-      btnSiguiente.classList.add('visible');
-      btnSiguiente.textContent = '➜ Siguiente intento';
-      btnSaltar.classList.remove('visible');
-    } else {
-      btnSiguiente.classList.add('visible');
-      btnSiguiente.textContent = '⏭ Siguiente participante';
-      btnSaltar.classList.remove('visible');
-      bloquearBotonIniciar();
-      document.getElementById('crono-status').textContent = esDNF
-        ? `⛔ DNF · ${maxIntentos} de ${maxIntentos} intentos usados`
-        : `✓ COMPLETÓ ${maxIntentos} DE ${maxIntentos} INTENTOS`;
-    }
-    guardarEstado();
+function siguienteIntento() {
+  intentoActual++;
+  actualizarBadges();
+  reiniciarCrono();
+  desbloquearBtn();
+  ocultarBotonesAccion();
+  document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
+}
+
+function pasarSiguienteParticipante() {
+  const nom = participanteActual?.robot || 'participante';
+  limpiarParticipante();
+  desbloquearBtn();
+  ocultarBotonesAccion();
+  document.getElementById('crono-status').textContent = '⏳ ESPERANDO SIGUIENTE PARTICIPANTE';
+  showToast(`✓ ${nom} — listo`);
+}
+
+function saltarParticipante() {
+  if (participanteActual && intentosLog.length < maxIntentos) {
+    if (!confirm(`⚠️ ${participanteActual.robot} solo hizo ${intentosLog.length}/${maxIntentos} intentos.\n¿Saltar de todas formas?`)) return;
   }
+  limpiarParticipante();
+  desbloquearBtn();
+  ocultarBotonesAccion();
+  document.getElementById('crono-status').textContent = '⏳ ESPERANDO SIGUIENTE PARTICIPANTE';
+  showToast('⏭ Esperando siguiente participante');
+}
 
-  function siguienteIntento() {
-    if (intentosLog.length >= maxIntentos) { pasarSiguienteParticipante(); return; }
-    intentoActual++;
-    actualizarBadges();
-    reiniciarCrono();
-    document.getElementById('btn-siguiente').classList.remove('visible');
-    document.getElementById('btn-saltar').classList.remove('visible');
-    document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
-  }
-
-  function pasarSiguienteParticipante() {
-    if (!participanteActual) return;
-    const nombreRobot = participanteActual.robot || participanteActual.nombre || 'participante';
-    limpiarParticipante();
-    desbloquearBotonIniciar();
-    document.getElementById('crono-status').textContent = '⏳ ESPERANDO SIGUIENTE PARTICIPANTE';
-    showToast(`✓ ${nombreRobot} completó sus intentos · Esperando QR del siguiente`);
-  }
-
-  function saltarParticipante() {
-    if (participanteActual && intentosLog.length < maxIntentos) {
-      const confirmar = confirm(`⚠️ ${participanteActual.robot} solo hizo ${intentosLog.length} de ${maxIntentos} intentos.\n\n¿Saltar de todas formas?`);
-      if (!confirmar) return;
-    }
-    desbloquearBotonIniciar();
-    limpiarParticipante();
-    document.getElementById('crono-status').textContent = '⏳ ESPERANDO SIGUIENTE PARTICIPANTE';
-    showToast('⏭ Esperando siguiente participante del escáner');
-  }
-
-  function renderIntentosLog() {
-    document.getElementById('intentos-log').style.display = 'none';
-  }
-
-  function actualizarBadges() {
-    if (rondaActual === 0) {
-      document.getElementById('badge-ronda').textContent   = 'RONDA 0 · REVISIÓN';
-      document.getElementById('badge-intento').textContent = '—';
-      document.getElementById('btn-cerrar-ronda').style.display = 'none';
-    } else {
-      document.getElementById('badge-ronda').textContent   = 'RONDA ' + rondaActual;
-      document.getElementById('badge-intento').textContent = 'INTENTO ' + intentoActual;
-      document.getElementById('btn-cerrar-ronda').style.display = 'block';
-    }
-    document.getElementById('cerrar-ronda-num').textContent = rondaActual;
-  }
-
-  function iniciarCompetencia() {
-    if (!categoriaActual) { showToast('⚠️ Primero selecciona una categoría'); return; }
-    const confirmar = confirm(`¿Iniciar competencia?\n\n• Rondas: ${maxRondas}\n• Intentos por ronda: ${maxIntentos}\n\nEsto bloqueará la configuración.`);
-    if (!confirmar) return;
-    competenciaIniciada = true;
-    document.getElementById('cfg-rondas').disabled    = true;
-    document.getElementById('cfg-intentos').disabled  = true;
-    document.getElementById('cfg-rondas').style.opacity   = '0.5';
-    document.getElementById('cfg-intentos').style.opacity = '0.5';
-    document.getElementById('btn-iniciar-competencia').classList.add('oculto');
-    const ronda0 = getRonda(0);
-    rondaActual   = 1;
-    intentoActual = 1;
-    rondasData[1] = {
-      clasificados: ronda0.clasificados.map((c, i) => ({
-        ...c, tiempo: '—', tiempos: [], esDNF: false, ronda: 1, intento: 0,
-        ts: Date.now() + i
-      })),
-      eliminados: [], cerrada: false
-    };
-    actualizarBadges();
-    renderTodasRondas();
-    limpiarParticipante();
-    guardarEstado();
-    showToast(`🏁 Competencia iniciada · ${rondasData[1].clasificados.length} participantes en Ronda 1`);
-  }
-
-  function getRonda(r) {
-    if (!rondasData[r]) rondasData[r] = { clasificados: [], eliminados: [], cerrada: false };
-    return rondasData[r];
-  }
-
-  function agregarCompetido(robot, tiempo, ronda, intento, esDNF = false) {
-    if (!participanteActual) return;
-    const rd        = getRonda(ronda);
-    const existeIdx = rd.clasificados.findIndex(c => c.robot === participanteActual.robot);
-    if (existeIdx >= 0) {
-      const ant = rd.clasificados[existeIdx];
-      ant.tiempos = ant.tiempos || [ant.tiempo];
-      ant.tiempos.push(tiempo);
-      if (!esDNF && (ant.esDNF || tiempoASegundos(tiempo) < tiempoASegundos(ant.tiempo))) {
-        ant.tiempo  = tiempo;
-        ant.intento = intento;
-        ant.esDNF   = false;
-      }
-    } else {
-      rd.clasificados.push({
-        id: participanteActual.id, robot: participanteActual.robot,
-        nombre: participanteActual.nombre || '',
-        institucion: participanteActual.institucion || '',
-        ciudad: participanteActual.ciudad || '',
-        categoria: participanteActual.categoria || '',
-        tiempo, ronda, intento, tiempos: [tiempo], esDNF,
-        ts: Date.now() + rd.clasificados.length
-      });
-    }
-    renderTodasRondas();
-    actualizarContadorCompetidos();
-  }
-
-  function eliminarCompetido(ts, ronda) {
-    const rd = getRonda(ronda);
-    const c  = rd.clasificados.find(x => x.ts === ts);
-    if (!c) return;
-    rd.clasificados = rd.clasificados.filter(x => x.ts !== ts);
-    rd.eliminados.push(c);
-    renderTodasRondas();
-    actualizarContadorCompetidos();
-    guardarEstado();
-    showToast('🗑 ' + c.robot + ' eliminado');
-  }
-
-  function recuperarEliminado(ts, ronda) {
-    const rd = getRonda(ronda);
-    const c  = rd.eliminados.find(x => x.ts === ts);
-    if (!c) return;
-    rd.eliminados   = rd.eliminados.filter(x => x.ts !== ts);
-    rd.clasificados.push(c);
-    renderTodasRondas();
-    actualizarContadorCompetidos();
-    guardarEstado();
-    showToast('↩ ' + c.robot + ' recuperado');
-  }
-
-  function seleccionarCompetido(ts, ronda) {
-    const rd = getRonda(ronda);
-    const c  = rd.clasificados.find(x => x.ts === ts);
-    if (!c) return;
-    if (participanteActual && participanteActual.robot !== c.robot) {
-      const confirmar = confirm(`Ya tienes a "${participanteActual.robot}" seleccionado.\n\n¿Cambiar a "${c.robot}"?`);
-      if (!confirmar) return;
-    }
-    fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
-    }).catch(e => console.error('Error clearing activo:', e));
-    participanteActual = { id: c.id, robot: c.robot, nombre: c.nombre, institucion: c.institucion, ciudad: c.ciudad, categoria: c.categoria };
-    // Notificar a PANTALLA que este participante está activo
-    fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'setActivo',
-        ruta: getRutaActual() || 'general',
-        participante: { ...participanteActual, timestamp: Date.now() }
-      })
-    }).catch(() => {});
-    intentosLog   = [];
-    intentoActual = 1;
-    actualizarBadges();
-    reiniciarCrono();
-    desbloquearBotonIniciar();
-    document.getElementById('btn-siguiente').classList.remove('visible');
-    document.getElementById('btn-saltar').classList.remove('visible');
-    document.getElementById('btn-dnf').style.display = 'none';
-    const strip = document.getElementById('participante-strip');
-    strip.className = 'participante-strip';
-    strip.innerHTML = `
-      <div class="p-info">
-        <div class="p-robot">${c.robot}</div>
-        <div class="p-inst">${c.institucion || ''}${c.ciudad ? ' · ' + c.ciudad : ''}</div>
-      </div>
-      <div class="p-badge">LISTO ✓</div>
-    `;
-    document.getElementById('intentos-log').style.display = 'none';
-    showToast('✓ ' + c.robot + ' seleccionado');
-  }
-
-  function actualizarContadorCompetidos() {
-    const rd = getRonda(rondaActual);
-    document.getElementById('competidos-count').textContent = rd.clasificados.length;
-  }
-
-  function renderTodasRondas() {
-    const container       = document.getElementById('rondas-container');
-    const rondasOrdenadas = Object.keys(rondasData).map(Number).sort((a, b) => b - a);
-    const totalParticipantes = Object.values(rondasData)
-      .reduce((acc, rd) => acc + rd.clasificados.length + rd.eliminados.length, 0);
-    if (totalParticipantes === 0) {
-      container.innerHTML = '<p class="competidos-empty">Sin participantes aún</p>';
-      return;
-    }
-    container.innerHTML = rondasOrdenadas.map(r => {
-      const rd       = rondasData[r];
-      const esActual = r === rondaActual;
-      const cerrada  = rd.cerrada;
-      const conTiempo = rd.clasificados.filter(c => !c.esDNF && c.tiempo !== '—')
-        .sort((a, b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
-      const sinTiempo = rd.clasificados.filter(c => c.tiempo === '—');
-      const conDNF    = rd.clasificados.filter(c => c.esDNF);
-      const clasificados = [...conTiempo, ...sinTiempo, ...conDNF];
-      const itemsC = clasificados.length === 0
-        ? '<p class="competidos-empty" style="padding:8px 0">Ninguno aún</p>'
-        : clasificados.map((c, i) => {
-            const tiempos    = c.tiempos || [c.tiempo];
-            const tiemposStr = tiempos.map((t, idx) => {
-              const esMejorTiempo = t === c.tiempo && t !== '—' && !c.esDNF;
-              const claseTag      = t === 'DNF' ? 'es-dnf' : (esMejorTiempo ? 'mejor' : '');
-              return `<span class="competido-tiempo-tag ${claseTag}"><b>I${idx+1}</b> ${t}${esMejorTiempo ? ' ★' : ''}</span>`;
-            }).join('');
-            const numClass  = c.esDNF ? 'competido-num dnf-num' : 'competido-num';
-            const numLabel  = c.esDNF ? 'DNF' : (i + 1);
-            const itemClass = c.esDNF ? 'competido-item es-dnf' : 'competido-item';
-            const acciones  = esActual && !cerrada
-              ? `<div class="competido-actions">
-                  <button class="competido-sel" onclick="seleccionarCompetido(${c.ts}, ${r})">▶</button>
-                  <button class="competido-del" onclick="eliminarCompetido(${c.ts}, ${r})">🗑</button>
-                </div>` : '';
-            return `
-              <div class="${itemClass}">
-                <span class="${numClass}">${numLabel}</span>
-                <div class="competido-info">
-                  <div class="competido-robot">${c.robot}</div>
-                  <div class="competido-tiempos">${tiemposStr}</div>
-                </div>
-                ${acciones}
-              </div>`;
-          }).join('');
-      const itemsE = rd.eliminados.length === 0 ? '' : `
-        <div class="ronda-eliminados">
-          <div class="ronda-eliminados-title">ELIMINADOS</div>
-          ${rd.eliminados.map(c => `
-            <div class="eliminado-item">
-              <div style="flex:1">
-                <div class="eliminado-robot">${c.robot}</div>
-                <div style="font-size:0.65rem;color:var(--muted);font-family:var(--font-mono)">${c.tiempo}</div>
-              </div>
-              ${esActual && !cerrada ? `<button class="btn-recuperar" onclick="recuperarEliminado(${c.ts}, ${r})">↩</button>` : ''}
-            </div>`).join('')}
-        </div>`;
-      return `
-        <div class="ronda-section">
-          <div class="ronda-section-header">
-            <span class="ronda-section-title ${cerrada ? 'cerrada' : ''}">${cerrada ? '✓' : '●'} RONDA ${r}</span>
-            <span class="ronda-section-badge ${cerrada ? 'cerrada' : ''}">${clasificados.length} clasif.</span>
-          </div>
-          <div class="ronda-section-body">${itemsC}</div>
-          ${itemsE}
-        </div>`;
-    }).join('');
-  }
-
-  function pedirCerrarRonda() {
-    const rd = getRonda(rondaActual);
-    if (rd.clasificados.length === 0) { showToast('⚠️ No hay participantes en esta ronda'); return; }
-    document.getElementById('modal-ronda-nombre').textContent = 'Ronda ' + rondaActual;
-    document.getElementById('modal-ronda').classList.add('show');
-  }
-  function cerrarModalRonda() { document.getElementById('modal-ronda').classList.remove('show'); }
-
-  function confirmarCerrarRonda() {
-    cerrarModalRonda();
-    getRonda(rondaActual).cerrada = true;
-    fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
-    }).catch(e => console.error('Error clearing activo:', e));
-    if (rondaActual < maxRondas) {
-      const ant = rondaActual;
-      rondaActual++;
-      intentoActual = 1;
-      actualizarBadges();
-      const clasificadosValidos = getRonda(ant).clasificados.filter(c => !c.esDNF);
-      const nueva = getRonda(rondaActual);
-      nueva.clasificados = clasificadosValidos.map((c, i) => ({
-        ...c, tiempo: '—', tiempos: [], esDNF: false, ronda: rondaActual, intento: 0,
-        ts: c.ts + rondaActual + i
-      }));
-      actualizarContadorCompetidos();
-      renderTodasRondas();
-      limpiarParticipante();
-      desbloquearBotonIniciar();
-      guardarEstado();
-      showToast(`🏁 Ronda ${ant} cerrada · Ronda ${rondaActual} lista`);
-    } else {
-      const btn = document.getElementById('btn-cerrar-ronda');
-      btn.disabled  = true;
-      btn.innerHTML = '✓ Competencia finalizada';
-      btn.style.opacity = '0.5';
-      renderTodasRondas();
-      limpiarParticipante();
-      guardarEstado();
-      showToast('🏆 ¡Competencia finalizada!');
-      document.getElementById('btn-descargar-excel').classList.add('visible');
-      setTimeout(() => exportarExcel(), 500);
-    }
-  }
-
-  async function guardarResultadoGAS(tiempo) {
-    if (!participanteActual || !categoriaActual) return;
-    try {
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'pushResultado',
-          participanteId: participanteActual.id,
-          nombre: participanteActual.nombre || '',
-          robot:  participanteActual.robot  || '',
-          institucion: participanteActual.institucion || '',
-          tiempo, ronda: rondaActual, intento: intentoActual,
-          ruta: getRutaActual() || 'general',
-          fecha: new Date().toISOString()
-        })
-      });
-    } catch(e) { console.error('Error al guardar resultado:', e); }
-  }
-
-  // ✅ FIX 1: guardarEstado también sincroniza con GAS para que PANTALLA lo lea
-  function guardarEstado() {
-    if (!categoriaActual) return;
-    const estado = {
-      rondaActual, intentoActual, maxRondas, maxIntentos, rondasData,
-      categoria: categoriaActual, competenciaIniciada
-    };
-    localStorage.setItem(getEstadoKey(), JSON.stringify(estado));
-
-    // Sincronizar con GAS → PANTALLA lee getAllEstados
-    const ruta = getRutaActual();
-    if (!ruta) return;
-    fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'setEstado', ruta, estado })
-    }).catch(e => console.warn('Error al sincronizar estado:', e));
-  }
-
-  function cargarEstado() {
-    try {
-      const raw = localStorage.getItem(getEstadoKey());
-      if (!raw) {
-        rondaActual  = 0; intentoActual = 1;
-        maxRondas    = parseInt(document.getElementById('cfg-rondas').value)   || 3;
-        maxIntentos  = parseInt(document.getElementById('cfg-intentos').value) || 2;
-        rondasData   = { 0: { clasificados: [], eliminados: [], cerrada: false } };
-        competenciaIniciada = false;
-        actualizarBadges(); renderTodasRondas(); actualizarContadorCompetidos();
-        return;
-      }
-      const estado     = JSON.parse(raw);
-      rondaActual      = estado.rondaActual      !== undefined ? estado.rondaActual : 0;
-      intentoActual    = estado.intentoActual    || 1;
-      maxRondas        = estado.maxRondas        || 3;
-      maxIntentos      = estado.maxIntentos      || 2;
-      rondasData       = estado.rondasData       || { 0: { clasificados: [], eliminados: [], cerrada: false } };
-      competenciaIniciada = estado.competenciaIniciada || false;
-      document.getElementById('cfg-rondas').value   = maxRondas;
-      document.getElementById('cfg-intentos').value = maxIntentos;
-      if (competenciaIniciada) {
-        document.getElementById('cfg-rondas').disabled    = true;
-        document.getElementById('cfg-intentos').disabled  = true;
-        document.getElementById('cfg-rondas').style.opacity   = '0.5';
-        document.getElementById('cfg-intentos').style.opacity = '0.5';
-        document.getElementById('btn-iniciar-competencia').classList.add('oculto');
-      }
-      actualizarBadges(); renderTodasRondas(); actualizarContadorCompetidos();
-      const rdActual = getRonda(rondaActual);
-      if (rondaActual >= maxRondas && rdActual.cerrada) {
-        const btn = document.getElementById('btn-cerrar-ronda');
-        btn.disabled  = true;
-        btn.innerHTML = '✓ Competencia finalizada';
-        btn.style.opacity = '0.5';
-        document.getElementById('btn-descargar-excel').classList.add('visible');
-      }
-    } catch(e) { console.error('Error al cargar estado:', e); }
-  }
-
-  document.getElementById('cfg-rondas').addEventListener('change', function() {
-    if (competenciaIniciada) { showToast('⚠️ No se puede cambiar la config durante la competencia'); this.value = maxRondas; return; }
-    maxRondas = parseInt(this.value) || 3;
-    guardarEstado();
+function ocultarBotonesAccion() {
+  ['btn-sig-intento','btn-sig-part','btn-saltar'].forEach(id => {
+    document.getElementById(id).classList.remove('visible');
   });
-  document.getElementById('cfg-intentos').addEventListener('change', function() {
-    if (competenciaIniciada) { showToast('⚠️ No se puede cambiar la config durante la competencia'); this.value = maxIntentos; return; }
-    maxIntentos = parseInt(this.value) || 2;
-    document.getElementById('crono-status').textContent = participanteActual
-      ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
-    guardarEstado();
-  });
+}
 
-  function tiempoASegundos(t) {
-    if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
-    const p = t.split(':').map(Number);
-    return p[0] * 60 + p[1] + p[2] / 100;
+// ── Badges ──
+function actualizarBadges() {
+  const bronda = document.getElementById('badge-ronda');
+  const bint   = document.getElementById('badge-intento');
+  const bcr    = document.getElementById('btn-cerrar-ronda');
+  const numEl  = document.getElementById('cerrar-ronda-num');
+  if (rondaActual === 0) {
+    bronda.textContent = 'RONDA 0 · REVISIÓN';
+    bint.textContent   = '—';
+    bcr.style.display  = 'none';
+  } else {
+    bronda.textContent = 'RONDA ' + rondaActual;
+    bint.textContent   = 'INTENTO ' + intentoActual;
+    bcr.style.display  = 'block';
   }
+  if (numEl) numEl.textContent = rondaActual;
+}
 
-  function exportarExcel() {
-    try {
-      const wb       = XLSX.utils.book_new();
-      const categoria = categoriaActual || 'Sin categoría';
-      Object.keys(rondasData).map(Number).sort((a,b) => a-b).forEach(r => {
-        const ws = crearHojaRonda(rondasData[r], r, categoria, false);
-        XLSX.utils.book_append_sheet(wb, ws, 'Ronda ' + r);
-      });
-      const ultimaRondaCerrada = Object.keys(rondasData).map(Number)
-        .filter(r => rondasData[r].cerrada).sort((a,b) => b-a)[0] || rondaActual;
-      const wsGeneral = crearHojaRonda(rondasData[ultimaRondaCerrada], ultimaRondaCerrada, categoria, true);
-      XLSX.utils.book_append_sheet(wb, wsGeneral, 'Ranking General');
-      const fecha         = new Date().toISOString().slice(0,10);
-      const nombreArchivo = `SucreBot_${categoria.replace(/[^a-zA-Z0-9]/g,'_')}_${fecha}.xlsx`;
-      XLSX.writeFile(wb, nombreArchivo);
-      showToast('✓ Excel descargado');
-    } catch(e) { console.error('Error al exportar:', e); showToast('❌ Error al exportar Excel'); }
-  }
+// ── Competencia ──
+function iniciarCompetencia() {
+  if (!categoriaActual) { showToast('⚠️ Selecciona una categoría primero', true); return; }
+  maxRondas   = parseInt(document.getElementById('cfg-rondas').value)   || 3;
+  maxIntentos = parseInt(document.getElementById('cfg-intentos').value) || 2;
+  if (!confirm(`¿Iniciar competencia?\n• Rondas: ${maxRondas}\n• Intentos: ${maxIntentos}\n\nEsto bloqueará la configuración.`)) return;
+  competenciaIniciada = true;
+  document.getElementById('cfg-rondas').disabled    = true;
+  document.getElementById('cfg-intentos').disabled  = true;
+  document.getElementById('cfg-rondas').style.opacity   = '0.5';
+  document.getElementById('cfg-intentos').style.opacity = '0.5';
+  document.getElementById('btn-iniciar-comp').classList.add('oculto');
+  const ronda0 = getRonda(0);
+  rondaActual  = 1; intentoActual = 1;
+  rondasData[1] = {
+    clasificados: ronda0.clasificados.map((c,i) => ({ ...c, tiempo:'—', tiempos:[], esDNF:false, ronda:1, ts:Date.now()+i })),
+    eliminados: [], cerrada: false
+  };
+  actualizarBadges();
+  renderRondas();
+  limpiarParticipante();
+  guardarEstado();
+  showToast(`🏁 Competencia iniciada · ${rondasData[1].clasificados.length} participantes`);
+}
 
-  function crearHojaRonda(rd, r, categoria, esGeneral) {
-    const todos  = rd.clasificados;
-    const maxIR  = Math.max(...todos.map(c => (c.tiempos || [c.tiempo]).length), 1);
-    const cols   = ['#','Robot','Nombre','Institución','Ciudad','Mejor Tiempo',
-                    ...Array.from({length: maxIR}, (_,i) => 'I'+(i+1))];
-    const conTiempo = [...todos].filter(c => !c.esDNF && c.tiempo !== '—').sort((a,b) => tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
-    const sinTiempo = todos.filter(c => c.tiempo === '—');
-    const conDNF    = todos.filter(c => c.esDNF);
-    const clasificados = [...conTiempo, ...sinTiempo, ...conDNF];
-    const aoa = [];
-    aoa.push([esGeneral ? 'SucreBot — Ranking General' : 'SucreBot — Ronda ' + r]);
-    aoa.push(['Categoría: ' + (categoria || '—')]);
-    aoa.push([]);
-    aoa.push(cols);
-    clasificados.forEach((c, i) => {
-      const tiempos  = c.tiempos || [c.tiempo];
-      const posLabel = c.esDNF ? 'DNF' : (i + 1);
-      aoa.push([posLabel, c.robot||'—', c.nombre||'—', c.institucion||'—', c.ciudad||'—', c.tiempo, ...tiempos]);
+function getRonda(r) {
+  if (!rondasData[r]) rondasData[r] = { clasificados:[], eliminados:[], cerrada:false };
+  return rondasData[r];
+}
+
+// ── Ranking ──
+function agregarAlRanking(tiempo, esDNF) {
+  if (!participanteActual) return;
+  const rd  = getRonda(rondaActual);
+  const idx = rd.clasificados.findIndex(c => c.robot === participanteActual.robot);
+  if (idx >= 0) {
+    const ant = rd.clasificados[idx];
+    ant.tiempos = ant.tiempos || [];
+    if (tiempo && tiempo !== '—' && tiempo !== '00:00:00') ant.tiempos.push(tiempo);
+    if (!esDNF && (ant.esDNF || tiempoASegundos(tiempo) < tiempoASegundos(ant.tiempo))) {
+      ant.tiempo = tiempo; ant.esDNF = false;
+    }
+  } else {
+    rd.clasificados.push({
+      id: participanteActual.id, robot: participanteActual.robot,
+      nombre: participanteActual.nombre||'', institucion: participanteActual.institucion||'',
+      ciudad: participanteActual.ciudad||'', categoria: participanteActual.categoria||'',
+      tiempo, tiempos: (tiempo && tiempo !== '—' && tiempo !== '00:00:00') ? [tiempo] : [],
+      esDNF, ronda: rondaActual, ts: Date.now()+rd.clasificados.length
     });
-    if (!esGeneral && rd.eliminados && rd.eliminados.length > 0) {
-      aoa.push([]);
-      aoa.push(['ELIMINADOS']);
-      rd.eliminados.forEach((c,i) =>
-        aoa.push([i+1, c.robot||'—', c.nombre||'—', c.institucion||'—', c.ciudad||'—', c.tiempo||'—'])
-      );
-    }
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...Array(maxIR).fill({wch:12})];
-    return ws;
   }
+  renderRondas();
+  actualizarContador();
+}
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
+function eliminarCompetido(ts, r) {
+  const rd = getRonda(r); const c = rd.clasificados.find(x => x.ts===ts); if (!c) return;
+  rd.clasificados = rd.clasificados.filter(x => x.ts!==ts); rd.eliminados.push(c);
+  renderRondas(); actualizarContador(); guardarEstado(); showToast('🗑 '+c.robot);
+}
+
+function recuperarEliminado(ts, r) {
+  const rd = getRonda(r); const c = rd.eliminados.find(x => x.ts===ts); if (!c) return;
+  rd.eliminados = rd.eliminados.filter(x => x.ts!==ts); rd.clasificados.push(c);
+  renderRondas(); actualizarContador(); guardarEstado(); showToast('↩ '+c.robot);
+}
+
+function seleccionarCompetido(ts, r) {
+  const rd = getRonda(r); const c = rd.clasificados.find(x => x.ts===ts); if (!c) return;
+  if (participanteActual && participanteActual.robot !== c.robot) {
+    if (!confirm(`Ya tienes "${participanteActual.robot}". ¿Cambiar a "${c.robot}"?`)) return;
   }
+  fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'clearActivo', ruta: getRuta()||'general' }) }).catch(()=>{});
+  participanteActual = { id:c.id, robot:c.robot, nombre:c.nombre, institucion:c.institucion, ciudad:c.ciudad, categoria:c.categoria };
+  fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setActivo', ruta: getRuta()||'general', participante:{ ...participanteActual, timestamp:Date.now() } }) }).catch(()=>{});
+  intentosLog = []; intentoActual = 1;
+  actualizarBadges(); reiniciarCrono(); desbloquearBtn(); ocultarBotonesAccion();
+  const strip = document.getElementById('participante-strip');
+  strip.className = 'participante-strip';
+  strip.innerHTML = `<div><div class="p-robot">${c.robot}</div><div class="p-inst">${c.institucion||''}${c.ciudad?' · '+c.ciudad:''}</div></div><div class="p-badge">LISTO ✓</div>`;
+  showToast('✓ '+c.robot+' seleccionado');
+}
 
-  document.addEventListener('componentsLoaded', async function() {
-    const savedUser = localStorage.getItem('sucrebot_user');
-    if (!savedUser) { window.location.href = '../INICIO/'; return; }
-    const categoriaGuardada = localStorage.getItem('cronometro_categoria_activa');
-    if (categoriaGuardada) {
-      const bloqueada = await verificarBloqueoCategoria(categoriaGuardada);
-      const userData  = JSON.parse(savedUser);
-      if (bloqueada && bloqueada.usuario === userData.email) {
-        document.getElementById('select-categoria').value = categoriaGuardada;
-        categoriaActual = categoriaGuardada;
-        activarUICategoria();
-        cargarEstado();
-        showToast(`✅ Categoría "${categoriaGuardada}" restaurada`);
-      } else if (!bloqueada) {
-        const bloqueado = await bloquearCategoria(categoriaGuardada);
-        if (bloqueado) {
-          document.getElementById('select-categoria').value = categoriaGuardada;
-          categoriaActual = categoriaGuardada;
-          activarUICategoria();
-          cargarEstado();
-          showToast(`✅ Categoría re-bloqueada`);
-        } else { localStorage.removeItem('cronometro_categoria_activa'); }
-      } else {
-        localStorage.removeItem('cronometro_categoria_activa');
-        showToast(`⚠️ Categoría tomada por ${bloqueada.usuario}`);
-      }
+function actualizarContador() {
+  document.getElementById('ranking-count').textContent = getRonda(rondaActual).clasificados.length;
+}
+
+function renderRondas() {
+  const container = document.getElementById('rondas-container');
+  const rondas    = Object.keys(rondasData).map(Number).sort((a,b)=>b-a);
+  const total     = Object.values(rondasData).reduce((a,r)=>a+r.clasificados.length+r.eliminados.length,0);
+  if (total === 0) { container.innerHTML = '<p class="ranking-empty">Sin participantes aún</p>'; return; }
+  container.innerHTML = rondas.map(r => {
+    const rd = rondasData[r]; const esActual = r===rondaActual; const cerrada = rd.cerrada;
+    const conT = rd.clasificados.filter(c=>!c.esDNF && c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
+    const sinT = rd.clasificados.filter(c=>c.tiempo==='—');
+    const dnfs = rd.clasificados.filter(c=>c.esDNF);
+    const clases = [...conT,...sinT,...dnfs];
+    const items = clases.length===0 ? '<p class="ranking-empty" style="padding:8px 0">Ninguno aún</p>' :
+      clases.map((c,i)=>{
+        const tiempos = (c.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00');
+        const chips = tiempos.length===0 && !c.esDNF ? '<span class="comp-tag">Sin intentos</span>' :
+          (c.esDNF && tiempos.length===0) ? '<span class="comp-tag es-dnf">DNF</span>' :
+          [...(c.esDNF?['DNF']:tiempos.map((t,idx)=>{
+            const mejor = t===c.tiempo && tiempos.length>0;
+            return `<span class="comp-tag ${mejor?'mejor':''}">${t}${mejor?' ★':''}</span>`;
+          }))].join('');
+        const numClass = c.esDNF ? 'comp-num dnf' : 'comp-num';
+        const itemClass = c.esDNF ? 'comp-item es-dnf' : 'comp-item';
+        const acc = esActual&&!cerrada ? `<div class="comp-actions"><button class="btn-sel" onclick="seleccionarCompetido(${c.ts},${r})">▶</button><button class="btn-del" onclick="eliminarCompetido(${c.ts},${r})">🗑</button></div>` : '';
+        return `<div class="${itemClass}"><span class="${numClass}">${c.esDNF?'DNF':i+1}</span><div class="comp-info"><div class="comp-robot">${c.robot}</div><div class="comp-tiempos">${chips}</div></div>${acc}</div>`;
+      }).join('');
+    const elims = rd.eliminados.length===0?'':
+      `<div class="eliminados-wrap"><div class="eliminados-title">ELIMINADOS</div>${rd.eliminados.map(c=>`<div class="elim-item"><div><div class="elim-robot">${c.robot}</div></div>${esActual&&!cerrada?`<button class="btn-recuperar" onclick="recuperarEliminado(${c.ts},${r})">↩</button>`:''}</div>`).join('')}</div>`;
+    return `<div class="ronda-seccion"><div class="ronda-header"><span class="ronda-header-title ${cerrada?'cerrada':''}">${cerrada?'✓':'●'} RONDA ${r}</span><span class="ronda-header-badge ${cerrada?'cerrada':''}">${clases.length} clasif.</span></div><div class="ronda-body">${items}</div>${elims}</div>`;
+  }).join('');
+}
+
+// ── Cerrar ronda ──
+function pedirCerrarRonda() {
+  if (getRonda(rondaActual).clasificados.length===0) { showToast('⚠️ No hay participantes', true); return; }
+  document.getElementById('modal-ronda-nom').textContent = 'Ronda '+rondaActual;
+  document.getElementById('modal-ronda').classList.add('show');
+}
+function confirmarCerrarRonda() {
+  cerrarModal('modal-ronda');
+  getRonda(rondaActual).cerrada = true;
+  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general'})}).catch(()=>{});
+  if (rondaActual < maxRondas) {
+    const ant = rondaActual++;
+    intentoActual = 1;
+    actualizarBadges();
+    getRonda(rondaActual).clasificados = getRonda(ant).clasificados.filter(c=>!c.esDNF).map((c,i)=>({...c,tiempo:'—',tiempos:[],esDNF:false,ronda:rondaActual,ts:c.ts+rondaActual+i}));
+    actualizarContador(); renderRondas(); limpiarParticipante(); desbloquearBtn(); guardarEstado();
+    showToast(`🏁 Ronda ${ant} cerrada · Ronda ${rondaActual} lista`);
+  } else {
+    const btn = document.getElementById('btn-cerrar-ronda');
+    btn.disabled=true; btn.innerHTML='✓ Competencia finalizada'; btn.style.opacity='0.5';
+    renderRondas(); limpiarParticipante(); guardarEstado();
+    document.getElementById('btn-excel').classList.add('visible');
+    showToast('🏆 ¡Competencia finalizada!');
+    setTimeout(()=>exportarExcel(),500);
+  }
+}
+
+// ── Cerrar categoría ──
+function pedirCerrarCategoria() {
+  if (!categoriaActual) return;
+  document.getElementById('modal-cat-nom').textContent = categoriaActual;
+  document.getElementById('modal-cat').classList.add('show');
+}
+async function confirmarCerrarCategoria() {
+  cerrarModal('modal-cat');
+  if (!categoriaActual) return;
+  try {
+    await desbloquearCategoria(categoriaActual);
+    localStorage.removeItem(getKey());
+    localStorage.removeItem('cronometro_categoria_activa');
+    const ruta = getRuta()||'general';
+    await Promise.all([
+      fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta})}),
+      fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null})})
+    ]);
+    // Reset completo
+    categoriaActual=null; participanteActual=null; rondaActual=0; intentoActual=1;
+    maxRondas=3; maxIntentos=2; rondasData={0:{clasificados:[],eliminados:[],cerrada:false}};
+    intentosLog=[]; competenciaIniciada=false;
+    desactivarUI(); reiniciarCrono(); limpiarParticipante(); actualizarBadges(); renderRondas();
+    document.getElementById('cfg-rondas').value='3'; document.getElementById('cfg-intentos').value='2';
+    document.getElementById('cfg-rondas').disabled=false; document.getElementById('cfg-intentos').disabled=false;
+    document.getElementById('cfg-rondas').style.opacity=''; document.getElementById('cfg-intentos').style.opacity='';
+    document.getElementById('btn-iniciar-comp').classList.remove('oculto');
+    document.getElementById('ranking-count').textContent='0';
+    const bcr=document.getElementById('btn-cerrar-ronda'); bcr.disabled=false; bcr.style.opacity='';
+    bcr.innerHTML='🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>';
+    showToast('✅ Categoría cerrada');
+  } catch(e) { showToast('❌ Error al cerrar categoría', true); }
+}
+
+// ── Guardar/cargar estado ──
+function guardarEstado() {
+  if (!categoriaActual) return;
+  const estado = { rondaActual,intentoActual,maxRondas,maxIntentos,rondasData,categoria:categoriaActual,competenciaIniciada };
+  localStorage.setItem(getKey(), JSON.stringify(estado));
+  const ruta = getRuta(); if (!ruta) return;
+  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado})}).catch(()=>{});
+}
+
+function cargarEstado() {
+  try {
+    const raw = localStorage.getItem(getKey());
+    if (!raw) { rondaActual=0;intentoActual=1;maxRondas=parseInt(document.getElementById('cfg-rondas').value)||3;maxIntentos=parseInt(document.getElementById('cfg-intentos').value)||2;rondasData={0:{clasificados:[],eliminados:[],cerrada:false}};competenciaIniciada=false;actualizarBadges();renderRondas();actualizarContador();return; }
+    const e=JSON.parse(raw);
+    rondaActual=e.rondaActual??0; intentoActual=e.intentoActual||1; maxRondas=e.maxRondas||3; maxIntentos=e.maxIntentos||2;
+    rondasData=e.rondasData||{0:{clasificados:[],eliminados:[],cerrada:false}}; competenciaIniciada=e.competenciaIniciada||false;
+    document.getElementById('cfg-rondas').value=maxRondas; document.getElementById('cfg-intentos').value=maxIntentos;
+    if (competenciaIniciada) {
+      document.getElementById('cfg-rondas').disabled=true; document.getElementById('cfg-intentos').disabled=true;
+      document.getElementById('cfg-rondas').style.opacity='0.5'; document.getElementById('cfg-intentos').style.opacity='0.5';
+      document.getElementById('btn-iniciar-comp').classList.add('oculto');
     }
-    iniciarPolling();
-    console.log('✅ Cronómetro listo · Polling activo');
-  });
+    actualizarBadges(); renderRondas(); actualizarContador();
+    if (rondaActual>=maxRondas && getRonda(rondaActual).cerrada) {
+      const btn=document.getElementById('btn-cerrar-ronda'); btn.disabled=true; btn.innerHTML='✓ Competencia finalizada'; btn.style.opacity='0.5';
+      document.getElementById('btn-excel').classList.add('visible');
+    }
+  } catch(e) { console.error('Error cargar estado:',e); }
+}
+
+// ── GAS resultado ──
+async function guardarResultadoGAS(tiempo) {
+  if (!participanteActual||!categoriaActual) return;
+  try {
+    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({
+      action:'pushResultado', participanteId:participanteActual.id, nombre:participanteActual.nombre||'',
+      robot:participanteActual.robot||'', institucion:participanteActual.institucion||'',
+      tiempo, ronda:rondaActual, intento:intentoActual, ruta:getRuta()||'general', fecha:new Date().toISOString()
+    })});
+  } catch(e) { console.error('Error guardar resultado:',e); }
+}
+
+// ── Config listeners ──
+document.getElementById('cfg-rondas').addEventListener('change', function() {
+  if (competenciaIniciada) { showToast('⚠️ No se puede cambiar durante la competencia', true); this.value=maxRondas; return; }
+  maxRondas=parseInt(this.value)||3; guardarEstado();
+});
+document.getElementById('cfg-intentos').addEventListener('change', function() {
+  if (competenciaIniciada) { showToast('⚠️ No se puede cambiar durante la competencia', true); this.value=maxIntentos; return; }
+  maxIntentos=parseInt(this.value)||2; guardarEstado();
+});
+
+// ── Excel ──
+function exportarExcel() {
+  try {
+    const wb=XLSX.utils.book_new(); const cat=categoriaActual||'Sin categoría';
+    Object.keys(rondasData).map(Number).sort((a,b)=>a-b).forEach(r=>{
+      XLSX.utils.book_append_sheet(wb, crearHoja(rondasData[r],r,cat,false), 'Ronda '+r);
+    });
+    const ult=Object.keys(rondasData).map(Number).filter(r=>rondasData[r].cerrada).sort((a,b)=>b-a)[0]||rondaActual;
+    XLSX.utils.book_append_sheet(wb, crearHoja(rondasData[ult],ult,cat,true), 'Ranking General');
+    XLSX.writeFile(wb, `SucreBot_${cat.replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    showToast('✓ Excel descargado');
+  } catch(e) { showToast('❌ Error Excel', true); }
+}
+function crearHoja(rd,r,cat,esGeneral) {
+  const todos=rd.clasificados; const maxI=Math.max(...todos.map(c=>(c.tiempos||[c.tiempo]).length),1);
+  const conT=[...todos].filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
+  const dnfs=todos.filter(c=>c.esDNF); const sin=todos.filter(c=>c.tiempo==='—');
+  const lista=[...conT,...sin,...dnfs];
+  const aoa=[[esGeneral?'SucreBot — Ranking General':'SucreBot — Ronda '+r],['Categoría: '+cat],[],
+    ['#','Robot','Nombre','Institución','Ciudad','Mejor Tiempo',...Array.from({length:maxI},(_,i)=>'I'+(i+1))]];
+  lista.forEach((c,i)=>aoa.push([c.esDNF?'DNF':i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo,...(c.tiempos||[c.tiempo])]));
+  if (!esGeneral&&rd.eliminados?.length) { aoa.push([],['ELIMINADOS']); rd.eliminados.forEach((c,i)=>aoa.push([i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo||'—'])); }
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...Array(maxI).fill({wch:12})];
+  return ws;
+}
+
+// ── Modal helpers ──
+function cerrarModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ── Toast ──
+function showToast(msg, error=false) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(error?' error':'');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── Init ──
+document.addEventListener('componentsLoaded', async function() {
+  const savedUser = localStorage.getItem('sucrebot_user');
+  if (!savedUser) { window.location.href='../INICIO/'; return; }
+  const catGuardada = localStorage.getItem('cronometro_categoria_activa');
+  if (catGuardada) {
+    const bloqueada = await verificarBloqueo(catGuardada);
+    const userData  = JSON.parse(savedUser);
+    if (bloqueada && bloqueada.usuario===userData.email) {
+      document.getElementById('select-categoria').value=catGuardada;
+      categoriaActual=catGuardada; activarUI(); cargarEstado();
+      showToast(`✅ Categoría "${catGuardada}" restaurada`);
+    } else if (!bloqueada) {
+      const ok = await bloquearCategoria(catGuardada);
+      if (ok) { document.getElementById('select-categoria').value=catGuardada; categoriaActual=catGuardada; activarUI(); cargarEstado(); showToast(`✅ Categoría re-bloqueada`); }
+      else localStorage.removeItem('cronometro_categoria_activa');
+    } else {
+      localStorage.removeItem('cronometro_categoria_activa');
+      showToast(`⚠️ Categoría tomada por ${bloqueada.usuario}`, true);
+    }
+  }
+  iniciarPolling();
+  console.log('✅ Cronómetro listo');
+});
 </script>
 
-<!-- ══ WEB SERIAL API ══ -->
+<!-- ══ WEB SERIAL ══ -->
 <script>
-(function() {
-  let puerto  = null;
-  let writer  = null;
-  let bufferSerial = '';
+(function(){
+  let puerto=null, writer=null, buffer='';
+  const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)'];
+  const CATS_SEGUIDOR = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
+  const CATS_PULSADOR = ['Cubo Rubik','Lego Kids'];
+  const CATS_SERIAL   = [...CATS_SENSOR,...CATS_SEGUIDOR,...CATS_PULSADOR];
+  let seguidorArrancado = false; // Para toggle del seguidor
 
-  const CATEGORIAS_SENSOR   = ['Trepador (Amateur)', 'Trepador (Pro)'];
-  const CATEGORIAS_PULSADOR = ['Cubo Rubik', 'Lego Kids'];
-  const CATEGORIAS_SERIAL   = [...CATEGORIAS_SENSOR, ...CATEGORIAS_PULSADOR];
-
-  // ── Inyectar botón ──────────────────────────────────────
-  function inyectarBotonSerial() {
+  function inyectarBoton() {
     if (document.getElementById('btn-serial')) return;
     const btn = document.createElement('button');
     btn.id = 'btn-serial';
-    btn.style.cssText = `
-      width: 100%; padding: 10px 14px; border-radius: 8px;
-      font-family: 'Exo 2', sans-serif; font-weight: 700;
-      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em;
-      cursor: pointer; border: 2px solid #4ab8e8;
-      background: linear-gradient(135deg, #0e2a5a 0%, #1a3a6b 100%);
-      color: #5bc8f0; box-shadow: 0 4px 12px rgba(74,184,232,0.2);
-      transition: all 0.2s; display: none; margin-top: 0;
-    `;
-    btn.onmouseenter = () => btn.style.transform = 'translateY(-2px)';
-    btn.onmouseleave = () => btn.style.transform = '';
-    btn.onclick = toggleConexionSerial;
-    actualizarTextoBoton(btn, false);
-    const badges = document.querySelector('.badges-container');
+    btn.style.cssText = `width:100%;padding:10px 14px;border-radius:8px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.03em;cursor:pointer;border:2px solid #4ab8e8;background:linear-gradient(135deg,#0e2a5a 0%,#1a3a6b 100%);color:#5bc8f0;transition:all 0.2s;display:none;margin-top:0;`;
+    btn.onmouseenter=()=>btn.style.transform='translateY(-2px)';
+    btn.onmouseleave=()=>btn.style.transform='';
+    btn.onclick=toggle;
+    actualizarBoton(btn,false);
+    const badges=document.querySelector('.badges-wrap');
     if (badges) badges.after(btn);
   }
 
-  function actualizarTextoBoton(btn, conectado) {
+  function actualizarBoton(btn,conectado) {
     if (!btn) return;
-    if (conectado) {
-      btn.textContent       = '🟢 Dispositivo conectado';
-      btn.style.borderColor = '#3dd68c';
-      btn.style.color       = '#3dd68c';
-      btn.style.background  = 'linear-gradient(135deg, #0a2a1a 0%, #0e3a22 100%)';
-    } else {
-      btn.textContent       = '🔌 Conectar dispositivo';
-      btn.style.borderColor = '#4ab8e8';
-      btn.style.color       = '#5bc8f0';
-      btn.style.background  = 'linear-gradient(135deg, #0e2a5a 0%, #1a3a6b 100%)';
-    }
+    if (conectado) { btn.textContent='🟢 Dispositivo conectado'; btn.style.borderColor='#3dd68c'; btn.style.color='#3dd68c'; btn.style.background='linear-gradient(135deg,#0a2a1a 0%,#0e3a22 100%)'; }
+    else { btn.textContent='🔌 Conectar dispositivo'; btn.style.borderColor='#4ab8e8'; btn.style.color='#5bc8f0'; btn.style.background='linear-gradient(135deg,#0e2a5a 0%,#1a3a6b 100%)'; }
   }
 
-  // ✅ FIX: mostrarBotonSerial expuesto globalmente
   window.mostrarBotonSerial = function(visible) {
-    const btn = document.getElementById('btn-serial');
-    if (!btn) {
-      // Si aún no existe el botón, esperar e intentar de nuevo
-      if (visible) setTimeout(() => window.mostrarBotonSerial(visible), 200);
-      return;
-    }
-    btn.style.display = visible ? 'block' : 'none';
-    if (visible) actualizarTextoBoton(btn, !!puerto);
+    const btn=document.getElementById('btn-serial');
+    if (!btn) { if (visible) setTimeout(()=>window.mostrarBotonSerial(visible),200); return; }
+    btn.style.display=visible?'block':'none';
+    if (visible) actualizarBoton(btn,!!puerto);
   };
 
-  async function toggleConexionSerial() {
-    if (puerto) { await desconectarSerial(); } else { await conectarSerial(); }
-  }
+  async function toggle() { if (puerto) await desconectar(); else await conectar(); }
 
-  async function conectarSerial() {
-    if (!('serial' in navigator)) { showToast('❌ Web Serial no disponible — usa Chrome'); return; }
+  async function conectar() {
+    if (!('serial' in navigator)) { showToast('❌ Web Serial solo funciona en Chrome',true); return; }
     try {
-      puerto = await navigator.serial.requestPort();
-      await puerto.open({ baudRate: 115200 });
-      const encoderStream = new TextEncoderStream();
-      encoderStream.readable.pipeTo(puerto.writable);
-      writer = encoderStream.writable.getWriter();
-      actualizarTextoBoton(document.getElementById('btn-serial'), true);
+      puerto=await navigator.serial.requestPort();
+      await puerto.open({baudRate:115200});
+      const enc=new TextEncoderStream();
+      enc.readable.pipeTo(puerto.writable);
+      writer=enc.writable.getWriter();
+      actualizarBoton(document.getElementById('btn-serial'),true);
       showToast('🟢 Dispositivo conectado');
-      escucharSerial();
-    } catch(e) {
-      puerto = null; writer = null;
-      if (e.name !== 'NotFoundError') showToast('❌ No se pudo conectar: ' + e.message);
-    }
+      // Enviar modo al ESP32
+      if (CATS_SEGUIDOR.includes(categoriaActual)) enviarSerial('F');
+      escuchar();
+    } catch(e) { puerto=null;writer=null; if(e.name!=='NotFoundError') showToast('❌ '+e.message,true); }
   }
 
-  async function desconectarSerial() {
-    try {
-      if (writer) { await writer.close(); writer = null; }
-      if (puerto) { await puerto.close(); puerto = null; }
-    } catch(e) { /* ignorar */ }
-    actualizarTextoBoton(document.getElementById('btn-serial'), false);
+  async function desconectar() {
+    try { if(writer){await writer.close();writer=null;} if(puerto){await puerto.close();puerto=null;} } catch(e){}
+    actualizarBoton(document.getElementById('btn-serial'),false);
     showToast('🔴 Dispositivo desconectado');
   }
 
-  async function escucharSerial() {
-    const decoder = new TextDecoderStream();
-    puerto.readable.pipeTo(decoder.writable);
-    const lector = decoder.readable.getReader();
+  async function escuchar() {
+    const dec=new TextDecoderStream();
+    puerto.readable.pipeTo(dec.writable);
+    const lector=dec.readable.getReader();
     try {
-      while (true) {
-        const { value, done } = await lector.read();
-        if (done) break;
-        bufferSerial += value;
-        const lineas  = bufferSerial.split('\n');
-        bufferSerial  = lineas.pop();
-        for (const linea of lineas) procesarMensaje(linea.trim());
+      while(true) {
+        const {value,done}=await lector.read(); if(done) break;
+        buffer+=value;
+        const lineas=buffer.split('\n'); buffer=lineas.pop();
+        for(const l of lineas) procesarMensaje(l.trim());
       }
     } catch(e) {
-      if (e.name !== 'AbortError') {
-        console.warn('[Serial] Desconectado:', e.message);
-        showToast('⚠️ Dispositivo desconectado');
-        actualizarTextoBoton(document.getElementById('btn-serial'), false);
-        puerto = null; writer = null;
-      }
+      if(e.name!=='AbortError') { showToast('⚠️ Dispositivo desconectado',true); actualizarBoton(document.getElementById('btn-serial'),false); puerto=null;writer=null; }
     }
   }
 
   function procesarMensaje(msg) {
-    if (!CATEGORIAS_SERIAL.includes(categoriaActual)) return;
-    if (rondaActual === 0) return;
+    if (!CATS_SERIAL.includes(categoriaActual)) return;
+    if (rondaActual===0) return;
     if (!participanteActual) return;
-    if (msg === 'STOP' && CATEGORIAS_SENSOR.includes(categoriaActual)) {
-      if (cronoInterval) { detenerCrono(); showToast('✅ Meta detectada — tiempo registrado'); }
+
+    // Trepador — sensor detiene
+    if (msg==='STOP' && CATS_SENSOR.includes(categoriaActual)) {
+      if (cronoInterval) { detenerCrono(); showToast('✅ Meta detectada'); }
       return;
     }
-    if (msg === 'BTN' && CATEGORIAS_PULSADOR.includes(categoriaActual)) {
-      if (cronoInterval) { detenerCrono(); } else { iniciarCrono(); }
+
+    // Seguidor — mismo sensor toggle START/STOP
+    if (msg==='SENS' && CATS_SEGUIDOR.includes(categoriaActual)) {
+      if (!cronoInterval) {
+        iniciarCrono();
+        seguidorArrancado=true;
+      } else {
+        detenerCrono();
+        seguidorArrancado=false;
+      }
+      return;
+    }
+
+    // Cubo Rubik / Lego Kids — pulsador toggle
+    if (msg==='BTN' && CATS_PULSADOR.includes(categoriaActual)) {
+      if (!cronoInterval) iniciarCrono(); else detenerCrono();
       return;
     }
   }
 
   window.enviarSerial = async function(cmd) {
     if (!writer) return;
-    try { await writer.write(cmd); }
-    catch(e) { console.warn('[Serial] Error al enviar:', e); }
+    try { await writer.write(cmd); } catch(e) {}
   };
 
-  // ── Inicializar ─────────────────────────────────────────
-  document.addEventListener('componentsLoaded', () => {
-    inyectarBotonSerial();
-    if (categoriaActual && CATEGORIAS_SERIAL.includes(categoriaActual)) {
-      setTimeout(() => window.mostrarBotonSerial(true), 300);
-    }
+  document.addEventListener('componentsLoaded',()=>{
+    inyectarBoton();
+    if (categoriaActual && CATS_SERIAL.includes(categoriaActual)) setTimeout(()=>window.mostrarBotonSerial(true),300);
   });
-
-  if (document.readyState === 'complete') {
-    setTimeout(() => {
-      inyectarBotonSerial();
-      if (categoriaActual && CATEGORIAS_SERIAL.includes(categoriaActual)) {
-        window.mostrarBotonSerial(true);
-      }
-    }, 500);
-  }
+  if (document.readyState==='complete') setTimeout(()=>{ inyectarBoton(); },500);
 })();
 </script>
 
