@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head> 
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SucreBot — Cronómetro</title>
@@ -941,10 +941,20 @@
     if (!cronoInterval) return;
     clearInterval(cronoInterval);
     cronoInterval = null;
+    const tiempo = document.getElementById('cronometro').textContent;
+    // No registrar si nunca arrancó de verdad (tiempo en cero)
+    if (tiempo === '00:00:00') {
+      document.getElementById('crono-display').className  = 'crono-display';
+      document.getElementById('crono-status').textContent = participanteActual
+        ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
+      document.getElementById('btn-dnf').style.display = 'none';
+      showToast('⚠️ El cronómetro no arrancó — intento no registrado');
+      enviarSerial('S');
+      return;
+    }
     document.getElementById('crono-display').className  = 'crono-display stopped';
     document.getElementById('crono-status').textContent = 'DETENIDO';
     document.getElementById('btn-dnf').style.display = 'none';
-    const tiempo = document.getElementById('cronometro').textContent;
     registrarIntento(tiempo);
     enviarSerial('S');
   }
@@ -967,7 +977,6 @@
     document.getElementById('cronometro').textContent   = 'DNF';
     document.getElementById('crono-status').textContent = 'DID NOT FINISH';
     document.getElementById('btn-dnf').style.display    = 'none';
-    bloquearBotonIniciar();
     registrarIntento('DNF');
     enviarSerial('S');
     showToast(`⛔ DNF registrado — ${participanteActual.robot}`);
@@ -992,7 +1001,7 @@
     guardarResultadoGAS(tiempo);
     const btnSiguiente = document.getElementById('btn-siguiente');
     const btnSaltar    = document.getElementById('btn-saltar');
-    if (intentoActual < maxIntentos) {
+    if (intentosLog.length < maxIntentos) {
       btnSiguiente.classList.add('visible');
       btnSiguiente.textContent = '➜ Siguiente intento';
       btnSaltar.classList.remove('visible');
@@ -1009,7 +1018,7 @@
   }
 
   function siguienteIntento() {
-    if (intentoActual >= maxIntentos) { pasarSiguienteParticipante(); return; }
+    if (intentosLog.length >= maxIntentos) { pasarSiguienteParticipante(); return; }
     intentoActual++;
     actualizarBadges();
     reiniciarCrono();
@@ -1052,8 +1061,7 @@
       document.getElementById('badge-intento').textContent = 'INTENTO ' + intentoActual;
       document.getElementById('btn-cerrar-ronda').style.display = 'block';
     }
-    const numEl = document.getElementById('cerrar-ronda-num');
-    if (numEl) numEl.textContent = rondaActual;
+    document.getElementById('cerrar-ronda-num').textContent = rondaActual;
   }
 
   function iniciarCompetencia() {
@@ -1399,7 +1407,7 @@
   });
 
   function tiempoASegundos(t) {
-    if (!t || t === '—' || t === 'DNF') return Infinity;
+    if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
     const p = t.split(':').map(Number);
     return p[0] * 60 + p[1] + p[2] / 100;
   }
