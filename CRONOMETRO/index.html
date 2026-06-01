@@ -1191,6 +1191,8 @@ document.addEventListener('componentsLoaded', async function() {
       enc.readable.pipeTo(puerto.writable);
       writer=enc.writable.getWriter();
       actualizarBoton(document.getElementById('btn-serial'),true);
+      // Ocultar aviso sensor al conectar
+      document.getElementById('aviso-sensor').classList.remove('visible');
       showToast('🟢 Dispositivo conectado');
       // Enviar modo al ESP32
       if (CATS_SEGUIDOR.includes(categoriaActual)) enviarSerial('F');
@@ -1201,6 +1203,10 @@ document.addEventListener('componentsLoaded', async function() {
   async function desconectar() {
     try { if(writer){await writer.close();writer=null;} if(puerto){await puerto.close();puerto=null;} } catch(e){}
     actualizarBoton(document.getElementById('btn-serial'),false);
+    // Mostrar aviso sensor si la categoría lo requiere
+    if (categoriaActual && CATS_SERIAL.includes(categoriaActual)) {
+      document.getElementById('aviso-sensor').classList.add('visible');
+    }
     showToast('🔴 Dispositivo desconectado');
   }
 
