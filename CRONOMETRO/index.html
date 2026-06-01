@@ -9,16 +9,12 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../shared/js/config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  
-  <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  
-  <!-- CSS específico de CRONOMETRO -->
   <style>
     :root {
       --cyan: #5bc8f0; --cyan-dark: #2b8ab8; --blue: #1a5ca8;
-      --text: #ffffff; --text-dark: #0d1f42; --muted: #64748b; 
+      --text: #ffffff; --text-dark: #0d1f42; --muted: #64748b;
       --border: #2d4a6e;
       --sucre-blue: #1a5ca8;
       --bg-gradient-start: #f0f4f8; --bg-gradient-end: #e1e8ed;
@@ -32,55 +28,49 @@
       --font-mono: 'DM Mono', monospace;
       --font-body: 'DM Sans', sans-serif;
     }
-    
-    body { 
-      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%) !important; 
-      color: var(--text-dark) !important; 
+    body {
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%) !important;
+      color: var(--text-dark) !important;
       min-height: 100vh;
       position: relative;
     }
-    
     body::before {
       content: '';
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: 
+      background:
         radial-gradient(circle at 20% 80%, rgba(91, 200, 240, 0.08) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(26, 92, 168, 0.08) 0%, transparent 50%);
       pointer-events: none;
       z-index: 0;
     }
-
-    /* ── LAYOUT ── */
-    .crono-wrapper { 
-      max-width: 1400px; 
-      margin: 0 auto; 
-      padding: 16px; 
+    .crono-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px;
       padding-top: 52px;
-      position: relative; 
+      position: relative;
       z-index: 1;
       height: calc(100vh - 232px);
       display: flex;
       flex-direction: column;
     }
-    .crono-header-row { 
-      display: flex; 
+    .crono-header-row {
+      display: flex;
       justify-content: center;
-      align-items: center; 
-      margin-bottom: 16px; 
-      flex-wrap: wrap; 
-      gap: 8px; 
-      flex-shrink: 0; 
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+      flex-shrink: 0;
     }
-    .crono-section-title { 
-      font-family: var(--font-display); 
-      font-size: 2.2rem; 
-      letter-spacing: 0.12em; 
-      color: var(--surface); 
+    .crono-section-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      letter-spacing: 0.12em;
+      color: var(--surface);
       margin: 0;
-      text-shadow: 
-        2px 2px 4px rgba(0,0,0,0.2),
-        0 0 20px rgba(26, 92, 168, 0.3);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2), 0 0 20px rgba(26,92,168,0.3);
       position: relative;
       padding-left: 48px;
       display: inline-flex;
@@ -104,9 +94,7 @@
       background: linear-gradient(90deg, transparent 0%, var(--cyan) 50%, transparent 100%);
       border-radius: 2px;
     }
-    
     .header-actions { display: none; }
-    
     .btn-cerrar-categoria, .btn-descargar-excel {
       width: 100%;
       color: #ffffff;
@@ -124,35 +112,19 @@
     .btn-cerrar-categoria { background: linear-gradient(135deg, #ff6b35 0%, #e05a2f 100%); box-shadow: 0 4px 16px rgba(255,107,53,0.3); }
     .btn-cerrar-categoria.visible { display: block; }
     .btn-cerrar-categoria:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,107,53,0.5); }
-    
     .btn-descargar-excel { background: linear-gradient(135deg, #1a7a3c 0%, #0e5a28 100%); box-shadow: 0 4px 16px rgba(26,122,60,0.3); }
     .btn-descargar-excel.visible { display: block; }
     .btn-descargar-excel:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,122,60,0.5); }
-    
-    .crono-layout { 
-      display: grid; 
-      grid-template-columns: 260px 1fr 320px; 
-      gap: 16px; 
+    .crono-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr 320px;
+      gap: 16px;
       align-items: stretch;
       flex: 1;
       min-height: 0;
     }
-    
-    /* ── COLUMNAS ── */
-    .col-config { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 10px;
-      overflow: visible;
-    }
-    .col-crono { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 12px;
-      overflow: visible;
-    }
-    
-    /* ── BADGES CONTAINER ── */
+    .col-config { display: flex; flex-direction: column; gap: 10px; overflow: visible; }
+    .col-crono  { display: flex; flex-direction: column; gap: 12px; overflow: visible; }
     .badges-container {
       display: flex;
       flex-direction: column;
@@ -168,55 +140,48 @@
       padding: 6px 10px;
       border-radius: 6px;
     }
-    
-    /* ── SELECTOR CATEGORÍA ── */
-    .evento-row { 
-      display: flex; 
+    .evento-row {
+      display: flex;
       flex-direction: column;
-      gap: 8px; 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--border2); 
-      border-left: 6px solid var(--cyan); 
-      border-radius: 10px; 
-      padding: 10px 12px; 
-      box-shadow: 0 4px 20px rgba(13, 40, 71, 0.3);
+      gap: 8px;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 2px solid var(--border2);
+      border-left: 6px solid var(--cyan);
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 4px 20px rgba(13,40,71,0.3);
       transition: all 0.3s;
     }
-    .evento-row:hover { 
-      box-shadow: 0 8px 32px rgba(13, 40, 71, 0.4);
-      transform: translateY(-2px); 
-    }
-    .evento-row label { 
-      font-size: 0.65rem; 
-      color: var(--cyan); 
-      font-family: var(--font-mono); 
-      letter-spacing: 0.2em; 
-      text-transform: uppercase; 
-      font-weight: 700; 
-      display: flex; 
-      align-items: center; 
+    .evento-row:hover { box-shadow: 0 8px 32px rgba(13,40,71,0.4); transform: translateY(-2px); }
+    .evento-row label {
+      font-size: 0.65rem;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
       gap: 8px;
     }
     .evento-row label::before { content: '⚡'; font-size: 1.1rem; }
-    .evento-row select { 
+    .evento-row select {
       width: 100%;
-      background: var(--surface-light); 
-      border: 2px solid #e2e8f0; 
-      color: var(--surface); 
-      font-family: var(--font-body); 
-      font-size: 0.9rem; 
-      font-weight: 700; 
-      padding: 10px 12px; 
-      border-radius: 8px; 
-      outline: none; 
-      cursor: pointer; 
+      background: var(--surface-light);
+      border: 2px solid #e2e8f0;
+      color: var(--surface);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
       transition: all 0.2s;
     }
     .evento-row select:hover { border-color: var(--cyan); }
-    .evento-row select:focus { border-color: var(--cyan); box-shadow: 0 0 0 4px rgba(91, 200, 240, 0.15); }
+    .evento-row select:focus { border-color: var(--cyan); box-shadow: 0 0 0 4px rgba(91,200,240,0.15); }
     .evento-row select:disabled { opacity: 0.7; cursor: not-allowed; }
-    
-    /* ── AVISO CATEGORÍA ── */
     .aviso-categoria {
       background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
       border: 2px solid #ffc107;
@@ -231,67 +196,60 @@
       gap: 6px;
       text-align: center;
     }
-    
-    /* ── STRIP PARTICIPANTE ── */
-    .participante-strip { 
-      background: linear-gradient(135deg, var(--surface) 0%, #0f2d52 100%); 
-      border: 2px solid var(--border2); 
-      border-left: 5px solid var(--cyan); 
-      border-radius: 10px; 
-      padding: 10px 14px; 
-      display: flex; 
-      align-items: center; 
+    .participante-strip {
+      background: linear-gradient(135deg, var(--surface) 0%, #0f2d52 100%);
+      border: 2px solid var(--border2);
+      border-left: 5px solid var(--cyan);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(13, 40, 71, 0.25);
+      box-shadow: 0 4px 16px rgba(13,40,71,0.25);
       flex-shrink: 0;
     }
     .participante-strip .p-info { flex: 1; min-width: 0; }
     .participante-strip .p-robot { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-    .participante-strip .p-inst { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+    .participante-strip .p-inst  { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
     .participante-strip .p-badge { font-family: var(--font-mono); font-size: 0.75rem; background: var(--cyan); color: var(--surface); padding: 6px 14px; border-radius: 20px; font-weight: 700; }
     .participante-strip.empty { border-left-color: var(--muted); background: linear-gradient(135deg, #1a2b47 0%, #0f1d35 100%); }
     .participante-strip.empty .p-robot { color: var(--muted); font-weight: 500; }
-    
-    /* ── CRONÓMETRO DISPLAY ── */
-    .crono-display { 
-      background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%); 
-      border: 3px solid var(--border2); 
-      border-radius: 14px; 
-      padding: 50px 20px; 
-      text-align: center; 
-      position: relative; 
+    .crono-display {
+      background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%);
+      border: 3px solid var(--border2);
+      border-radius: 14px;
+      padding: 50px 20px;
+      text-align: center;
+      position: relative;
       overflow: hidden;
-      box-shadow: 0 8px 32px rgba(13, 40, 71, 0.4);
+      box-shadow: 0 8px 32px rgba(13,40,71,0.4);
       flex-shrink: 0;
     }
-    .crono-display::after { 
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; 
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent); 
-      opacity: 0; transition: opacity 0.3s; 
+    .crono-display::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0; transition: opacity 0.3s;
     }
     .crono-display.running::after { opacity: 1; animation: scanline 2s linear infinite; }
     @keyframes scanline { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
-    
-    #cronometro { 
-      font-family: var(--font-display); 
-      font-size: 6rem; 
-      letter-spacing: 0.08em; 
-      color: var(--text); 
-      line-height: 1; 
+    #cronometro {
+      font-family: var(--font-display);
+      font-size: 6rem;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      line-height: 1;
       transition: all 0.3s;
-      text-shadow: 0 0 20px rgba(91, 200, 240, 0.3);
+      text-shadow: 0 0 20px rgba(91,200,240,0.3);
     }
-    .crono-display.running #cronometro { color: var(--cyan); text-shadow: 0 0 30px rgba(91, 200, 240, 0.6); }
-    .crono-display.stopped #cronometro { color: var(--accent2); text-shadow: 0 0 30px rgba(255, 107, 53, 0.5); }
-    .crono-display.dnf #cronometro { color: var(--red); text-shadow: 0 0 30px rgba(255, 59, 59, 0.5); font-size: 5rem; }
+    .crono-display.running #cronometro { color: var(--cyan); text-shadow: 0 0 30px rgba(91,200,240,0.6); }
+    .crono-display.stopped #cronometro { color: var(--accent2); text-shadow: 0 0 30px rgba(255,107,53,0.5); }
+    .crono-display.dnf #cronometro { color: var(--red); text-shadow: 0 0 30px rgba(255,59,59,0.5); font-size: 5rem; }
     .crono-status { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.2em; color: var(--muted); margin-top: 12px; }
-    
-    /* ── BOTONES CRONÓMETRO ── */
     .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .btn { 
-      border: 2px solid; background: var(--surface); color: var(--text); 
-      font-family: var(--font-body); font-size: 0.9rem; font-weight: 700; 
-      padding: 14px 10px; border-radius: 12px; cursor: pointer; 
+    .btn {
+      border: 2px solid; background: var(--surface); color: var(--text);
+      font-family: var(--font-body); font-size: 0.9rem; font-weight: 700;
+      padding: 14px 10px; border-radius: 12px; cursor: pointer;
       transition: all 0.2s; text-transform: uppercase;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
@@ -301,23 +259,21 @@
     .btn.start { border-color: var(--green); background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); }
     .btn.stop  { border-color: var(--red);   background: linear-gradient(135deg, var(--red)   0%, var(--red-dark)   100%); }
     .btn.reset { border-color: var(--accent2); background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); }
-    .btn.dnf { 
-      border-color: #ff3b3b; 
+    .btn.dnf {
+      border-color: #ff3b3b;
       background: linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 100%);
       color: #ff6b6b;
       font-size: 0.85rem;
     }
-    .btn.dnf:hover:not(:disabled) { 
+    .btn.dnf:hover:not(:disabled) {
       background: linear-gradient(135deg, #ff3b3b 0%, #cc2f2f 100%);
       color: #ffffff;
     }
-
-    /* ── CONFIG RONDA ── */
-    .ronda-config { 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--border2); 
-      border-radius: 10px; 
-      padding: 10px 12px; 
+    .ronda-config {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 2px solid var(--border2);
+      border-radius: 10px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -325,16 +281,14 @@
     .ronda-config-title { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--cyan); font-weight: 700; }
     .ronda-control { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .ronda-control label { font-size: 0.75rem; color: var(--text); font-family: var(--font-body); font-weight: 600; }
-    .ronda-control input { 
-      width: 60px; background: var(--surface-light); border: 2px solid #e2e8f0; 
-      color: var(--surface); font-family: var(--font-mono); font-size: 0.9rem; 
+    .ronda-control input {
+      width: 60px; background: var(--surface-light); border: 2px solid #e2e8f0;
+      color: var(--surface); font-family: var(--font-mono); font-size: 0.9rem;
       font-weight: 700; padding: 6px 8px; border-radius: 8px; outline: none; text-align: center;
     }
     .ronda-control input:focus { border-color: var(--cyan); }
-    .ronda-badge  { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; background: var(--cyan);   color: var(--surface); font-weight: 700; }
-    .intento-badge{ font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; background: var(--accent2); color: var(--text);    font-weight: 700; }
-    
-    /* ── INTENTOS LOG ── */
+    .ronda-badge   { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; background: var(--cyan);    color: var(--surface); font-weight: 700; }
+    .intento-badge { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; background: var(--accent2); color: var(--text);    font-weight: 700; }
     .intentos-log {
       background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
       border: 2px solid var(--border2);
@@ -348,46 +302,40 @@
     .intento-label { color: var(--muted); font-family: var(--font-mono); font-size: 0.78rem; }
     .intento-tiempo { color: var(--text); font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; }
     .intento-mejor { color: var(--green); }
-    
-    /* ── BOTONES ACCIÓN ── */
-    .btn-siguiente, .btn-saltar, .btn-cerrar-ronda { 
-      width: 100%; 
-      font-family: var(--font-body); 
-      font-weight: 700; 
-      padding: 10px; 
-      border-radius: 8px; 
-      cursor: pointer; 
+    .btn-siguiente, .btn-saltar, .btn-cerrar-ronda {
+      width: 100%;
+      font-family: var(--font-body);
+      font-weight: 700;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
       transition: all 0.2s;
       text-transform: uppercase;
       letter-spacing: 0.03em;
       font-size: 0.8rem;
     }
-    .btn-siguiente { 
-      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); 
-      border: 2px solid var(--green-dark); color: var(--text); 
-      box-shadow: 0 4px 12px rgba(61, 214, 140, 0.3);
+    .btn-siguiente {
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+      border: 2px solid var(--green-dark); color: var(--text);
+      box-shadow: 0 4px 12px rgba(61,214,140,0.3);
       display: none;
     }
     .btn-siguiente.visible { display: block; }
-    .btn-siguiente:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(61, 214, 140, 0.5); }
-    
-    .btn-saltar { 
-      background: linear-gradient(135deg, #e8f4ff 0%, #d0e8ff 100%); 
-      border: 2px solid var(--cyan); color: var(--blue); 
+    .btn-siguiente:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(61,214,140,0.5); }
+    .btn-saltar {
+      background: linear-gradient(135deg, #e8f4ff 0%, #d0e8ff 100%);
+      border: 2px solid var(--cyan); color: var(--blue);
       display: none;
     }
     .btn-saltar.visible { display: block; }
-    .btn-saltar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(91, 200, 240, 0.3); }
-    
+    .btn-saltar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(91,200,240,0.3); }
     .btn-cerrar-ronda {
       background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%);
       border: 2px solid #e05a2f; color: var(--text);
-      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+      box-shadow: 0 4px 12px rgba(255,107,53,0.3);
     }
-    .btn-cerrar-ronda:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5); }
+    .btn-cerrar-ronda:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,53,0.5); }
     .btn-cerrar-ronda:disabled { opacity: 0.5; cursor: not-allowed; }
-    
-    /* ── BOTÓN INICIAR COMPETENCIA ── */
     .btn-iniciar-competencia {
       width: 100%;
       font-family: var(--font-body);
@@ -402,40 +350,34 @@
       background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
       border: 2px solid #f59e0b;
       color: #78350f;
-      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+      box-shadow: 0 4px 12px rgba(251,191,36,0.3);
       display: block;
       margin-top: auto;
     }
-    .btn-iniciar-competencia:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
-    }
+    .btn-iniciar-competencia:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251,191,36,0.5); }
     .btn-iniciar-competencia.oculto { display: none; }
-    
-    /* ── PANEL COMPETIDOS / RONDAS ── */
-    .competidos-card { 
-      background: linear-gradient(135deg, var(--surface-light) 0%, #f8fafc 100%); 
-      border: 2px solid #e2e8f0; 
-      border-radius: 12px; 
-      padding: 12px; 
+    .competidos-card {
+      background: linear-gradient(135deg, var(--surface-light) 0%, #f8fafc 100%);
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       height: 100%;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
-    .competidos-header { 
-      display: flex; align-items: center; justify-content: space-between; 
+    .competidos-header {
+      display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;
       flex-shrink: 0;
     }
     #rondas-container { flex: 1; overflow-y: auto; min-height: 0; }
     .competidos-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.15em; color: var(--surface); font-weight: 700; }
     .competidos-count { font-family: var(--font-mono); font-size: 0.72rem; background: var(--cyan); color: var(--surface); padding: 4px 12px; border-radius: 20px; font-weight: 700; }
-    
     .ronda-section { margin-bottom: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
-    .ronda-section-header { 
-      display: flex; align-items: center; justify-content: space-between; 
+    .ronda-section-header {
+      display: flex; align-items: center; justify-content: space-between;
       padding: 10px 14px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     }
     .ronda-section-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--blue); font-weight: 700; }
@@ -443,12 +385,11 @@
     .ronda-section-badge { font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; background: var(--cyan); color: var(--surface); font-weight: 700; }
     .ronda-section-badge.cerrada { background: var(--muted); }
     .ronda-section-body { padding: 8px 12px; background: #ffffff; }
-    
-    .competido-item { 
-      display: flex; 
-      align-items: center; 
-      gap: 8px; 
-      padding: 10px 8px; 
+    .competido-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 8px;
       border-bottom: 1px solid #e8f0ff;
       background: #e8f4ff;
       transition: all 0.2s;
@@ -459,50 +400,46 @@
     .competido-item.es-dnf { background: #fff0f0; }
     .competido-item.es-dnf:nth-child(even) { background: #ffe8e8; }
     .competido-item.es-dnf:hover { background: #ffd0d0; }
-
-    .competido-num { 
-      font-family: var(--font-mono); font-size: 0.75rem; color: #0d2847; 
-      min-width: 28px; flex-shrink: 0; font-weight: 700; 
+    .competido-num {
+      font-family: var(--font-mono); font-size: 0.75rem; color: #0d2847;
+      min-width: 28px; flex-shrink: 0; font-weight: 700;
       background: rgba(26,92,168,0.2); padding: 4px 8px; border-radius: 6px; text-align: center;
     }
     .competido-num.dnf-num { background: rgba(255,59,59,0.15); color: var(--red); }
     .competido-info { flex: 1; min-width: 0; }
     .competido-robot { font-size: 0.9rem; font-weight: 700; color: #0d2847; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .competido-tiempos { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
-    .competido-tiempo-tag { 
+    .competido-tiempo-tag {
       font-size: 0.65rem; font-family: var(--font-mono); color: #475569;
       background: rgba(100,116,139,0.12); padding: 3px 7px; border-radius: 4px; font-weight: 500;
     }
     .competido-tiempo-tag.mejor { color: #16a34a; font-weight: 700; background: rgba(34,197,94,0.2); }
     .competido-tiempo-tag.es-dnf { color: var(--red); font-weight: 700; background: rgba(255,59,59,0.15); }
     .competido-actions { display: flex; gap: 4px; flex-shrink: 0; }
-    .competido-sel { 
-      background: var(--cyan); border: none; color: var(--surface); 
-      font-size: 0.72rem; padding: 5px 9px; border-radius: 6px; cursor: pointer; 
+    .competido-sel {
+      background: var(--cyan); border: none; color: var(--surface);
+      font-size: 0.72rem; padding: 5px 9px; border-radius: 6px; cursor: pointer;
       transition: all 0.2s; font-weight: 700;
     }
     .competido-sel:hover { background: var(--cyan-dark); }
-    .competido-del { 
-      background: rgba(255, 59, 59, 0.1); border: 1px solid rgba(255, 59, 59, 0.3); 
-      color: var(--red); font-size: 0.72rem; padding: 5px 9px; border-radius: 6px; 
+    .competido-del {
+      background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.3);
+      color: var(--red); font-size: 0.72rem; padding: 5px 9px; border-radius: 6px;
       cursor: pointer; transition: all 0.2s;
     }
-    .competido-del:hover { background: rgba(255, 59, 59, 0.2); }
-    
+    .competido-del:hover { background: rgba(255,59,59,0.2); }
     .ronda-eliminados { padding: 8px 12px; background: #fef5f5; border-top: 1px dashed #fecaca; }
     .ronda-eliminados-title { font-family: var(--font-mono); font-size: 0.62rem; color: var(--red); margin-bottom: 6px; font-weight: 700; letter-spacing: 0.1em; }
     .eliminado-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #fecaca; opacity: 0.85; }
     .eliminado-item:last-child { border-bottom: none; }
     .eliminado-robot { font-size: 0.8rem; font-weight: 500; color: var(--muted); flex: 1; text-decoration: line-through; }
-    .btn-recuperar { 
-      background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); 
-      color: var(--green-dark); font-size: 0.68rem; padding: 4px 8px; border-radius: 6px; 
+    .btn-recuperar {
+      background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3);
+      color: var(--green-dark); font-size: 0.68rem; padding: 4px 8px; border-radius: 6px;
       cursor: pointer; transition: all 0.2s; font-weight: 700;
     }
     .btn-recuperar:hover { background: rgba(0,255,136,0.2); }
     .competidos-empty { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 20px 0; }
-    
-    /* ── MODAL ── */
     .modal {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6); z-index: 10000;
@@ -516,30 +453,26 @@
     .modal-title { font-family: var(--font-display); font-size: 1.6rem; color: var(--surface); margin-bottom: 12px; letter-spacing: 0.04em; }
     .modal-text  { color: var(--muted); font-size: 0.92rem; margin-bottom: 22px; line-height: 1.5; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-    .modal-btn { 
-      padding: 10px 20px; border-radius: 10px; font-family: var(--font-body); 
-      font-weight: 700; font-size: 0.88rem; cursor: pointer; border: 2px solid; 
+    .modal-btn {
+      padding: 10px 20px; border-radius: 10px; font-family: var(--font-body);
+      font-weight: 700; font-size: 0.88rem; cursor: pointer; border: 2px solid;
       transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.02em;
     }
     .modal-btn.cancel  { background: #ffffff; border-color: #cbd5e1; color: var(--muted); }
     .modal-btn.cancel:hover { background: #f1f5f9; }
     .modal-btn.confirm { background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); border-color: #e05a2f; color: #ffffff; }
     .modal-btn.confirm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,53,0.4); }
-    
-    /* ── TOAST ── */
-    .toast { 
-      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); 
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); 
-      border: 2px solid var(--green); color: var(--text); 
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 2px solid var(--green); color: var(--text);
       font-family: var(--font-body); font-size: 0.9rem; font-weight: 600;
-      padding: 14px 28px; border-radius: 30px; 
-      transition: transform 0.3s; z-index: 9999; 
-      box-shadow: 0 8px 32px rgba(13, 40, 71, 0.5);
+      padding: 14px 28px; border-radius: 30px;
+      transition: transform 0.3s; z-index: 9999;
+      box-shadow: 0 8px 32px rgba(13,40,71,0.5);
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
-    
-    /* ── RESPONSIVE ── */
-    @media (max-width: 1200px) { 
+    @media (max-width: 1200px) {
       .crono-wrapper { padding: 20px 12px; height: auto; min-height: calc(100vh - 200px); }
       .crono-layout { grid-template-columns: 1fr; gap: 20px; height: auto; }
       .col-config { max-width: 600px; margin: 0 auto; overflow-y: visible; }
@@ -569,11 +502,7 @@
   </div>
 
   <div class="crono-layout">
-    <!-- ═══════════════════════════════════════════════════════════
-         COLUMNA IZQUIERDA: CONFIGURACIÓN Y CONTROLES
-         ═══════════════════════════════════════════════════════════ -->
     <div class="col-config">
-      <!-- Selección de categoría -->
       <div class="evento-row">
         <label>CATEGORÍA</label>
         <select id="select-categoria">
@@ -600,12 +529,10 @@
         </select>
       </div>
 
-      <!-- Aviso categoría -->
       <div class="aviso-categoria" id="aviso-categoria">
         ⚠️ Selecciona una categoría para empezar
       </div>
 
-      <!-- Configuración de ronda -->
       <div class="ronda-config">
         <div class="ronda-config-title">CONFIG</div>
         <div class="ronda-control">
@@ -618,29 +545,17 @@
         </div>
       </div>
 
-      <!-- Badges de estado -->
       <div class="badges-container">
-        <span class="ronda-badge"  id="badge-ronda">RONDA 0 · REVISIÓN</span>
+        <span class="ronda-badge"   id="badge-ronda">RONDA 0 · REVISIÓN</span>
         <span class="intento-badge" id="badge-intento">—</span>
       </div>
 
-      <!-- Botón Conectar sensor/pulsador (inyectado por JS) -->
-
-      <!-- Botón Iniciar Competencia -->
       <button class="btn-iniciar-competencia" id="btn-iniciar-competencia" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
-
-      <!-- Botón Cerrar Categoría -->
-      <button class="btn-cerrar-categoria" id="btn-cerrar-categoria" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
-
-      <!-- Botón Descargar Excel -->
-      <button class="btn-descargar-excel" id="btn-descargar-excel" onclick="exportarExcel()">📊 Descargar Excel</button>
+      <button class="btn-cerrar-categoria"   id="btn-cerrar-categoria"   onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
+      <button class="btn-descargar-excel"    id="btn-descargar-excel"    onclick="exportarExcel()">📊 Descargar Excel</button>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         COLUMNA CENTRAL: CRONÓMETRO Y ACCIONES
-         ═══════════════════════════════════════════════════════════ -->
     <div class="col-crono">
-      <!-- Participante actual -->
       <div class="participante-strip empty" id="participante-strip">
         <div class="p-info">
           <div class="p-robot">Sin participante</div>
@@ -649,43 +564,35 @@
         <div class="p-badge">—</div>
       </div>
 
-      <!-- Cronómetro -->
       <div class="crono-display" id="crono-display">
         <div id="cronometro">00:00:00</div>
         <div class="crono-status" id="crono-status">LISTO</div>
       </div>
 
-      <!-- Botones cronómetro principales -->
       <div class="btn-row">
         <button class="btn start" id="btn-start" onclick="iniciarCrono()">▶ Iniciar</button>
         <button class="btn stop"  onclick="detenerCrono()">⏸ Detener</button>
         <button class="btn reset" onclick="reiniciarCrono()">↻ Reiniciar</button>
       </div>
 
-      <!-- Botón DNF (solo visible cuando el cronómetro está corriendo o listo con participante) -->
       <div class="btn-row" style="margin-top: 8px;">
         <button class="btn dnf" id="btn-dnf" onclick="marcarDNF()" style="grid-column: 1 / -1; display: none;">
           ⛔ DNF — No completó
         </button>
       </div>
 
-      <!-- Log de intentos (oculto — info en ranking) -->
       <div class="intentos-log" id="intentos-log">
         <div class="intentos-log-title">INTENTOS DEL PARTICIPANTE</div>
         <div id="intentos-lista"></div>
       </div>
 
-      <!-- Botones de acción -->
-      <button class="btn-siguiente" id="btn-siguiente" onclick="siguienteIntento()">➜ Siguiente intento</button>
-      <button class="btn-saltar"    id="btn-saltar"    onclick="saltarParticipante()">⏭ Saltar participante</button>
+      <button class="btn-siguiente"  id="btn-siguiente"  onclick="siguienteIntento()">➜ Siguiente intento</button>
+      <button class="btn-saltar"     id="btn-saltar"     onclick="saltarParticipante()">⏭ Saltar participante</button>
       <button class="btn-cerrar-ronda" id="btn-cerrar-ronda" onclick="pedirCerrarRonda()">
         🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>
       </button>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         COLUMNA DERECHA: RANKING
-         ═══════════════════════════════════════════════════════════ -->
     <div class="competidos-card">
       <div class="competidos-header">
         <div class="competidos-title">RANKING</div>
@@ -698,7 +605,6 @@
   </div>
 </div>
 
-<!-- Modal cerrar ronda -->
 <div class="modal" id="modal-ronda">
   <div class="modal-content">
     <div class="modal-title">Cerrar <span id="modal-ronda-nombre">Ronda 1</span></div>
@@ -710,11 +616,10 @@
   </div>
 </div>
 
-<!-- Modal cerrar categoría -->
 <div class="modal" id="modal-cerrar-cat">
   <div class="modal-content">
     <div class="modal-title">Cerrar Categoría</div>
-    <div class="modal-text">¿Cerrar "<span id="modal-cat-nombre"></span>"? Esto liberará la categoría y borrará el progreso local. Otras computadoras podrán usarla.</div>
+    <div class="modal-text">¿Cerrar "<span id="modal-cat-nombre"></span>"? Esto liberará la categoría y borrará el progreso local.</div>
     <div class="modal-actions">
       <button class="modal-btn cancel"  onclick="cerrarModalCerrarCat()">Cancelar</button>
       <button class="modal-btn confirm" onclick="confirmarCerrarCategoria()">Sí, cerrar</button>
@@ -729,34 +634,29 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  
-  // ✅ MAPEO DE CATEGORÍAS A RUTAS
+
+  // ✅ RUTAS EN MINÚSCULAS — deben coincidir con GAS y PANTALLA
   const RUTAS = {
-  'Insectos':                        'ins',
-  'Trepador (Amateur)':              'trp_a',
-  'Seguidor de línea ST (Amateur)':  'sl_a',
-  'Seguidor de línea ST (Pro)':      'sl_p',
-  'Minisumo Autónomo':               'ms_a',
-  'Minisumo RC':                     'ms_rc',
-  'Bailarín':                        'bai',
-  'Batalla':                         'bat',
-  'Trepador (Pro)':                  'trp_p',
-  'Robot soccer':                    'soc',
-  'Cubo Rubik':                      'cr',
-  'Lego Kids':                       'lk',
-  'Desarrollo Tecnológico':          'dt'
-};
-  
-  // ── ESTADO GLOBAL ──
-  let categoriaActual   = null;
+    'Insectos':                        'ins',
+    'Trepador (Amateur)':              'trp_a',
+    'Seguidor de línea ST (Amateur)':  'sl_a',
+    'Seguidor de línea ST (Pro)':      'sl_p',
+    'Minisumo Autónomo':               'ms_a',
+    'Minisumo RC':                     'ms_rc',
+    'Bailarín':                        'bai',
+    'Batalla':                         'bat',
+    'Trepador (Pro)':                  'trp_p',
+    'Robot soccer':                    'soc',
+    'Cubo Rubik':                      'cr',
+    'Lego Kids':                       'lk',
+    'Desarrollo Tecnológico':          'dt'
+  };
+
+  let categoriaActual    = null;
   let participanteActual = null;
-  let pollingInterval   = null;
-  
-  // Cronómetro
-  let cronoInterval = null;
-  let cronoInicio   = null;
-  
-  // Sistema de rondas
+  let pollingInterval    = null;
+  let cronoInterval      = null;
+  let cronoInicio        = null;
   let rondaActual        = 0;
   let intentoActual      = 1;
   let maxRondas          = 3;
@@ -765,42 +665,27 @@
   let intentosLog        = [];
   let competenciaIniciada = false;
 
-  // ══════════════════════════════════════════════════════════════
-  // HELPERS BOTÓN INICIAR
-  // ══════════════════════════════════════════════════════════════
   function bloquearBotonIniciar() {
     const btn = document.getElementById('btn-start');
-    if (!btn) return;
-    btn.disabled = true;
+    if (btn) btn.disabled = true;
   }
-  
   function desbloquearBotonIniciar() {
     const btn = document.getElementById('btn-start');
-    if (!btn) return;
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
-  
-  // ══════════════════════════════════════════════════════════════
-  // KEY HELPERS
-  // ══════════════════════════════════════════════════════════════
+
   function getEstadoKey() {
     const ruta = RUTAS[categoriaActual] || 'general';
     return 'sucrebot_estado_' + ruta;
   }
-  
   function getRutaActual() {
     return RUTAS[categoriaActual] || null;
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // SELECTOR DE CATEGORÍA
-  // ══════════════════════════════════════════════════════════════
   document.getElementById('select-categoria').addEventListener('change', async function() {
     const nuevaCategoria = this.value;
     if (!nuevaCategoria) return;
-    
     const bloqueada = await verificarBloqueoCategoria(nuevaCategoria);
-    
     if (bloqueada) {
       const userData = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
       if (bloqueada.usuario !== userData.email) {
@@ -809,14 +694,11 @@
         return;
       }
     }
-    
     if (categoriaActual && categoriaActual !== nuevaCategoria) {
       await desbloquearCategoria(categoriaActual);
       localStorage.removeItem('cronometro_categoria_activa');
     }
-    
     const bloqueado = await bloquearCategoria(nuevaCategoria);
-    
     if (bloqueado) {
       categoriaActual = nuevaCategoria;
       localStorage.setItem('cronometro_categoria_activa', nuevaCategoria);
@@ -829,10 +711,16 @@
     }
   });
 
+  // ✅ FIX 2: activarUICategoria también muestra el botón serial
   function activarUICategoria() {
     document.getElementById('btn-cerrar-categoria').classList.add('visible');
     document.getElementById('aviso-categoria').style.display = 'none';
     document.getElementById('select-categoria').disabled = true;
+    // Mostrar botón serial si la categoría lo requiere
+    if (typeof mostrarBotonSerial === 'function' && categoriaActual) {
+      const CATS_SERIAL = ['Trepador (Amateur)', 'Trepador (Pro)', 'Cubo Rubik', 'Lego Kids'];
+      setTimeout(() => mostrarBotonSerial(CATS_SERIAL.includes(categoriaActual)), 100);
+    }
   }
 
   function desactivarUICategoria() {
@@ -841,11 +729,9 @@
     document.getElementById('aviso-categoria').style.display = 'flex';
     document.getElementById('select-categoria').disabled = false;
     document.getElementById('select-categoria').value = '';
+    if (typeof mostrarBotonSerial === 'function') mostrarBotonSerial(false);
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // BLOQUEO/DESBLOQUEO DE CATEGORÍA
-  // ══════════════════════════════════════════════════════════════
   async function bloquearCategoria(categoria) {
     const savedUser = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
     try {
@@ -886,39 +772,35 @@
     document.getElementById('modal-cerrar-cat').classList.add('show');
   }
   function cerrarModalCerrarCat() { document.getElementById('modal-cerrar-cat').classList.remove('show'); }
-  
+
   async function confirmarCerrarCategoria() {
     cerrarModalCerrarCat();
     if (!categoriaActual) return;
-    
     try {
       await desbloquearCategoria(categoriaActual);
       localStorage.removeItem(getEstadoKey());
       localStorage.removeItem('cronometro_categoria_activa');
-      
       await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
       });
-      
-      categoriaActual     = null;
-      participanteActual  = null;
-      rondaActual         = 0;
-      intentoActual       = 1;
-      maxRondas           = 3;
-      maxIntentos         = 2;
-      rondasData          = { 0: { clasificados: [], eliminados: [], cerrada: false } };
-      intentosLog         = [];
-      competenciaIniciada = false;
-      
+      categoriaActual      = null;
+      participanteActual   = null;
+      rondaActual          = 0;
+      intentoActual        = 1;
+      maxRondas            = 3;
+      maxIntentos          = 2;
+      rondasData           = { 0: { clasificados: [], eliminados: [], cerrada: false } };
+      intentosLog          = [];
+      competenciaIniciada  = false;
       desactivarUICategoria();
       reiniciarCrono();
       limpiarParticipante();
       actualizarBadges();
       renderTodasRondas();
-      document.getElementById('cfg-rondas').value    = 3;
-      document.getElementById('cfg-intentos').value  = 2;
+      document.getElementById('cfg-rondas').value     = 3;
+      document.getElementById('cfg-intentos').value   = 2;
       document.getElementById('cfg-rondas').disabled  = false;
       document.getElementById('cfg-intentos').disabled = false;
       document.getElementById('cfg-rondas').style.opacity   = '';
@@ -927,14 +809,10 @@
       document.getElementById('competidos-count').textContent = '0';
       document.getElementById('btn-cerrar-ronda').disabled = false;
       document.getElementById('btn-cerrar-ronda').innerHTML = '🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>';
-      
       showToast('✅ Categoría cerrada');
     } catch(e) { console.error(e); showToast('❌ Error al cerrar categoría'); }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // POLLING
-  // ══════════════════════════════════════════════════════════════
   function iniciarPolling() {
     if (pollingInterval) return;
     pollingInterval = setInterval(async () => {
@@ -944,14 +822,11 @@
         const qs   = new URLSearchParams({ action: 'getActivo', ruta }).toString();
         const r    = await fetch(GAS_URL + '?' + qs);
         const data = await r.json();
-        
         if (data && data.raw && data.raw !== '') {
           let nuevoP;
           try { nuevoP = JSON.parse(data.raw); } catch(e) { return; }
-          
           const marcaActual = participanteActual ? (participanteActual.inicio || participanteActual.timestamp || 0) : 0;
           const marcaNueva  = nuevoP.inicio || nuevoP.timestamp || 0;
-          
           if (!participanteActual || participanteActual.id !== nuevoP.id || marcaActual !== marcaNueva) {
             recibirParticipante(nuevoP);
           }
@@ -962,18 +837,16 @@
 
   function recibirParticipante(p) {
     participanteActual = p;
-    intentosLog  = [];
+    intentosLog   = [];
     intentoActual = 1;
     actualizarBadges();
     reiniciarCrono();
     renderIntentosLog();
     document.getElementById('intentos-log').style.display = 'none';
-    
     desbloquearBotonIniciar();
     document.getElementById('btn-siguiente').classList.remove('visible');
     document.getElementById('btn-saltar').classList.remove('visible');
     document.getElementById('btn-dnf').style.display = 'none';
-    
     const strip = document.getElementById('participante-strip');
     strip.className = 'participante-strip';
     const badgeText = rondaActual === 0 ? 'REVISIÓN ✓' : 'LISTO ✓';
@@ -984,7 +857,6 @@
       </div>
       <div class="p-badge">${badgeText}</div>
     `;
-    
     if (rondaActual === 0) {
       const rd = getRonda(0);
       const yaExiste = rd.clasificados.some(c => c.robot === p.robot);
@@ -1000,7 +872,6 @@
       renderTodasRondas();
       guardarEstado();
     }
-    
     const mensaje = rondaActual === 0
       ? '✓ Revisión: ' + (p.robot || p.nombre) + ' agregado al ranking'
       : '✓ Nuevo participante: ' + (p.robot || p.nombre);
@@ -1009,10 +880,9 @@
 
   function limpiarParticipante() {
     participanteActual = null;
-    intentosLog  = [];
+    intentosLog   = [];
     intentoActual = 1;
     actualizarBadges();
-    
     const strip = document.getElementById('participante-strip');
     strip.className = 'participante-strip empty';
     strip.innerHTML = `
@@ -1022,13 +892,11 @@
       </div>
       <div class="p-badge">—</div>
     `;
-    
     document.getElementById('intentos-log').style.display = 'none';
     document.getElementById('intentos-lista').innerHTML   = '';
     document.getElementById('btn-siguiente').classList.remove('visible');
     document.getElementById('btn-saltar').classList.remove('visible');
     document.getElementById('btn-dnf').style.display = 'none';
-    
     if (categoriaActual) {
       fetch(GAS_URL, {
         method: 'POST',
@@ -1038,51 +906,30 @@
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // CRONÓMETRO
-  // ══════════════════════════════════════════════════════════════
   function iniciarCrono() {
-    if (rondaActual === 0) {
-      showToast('⚠️ Ronda 0 es solo para REVISIÓN · Inicia la competencia primero');
-      return;
-    }
-    if (!participanteActual) {
-      showToast('⚠️ No hay participante seleccionado');
-      return;
-    }
+    if (rondaActual === 0) { showToast('⚠️ Ronda 0 es solo para REVISIÓN · Inicia la competencia primero'); return; }
+    if (!participanteActual) { showToast('⚠️ No hay participante seleccionado'); return; }
     if (cronoInterval) return;
-    if (intentosLog.length >= maxIntentos) {
-      showToast(`⚠️ ${participanteActual.robot} ya completó sus ${maxIntentos} intentos`);
-      return;
-    }
-    
+    if (intentosLog.length >= maxIntentos) { showToast(`⚠️ ${participanteActual.robot} ya completó sus ${maxIntentos} intentos`); return; }
     cronoInicio   = Date.now();
     cronoInterval = setInterval(actualizarCronometro, 10);
-    document.getElementById('crono-display').className = 'crono-display running';
+    document.getElementById('crono-display').className  = 'crono-display running';
     document.getElementById('crono-status').textContent = `EN MARCHA · Intento ${intentoActual} de ${maxIntentos}`;
-    
-    // Mostrar DNF, ocultar botones de acción
     document.getElementById('btn-dnf').style.display = 'block';
     document.getElementById('btn-siguiente').classList.remove('visible');
     document.getElementById('btn-saltar').classList.remove('visible');
-    
-    // Notificar ESP32 → LED verde
     enviarSerial('R');
   }
 
   function detenerCrono() {
     if (!cronoInterval) return;
-    
     clearInterval(cronoInterval);
     cronoInterval = null;
-    document.getElementById('crono-display').className = 'crono-display stopped';
+    document.getElementById('crono-display').className  = 'crono-display stopped';
     document.getElementById('crono-status').textContent = 'DETENIDO';
     document.getElementById('btn-dnf').style.display = 'none';
-    
     const tiempo = document.getElementById('cronometro').textContent;
     registrarIntento(tiempo);
-    
-    // Notificar ESP32 → LED rojo
     enviarSerial('S');
   }
 
@@ -1093,31 +940,19 @@
     document.getElementById('cronometro').textContent    = '00:00:00';
     document.getElementById('crono-display').className  = 'crono-display';
     document.getElementById('crono-status').textContent = participanteActual
-      ? `LISTO · Intento ${intentoActual} de ${maxIntentos}`
-      : 'LISTO';
+      ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
     document.getElementById('btn-dnf').style.display = 'none';
   }
 
-  // ✅ NUEVO: marcar DNF
   function marcarDNF() {
     if (!participanteActual) return;
-    
-    // Detener si estaba corriendo
-    if (cronoInterval) {
-      clearInterval(cronoInterval);
-      cronoInterval = null;
-    }
-    
+    if (cronoInterval) { clearInterval(cronoInterval); cronoInterval = null; }
     document.getElementById('crono-display').className  = 'crono-display dnf';
     document.getElementById('cronometro').textContent   = 'DNF';
     document.getElementById('crono-status').textContent = 'DID NOT FINISH';
     document.getElementById('btn-dnf').style.display    = 'none';
-    
     registrarIntento('DNF');
-    
-    // Notificar ESP32 → LED rojo
     enviarSerial('S');
-    
     showToast(`⛔ DNF registrado — ${participanteActual.robot}`);
   }
 
@@ -1128,27 +963,18 @@
     const sg = Math.floor((transcurrido / 1000) % 60);
     const mn = Math.floor(transcurrido / 60000);
     document.getElementById('cronometro').textContent =
-      String(mn).padStart(2,'0') + ':' +
-      String(sg).padStart(2,'0') + ':' +
-      String(cs).padStart(2,'0');
+      String(mn).padStart(2,'0') + ':' + String(sg).padStart(2,'0') + ':' + String(cs).padStart(2,'0');
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // SISTEMA DE INTENTOS Y RONDAS
-  // ══════════════════════════════════════════════════════════════
   function registrarIntento(tiempo) {
     if (!participanteActual) return;
-    
     const esDNF = (tiempo === 'DNF');
     intentosLog.push({ ronda: rondaActual, intento: intentoActual, tiempo, esDNF });
     renderIntentosLog();
-    
     agregarCompetido(participanteActual.robot, tiempo, rondaActual, intentoActual, esDNF);
     guardarResultadoGAS(tiempo);
-    
     const btnSiguiente = document.getElementById('btn-siguiente');
     const btnSaltar    = document.getElementById('btn-saltar');
-    
     if (intentoActual < maxIntentos) {
       btnSiguiente.classList.add('visible');
       btnSiguiente.textContent = '➜ Siguiente intento';
@@ -1162,15 +988,11 @@
         ? `⛔ DNF · ${maxIntentos} de ${maxIntentos} intentos usados`
         : `✓ COMPLETÓ ${maxIntentos} DE ${maxIntentos} INTENTOS`;
     }
-    
     guardarEstado();
   }
 
   function siguienteIntento() {
-    if (intentoActual >= maxIntentos) {
-      pasarSiguienteParticipante();
-      return;
-    }
+    if (intentoActual >= maxIntentos) { pasarSiguienteParticipante(); return; }
     intentoActual++;
     actualizarBadges();
     reiniciarCrono();
@@ -1178,7 +1000,7 @@
     document.getElementById('btn-saltar').classList.remove('visible');
     document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
   }
-  
+
   function pasarSiguienteParticipante() {
     if (!participanteActual) return;
     const nombreRobot = participanteActual.robot || participanteActual.nombre || 'participante';
@@ -1190,9 +1012,7 @@
 
   function saltarParticipante() {
     if (participanteActual && intentosLog.length < maxIntentos) {
-      const confirmar = confirm(
-        `⚠️ ${participanteActual.robot} solo hizo ${intentosLog.length} de ${maxIntentos} intentos.\n\n¿Saltar de todas formas?`
-      );
+      const confirmar = confirm(`⚠️ ${participanteActual.robot} solo hizo ${intentosLog.length} de ${maxIntentos} intentos.\n\n¿Saltar de todas formas?`);
       if (!confirmar) return;
     }
     desbloquearBotonIniciar();
@@ -1202,45 +1022,35 @@
   }
 
   function renderIntentosLog() {
-    // Oculto — información ya está en el ranking
     document.getElementById('intentos-log').style.display = 'none';
   }
 
   function actualizarBadges() {
     if (rondaActual === 0) {
-      document.getElementById('badge-ronda').textContent  = 'RONDA 0 · REVISIÓN';
+      document.getElementById('badge-ronda').textContent   = 'RONDA 0 · REVISIÓN';
       document.getElementById('badge-intento').textContent = '—';
       document.getElementById('btn-cerrar-ronda').style.display = 'none';
     } else {
-      document.getElementById('badge-ronda').textContent  = 'RONDA ' + rondaActual;
+      document.getElementById('badge-ronda').textContent   = 'RONDA ' + rondaActual;
       document.getElementById('badge-intento').textContent = 'INTENTO ' + intentoActual;
       document.getElementById('btn-cerrar-ronda').style.display = 'block';
     }
     document.getElementById('cerrar-ronda-num').textContent = rondaActual;
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // INICIAR COMPETENCIA
-  // ══════════════════════════════════════════════════════════════
   function iniciarCompetencia() {
     if (!categoriaActual) { showToast('⚠️ Primero selecciona una categoría'); return; }
-    
-    const confirmar = confirm(
-      `¿Iniciar competencia?\n\n• Rondas: ${maxRondas}\n• Intentos por ronda: ${maxIntentos}\n\nEsto bloqueará la configuración.`
-    );
+    const confirmar = confirm(`¿Iniciar competencia?\n\n• Rondas: ${maxRondas}\n• Intentos por ronda: ${maxIntentos}\n\nEsto bloqueará la configuración.`);
     if (!confirmar) return;
-    
     competenciaIniciada = true;
     document.getElementById('cfg-rondas').disabled    = true;
     document.getElementById('cfg-intentos').disabled  = true;
     document.getElementById('cfg-rondas').style.opacity   = '0.5';
     document.getElementById('cfg-intentos').style.opacity = '0.5';
     document.getElementById('btn-iniciar-competencia').classList.add('oculto');
-    
     const ronda0 = getRonda(0);
-    rondaActual  = 1;
+    rondaActual   = 1;
     intentoActual = 1;
-    
     rondasData[1] = {
       clasificados: ronda0.clasificados.map((c, i) => ({
         ...c, tiempo: '—', tiempos: [], esDNF: false, ronda: 1, intento: 0,
@@ -1248,18 +1058,13 @@
       })),
       eliminados: [], cerrada: false
     };
-    
     actualizarBadges();
     renderTodasRondas();
     limpiarParticipante();
     guardarEstado();
-    
     showToast(`🏁 Competencia iniciada · ${rondasData[1].clasificados.length} participantes en Ronda 1`);
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // GESTIÓN DE RONDAS Y CLASIFICADOS
-  // ══════════════════════════════════════════════════════════════
   function getRonda(r) {
     if (!rondasData[r]) rondasData[r] = { clasificados: [], eliminados: [], cerrada: false };
     return rondasData[r];
@@ -1267,22 +1072,17 @@
 
   function agregarCompetido(robot, tiempo, ronda, intento, esDNF = false) {
     if (!participanteActual) return;
-    
-    const rd       = getRonda(ronda);
+    const rd        = getRonda(ronda);
     const existeIdx = rd.clasificados.findIndex(c => c.robot === participanteActual.robot);
-    
     if (existeIdx >= 0) {
       const ant = rd.clasificados[existeIdx];
       ant.tiempos = ant.tiempos || [ant.tiempo];
       ant.tiempos.push(tiempo);
-      
-      // Actualizar mejor tiempo solo si el nuevo NO es DNF y es menor
       if (!esDNF && (ant.esDNF || tiempoASegundos(tiempo) < tiempoASegundos(ant.tiempo))) {
         ant.tiempo  = tiempo;
         ant.intento = intento;
         ant.esDNF   = false;
       }
-      // Si ya tenía tiempo válido y el nuevo es DNF, no reemplazar
     } else {
       rd.clasificados.push({
         id: participanteActual.id, robot: participanteActual.robot,
@@ -1294,7 +1094,6 @@
         ts: Date.now() + rd.clasificados.length
       });
     }
-    
     renderTodasRondas();
     actualizarContadorCompetidos();
   }
@@ -1327,21 +1126,17 @@
     const rd = getRonda(ronda);
     const c  = rd.clasificados.find(x => x.ts === ts);
     if (!c) return;
-    
     if (participanteActual && participanteActual.robot !== c.robot) {
       const confirmar = confirm(`Ya tienes a "${participanteActual.robot}" seleccionado.\n\n¿Cambiar a "${c.robot}"?`);
       if (!confirmar) return;
     }
-    
     fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
     }).catch(e => console.error('Error clearing activo:', e));
-    
     participanteActual = { id: c.id, robot: c.robot, nombre: c.nombre, institucion: c.institucion, ciudad: c.ciudad, categoria: c.categoria };
-    
-    intentosLog  = [];
+    intentosLog   = [];
     intentoActual = 1;
     actualizarBadges();
     reiniciarCrono();
@@ -1349,7 +1144,6 @@
     document.getElementById('btn-siguiente').classList.remove('visible');
     document.getElementById('btn-saltar').classList.remove('visible');
     document.getElementById('btn-dnf').style.display = 'none';
-    
     const strip = document.getElementById('participante-strip');
     strip.className = 'participante-strip';
     strip.innerHTML = `
@@ -1359,7 +1153,6 @@
       </div>
       <div class="p-badge">LISTO ✓</div>
     `;
-    
     document.getElementById('intentos-log').style.display = 'none';
     showToast('✓ ' + c.robot + ' seleccionado');
   }
@@ -1370,29 +1163,23 @@
   }
 
   function renderTodasRondas() {
-    const container      = document.getElementById('rondas-container');
+    const container       = document.getElementById('rondas-container');
     const rondasOrdenadas = Object.keys(rondasData).map(Number).sort((a, b) => b - a);
-    
     const totalParticipantes = Object.values(rondasData)
       .reduce((acc, rd) => acc + rd.clasificados.length + rd.eliminados.length, 0);
-    
     if (totalParticipantes === 0) {
       container.innerHTML = '<p class="competidos-empty">Sin participantes aún</p>';
       return;
     }
-    
     container.innerHTML = rondasOrdenadas.map(r => {
-      const rd      = rondasData[r];
+      const rd       = rondasData[r];
       const esActual = r === rondaActual;
       const cerrada  = rd.cerrada;
-      
-      // ✅ DNF siempre al final, el resto ordenado por tiempo
       const conTiempo = rd.clasificados.filter(c => !c.esDNF && c.tiempo !== '—')
         .sort((a, b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
       const sinTiempo = rd.clasificados.filter(c => c.tiempo === '—');
       const conDNF    = rd.clasificados.filter(c => c.esDNF);
       const clasificados = [...conTiempo, ...sinTiempo, ...conDNF];
-      
       const itemsC = clasificados.length === 0
         ? '<p class="competidos-empty" style="padding:8px 0">Ninguno aún</p>'
         : clasificados.map((c, i) => {
@@ -1402,18 +1189,14 @@
               const claseTag      = t === 'DNF' ? 'es-dnf' : (esMejorTiempo ? 'mejor' : '');
               return `<span class="competido-tiempo-tag ${claseTag}"><b>I${idx+1}</b> ${t}${esMejorTiempo ? ' ★' : ''}</span>`;
             }).join('');
-            
-            const numClass = c.esDNF ? 'competido-num dnf-num' : 'competido-num';
-            const numLabel = c.esDNF ? 'DNF' : (i + 1);
+            const numClass  = c.esDNF ? 'competido-num dnf-num' : 'competido-num';
+            const numLabel  = c.esDNF ? 'DNF' : (i + 1);
             const itemClass = c.esDNF ? 'competido-item es-dnf' : 'competido-item';
-            
-            const acciones = esActual && !cerrada
+            const acciones  = esActual && !cerrada
               ? `<div class="competido-actions">
                   <button class="competido-sel" onclick="seleccionarCompetido(${c.ts}, ${r})">▶</button>
                   <button class="competido-del" onclick="eliminarCompetido(${c.ts}, ${r})">🗑</button>
-                </div>`
-              : '';
-            
+                </div>` : '';
             return `
               <div class="${itemClass}">
                 <span class="${numClass}">${numLabel}</span>
@@ -1424,7 +1207,6 @@
                 ${acciones}
               </div>`;
           }).join('');
-      
       const itemsE = rd.eliminados.length === 0 ? '' : `
         <div class="ronda-eliminados">
           <div class="ronda-eliminados-title">ELIMINADOS</div>
@@ -1437,7 +1219,6 @@
               ${esActual && !cerrada ? `<button class="btn-recuperar" onclick="recuperarEliminado(${c.ts}, ${r})">↩</button>` : ''}
             </div>`).join('')}
         </div>`;
-      
       return `
         <div class="ronda-section">
           <div class="ronda-section-header">
@@ -1450,9 +1231,6 @@
     }).join('');
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // CERRAR RONDA
-  // ══════════════════════════════════════════════════════════════
   function pedirCerrarRonda() {
     const rd = getRonda(rondaActual);
     if (rd.clasificados.length === 0) { showToast('⚠️ No hay participantes en esta ronda'); return; }
@@ -1460,32 +1238,26 @@
     document.getElementById('modal-ronda').classList.add('show');
   }
   function cerrarModalRonda() { document.getElementById('modal-ronda').classList.remove('show'); }
-  
+
   function confirmarCerrarRonda() {
     cerrarModalRonda();
     getRonda(rondaActual).cerrada = true;
-    
     fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
     }).catch(e => console.error('Error clearing activo:', e));
-    
     if (rondaActual < maxRondas) {
       const ant = rondaActual;
       rondaActual++;
       intentoActual = 1;
       actualizarBadges();
-      
-      // Solo clasificados con tiempo válido pasan (DNF no clasifican)
       const clasificadosValidos = getRonda(ant).clasificados.filter(c => !c.esDNF);
-      
       const nueva = getRonda(rondaActual);
       nueva.clasificados = clasificadosValidos.map((c, i) => ({
         ...c, tiempo: '—', tiempos: [], esDNF: false, ronda: rondaActual, intento: 0,
         ts: c.ts + rondaActual + i
       }));
-      
       actualizarContadorCompetidos();
       renderTodasRondas();
       limpiarParticipante();
@@ -1497,7 +1269,6 @@
       btn.disabled  = true;
       btn.innerHTML = '✓ Competencia finalizada';
       btn.style.opacity = '0.5';
-      
       renderTodasRondas();
       limpiarParticipante();
       guardarEstado();
@@ -1507,9 +1278,6 @@
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // GUARDAR RESULTADO EN GAS
-  // ══════════════════════════════════════════════════════════════
   async function guardarResultadoGAS(tiempo) {
     if (!participanteActual || !categoriaActual) return;
     try {
@@ -1530,15 +1298,23 @@
     } catch(e) { console.error('Error al guardar resultado:', e); }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // PERSISTENCIA LOCAL
-  // ══════════════════════════════════════════════════════════════
+  // ✅ FIX 1: guardarEstado también sincroniza con GAS para que PANTALLA lo lea
   function guardarEstado() {
     if (!categoriaActual) return;
-    localStorage.setItem(getEstadoKey(), JSON.stringify({
+    const estado = {
       rondaActual, intentoActual, maxRondas, maxIntentos, rondasData,
       categoria: categoriaActual, competenciaIniciada
-    }));
+    };
+    localStorage.setItem(getEstadoKey(), JSON.stringify(estado));
+
+    // Sincronizar con GAS → PANTALLA lee getAllEstados
+    const ruta = getRutaActual();
+    if (!ruta) return;
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'setEstado', ruta, estado })
+    }).catch(e => console.warn('Error al sincronizar estado:', e));
   }
 
   function cargarEstado() {
@@ -1553,7 +1329,6 @@
         actualizarBadges(); renderTodasRondas(); actualizarContadorCompetidos();
         return;
       }
-      
       const estado     = JSON.parse(raw);
       rondaActual      = estado.rondaActual      !== undefined ? estado.rondaActual : 0;
       intentoActual    = estado.intentoActual    || 1;
@@ -1561,10 +1336,8 @@
       maxIntentos      = estado.maxIntentos      || 2;
       rondasData       = estado.rondasData       || { 0: { clasificados: [], eliminados: [], cerrada: false } };
       competenciaIniciada = estado.competenciaIniciada || false;
-      
       document.getElementById('cfg-rondas').value   = maxRondas;
       document.getElementById('cfg-intentos').value = maxIntentos;
-      
       if (competenciaIniciada) {
         document.getElementById('cfg-rondas').disabled    = true;
         document.getElementById('cfg-intentos').disabled  = true;
@@ -1572,9 +1345,7 @@
         document.getElementById('cfg-intentos').style.opacity = '0.5';
         document.getElementById('btn-iniciar-competencia').classList.add('oculto');
       }
-      
       actualizarBadges(); renderTodasRondas(); actualizarContadorCompetidos();
-      
       const rdActual = getRonda(rondaActual);
       if (rondaActual >= maxRondas && rdActual.cerrada) {
         const btn = document.getElementById('btn-cerrar-ronda');
@@ -1599,9 +1370,6 @@
     guardarEstado();
   });
 
-  // ══════════════════════════════════════════════════════════════
-  // EXPORTAR EXCEL
-  // ══════════════════════════════════════════════════════════════
   function tiempoASegundos(t) {
     if (!t || t === '—' || t === 'DNF') return Infinity;
     const p = t.split(':').map(Number);
@@ -1612,18 +1380,15 @@
     try {
       const wb       = XLSX.utils.book_new();
       const categoria = categoriaActual || 'Sin categoría';
-      
       Object.keys(rondasData).map(Number).sort((a,b) => a-b).forEach(r => {
         const ws = crearHojaRonda(rondasData[r], r, categoria, false);
         XLSX.utils.book_append_sheet(wb, ws, 'Ronda ' + r);
       });
-      
       const ultimaRondaCerrada = Object.keys(rondasData).map(Number)
         .filter(r => rondasData[r].cerrada).sort((a,b) => b-a)[0] || rondaActual;
       const wsGeneral = crearHojaRonda(rondasData[ultimaRondaCerrada], ultimaRondaCerrada, categoria, true);
       XLSX.utils.book_append_sheet(wb, wsGeneral, 'Ranking General');
-      
-      const fecha        = new Date().toISOString().slice(0,10);
+      const fecha         = new Date().toISOString().slice(0,10);
       const nombreArchivo = `SucreBot_${categoria.replace(/[^a-zA-Z0-9]/g,'_')}_${fecha}.xlsx`;
       XLSX.writeFile(wb, nombreArchivo);
       showToast('✓ Excel descargado');
@@ -1635,25 +1400,20 @@
     const maxIR  = Math.max(...todos.map(c => (c.tiempos || [c.tiempo]).length), 1);
     const cols   = ['#','Robot','Nombre','Institución','Ciudad','Mejor Tiempo',
                     ...Array.from({length: maxIR}, (_,i) => 'I'+(i+1))];
-    
-    // DNF siempre al final en el Excel también
     const conTiempo = [...todos].filter(c => !c.esDNF && c.tiempo !== '—').sort((a,b) => tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
     const sinTiempo = todos.filter(c => c.tiempo === '—');
     const conDNF    = todos.filter(c => c.esDNF);
     const clasificados = [...conTiempo, ...sinTiempo, ...conDNF];
-    
     const aoa = [];
     aoa.push([esGeneral ? 'SucreBot — Ranking General' : 'SucreBot — Ronda ' + r]);
     aoa.push(['Categoría: ' + (categoria || '—')]);
     aoa.push([]);
     aoa.push(cols);
-    
     clasificados.forEach((c, i) => {
-      const tiempos = c.tiempos || [c.tiempo];
+      const tiempos  = c.tiempos || [c.tiempo];
       const posLabel = c.esDNF ? 'DNF' : (i + 1);
       aoa.push([posLabel, c.robot||'—', c.nombre||'—', c.institucion||'—', c.ciudad||'—', c.tiempo, ...tiempos]);
     });
-    
     if (!esGeneral && rd.eliminados && rd.eliminados.length > 0) {
       aoa.push([]);
       aoa.push(['ELIMINADOS']);
@@ -1661,15 +1421,11 @@
         aoa.push([i+1, c.robot||'—', c.nombre||'—', c.institucion||'—', c.ciudad||'—', c.tiempo||'—'])
       );
     }
-    
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = [{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...Array(maxIR).fill({wch:12})];
     return ws;
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // TOAST
-  // ══════════════════════════════════════════════════════════════
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -1677,18 +1433,13 @@
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // INICIALIZACIÓN
-  // ══════════════════════════════════════════════════════════════
   document.addEventListener('componentsLoaded', async function() {
     const savedUser = localStorage.getItem('sucrebot_user');
     if (!savedUser) { window.location.href = '../INICIO/'; return; }
-    
     const categoriaGuardada = localStorage.getItem('cronometro_categoria_activa');
     if (categoriaGuardada) {
       const bloqueada = await verificarBloqueoCategoria(categoriaGuardada);
       const userData  = JSON.parse(savedUser);
-      
       if (bloqueada && bloqueada.usuario === userData.email) {
         document.getElementById('select-categoria').value = categoriaGuardada;
         categoriaActual = categoriaGuardada;
@@ -1709,30 +1460,25 @@
         showToast(`⚠️ Categoría tomada por ${bloqueada.usuario}`);
       }
     }
-    
     iniciarPolling();
     console.log('✅ Cronómetro listo · Polling activo');
   });
 </script>
 
-<!-- ══════════════════════════════════════════════════════════════
-     WEB SERIAL API — Trepador (sensor E18-D80NK) + Rubik / Lego Kids (pulsador)
-     ══════════════════════════════════════════════════════════════ -->
+<!-- ══ WEB SERIAL API ══ -->
 <script>
 (function() {
   let puerto  = null;
   let writer  = null;
   let bufferSerial = '';
 
-  // Categorías por tipo de hardware
   const CATEGORIAS_SENSOR   = ['Trepador (Amateur)', 'Trepador (Pro)'];
   const CATEGORIAS_PULSADOR = ['Cubo Rubik', 'Lego Kids'];
   const CATEGORIAS_SERIAL   = [...CATEGORIAS_SENSOR, ...CATEGORIAS_PULSADOR];
 
-  // ── Inyectar botón Conectar en col-config ───────────────
+  // ── Inyectar botón ──────────────────────────────────────
   function inyectarBotonSerial() {
     if (document.getElementById('btn-serial')) return;
-
     const btn = document.createElement('button');
     btn.id = 'btn-serial';
     btn.style.cssText = `
@@ -1748,54 +1494,49 @@
     btn.onmouseleave = () => btn.style.transform = '';
     btn.onclick = toggleConexionSerial;
     actualizarTextoBoton(btn, false);
-
-    // Insertar después de .badges-container
     const badges = document.querySelector('.badges-container');
     if (badges) badges.after(btn);
   }
 
   function actualizarTextoBoton(btn, conectado) {
     if (!btn) return;
-    const label = 'dispositivo';
     if (conectado) {
-      btn.textContent    = `🟢 ${label.charAt(0).toUpperCase()+label.slice(1)} conectado`;
+      btn.textContent       = '🟢 Dispositivo conectado';
       btn.style.borderColor = '#3dd68c';
       btn.style.color       = '#3dd68c';
       btn.style.background  = 'linear-gradient(135deg, #0a2a1a 0%, #0e3a22 100%)';
     } else {
-      btn.textContent    = `🔌 Conectar ${label}`;
+      btn.textContent       = '🔌 Conectar dispositivo';
       btn.style.borderColor = '#4ab8e8';
       btn.style.color       = '#5bc8f0';
       btn.style.background  = 'linear-gradient(135deg, #0e2a5a 0%, #1a3a6b 100%)';
     }
   }
 
-  function mostrarBotonSerial(visible) {
+  // ✅ FIX: mostrarBotonSerial expuesto globalmente
+  window.mostrarBotonSerial = function(visible) {
     const btn = document.getElementById('btn-serial');
-    if (!btn) return;
+    if (!btn) {
+      // Si aún no existe el botón, esperar e intentar de nuevo
+      if (visible) setTimeout(() => window.mostrarBotonSerial(visible), 200);
+      return;
+    }
     btn.style.display = visible ? 'block' : 'none';
     if (visible) actualizarTextoBoton(btn, !!puerto);
-  }
+  };
 
-  // ── Conexión / desconexión ──────────────────────────────
   async function toggleConexionSerial() {
     if (puerto) { await desconectarSerial(); } else { await conectarSerial(); }
   }
 
   async function conectarSerial() {
-    if (!('serial' in navigator)) {
-      showToast('❌ Web Serial no disponible — usa Chrome');
-      return;
-    }
+    if (!('serial' in navigator)) { showToast('❌ Web Serial no disponible — usa Chrome'); return; }
     try {
       puerto = await navigator.serial.requestPort();
       await puerto.open({ baudRate: 115200 });
-
-      // Escritura hacia ESP32
       const encoderStream = new TextEncoderStream();
       encoderStream.readable.pipeTo(puerto.writable);
       writer = encoderStream.writable.getWriter();
-
       actualizarTextoBoton(document.getElementById('btn-serial'), true);
       showToast('🟢 Dispositivo conectado');
       escucharSerial();
@@ -1814,24 +1555,18 @@
     showToast('🔴 Dispositivo desconectado');
   }
 
-  // ── Lectura Serial ──────────────────────────────────────
   async function escucharSerial() {
     const decoder = new TextDecoderStream();
     puerto.readable.pipeTo(decoder.writable);
     const lector = decoder.readable.getReader();
-
     try {
       while (true) {
         const { value, done } = await lector.read();
         if (done) break;
         bufferSerial += value;
-
         const lineas  = bufferSerial.split('\n');
-        bufferSerial  = lineas.pop(); // fragmento incompleto
-
-        for (const linea of lineas) {
-          procesarMensaje(linea.trim());
-        }
+        bufferSerial  = lineas.pop();
+        for (const linea of lineas) procesarMensaje(linea.trim());
       }
     } catch(e) {
       if (e.name !== 'AbortError') {
@@ -1843,55 +1578,39 @@
     }
   }
 
-  // ── Procesar mensaje del ESP32 ──────────────────────────
   function procesarMensaje(msg) {
     if (!CATEGORIAS_SERIAL.includes(categoriaActual)) return;
     if (rondaActual === 0) return;
     if (!participanteActual) return;
-
-    // Sensor → STOP automático (Trepador)
     if (msg === 'STOP' && CATEGORIAS_SENSOR.includes(categoriaActual)) {
-      if (cronoInterval) {
-        detenerCrono();
-        showToast('✅ Meta detectada — tiempo registrado');
-      }
+      if (cronoInterval) { detenerCrono(); showToast('✅ Meta detectada — tiempo registrado'); }
       return;
     }
-
-    // Pulsador → toggle START/STOP (Rubik / Lego Kids)
     if (msg === 'BTN' && CATEGORIAS_PULSADOR.includes(categoriaActual)) {
       if (cronoInterval) { detenerCrono(); } else { iniciarCrono(); }
       return;
     }
   }
 
-  // ── Enviar comando a ESP32 (expuesto globalmente) ───────
   window.enviarSerial = async function(cmd) {
     if (!writer) return;
     try { await writer.write(cmd); }
     catch(e) { console.warn('[Serial] Error al enviar:', e); }
   };
 
-  // ── Observar cambio de categoría ────────────────────────
-  document.getElementById('select-categoria')?.addEventListener('change', function() {
-    mostrarBotonSerial(CATEGORIAS_SERIAL.includes(this.value));
-  });
-
   // ── Inicializar ─────────────────────────────────────────
   document.addEventListener('componentsLoaded', () => {
     inyectarBotonSerial();
     if (categoriaActual && CATEGORIAS_SERIAL.includes(categoriaActual)) {
-      mostrarBotonSerial(true);
+      setTimeout(() => window.mostrarBotonSerial(true), 300);
     }
   });
 
-  // Si la categoría ya estaba cargada antes de que este script inyecte el botón
-  // (caso restauración), esperar al DOM y luego verificar
   if (document.readyState === 'complete') {
     setTimeout(() => {
       inyectarBotonSerial();
       if (categoriaActual && CATEGORIAS_SERIAL.includes(categoriaActual)) {
-        mostrarBotonSerial(true);
+        window.mostrarBotonSerial(true);
       }
     }, 500);
   }
