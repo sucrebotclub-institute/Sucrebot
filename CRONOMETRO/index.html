@@ -833,9 +833,15 @@
         if (data && data.raw && data.raw !== '') {
           let nuevoP;
           try { nuevoP = JSON.parse(data.raw); } catch(e) { return; }
+
+          // No interrumpir si el cronómetro está corriendo
+          if (cronoInterval) return;
+
           const marcaActual = participanteActual ? (participanteActual.inicio || participanteActual.timestamp || 0) : 0;
           const marcaNueva  = nuevoP.inicio || nuevoP.timestamp || 0;
-          if (!participanteActual || participanteActual.id !== nuevoP.id || marcaActual !== marcaNueva) {
+
+          // Solo recibir si es un participante diferente O tiene una marca de inicio nueva
+          if (!participanteActual || participanteActual.id !== nuevoP.id || marcaNueva > marcaActual) {
             recibirParticipante(nuevoP);
           }
         }
@@ -845,18 +851,8 @@
 
   function recibirParticipante(p) {
     participanteActual = p;
-    // Notificar a PANTALLA que este participante está activo
-    if (categoriaActual && rondaActual > 0) {
-      fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'setActivo',
-          ruta: getRutaActual() || 'general',
-          participante: { ...p, timestamp: Date.now() }
-        })
-      }).catch(() => {});
-    }
+    // NO llamar setActivo aquí — viene del polling y crearía un loop infinito
+    // setActivo solo se llama desde seleccionarCompetido (selección manual)
     intentosLog   = [];
     intentoActual = 1;
     actualizarBadges();
