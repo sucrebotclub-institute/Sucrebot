@@ -511,7 +511,7 @@
 
     .tabla-thead {
       display: grid;
-      grid-template-columns: 68px 1fr 200px 320px;
+      grid-template-columns: 68px 1fr 220px;
       background: var(--blue);
       border-radius: 9px 9px 0 0;
       flex-shrink: 0;
@@ -537,7 +537,7 @@
     /* Filas */
     .ranking-row {
       display: grid;
-      grid-template-columns: 68px 1fr 200px 320px;
+      grid-template-columns: 68px 1fr 220px;
       border-bottom: 1px solid var(--border);
       align-items: center;
       transition: background 0.15s;
@@ -642,9 +642,8 @@
     }
 
     .cell-tiempo {
-      padding: 12px 40px;
+      padding: 12px 32px;
       text-align: center;
-      border-right: 1px solid var(--border);
     }
     .tiempo-val {
       font-family: var(--font-label);
@@ -671,6 +670,13 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
+    }
+    .cell-intentos-inline {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 7px;
     }
     .chip {
       font-family: var(--font-body);
@@ -884,7 +890,6 @@
           <div class="th-cell c">POS</div>
           <div class="th-cell">ROBOT / PARTICIPANTE</div>
           <div class="th-cell c">MEJOR TIEMPO</div>
-          <div class="th-cell">INTENTOS</div>
         </div>
         <div class="tabla-body" id="tabla-body">
           <div class="empty-ranking">
@@ -1168,9 +1173,9 @@ function renderRanking(catId) {
           <div class="robot-name">${esc(p.robot)}</div>
           <div class="robot-inst">${esc(p.institucion)}</div>
           ${enpista}
+          <div class="cell-intentos-inline">${chips}</div>
         </div>
         <div class="cell-tiempo">${tiempoHtml}</div>
-        <div class="cell-intentos">${chips}</div>
       </div>`;
   }).join('');
 }
