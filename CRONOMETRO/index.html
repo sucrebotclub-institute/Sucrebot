@@ -747,11 +747,19 @@
 
   async function desbloquearCategoria(categoria) {
     try {
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'desbloquearCategoria', categoria })
-      });
+      const rutaActual = getRutaActual() || 'general';
+      await Promise.all([
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'clearActivo', ruta: rutaActual })
+        }),
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'setEstado', ruta: rutaActual, estado: null })
+        })
+      ]);
     } catch(e) { console.error('Error al desbloquear:', e); }
   }
 
