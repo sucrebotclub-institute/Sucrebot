@@ -250,10 +250,10 @@
     }
 
     /* ══════════════════════════════════════
-       PANEL IZQUIERDO — ACTIVO + CATEGORÍAS
+       PANEL IZQUIERDO — CATEGORÍAS
     ══════════════════════════════════════ */
     .panel-izq {
-      width: 300px;
+      width: 260px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -280,25 +280,8 @@
       flex-shrink: 0;
     }
 
-    /* Card participante activo */
-    .card-activo {
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-top: 3px solid var(--blue);
-      border-radius: 10px;
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-      min-height: 150px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      box-shadow: 0 2px 10px rgba(26,92,168,0.06);
-      transition: border-color 0.3s;
-    }
-    .card-activo.tiene-activo {
-      border-top-color: var(--cyan);
-    }
+    /* Card participante activo — oculto (sin data en tiempo real) */
+    .card-activo { display: none; }
 
     .activo-cat-badge {
       display: inline-flex;
@@ -861,16 +844,6 @@
 
     <!-- Panel izquierdo -->
     <div class="panel-izq">
-      <div class="section-label">COMPITIENDO AHORA</div>
-      <div class="card-activo vacio" id="card-activo">
-        <div class="activo-empty">
-          <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/sucrebot-celeste-sin_fondo.png" alt="" class="activo-empty-img">
-          <div class="activo-empty-text">SIN PARTICIPANTE ACTIVO</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
       <div class="section-label">CATEGORÍAS</div>
       <div class="cats-list" id="cats-list"></div>
     </div>
@@ -918,9 +891,11 @@
 <script>
 /* ════════════════════════════════════════
    SUCREBOT — PANTALLA EN VIVO
+   Lee directo de resultados.json en GitHub
+   0 llamadas a GAS — máxima estabilidad
 ════════════════════════════════════════ */
 
-const GAS = CONFIG.GAS_URL();
+const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
 
 const CATEGORIAS = [
   { id: 'ins',   nombre: 'Insectos',             grupo: 'AMATEUR' },
@@ -943,7 +918,7 @@ let rotInterval   = null;
 let rotProgress   = 0;
 let pausaRot      = false;
 let pausaTimer    = null;
-const ROT_SEG     = 12;
+const ROT_SEG     = 15;
 
 /* ── Reloj ── */
 function tickClock() {
@@ -1204,78 +1179,92 @@ function seleccionarManual(catId) {
   pausaTimer = setTimeout(() => { pausaRot = false; }, 20000);
 }
 
-/* ── Carga de datos — 2 requests en lugar de 22 ── */
+/* ── Carga de datos desde resultados.json (GitHub) ──
+   1 sola request cada 10 segundos, sin GAS
+═══════════════════════════════════════════════════ */
 async function cargarDatos() {
   try {
-    // Un solo request para todos los estados + uno para todos los activos
-    const [rEstados, rActivos] = await Promise.all([
-      fetch(`${GAS}?action=getAllEstados`, { redirect: 'follow' }),
-      fetch(`${GAS}?action=getAllActivos`,  { redirect: 'follow' })
-    ]);
+    // Cache-busting para que GitHub no devuelva versión vieja
+    const url = JSON_URL + '?t=' + Math.floor(Date.now() / 10000);
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
 
-    const [dEstados, dActivos] = await Promise.all([
-      rEstados.json(),
-      rActivos.json()
-    ]);
+    if (!data || !data.resultados) return;
 
-    // getAllEstados devuelve { ruta: { estado: { rondasData, rondaActual }, ts }, ... }
-    if (dEstados && typeof dEstados === 'object') {
-      Object.entries(dEstados).forEach(([ruta, wrapper]) => {
-        // GAS envuelve en { estado: {...}, ts: }
-        estadoPorCat[ruta] = wrapper?.estado || wrapper || null;
+    // Convertir resultados.json al formato que espera renderRanking
+    // resultados.json: { trp_a: [ {robot, tiempo, ronda, intento}, ... ] }
+    // estadoPorCat:    { trp_a: { rondasData: { 1: { clasificados: [...] } }, rondaActual: 1 } }
+    CATEGORIAS.forEach(cat => {
+      const lista = data.resultados[cat.id] || [];
+      if (!lista.length) { estadoPorCat[cat.id] = null; return; }
+
+      // Agrupar por ronda
+      const rondasData = {};
+      lista.forEach(entry => {
+        const r = entry.ronda || 1;
+        if (!rondasData[r]) rondasData[r] = { clasificados: [], eliminados: [], cerrada: true };
+
+        // Buscar si ya existe este robot en esta ronda
+        const existeIdx = rondasData[r].clasificados.findIndex(c => c.robot === entry.robot);
+        if (existeIdx >= 0) {
+          const ant = rondasData[r].clasificados[existeIdx];
+          ant.tiempos = ant.tiempos || [];
+          if (entry.tiempo && entry.tiempo !== '—') ant.tiempos.push(entry.tiempo);
+        } else {
+          rondasData[r].clasificados.push({
+            id:          entry.robot,
+            robot:       entry.robot,
+            nombre:      entry.robot,
+            institucion: entry.institucion || '—',
+            tiempo:      entry.tiempo || '—',
+            tiempos:     (entry.tiempo && entry.tiempo !== '—') ? [entry.tiempo] : [],
+            ronda:       r,
+            esDNF:       entry.tiempo === 'DNF'
+          });
+        }
       });
+
+      // Calcular mejor tiempo por participante
+      Object.values(rondasData).forEach(ronda => {
+        ronda.clasificados.forEach(c => {
+          const validos = (c.tiempos || []).filter(t => t && t !== '—' && t !== 'DNF');
+          c.tiempo = validos.length
+            ? validos.reduce((a, b) => parseT(a) <= parseT(b) ? a : b)
+            : (c.esDNF ? 'DNF' : '—');
+        });
+      });
+
+      const rondasNums = Object.keys(rondasData).map(Number);
+      estadoPorCat[cat.id] = {
+        rondasData,
+        rondaActual: Math.max(...rondasNums)
+      };
+    });
+
+    // Sin activos desde JSON — limpiar panel izquierdo
+    CATEGORIAS.forEach(cat => { activoPorCat[cat.id] = null; });
+
+    // Primera carga
+    if (!catActiva) {
+      const conDatos = catsConDatos();
+      mostrarCategoria(conDatos[0] || CATEGORIAS[0].id, false);
+      iniciarRotacion();
+    } else {
+      mostrarCategoria(catActiva, false);
+      renderCatsList();
     }
 
-    // getAllActivos devuelve { ruta: { raw: "JSON_string", ts }, ... }
-    if (dActivos && typeof dActivos === 'object') {
-      Object.entries(dActivos).forEach(([ruta, activo]) => {
-        activoPorCat[ruta] = activo?.raw
-          ? (() => { try { return JSON.parse(activo.raw); } catch { return null; } })()
-          : null;
-      });
-    }
+    document.getElementById('ultima-act').textContent =
+      new Date().toLocaleTimeString('es-EC');
 
   } catch (err) {
-    console.warn('[PANTALLA] Error en carga bulk, reintentando...', err);
-    // Fallback: reintentar los mismos endpoints bulk
-    try {
-      const [rE2, rA2] = await Promise.all([
-        fetch(`${GAS}?action=getAllEstados`, { redirect: 'follow' }),
-        fetch(`${GAS}?action=getAllActivos`,  { redirect: 'follow' })
-      ]);
-      const [dE2, dA2] = await Promise.all([rE2.json(), rA2.json()]);
-      if (dE2 && typeof dE2 === 'object') {
-        Object.entries(dE2).forEach(([ruta, wrapper]) => {
-          estadoPorCat[ruta] = wrapper?.estado || wrapper || null;
-        });
-      }
-      if (dA2 && typeof dA2 === 'object') {
-        Object.entries(dA2).forEach(([ruta, activo]) => {
-          activoPorCat[ruta] = activo?.raw
-            ? (() => { try { return JSON.parse(activo.raw); } catch { return null; } })()
-            : null;
-        });
-      }
-    } catch { /* fallback también falló */ }
+    console.warn('[PANTALLA] Error al cargar JSON:', err);
   }
-
-  // Primera carga: seleccionar categoría inicial y arrancar rotación
-  if (!catActiva) {
-    const conDatos = catsConDatos();
-    const conActivo = CATEGORIAS.map(c => c.id).find(id => activoPorCat[id]?.id);
-    mostrarCategoria(conActivo || conDatos[0] || CATEGORIAS[0].id, false);
-    iniciarRotacion();
-  } else {
-    mostrarCategoria(catActiva, false);
-    renderCatsList();
-  }
-
-  document.getElementById('ultima-act').textContent =
-    new Date().toLocaleTimeString('es-EC');
 }
 
 cargarDatos();
-setInterval(cargarDatos, 5000);
+setInterval(cargarDatos, 10000); // cada 10 segundos — GitHub aguanta sin problema
 
 /* ── Ajuste dinámico del top según altura del nav ── */
 function ajustarTop() {
