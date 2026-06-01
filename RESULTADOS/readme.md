@@ -1,0 +1,17 @@
+{
+  "ts": 0,
+  "actualizado": "—",
+  "resultados": {
+    "ins": [],
+    "trp_a": [],
+    "sl_a": [],
+    "sl_p": [],
+    "ms_a": [],
+    "ms_rc": [],
+    "bai": [],
+    "bat": [],
+    "trp_p": [],
+    "soc": [],
+    "cr": []
+  }
+}
