@@ -972,11 +972,17 @@
 
   function marcarDNF() {
     if (!participanteActual) return;
+    // Evitar doble registro: si ya completó sus intentos, ignorar
+    if (intentosLog.length >= maxIntentos) {
+      showToast(`⚠️ ${participanteActual.robot} ya completó sus intentos`);
+      return;
+    }
     if (cronoInterval) { clearInterval(cronoInterval); cronoInterval = null; }
     document.getElementById('crono-display').className  = 'crono-display dnf';
     document.getElementById('cronometro').textContent   = 'DNF';
     document.getElementById('crono-status').textContent = 'DID NOT FINISH';
     document.getElementById('btn-dnf').style.display    = 'none';
+    bloquearBotonIniciar();
     registrarIntento('DNF');
     enviarSerial('S');
     showToast(`⛔ DNF registrado — ${participanteActual.robot}`);
