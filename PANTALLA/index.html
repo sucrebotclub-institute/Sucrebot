@@ -3,1289 +3,514 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SucreBot 2026 — Pantalla en Vivo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@400;500;600;700;800&family=Orbitron:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <title>SucreBot — Resultados en Vivo</title> 
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;600&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../shared/js/config.js"></script>
+  <script src="../shared/js/load-components.js"></script>
+  <script src="../shared/js/auth.js"></script>
+  
   <style>
-    /* ══════════════════════════════════════
-       VARIABLES — PALETA OFICIAL SUCREBOT
-    ══════════════════════════════════════ */
     :root {
-      --blue:        #1a5ca8;
-      --blue-dark:   #0e2a5a;
-      --blue-mid:    #1a3a6e;
-      --blue-pale:   #e8f0fb;
-      --cyan:        #5bc8f0;
-      --cyan-bright: #90dcff;
-      --cyan-pale:   #e6f7fd;
-      --white:       #ffffff;
-      --off-white:   #f4f6fa;
-      --border:      #d0daea;
-      --border-dark: #b0c0d8;
-      --text:        #1a2540;
-      --text-mid:    #3a4a6a;
-      --muted:       #7a8aaa;
-      --gold:        #c8860a;
-      --gold-bg:     #fff8e6;
-      --gold-border: #e8c060;
-      --silver:      #5a6a80;
-      --silver-bg:   #f0f2f6;
-      --silver-border:#aab0c0;
-      --bronze:      #8a5020;
-      --bronze-bg:   #fdf0e6;
-      --bronze-border:#c89060;
-      --green:       #0a8a50;
-      --green-bg:    #e6f8f0;
-      --green-border:#60c898;
-      --red:         #c82020;
-      --red-bg:      #fef0f0;
-      --red-border:  #f09090;
-      --font-title:  'Bebas Neue', sans-serif;
-      --font-label:  'Orbitron', sans-serif;
-      --font-body:   'Exo 2', sans-serif;
+      --results-gold:   #FFD700;
+      --results-silver: #C0C0C0;
+      --results-bronze: #CD7F32;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-mono:    'DM Mono', monospace;
+      --font-body:    'DM Sans', sans-serif;
     }
+    body { padding-top: 0 !important; }
+    .sticky-header { position: sticky; top: 0; z-index: 1000; }
+    .screen { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 80vh; padding: 20px 48px 40px; background: #ffffff; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* HEADER */
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-radius: 12px; box-shadow: 0 4px 12px rgba(26,92,168,0.15); flex-shrink: 0; }
+    .page-header-left { display: flex; align-items: center; gap: 18px; }
+    .page-header-left img { width: 56px; filter: drop-shadow(0 0 12px rgba(91,200,240,0.6)); }
+    .page-header-title { font-family: var(--font-display); font-size: 3rem; letter-spacing: 0.06em; color: #5bc8f0; line-height: 1; text-shadow: 0 0 30px rgba(91,200,240,0.5); }
+    .page-header-sub { font-family: var(--font-mono); font-size: 0.72rem; color: rgba(255,255,255,0.7); letter-spacing: 0.14em; margin-top: 2px; }
+    .page-header-right { text-align: right; }
+    .ronda-label { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.08em; color: #ffffff; line-height: 1; }
+    .cat-label { font-family: var(--font-mono); font-size: 0.75rem; color: #90dcff; letter-spacing: 0.1em; margin-top: 4px; }
+    .live-badge { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em; color: #5bc8f0; background: rgba(91,200,240,0.1); border: 1px solid rgba(91,200,240,0.3); padding: 5px 12px; border-radius: 20px; margin-bottom: 4px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: blink 1.2s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-    html, body {
+    /* TABS */
+    .cat-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .cat-tab { font-family: 'Exo 2', sans-serif; font-size: 0.75rem; letter-spacing: 0.02em; padding: 12px 10px; background: #2d3748; border: 2px solid #4a5568; border-radius: 8px; color: #e2e8f0; cursor: pointer; transition: all 0.25s; font-weight: 600; white-space: normal; flex: 1; text-align: center; min-width: 0; line-height: 1.3; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+    .cat-tab:hover { background: #3d4e63; border-color: #5bc8f0; color: #90dcff; transform: translateY(-1px); }
+    .cat-tab.active { background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-color: #1a5ca8; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(26,92,168,0.3); transform: translateY(-2px); }
+    .cat-tab.tiene-datos { position: relative; }
+    .cat-tab.tiene-datos::before { content: ''; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: pulse-dot 2s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
+
+    /* TABLA TIEMPOS */
+    .tabla-wrap { flex: 1; overflow: auto; display: flex; flex-direction: column; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: linear-gradient(135deg, #1a5ca8, #2474cc); }
+    thead th { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; color: #ffffff; padding: 10px 18px; text-align: left; border-bottom: 2px solid #5bc8f0; font-weight: 600; }
+    thead th.c { text-align: center; }
+    tbody tr { border-bottom: 1px solid #e8edf3; transition: background 0.3s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(91,200,240,0.05); }
+    tr.pos-1 { background: linear-gradient(90deg, rgba(255,215,0,0.08), rgba(255,215,0,0.03)); }
+    tr.pos-2 { background: linear-gradient(90deg, rgba(192,192,192,0.08), rgba(192,192,192,0.03)); }
+    tr.pos-3 { background: linear-gradient(90deg, rgba(205,127,50,0.08), rgba(205,127,50,0.03)); }
+    td { padding: 0 18px; vertical-align: middle; }
+    .td-pos { width: 72px; text-align: center; }
+    .pos-circle { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-family: var(--font-display); font-size: 1.4rem; }
+    .pc-1 { background: rgba(255,215,0,0.15); color: var(--results-gold); border: 2px solid rgba(255,215,0,0.4); box-shadow: 0 0 16px rgba(255,215,0,0.2); }
+    .pc-2 { background: rgba(192,192,192,0.12); color: var(--results-silver); border: 2px solid rgba(192,192,192,0.35); }
+    .pc-3 { background: rgba(205,127,50,0.12); color: var(--results-bronze); border: 2px solid rgba(205,127,50,0.35); }
+    .pc-n { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid rgba(255,255,255,0.07); }
+    .td-robot { min-width: 200px; }
+    .robot-name { font-size: 1.3rem; font-weight: 700; color: #0e2a5a; letter-spacing: 0.01em; line-height: 1.2; }
+    .robot-inst { font-size: 0.75rem; color: #6a7a94; margin-top: 2px; font-family: var(--font-mono); }
+    .td-mejor { text-align: center; min-width: 150px; }
+    .tiempo-valor { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; }
+    tr.pos-1 .tiempo-valor { font-size: 2.2rem; color: #2474cc; }
+    .td-intentos { min-width: 140px; }
+    .intento-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
+    .row-altura { height: 88px; }
+
+    /* ══ BRACKET SOCCER ══ */
+    .soccer-wrap { flex: 1; overflow-x: auto; }
+    .soccer-title { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .soccer-sin-datos { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; gap: 12px; }
+    .soccer-sin-datos-icon { font-size: 3.5rem; opacity: 0.25; }
+    .soccer-sin-datos-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.15em; color: #6a7a94; }
+
+    .bracket-fases { display: flex; gap: 40px; min-width: max-content; padding-bottom: 8px; }
+    .bracket-fase { display: flex; flex-direction: column; gap: 16px; min-width: 260px; }
+    .fase-nombre { font-family: var(--font-mono); font-size: 0.7rem; color: #1a5ca8; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; text-align: center; margin-bottom: 8px; padding: 6px; background: rgba(26,92,168,0.08); border-radius: 8px; }
+
+    .partido-card { background: #ffffff; border: 2px solid #e0e7ef; border-radius: 12px; padding: 14px; box-shadow: 0 2px 12px rgba(26,92,168,0.08); transition: all 0.2s; }
+    .partido-card:hover { border-color: #5bc8f0; box-shadow: 0 4px 16px rgba(91,200,240,0.2); transform: translateY(-2px); }
+    .partido-card.finalizado { border-color: #00d95f; background: #f0fdf4; }
+    .partido-card.pendiente { border-color: #e0e7ef; }
+
+    .partido-equipo-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; background: #f8f9fa; margin-bottom: 6px; border: 1px solid #e0e7ef; }
+    .partido-equipo-row:last-of-type { margin-bottom: 0; }
+    .partido-equipo-row.ganador { background: #e8f5e9; border-color: #00d95f; }
+    .partido-equipo-nombre { font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; color: #1a3a6e; }
+    .partido-equipo-goles { font-family: 'Orbitron', monospace; font-size: 1.3rem; font-weight: 900; color: #1a5ca8; }
+    .partido-equipo-row.ganador .partido-equipo-goles { color: #00a046; }
+
+    .partido-estado { text-align: center; margin-top: 8px; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; font-weight: 700; }
+    .partido-estado.fin { color: #00a046; }
+    .partido-estado.pend { color: #94a3b8; }
+    .partido-estado.pend-equipos { color: #cbd5e1; font-style: italic; }
+
+    .partido-bye { background: #fffbeb; border: 2px dashed #fbbf24; border-radius: 12px; padding: 14px; text-align: center; }
+    .bye-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: #1a3a6e; }
+    .bye-badge { display: inline-block; background: #fbbf24; color: #78350f; font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; font-weight: 700; margin-top: 4px; }
+
+    /* EMPTY */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; gap: 16px; }
+    .empty-icon { font-size: 4rem; opacity: 0.2; filter: grayscale(1); }
+    .empty-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.18em; color: #6a7a94; font-weight: 600; }
+
+    /* FOOTER */
+    .tv-footer { margin-top: 20px; padding-top: 16px; border-top: 1px solid #e8edf3; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.7rem; color: #8a96b0; }
+    .tv-footer-left { letter-spacing: 0.1em; color: #1a5ca8; font-weight: 600; }
+    .tv-footer-right { font-size: 0.85rem; color: #0e2a5a; font-weight: 600; }
+
+    /* DROPDOWN MÓVIL */
+    .cat-select-mobile {
+      display: none;
       width: 100%;
-      background: var(--off-white);
-      color: var(--text);
-      font-family: var(--font-body);
-      overflow: hidden;
-    }
-
-    /* ══════════════════════════════════════
-       LAYOUT PRINCIPAL
-    ══════════════════════════════════════ */
-    .pant-wrapper {
-      position: fixed;
-      top: 0; /* JS ajustará esto al alto real del nav */
-      left: 0; right: 0; bottom: 0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 10;
-    }
-
-    /* ── Topbar ── */
-    .pant-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 36px;
-      height: 70px;
-      flex-shrink: 0;
-      background: var(--blue);
-      box-shadow: 0 3px 16px rgba(14,42,90,0.18);
-      position: relative;
-    }
-
-    /* Franja cyan bajo el topbar */
-    .pant-topbar::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--cyan), var(--cyan-bright), var(--cyan));
-    }
-
-    .topbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .topbar-logo {
-      width: 46px;
-      height: 46px;
-      object-fit: contain;
-    }
-    .topbar-name {
-      font-family: var(--font-title);
-      font-size: 2.2rem;
-      letter-spacing: 0.12em;
-      color: #fff;
-      line-height: 1;
-    }
-    .topbar-name span { color: var(--cyan); }
-    .topbar-sub {
-      font-family: var(--font-label);
-      font-size: 0.48rem;
-      font-weight: 600;
-      letter-spacing: 0.22em;
-      color: rgba(255,255,255,0.55);
-      margin-top: 5px;
-    }
-
-    /* Centro: barra de rotación + dots */
-    .topbar-center {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-    .rotation-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      min-width: 200px;
-    }
-    .rotation-label {
-      font-family: var(--font-label);
-      font-size: 0.44rem;
-      letter-spacing: 0.22em;
-      color: rgba(255,255,255,0.45);
-    }
-    .rotation-bar-bg {
-      width: 100%;
-      height: 3px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .rotation-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--cyan), var(--cyan-bright));
-      border-radius: 3px;
-      width: 0%;
-      transition: width 0.15s linear;
-    }
-
-    .cat-dots {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .cat-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.2);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .cat-dot.tiene-datos {
-      background: rgba(255,255,255,0.35);
-      border-color: rgba(255,255,255,0.4);
-    }
-    .cat-dot.active {
-      background: var(--cyan);
-      border-color: var(--cyan-bright);
-      box-shadow: 0 0 6px rgba(91,200,240,0.6);
-      transform: scale(1.2);
-    }
-
-    /* Derecha: live badge + reloj + botón */
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-
-    .live-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      font-family: var(--font-label);
-      font-size: 0.52rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: #fff;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.25);
-      padding: 7px 13px;
-      border-radius: 5px;
-    }
-    .live-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--cyan);
-      box-shadow: 0 0 6px var(--cyan);
-      animation: blink 1.2s ease-in-out infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
-
-    .topbar-clock {
-      font-family: var(--font-label);
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      color: #fff;
-    }
-
-    .btn-tv {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      font-family: var(--font-label);
-      font-size: 0.48rem;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      color: rgba(255,255,255,0.7);
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.18);
-      padding: 8px 14px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-tv:hover {
-      color: #fff;
-      background: rgba(255,255,255,0.15);
-      border-color: rgba(255,255,255,0.3);
-    }
-    .btn-tv svg { width: 12px; height: 12px; flex-shrink: 0; }
-
-    /* ── Cuerpo ── */
-    .pant-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      padding: 20px 28px 16px;
-      gap: 20px;
-      background: var(--off-white);
-    }
-
-    /* ══════════════════════════════════════
-       PANEL IZQUIERDO — CATEGORÍAS
-    ══════════════════════════════════════ */
-    .panel-izq {
-      width: 260px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    /* Etiqueta de sección */
-    .section-label {
-      font-family: var(--font-label);
-      font-size: 0.46rem;
-      font-weight: 700;
-      letter-spacing: 0.25em;
-      color: var(--muted);
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-label::before {
-      content: '';
-      width: 3px; height: 12px;
-      background: var(--cyan);
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-
-    /* Card participante activo — oculto (sin data en tiempo real) */
-    .card-activo { display: none; }
-
-    .activo-cat-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font-label);
-      font-size: 0.44rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: var(--blue);
-      background: var(--blue-pale);
-      border: 1px solid rgba(26,92,168,0.2);
-      padding: 4px 10px;
-      border-radius: 4px;
-      margin-bottom: 12px;
-      align-self: flex-start;
-    }
-    .activo-cat-badge .dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--cyan);
-      animation: blink 1s infinite;
-    }
-
-    .activo-robot {
-      font-family: var(--font-title);
-      font-size: 1.8rem;
-      letter-spacing: 0.06em;
-      color: var(--blue-dark);
-      line-height: 1.1;
-      margin-bottom: 6px;
-    }
-    .activo-nombre {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--blue);
-      margin-bottom: 3px;
-    }
-    .activo-inst {
-      font-size: 0.7rem;
-      color: var(--muted);
-      letter-spacing: 0.02em;
-    }
-
-    .activo-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 16px 0;
-      opacity: 0.5;
-    }
-    .activo-empty-icon { font-size: 2rem; }
-    .activo-empty-img {
-      width: 64px;
-      height: 64px;
-      object-fit: contain;
-      opacity: 0.5;
-    }
-    .activo-empty-text {
-      font-family: var(--font-label);
-      font-size: 0.48rem;
-      letter-spacing: 0.2em;
-      color: var(--muted);
-    }
-
-    /* Separador */
-    .divider {
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* Lista de categorías */
-    .cats-list {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      overflow-y: auto;
-      scrollbar-width: none;
-      flex: 1;
-    }
-    .cats-list::-webkit-scrollbar { display: none; }
-
-    .cat-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      cursor: pointer;
-      transition: all 0.18s;
-    }
-    .cat-item:hover {
-      background: var(--blue-pale);
-      border-color: rgba(26,92,168,0.25);
-    }
-    .cat-item.active {
-      background: var(--blue);
-      border-color: var(--blue-dark);
-    }
-
-    .cat-ind {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--border-dark);
-      flex-shrink: 0;
-      transition: all 0.2s;
-    }
-    .cat-item.tiene-activo .cat-ind {
-      background: var(--green);
-      box-shadow: 0 0 5px rgba(10,138,80,0.4);
-      animation: blink 1.2s ease-in-out infinite;
-    }
-    .cat-item.tiene-datos:not(.active) .cat-ind {
-      background: var(--cyan);
-    }
-    .cat-item.active .cat-ind {
-      background: var(--cyan-bright);
-    }
-
-    .cat-item-name {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text-mid);
-      flex: 1;
-      line-height: 1.2;
-    }
-    .cat-item.active .cat-item-name { color: #fff; }
-
-    .cat-item-n {
-      font-family: var(--font-label);
-      font-size: 0.55rem;
-      font-weight: 700;
-      color: var(--white);
-      background: var(--blue);
-      padding: 2px 7px;
-      border-radius: 4px;
-    }
-    .cat-item.active .cat-item-n {
-      background: rgba(255,255,255,0.2);
-    }
-
-    /* ══════════════════════════════════════
-       PANEL DERECHO — RANKING
-    ══════════════════════════════════════ */
-    .panel-ranking {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Header del ranking */
-    .ranking-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid var(--border);
-      flex-shrink: 0;
-      position: relative;
-    }
-    .ranking-header::after {
-      content: '';
-      position: absolute;
-      bottom: -2px; left: 0;
-      width: 120px; height: 2px;
-      background: var(--cyan);
-    }
-
-    .ranking-cat-name {
-      font-family: var(--font-title);
-      font-size: 2.4rem;
-      letter-spacing: 0.08em;
-      color: var(--blue-dark);
-      line-height: 1;
-    }
-    .ranking-cat-name span { color: var(--blue); }
-
-    .ranking-meta { text-align: right; }
-    .ranking-ronda {
-      font-family: var(--font-label);
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: var(--muted);
-    }
-    .ranking-count {
-      font-size: 0.62rem;
-      color: var(--muted);
-      letter-spacing: 0.06em;
-      margin-top: 3px;
-    }
-
-    /* Tabla */
-    .ranking-tabla {
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      box-shadow: 0 2px 12px rgba(26,92,168,0.06);
-    }
-
-    .tabla-thead {
-      display: grid;
-      grid-template-columns: 68px 1fr 220px;
-      background: var(--blue);
-      border-radius: 9px 9px 0 0;
-      flex-shrink: 0;
-    }
-    .th-cell {
-      font-family: var(--font-label);
-      font-size: 0.48rem;
-      font-weight: 600;
-      letter-spacing: 0.22em;
-      color: rgba(255,255,255,0.7);
-      padding: 12px 16px;
-      text-transform: uppercase;
-    }
-    .th-cell.c { text-align: center; }
-
-    .tabla-body {
-      flex: 1;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border-dark) transparent;
-    }
-
-    /* Filas */
-    .ranking-row {
-      display: grid;
-      grid-template-columns: 68px 1fr 220px;
-      border-bottom: 1px solid var(--border);
-      align-items: center;
-      transition: background 0.15s;
-      animation: rowIn 0.3s ease-out backwards;
-    }
-    .ranking-row:last-child { border-bottom: none; }
-    .ranking-row:hover { background: var(--off-white); }
-
-    /* Podio */
-    .ranking-row.p1 { background: var(--gold-bg); }
-    .ranking-row.p1:hover { background: #fff4d0; }
-    .ranking-row.p2 { background: var(--silver-bg); }
-    .ranking-row.p3 { background: var(--bronze-bg); }
-
-    @keyframes rowIn {
-      from { opacity: 0; transform: translateX(10px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    .ranking-row:nth-child(1) { animation-delay: 0.04s; }
-    .ranking-row:nth-child(2) { animation-delay: 0.08s; }
-    .ranking-row:nth-child(3) { animation-delay: 0.12s; }
-    .ranking-row:nth-child(4) { animation-delay: 0.16s; }
-    .ranking-row:nth-child(5) { animation-delay: 0.20s; }
-    .ranking-row:nth-child(6) { animation-delay: 0.24s; }
-
-    .cell-pos {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 12px 0;
-    }
-    .pos-badge {
-      width: 42px; height: 42px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-label);
+      margin-bottom: 20px;
+      background: #2d3748;
+      border: 2px solid #1a5ca8;
+      color: #ffffff;
+      font-family: 'Exo 2', sans-serif;
       font-size: 1rem;
-      font-weight: 800;
-    }
-    .pos-badge.g {
-      background: var(--gold-bg);
-      color: var(--gold);
-      border: 2px solid var(--gold-border);
-    }
-    .pos-badge.s {
-      background: var(--silver-bg);
-      color: var(--silver);
-      border: 2px solid var(--silver-border);
-    }
-    .pos-badge.b {
-      background: var(--bronze-bg);
-      color: var(--bronze);
-      border: 2px solid var(--bronze-border);
-    }
-    .pos-badge.n {
-      background: var(--off-white);
-      color: var(--muted);
-      border: 1px solid var(--border);
-      font-size: 0.85rem;
-    }
-
-    .cell-robot { padding: 12px 16px; }
-    .robot-name {
-      font-family: var(--font-title);
-      font-size: 1.35rem;
-      letter-spacing: 0.04em;
-      color: var(--blue-dark);
-      line-height: 1.2;
-    }
-    .ranking-row.p1 .robot-name { color: var(--gold); }
-
-    .robot-inst {
-      font-size: 0.67rem;
-      color: var(--muted);
-      margin-top: 2px;
-      letter-spacing: 0.02em;
-    }
-
-    .en-pista {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-family: var(--font-label);
-      font-size: 0.4rem;
       font-weight: 700;
-      letter-spacing: 0.15em;
-      color: var(--green);
-      background: var(--green-bg);
-      border: 1px solid var(--green-border);
-      padding: 2px 8px;
-      border-radius: 4px;
-      margin-top: 5px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235bc8f0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 44px;
     }
-    .en-pista::before {
-      content: '';
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: blink 1s infinite;
-    }
+    .cat-select-mobile option { background: #1a3a6b; color: #ffffff; }
+    .cat-select-mobile optgroup { background: #0e2a5a; color: #5bc8f0; font-weight: 700; }
 
-    .cell-tiempo {
-      padding: 12px 32px;
-      text-align: center;
-    }
-    .tiempo-val {
-      font-family: var(--font-label);
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      color: var(--blue);
-    }
-    .ranking-row.p1 .tiempo-val {
-      font-size: 1.75rem;
-      color: var(--gold);
-    }
-    .tiempo-dnf {
-      font-family: var(--font-label);
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--red);
-      letter-spacing: 0.1em;
-    }
-
-    .cell-intentos {
-      padding: 12px 28px;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .cell-intentos-inline {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 7px;
-    }
-    .chip {
-      font-family: var(--font-body);
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 6px;
-      background: var(--off-white);
-      border: 1px solid var(--border);
-      color: var(--text-mid);
-    }
-    .chip.mejor {
-      background: var(--cyan-pale);
-      border-color: rgba(91,200,240,0.5);
-      color: #0a6a90;
-    }
-    .chip.dnf {
-      background: var(--red-bg);
-      border-color: var(--red-border);
-      color: var(--red);
-    }
-
-    /* Empty state */
-    .empty-ranking {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      gap: 14px;
-      opacity: 0.5;
-    }
-    .empty-icon { font-size: 2.4rem; }
-    .empty-img {
-      width: 200px;
-      height: 200px;
-      object-fit: contain;
-      opacity: 0.85;
-    }
-    .empty-text {
-      font-family: var(--font-label);
-      font-size: 0.55rem;
-      letter-spacing: 0.25em;
-      color: var(--muted);
-    }
-    .loader-bar {
-      width: 90px; height: 3px;
-      background: var(--border);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .loader-bar::after {
-      content: '';
-      display: block;
-      width: 40%; height: 100%;
-      background: var(--cyan);
-      border-radius: 3px;
-      animation: loadSlide 1.5s ease-in-out infinite;
-    }
-    @keyframes loadSlide {
-      0%   { transform: translateX(-100%); }
-      100% { transform: translateX(350%); }
-    }
-
-    /* ── Footer ── */
-    .pant-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 28px;
-      height: 36px;
-      flex-shrink: 0;
-      background: var(--white);
-      border-top: 1px solid var(--border);
-    }
-    .footer-text {
-      font-family: var(--font-label);
-      font-size: 0.44rem;
-      letter-spacing: 0.18em;
-      color: var(--muted);
-    }
-    .footer-update {
-      font-family: var(--font-label);
-      font-size: 0.44rem;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-    }
-    .footer-update span { color: var(--blue); }
-
-    /* ══════════════════════════════════════
-       MODO TV — oculta nav compartido
-    ══════════════════════════════════════ */
-    body.modo-tv .sticky-header,
-    body.modo-tv #shared-footer {
-      display: none !important;
-    }
-    body.modo-tv .pant-wrapper {
-      top: 0 !important;
-    }
-
-    .esc-hint {
-      position: fixed;
-      top: 14px; left: 50%;
-      transform: translateX(-50%);
-      font-family: var(--font-label);
-      font-size: 0.48rem;
-      letter-spacing: 0.2em;
-      color: var(--text);
-      background: rgba(255,255,255,0.95);
-      border: 1px solid var(--border-dark);
-      padding: 7px 18px;
-      border-radius: 5px;
-      z-index: 9999;
-      opacity: 0;
-      transition: opacity 0.4s;
-      pointer-events: none;
-      box-shadow: 0 2px 12px rgba(26,92,168,0.12);
-    }
-    .esc-hint.show { opacity: 1; }
-
-    /* ── Transición al cambiar categoría ── */
-    .panel-ranking.cambiando {
-      animation: catSwitch 0.35s ease;
-    }
-    @keyframes catSwitch {
-      0%   { opacity: 1; transform: translateY(0); }
-      35%  { opacity: 0; transform: translateY(-6px); }
-      65%  { opacity: 0; transform: translateY(6px); }
-      100% { opacity: 1; transform: translateY(0); }
+    @media (max-width: 768px) {
+      .screen { padding: 12px 16px 32px; }
+      .cat-tabs { display: none; }
+      .cat-select-mobile { display: block; }
+      .bracket-fases { gap: 20px; }
+      .bracket-fase { min-width: 200px; }
+      .page-header { padding: 16px; }
+      .page-header-title { font-size: 2rem; }
+      .ronda-label { font-size: 1.4rem; }
     }
   </style>
 </head>
 <body>
-
-<!-- Shared nav (oculto en modo TV) -->
-<div class="sticky-header">
-  <div data-include="../shared/components/topbar.html"></div>
-  <div data-include="../shared/components/header.html"></div>
-  <div data-include="../shared/components/nav.html"></div>
-</div>
-
-<div class="esc-hint" id="esc-hint">PRESIONA ESC PARA SALIR DEL MODO TV</div>
-
-<!-- ══════════ PANTALLA PRINCIPAL ══════════ -->
-<div class="pant-wrapper">
-
-  <!-- Topbar -->
-  <div class="pant-topbar">
-    <div class="topbar-brand">
-      <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/sucrebot-sin%20fondo.png"
-           alt="SucreBot" class="topbar-logo">
-      <div>
-        <div class="topbar-name">SUCRE<span>BOT</span></div>
-        <div class="topbar-sub">TORNEO DE ROBÓTICA 2026 · RESULTADOS EN VIVO</div>
-      </div>
-    </div>
-
-    <div class="topbar-center">
-      <div class="rotation-wrap">
-        <div class="rotation-label">ROTACIÓN AUTOMÁTICA</div>
-        <div class="rotation-bar-bg">
-          <div class="rotation-bar-fill" id="rot-bar"></div>
-        </div>
-      </div>
-      <div class="cat-dots" id="cat-dots"></div>
-    </div>
-
-    <div class="topbar-right">
-      <div class="live-badge"><span class="live-dot"></span>EN VIVO</div>
-      <div class="topbar-clock" id="topbar-clock">00:00:00</div>
-      <button class="btn-tv" onclick="toggleTV()">
-        <svg id="fs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-        </svg>
-        <span id="fs-label">TV</span>
-      </button>
-    </div>
+  <div class="sticky-header">
+    <div data-include="../shared/components/topbar.html"></div>
+    <div data-include="../shared/components/header.html"></div>
+    <div data-include="../shared/components/nav.html"></div>
   </div>
 
-  <!-- Cuerpo -->
-  <div class="pant-body">
-
-    <!-- Panel izquierdo -->
-    <div class="panel-izq">
-      <div class="section-label">CATEGORÍAS</div>
-      <div class="cats-list" id="cats-list"></div>
-    </div>
-
-    <!-- Panel ranking -->
-    <div class="panel-ranking" id="panel-ranking">
-      <div class="ranking-header">
-        <div class="ranking-cat-name" id="rank-cat-name">SELECCIONA UNA <span>CATEGORÍA</span></div>
-        <div class="ranking-meta">
-          <div class="ranking-ronda" id="rank-ronda">—</div>
-          <div class="ranking-count" id="rank-count">—</div>
+  <main class="screen">
+    <div class="page-header">
+      <div class="page-header-left">
+        <img src="../shared/images/robot-campeon.png" alt="Robot campeón">
+        <div>
+          <div class="live-badge"><span class="live-dot"></span>EN VIVO</div>
+          <div class="page-header-title">SUCREBOT</div>
+          <div class="page-header-sub">SUCREBOT SYSTEM · CRONOMETRAJE EN TIEMPO REAL</div>
         </div>
       </div>
-
-      <div class="ranking-tabla">
-        <div class="tabla-thead">
-          <div class="th-cell c">POS</div>
-          <div class="th-cell">ROBOT / PARTICIPANTE</div>
-          <div class="th-cell c">MEJOR TIEMPO</div>
-        </div>
-        <div class="tabla-body" id="tabla-body">
-          <div class="empty-ranking">
-            <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/pumatronix-relojdearena.png" alt="" class="empty-img">
-            <div class="empty-text">CARGANDO RESULTADOS</div>
-            <div class="loader-bar"></div>
-          </div>
-        </div>
+      <div class="page-header-right">
+        <div class="ronda-label" id="tv-ronda">RONDA 1</div>
+        <div class="cat-label" id="tv-cat">—</div>
       </div>
     </div>
 
-  </div>
+    <div class="cat-tabs" id="cat-tabs"></div>
 
-  <!-- Footer -->
-  <div class="pant-footer">
-    <div class="footer-text">INSTITUTO SUPERIOR UNIVERSITARIO SUCRE · CLUB DE ROBÓTICA</div>
-    <div class="footer-update">ÚLTIMA ACTUALIZACIÓN: <span id="ultima-act">—</span></div>
-  </div>
+    <!-- DROPDOWN MÓVIL -->
+    <select class="cat-select-mobile" id="cat-select-mobile" onchange="seleccionarManual(this.value)">
+      <option value="">⚽ Selecciona una categoría...</option>
+      <optgroup label="🏅 AMATEUR">
+        <option value="ins">Insectos</option>
+        <option value="trp_a">Trepador (Amateur)</option>
+        <option value="sl_a">Seguidor ST (Amateur)</option>
+      </optgroup>
+      <optgroup label="🏆 PRO">
+        <option value="sl_p">Seguidor ST (Pro)</option>
+        <option value="ms_a">Minisumo Autónomo</option>
+        <option value="ms_rc">Minisumo RC</option>
+        <option value="bai">Bailarín</option>
+        <option value="bat">Batalla</option>
+        <option value="trp_p">Trepador (Pro)</option>
+        <option value="soc">Robot Soccer</option>
+      </optgroup>
+      <optgroup label="⭐ EXTRA">
+        <option value="cr">Cubo Rubik</option>
+      </optgroup>
+    </select>
 
-</div>
+    <div class="tabla-wrap" id="tv-tabla-wrap">
+      <div class="empty-state">
+        <div class="empty-icon">🏁</div>
+        <div class="empty-text">ESPERANDO RESULTADOS...</div>
+      </div>
+    </div>
 
-<div id="shared-footer" data-include="../shared/components/footer.html"></div>
+    <div class="tv-footer">
+      <div class="tv-footer-left">SUCREBOT SYSTEM</div>
+      <div class="tv-footer-right" id="tv-hora">00:00:00</div>
+    </div>
+  </main>
 
-<script src="../shared/js/auth.js"></script>
-<script src="../shared/js/load-components.js"></script>
-<script>
-/* ════════════════════════════════════════
-   SUCREBOT — PANTALLA EN VIVO
-   Lee directo de resultados.json en GitHub
-   0 llamadas a GAS — máxima estabilidad
-════════════════════════════════════════ */
+  <div data-include="../shared/components/footer.html"></div>
 
-const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
+  <script>
+    const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
+    const GAS_URL  = CONFIG.GAS_URL();
 
-const CATEGORIAS = [
-  { id: 'ins',   nombre: 'Insectos',             grupo: 'AMATEUR' },
-  { id: 'trp_a', nombre: 'Trepador (Amateur)',    grupo: 'AMATEUR' },
-  { id: 'sl_a',  nombre: 'Seguidor ST (Amateur)', grupo: 'AMATEUR' },
-  { id: 'sl_p',  nombre: 'Seguidor ST (Pro)',     grupo: 'PRO'     },
-  { id: 'ms_a',  nombre: 'Minisumo Autónomo',     grupo: 'PRO'     },
-  { id: 'ms_rc', nombre: 'Minisumo RC',           grupo: 'PRO'     },
-  { id: 'bai',   nombre: 'Bailarín',              grupo: 'PRO'     },
-  { id: 'bat',   nombre: 'Batalla',               grupo: 'PRO'     },
-  { id: 'trp_p', nombre: 'Trepador (Pro)',         grupo: 'PRO'     },
-  { id: 'soc',   nombre: 'Robot Soccer',          grupo: 'PRO'     },
-  { id: 'cr',    nombre: 'Cubo Rubik',            grupo: 'EXTRA'   }
-];
+    const RUTAS_NOMBRE = {
+      'ins':   'Insectos',
+      'trp_a': 'Trepador (Amateur)',
+      'sl_a':  'Seguidor ST (Amateur)',
+      'sl_p':  'Seguidor ST (Pro)',
+      'ms_a':  'Minisumo Autónomo',
+      'ms_rc': 'Minisumo RC',
+      'bai':   'Bailarín',
+      'bat':   'Batalla',
+      'trp_p': 'Trepador (Pro)',
+      'soc':   'Robot Soccer',
+      'cr':    'Cubo Rubik'
+    };
 
-let estadoPorCat  = {};
-let activoPorCat  = {};
-let catActiva     = null;
-let rotInterval   = null;
-let rotProgress   = 0;
-let pausaRot      = false;
-let pausaTimer    = null;
-const ROT_SEG     = 15;
-
-/* ── Reloj ── */
-function tickClock() {
-  document.getElementById('topbar-clock').textContent =
-    new Date().toLocaleTimeString('es-EC', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-}
-setInterval(tickClock, 1000); tickClock();
-
-/* ── Parse tiempo MM:SS:CC ── */
-function parseT(t) {
-  if (!t || t === '—' || t === 'DNF') return Infinity;
-  const p = t.split(':').map(Number);
-  if (p.length === 3) return p[0] * 60 + p[1] + p[2] / 100;
-  if (p.length === 2) return p[0] * 60 + p[1];
-  return Infinity;
-}
-
-/* ── Escape HTML ── */
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ── Modo TV ── */
-let modoTV = false;
-function toggleTV() {
-  modoTV = !modoTV;
-  document.body.classList.toggle('modo-tv', modoTV);
-  document.getElementById('fs-label').textContent = modoTV ? 'SALIR' : 'TV';
-  document.getElementById('fs-icon').innerHTML = modoTV
-    ? '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>'
-    : '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
-  if (modoTV) {
-    const h = document.getElementById('esc-hint');
-    h.classList.add('show');
-    setTimeout(() => h.classList.remove('show'), 3000);
-    document.documentElement.requestFullscreen?.().catch(()=>{});
-  } else {
-    document.exitFullscreen?.().catch(()=>{});
-  }
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && modoTV) {
-    modoTV = false;
-    document.body.classList.remove('modo-tv');
-    document.getElementById('fs-label').textContent = 'TV';
-    document.getElementById('fs-icon').innerHTML =
-      '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
-  }
-});
-
-/* ── Categorías con datos ── */
-function catsConDatos() {
-  return CATEGORIAS.map(c => c.id).filter(id => {
-    const e = estadoPorCat[id];
-    if (!e || !e.rondasData) return false;
-    return Object.values(e.rondasData).some(r =>
-      (r.clasificados || []).some(c => c.tiempo && c.tiempo !== '—' && c.tiempo !== 'DNF')
-    );
-  });
-}
-
-/* ── Rotación ── */
-function iniciarRotacion() {
-  if (rotInterval) clearInterval(rotInterval);
-  rotProgress = 0;
-  rotInterval = setInterval(() => {
-    if (pausaRot) return;
-    rotProgress += 100 / (ROT_SEG * 10);
-    document.getElementById('rot-bar').style.width = Math.min(rotProgress, 100) + '%';
-    if (rotProgress >= 100) {
-      rotProgress = 0;
-      const lista = catsConDatos();
-      if (lista.length <= 1) return;
-      const idx = lista.indexOf(catActiva);
-      const sig = lista[(idx + 1) % lista.length];
-      if (sig !== catActiva) mostrarCategoria(sig, true);
+    function tiempoASegundos(t) {
+      if (!t || t === '—') return Infinity;
+      const p = t.split(':').map(Number);
+      return p[0] * 60 + p[1] + p[2] / 100;
     }
-  }, 100);
-}
 
-/* ── Renderizar activo ── */
-function renderActivo(catId) {
-  const card = document.getElementById('card-activo');
-  const p = activoPorCat[catId];
-  const cat = CATEGORIAS.find(c => c.id === catId);
-  if (!p || !p.id) {
-    card.className = 'card-activo vacio';
-    card.innerHTML = `<div class="activo-empty"><img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/sucrebot-celeste-sin_fondo.png" alt="" class="activo-empty-img"><div class="activo-empty-text">SIN PARTICIPANTE ACTIVO</div></div>`;
-    return;
-  }
-  card.className = 'card-activo tiene-activo';
-  card.innerHTML = `
-    <div class="activo-cat-badge"><span class="dot"></span>${esc(cat ? cat.nombre : catId)}</div>
-    <div class="activo-robot">${esc(p.robot || '—')}</div>
-    <div class="activo-nombre">${esc(p.nombre || p.id)}</div>
-    <div class="activo-inst">${esc(p.institucion || '—')}</div>`;
-}
+    function hora() {
+      return new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    setInterval(() => { document.getElementById('tv-hora').textContent = hora(); }, 1000);
+    document.getElementById('tv-hora').textContent = hora();
 
-/* ── Contar clasificados ── */
-function contarClasificados(catId) {
-  const e = estadoPorCat[catId];
-  if (!e || !e.rondasData) return 0;
-  const ids = new Set();
-  Object.values(e.rondasData).forEach(r => {
-    (r.clasificados || []).forEach(c => {
-      // Solo contar si tiene intentos reales (no solo '—')
-      const arr = (c.tiempos && c.tiempos.length > 0) ? c.tiempos : [c.tiempo];
-      if (arr.some(t => t && t !== '—')) ids.add(c.id);
-    });
-  });
-  return ids.size;
-}
+    let datosJSON = null;
+    let bracketSoccer = null;
+    let categoriaActiva = null;
+    let autoRotarTimer = null;
+    let rutasConDatos = [];
 
-/* ── Renderizar lista de categorías ── */
-function renderCatsList() {
-  const conDatos = new Set(catsConDatos());
-  const conActivo = new Set(
-    Object.entries(activoPorCat).filter(([, p]) => p?.id).map(([id]) => id)
-  );
-  // Dots en topbar
-  const dotsEl = document.getElementById('cat-dots');
-  const dotsCats = CATEGORIAS.filter(c => conDatos.has(c.id) || conActivo.has(c.id));
-  dotsEl.innerHTML = dotsCats.map(c => {
-    const cls = ['cat-dot', conDatos.has(c.id) ? 'tiene-datos':'', c.id === catActiva ? 'active':''].filter(Boolean).join(' ');
-    return `<div class="${cls}" title="${esc(c.nombre)}" onclick="seleccionarManual('${c.id}')"></div>`;
-  }).join('');
+    const TIEMPO_ROTACION = 10000;
 
-  // Lista
-  document.getElementById('cats-list').innerHTML = CATEGORIAS.map(cat => {
-    const n = contarClasificados(cat.id);
-    const isActive = catActiva === cat.id;
-    const tieneActivo = conActivo.has(cat.id);
-    const tieneDatos = conDatos.has(cat.id);
-    const clases = ['cat-item',
-      isActive     ? 'active'       : '',
-      tieneActivo  ? 'tiene-activo' : (tieneDatos ? 'tiene-datos' : '')
-    ].filter(Boolean).join(' ');
-    return `
-      <div class="${clases}" onclick="seleccionarManual('${cat.id}')">
-        <div class="cat-ind"></div>
-        <div class="cat-item-name">${esc(cat.nombre)}</div>
-        ${n > 0 ? `<div class="cat-item-n">${n}</div>` : ''}
-      </div>`;
-  }).join('');
-}
+    function iniciarAutoRotar() {
+      if (autoRotarTimer) clearInterval(autoRotarTimer);
+      autoRotarTimer = setInterval(() => {
+        const activas = rutasConDatos;
+        if (activas.length <= 1) return;
+        const idx = activas.indexOf(categoriaActiva);
+        const siguiente = activas[(idx + 1) % activas.length];
+        seleccionarCategoria(siguiente);
+      }, TIEMPO_ROTACION);
+    }
 
-/* ── Renderizar ranking ── */
-function renderRanking(catId) {
-  const cat    = CATEGORIAS.find(c => c.id === catId);
-  const estado = estadoPorCat[catId];
-  const activo = activoPorCat[catId];
+    function seleccionarCategoria(ruta) {
+      categoriaActiva = ruta;
+      // Sincronizar tabs desktop
+      document.querySelectorAll('.cat-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.ruta === ruta);
+      });
+      // Sincronizar dropdown móvil
+      const sel = document.getElementById('cat-select-mobile');
+      if (sel) sel.value = ruta;
+      // Renderizar vista
+      if (ruta === 'soc') {
+        renderizarBracketSoccer();
+      } else {
+        renderizarTabla(ruta);
+      }
+    }
 
-  const partes = (cat ? cat.nombre : catId).split(' ');
-  const ult = partes.pop();
-  document.getElementById('rank-cat-name').innerHTML = `${esc(partes.join(' '))} <span>${esc(ult)}</span>`;
+    function renderTabs() {
+      const container = document.getElementById('cat-tabs');
+      const rutas = Object.keys(RUTAS_NOMBRE);
 
-  if (!estado || !estado.rondasData) {
-    document.getElementById('rank-ronda').textContent = '—';
-    document.getElementById('rank-count').textContent = '—';
-    document.getElementById('tabla-body').innerHTML = `
-      <div class="empty-ranking">
-        <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/pumatronix-relojdearena.png" alt="" class="empty-img">
-        <div class="empty-text">ESPERANDO RESULTADOS</div>
-        <div class="loader-bar"></div>
-      </div>`;
-    return;
-  }
-
-  // Consolidar por participante
-  const porId = {};
-  Object.values(estado.rondasData).forEach(ronda => {
-    (ronda.clasificados || []).forEach(c => {
-      if (!porId[c.id]) porId[c.id] = { id:c.id, robot:c.robot||'—', nombre:c.nombre||c.id, institucion:c.institucion||'—', intentos:[] };
-      // Usar tiempos[] si existe (array completo de intentos), sino tiempo individual
-      // Ignorar '—' (participantes que aún no han competido)
-      const arr = (c.tiempos && c.tiempos.length > 0) ? c.tiempos : [c.tiempo];
-      arr.forEach(t => { if (t && t !== '—') porId[c.id].intentos.push(t); });
-    });
-  });
-
-  const lista = Object.values(porId).map(p => {
-    const validos = p.intentos.filter(t => t !== '—' && t !== 'DNF');
-    const mejor = validos.length ? validos.reduce((a,b) => parseT(a) <= parseT(b) ? a : b) : null;
-    return { ...p, mejor };
-  }).filter(p => p.intentos.length > 0)  // solo quienes tienen al menos 1 intento real
-    .sort((a,b) => {
-      if (!a.mejor && !b.mejor) return 0;
-      if (!a.mejor) return 1;
-      if (!b.mejor) return -1;
-      return parseT(a.mejor) - parseT(b.mejor);
-    });
-
-  document.getElementById('rank-ronda').textContent = `RONDA ${estado.rondaActual || 1}`;
-  document.getElementById('rank-count').textContent = `${lista.length} PARTICIPANTE${lista.length !== 1 ? 'S' : ''}`;
-
-  if (!lista.length) {
-    document.getElementById('tabla-body').innerHTML = `
-      <div class="empty-ranking">
-        <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/pumatronix-relojdearena.png" alt="" class="empty-img">
-        <div class="empty-text">SIN RESULTADOS AÚN</div>
-        <div class="loader-bar"></div>
-      </div>`;
-    return;
-  }
-
-  const posMap = ['','g','s','b'];
-  document.getElementById('tabla-body').innerHTML = lista.map((p, i) => {
-    const posClase = ['','p1','p2','p3'][i+1] || '';
-    const badgeCls = posMap[i+1] || 'n';
-    const esActivo = activo?.id === p.id;
-    const chips = p.intentos.map((t, idx) => {
-      const isDNF   = t === 'DNF';
-      const isMejor = !isDNF && t === p.mejor;
-      const label   = isDNF ? 'DNF' : esc(t);
-      const star    = isMejor ? ' ★' : '';
-      return `<span class="chip ${isDNF ? 'dnf' : isMejor ? 'mejor' : ''}"><span style="opacity:0.55;font-size:0.6em;margin-right:2px;">I${idx+1}</span>${label}${star}</span>`;
-    }).join('');
-    const tiempoHtml = p.mejor
-      ? `<div class="tiempo-val">${esc(p.mejor)}</div>`
-      : `<div class="tiempo-dnf">DNF</div>`;
-    const enpista = esActivo ? `<div class="en-pista">EN PISTA</div>` : '';
-    return `
-      <div class="ranking-row ${posClase}" style="animation-delay:${i*0.04}s">
-        <div class="cell-pos"><div class="pos-badge ${badgeCls}">${i+1}</div></div>
-        <div class="cell-robot">
-          <div class="robot-name">${esc(p.robot)}</div>
-          <div class="robot-inst">${esc(p.institucion)}</div>
-          ${enpista}
-          <div class="cell-intentos-inline">${chips}</div>
-        </div>
-        <div class="cell-tiempo">${tiempoHtml}</div>
-      </div>`;
-  }).join('');
-}
-
-/* ── Mostrar categoría ── */
-function mostrarCategoria(catId, animacion) {
-  catActiva = catId;
-  renderActivo(catId);
-  renderCatsList();
-  if (animacion) {
-    const p = document.getElementById('panel-ranking');
-    p.classList.remove('cambiando');
-    void p.offsetWidth;
-    p.classList.add('cambiando');
-    setTimeout(() => p.classList.remove('cambiando'), 350);
-  }
-  renderRanking(catId);
-}
-
-function seleccionarManual(catId) {
-  pausaRot = true;
-  rotProgress = 0;
-  document.getElementById('rot-bar').style.width = '0%';
-  mostrarCategoria(catId, true);
-  if (pausaTimer) clearTimeout(pausaTimer);
-  pausaTimer = setTimeout(() => { pausaRot = false; }, 20000);
-}
-
-/* ── Carga de datos desde resultados.json (GitHub) ──
-   1 sola request cada 10 segundos, sin GAS
-═══════════════════════════════════════════════════ */
-async function cargarDatos() {
-  try {
-    // Cache-busting para que GitHub no devuelva versión vieja
-    const url = JSON_URL + '?t=' + Math.floor(Date.now() / 10000);
-    const r = await fetch(url, { cache: 'no-store' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-
-    if (!data || !data.resultados) return;
-
-    // Convertir resultados.json al formato que espera renderRanking
-    // resultados.json: { trp_a: [ {robot, tiempo, ronda, intento}, ... ] }
-    // estadoPorCat:    { trp_a: { rondasData: { 1: { clasificados: [...] } }, rondaActual: 1 } }
-    CATEGORIAS.forEach(cat => {
-      const lista = data.resultados[cat.id] || [];
-      if (!lista.length) { estadoPorCat[cat.id] = null; return; }
-
-      // Agrupar por ronda
-      const rondasData = {};
-      lista.forEach(entry => {
-        const r = entry.ronda || 1;
-        if (!rondasData[r]) rondasData[r] = { clasificados: [], eliminados: [], cerrada: true };
-
-        // Buscar si ya existe este robot en esta ronda
-        const existeIdx = rondasData[r].clasificados.findIndex(c => c.robot === entry.robot);
-        if (existeIdx >= 0) {
-          const ant = rondasData[r].clasificados[existeIdx];
-          ant.tiempos = ant.tiempos || [];
-          if (entry.tiempo && entry.tiempo !== '—') ant.tiempos.push(entry.tiempo);
+      container.innerHTML = rutas.map(ruta => {
+        let tieneDatos = false;
+        if (ruta === 'soc') {
+          tieneDatos = bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
         } else {
-          rondasData[r].clasificados.push({
-            id:          entry.robot,
-            robot:       entry.robot,
-            nombre:      entry.robot,
-            institucion: entry.institucion || '—',
-            tiempo:      entry.tiempo || '—',
-            tiempos:     (entry.tiempo && entry.tiempo !== '—') ? [entry.tiempo] : [],
-            ronda:       r,
-            esDNF:       entry.tiempo === 'DNF'
-          });
+          tieneDatos = datosJSON && datosJSON.resultados[ruta] && datosJSON.resultados[ruta].length > 0;
         }
+        return `<button class="cat-tab ${tieneDatos ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
+          data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">
+          ${RUTAS_NOMBRE[ruta]}
+        </button>`;
+      }).join('');
+
+      rutasConDatos = rutas.filter(ruta => {
+        if (ruta === 'soc') return bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
+        return datosJSON && datosJSON.resultados[ruta] && datosJSON.resultados[ruta].length > 0;
       });
-
-      // Calcular mejor tiempo por participante
-      Object.values(rondasData).forEach(ronda => {
-        ronda.clasificados.forEach(c => {
-          const validos = (c.tiempos || []).filter(t => t && t !== '—' && t !== 'DNF');
-          c.tiempo = validos.length
-            ? validos.reduce((a, b) => parseT(a) <= parseT(b) ? a : b)
-            : (c.esDNF ? 'DNF' : '—');
-        });
-      });
-
-      const rondasNums = Object.keys(rondasData).map(Number);
-      estadoPorCat[cat.id] = {
-        rondasData,
-        rondaActual: Math.max(...rondasNums)
-      };
-    });
-
-    // Sin activos desde JSON — limpiar panel izquierdo
-    CATEGORIAS.forEach(cat => { activoPorCat[cat.id] = null; });
-
-    // Primera carga
-    if (!catActiva) {
-      const conDatos = catsConDatos();
-      mostrarCategoria(conDatos[0] || CATEGORIAS[0].id, false);
-      iniciarRotacion();
-    } else {
-      mostrarCategoria(catActiva, false);
-      renderCatsList();
     }
 
-    document.getElementById('ultima-act').textContent =
-      new Date().toLocaleTimeString('es-EC');
+    function seleccionarManual(ruta) {
+      if (autoRotarTimer) clearInterval(autoRotarTimer);
+      autoRotarTimer = null;
+      seleccionarCategoria(ruta);
+    }
 
-  } catch (err) {
-    console.warn('[PANTALLA] Error al cargar JSON:', err);
-  }
-}
+    function mostrarVacio() {
+      document.getElementById('tv-tabla-wrap').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🏁</div>
+          <div class="empty-text">ESPERANDO RESULTADOS...</div>
+        </div>`;
+    }
 
-cargarDatos();
-setInterval(cargarDatos, 10000); // cada 10 segundos — GitHub aguanta sin problema
+    // ══════════════════════════════════════════════════════════════
+    // BRACKET SOCCER
+    // ══════════════════════════════════════════════════════════════
+    function renderizarBracketSoccer() {
+      document.getElementById('tv-ronda').textContent = 'BRACKET';
+      document.getElementById('tv-cat').textContent = 'Robot Soccer';
 
-/* ── Ajuste dinámico del top según altura del nav ── */
-function ajustarTop() {
-  const nav = document.querySelector('.sticky-header');
-  const wrapper = document.querySelector('.pant-wrapper');
-  if (!wrapper) return;
-  if (document.body.classList.contains('modo-tv')) {
-    wrapper.style.top = '0px';
-    return;
-  }
-  const h = nav ? nav.getBoundingClientRect().height : 0;
-  wrapper.style.top = h + 'px';
-}
+      const wrap = document.getElementById('tv-tabla-wrap');
 
-// Ajustar inmediatamente y cuando carguen los componentes
-ajustarTop();
-document.addEventListener('componentsLoaded', ajustarTop);
-window.addEventListener('resize', ajustarTop);
-// También con un pequeño delay para que el nav termine de renderizarse
-setTimeout(ajustarTop, 300);
-setTimeout(ajustarTop, 800);
-</script>
+      if (!bracketSoccer || !bracketSoccer.fases || bracketSoccer.fases.length === 0) {
+        wrap.innerHTML = `
+          <div class="soccer-wrap">
+            <div class="soccer-title">⚽ Robot Soccer</div>
+            <div class="soccer-sin-datos">
+              <div class="soccer-sin-datos-icon">⚽</div>
+              <div class="soccer-sin-datos-text">BRACKET AÚN NO GENERADO</div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const fasesHTML = bracketSoccer.fases.map(fase => {
+        const partidosHTML = fase.partidos.map(p => {
+          if (p.tipo === 'BYE') {
+            return `
+              <div class="partido-bye">
+                <div class="bye-nombre">${p.equipoNombre}</div>
+                <div class="bye-badge">BYE — Pasa directo</div>
+              </div>`;
+          }
+
+          // Extraer solo los goles iniciales: "3-1" o "2-1 (pen 4-3)" → ["3","1"]
+        const matchGoles = p.marcador ? p.marcador.match(/^(\d+)-(\d+)/) : null;
+        const golesArr = matchGoles ? [matchGoles[1], matchGoles[2]] : null;
+          const finalizado = p.estado === 'FINALIZADO';
+          const sinEquipos = !p.equipo_a_id && !p.equipo_b_id;
+
+          if (sinEquipos) {
+            return `
+              <div class="partido-card pendiente">
+                <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
+                <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
+                <div class="partido-estado pend-equipos">Esperando ganadores</div>
+              </div>`;
+          }
+
+          return `
+            <div class="partido-card ${finalizado ? 'finalizado' : 'pendiente'}">
+              <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_a_id ? 'ganador' : ''}">
+                <span class="partido-equipo-nombre">${p.equipoA_nombre || '—'}</span>
+                ${golesArr ? `<span class="partido-equipo-goles">${golesArr[0]}</span>` : ''}
+              </div>
+              <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_b_id ? 'ganador' : ''}">
+                <span class="partido-equipo-nombre">${p.equipoB_nombre || '—'}</span>
+                ${golesArr ? `<span class="partido-equipo-goles">${golesArr[1]}</span>` : ''}
+              </div>
+              <div class="partido-estado ${finalizado ? 'fin' : 'pend'}">
+                ${finalizado ? `✓ ${p.marcador}` : 'Pendiente'}
+              </div>
+            </div>`;
+        }).join('');
+
+        return `
+          <div class="bracket-fase">
+            <div class="fase-nombre">${fase.nombre}</div>
+            ${partidosHTML}
+          </div>`;
+      }).join('');
+
+      wrap.innerHTML = `
+        <div class="soccer-wrap">
+          <div class="soccer-title">⚽ Robot Soccer — Bracket</div>
+          <div class="bracket-fases">${fasesHTML}</div>
+        </div>`;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // TABLA TIEMPOS (categorías normales)
+    // ══════════════════════════════════════════════════════════════
+    function renderizarTabla(ruta) {
+      if (!datosJSON || !datosJSON.resultados[ruta] || datosJSON.resultados[ruta].length === 0) {
+        mostrarVacio();
+        return;
+      }
+
+      document.getElementById('tv-ronda').textContent = 'RONDA 1';
+      document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[ruta] || ruta;
+
+      const datos = datosJSON.resultados[ruta];
+      const porRobot = {};
+      datos.forEach(d => {
+        if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, tiempos: [] };
+        porRobot[d.robot].tiempos.push(d.tiempo);
+      });
+
+      const clasificados = Object.values(porRobot).map(r => {
+        const mejorTiempo = r.tiempos.reduce((mejor, actual) =>
+          tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor
+        );
+        return { robot: r.robot, tiempo: mejorTiempo, intentos: r.tiempos.length };
+      });
+      clasificados.sort((a, b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
+
+      const wrap = document.getElementById('tv-tabla-wrap');
+      const filas = clasificados.map((c, i) => {
+        const pos = i + 1;
+        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
+        const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
+        const emoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+        return `
+          <tr class="row-altura ${claseRow}">
+            <td class="td-pos"><span class="pos-circle ${claseCirc}">${pos <= 3 ? emoji : pos}</span></td>
+            <td class="td-robot"><div class="robot-name">${c.robot}</div></td>
+            <td class="td-mejor"><span class="tiempo-valor">${c.tiempo}</span></td>
+            <td class="td-intentos"><span class="intento-num">${c.intentos} intento${c.intentos !== 1 ? 's' : ''}</span></td>
+          </tr>`;
+      }).join('');
+
+      wrap.innerHTML = `
+        <table>
+          <thead><tr>
+            <th class="c">#</th>
+            <th>Robot / Equipo</th>
+            <th class="c">Mejor Tiempo</th>
+            <th class="c">Intentos</th>
+          </tr></thead>
+          <tbody>${filas}</tbody>
+        </table>`;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // POLLING
+    // ══════════════════════════════════════════════════════════════
+    async function pollJSON() {
+      try {
+        const r = await fetch(JSON_URL + '?t=' + Date.now());
+        datosJSON = await r.json();
+        renderTabs();
+        actualizarVista();
+      } catch(e) {
+        console.error('Error al cargar JSON:', e);
+      }
+    }
+
+    async function pollBracketSoccer() {
+      try {
+        const r = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getEquiposSoccer' }));
+        const data = await r.json();
+        if (data.ok) {
+          bracketSoccer = data.bracket || null;
+          // ✅ Solo actualizar tabs (el puntito) sin tocar el header ni la vista
+          renderTabs();
+          // Solo renderizar bracket si el usuario está en esa pestaña
+          if (categoriaActiva === 'soc') {
+            renderizarBracketSoccer();
+          }
+          // Si NO estamos en soc, restaurar el header a la categoría activa
+          if (categoriaActiva && categoriaActiva !== 'soc') {
+            document.getElementById('tv-ronda').textContent = 'RONDA 1';
+            document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[categoriaActiva] || categoriaActiva;
+          }
+        }
+      } catch(e) {
+        console.error('Error al cargar bracket soccer:', e);
+      }
+    }
+
+    function actualizarVista() {
+      if (!categoriaActiva) {
+        // Solo al inicio: seleccionar primera con datos
+        const primera = rutasConDatos[0] || null;
+        if (primera) {
+          categoriaActiva = primera;
+          seleccionarCategoria(primera);
+        }
+      } else {
+        // Usuario ya eligió: solo refrescar esa vista sin cambiar de pestaña
+        if (categoriaActiva === 'soc') {
+          renderizarBracketSoccer();
+        } else {
+          renderizarTabla(categoriaActiva);
+        }
+      }
+    }
+
+    // Polling cada 5s para tiempos, cada 8s para bracket soccer
+    setInterval(pollJSON, 5000);
+    setInterval(pollBracketSoccer, 8000);
+    pollJSON();
+    pollBracketSoccer();
+  </script>
 </body>
 </html>
