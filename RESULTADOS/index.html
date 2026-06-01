@@ -72,6 +72,8 @@
     .robot-inst { font-size: 0.75rem; color: #6a7a94; margin-top: 2px; font-family: var(--font-mono); }
     .td-mejor { text-align: center; min-width: 150px; }
     .tiempo-valor { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; }
+    .tiempo-valor.sin-tiempo { color: #cbd5e1; font-size: 1.4rem; }
+    .tiempo-valor.dnf { color: #c82020; font-size: 1.4rem; }
     tr.pos-1 .tiempo-valor { font-size: 2.2rem; color: #2474cc; }
     .td-intentos { min-width: 140px; }
     .intento-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
@@ -236,10 +238,16 @@
       'cr':    'Cubo Rubik'
     };
 
+    // ✅ FIX: ignorar tiempos inválidos — '—', 'DNF' y '00:00:00' (nunca arrancó)
     function tiempoASegundos(t) {
-      if (!t || t === '—') return Infinity;
+      if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
       const p = t.split(':').map(Number);
       return p[0] * 60 + p[1] + p[2] / 100;
+    }
+
+    // ✅ Determina si un tiempo es válido para rankear
+    function tiempoValido(t) {
+      return t && t !== '—' && t !== 'DNF' && t !== '00:00:00';
     }
 
     function hora() {
@@ -269,14 +277,11 @@
 
     function seleccionarCategoria(ruta) {
       categoriaActiva = ruta;
-      // Sincronizar tabs desktop
       document.querySelectorAll('.cat-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.ruta === ruta);
       });
-      // Sincronizar dropdown móvil
       const sel = document.getElementById('cat-select-mobile');
       if (sel) sel.value = ruta;
-      // Renderizar vista
       if (ruta === 'soc') {
         renderizarBracketSoccer();
       } else {
@@ -284,27 +289,28 @@
       }
     }
 
+    // ✅ Cuenta solo robots con al menos un tiempo válido
+    function categoriaTieneDatos(ruta) {
+      if (ruta === 'soc') return bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
+      const datos = datosJSON && datosJSON.resultados[ruta];
+      if (!datos || datos.length === 0) return false;
+      // Al menos un resultado con tiempo válido O DNF (participó de alguna forma)
+      return datos.some(d => tiempoValido(d.tiempo) || d.tiempo === 'DNF');
+    }
+
     function renderTabs() {
       const container = document.getElementById('cat-tabs');
       const rutas = Object.keys(RUTAS_NOMBRE);
 
       container.innerHTML = rutas.map(ruta => {
-        let tieneDatos = false;
-        if (ruta === 'soc') {
-          tieneDatos = bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
-        } else {
-          tieneDatos = datosJSON && datosJSON.resultados[ruta] && datosJSON.resultados[ruta].length > 0;
-        }
+        const tieneDatos = categoriaTieneDatos(ruta);
         return `<button class="cat-tab ${tieneDatos ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
           data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">
           ${RUTAS_NOMBRE[ruta]}
         </button>`;
       }).join('');
 
-      rutasConDatos = rutas.filter(ruta => {
-        if (ruta === 'soc') return bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
-        return datosJSON && datosJSON.resultados[ruta] && datosJSON.resultados[ruta].length > 0;
-      });
+      rutasConDatos = rutas.filter(categoriaTieneDatos);
     }
 
     function seleccionarManual(ruta) {
@@ -352,9 +358,8 @@
               </div>`;
           }
 
-          // Extraer solo los goles iniciales: "3-1" o "2-1 (pen 4-3)" → ["3","1"]
-        const matchGoles = p.marcador ? p.marcador.match(/^(\d+)-(\d+)/) : null;
-        const golesArr = matchGoles ? [matchGoles[1], matchGoles[2]] : null;
+          const matchGoles = p.marcador ? p.marcador.match(/^(\d+)-(\d+)/) : null;
+          const golesArr = matchGoles ? [matchGoles[1], matchGoles[2]] : null;
           const finalizado = p.estado === 'FINALIZADO';
           const sinEquipos = !p.equipo_a_id && !p.equipo_b_id;
 
@@ -413,28 +418,45 @@
       const porRobot = {};
       datos.forEach(d => {
         if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, tiempos: [] };
-        porRobot[d.robot].tiempos.push(d.tiempo);
+        // ✅ Solo agregar tiempos válidos o DNF — ignorar 00:00:00 y '—'
+        if (tiempoValido(d.tiempo) || d.tiempo === 'DNF') {
+          porRobot[d.robot].tiempos.push(d.tiempo);
+        }
       });
 
-      const clasificados = Object.values(porRobot).map(r => {
-        const mejorTiempo = r.tiempos.reduce((mejor, actual) =>
-          tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor
-        );
-        return { robot: r.robot, tiempo: mejorTiempo, intentos: r.tiempos.length };
-      });
+      // ✅ Solo robots que tienen al menos un intento real
+      const clasificados = Object.values(porRobot)
+        .filter(r => r.tiempos.length > 0)
+        .map(r => {
+          const tiemposValidos = r.tiempos.filter(tiempoValido);
+          const mejorTiempo = tiemposValidos.length
+            ? tiemposValidos.reduce((mejor, actual) =>
+                tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor)
+            : 'DNF';
+          return { robot: r.robot, tiempo: mejorTiempo, intentos: r.tiempos.length, esDNF: tiemposValidos.length === 0 };
+        });
+
+      // Ordenar: primero los que tienen tiempo válido (más rápido arriba), luego DNF
       clasificados.sort((a, b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
+
+      if (clasificados.length === 0) {
+        mostrarVacio();
+        return;
+      }
 
       const wrap = document.getElementById('tv-tabla-wrap');
       const filas = clasificados.map((c, i) => {
         const pos = i + 1;
-        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
-        const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
-        const emoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+        const claseRow  = c.esDNF ? '' : (pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '');
+        const claseCirc = c.esDNF ? 'pc-n' : (pos === 1 ? 'pc-1' : pos === 2 ? 'pc-2' : pos === 3 ? 'pc-3' : 'pc-n');
+        const emoji = c.esDNF ? '—' : (pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos);
+        const tiempoClase = c.esDNF ? 'tiempo-valor dnf' : 'tiempo-valor';
+        const tiempoTexto = c.esDNF ? 'DNF' : c.tiempo;
         return `
           <tr class="row-altura ${claseRow}">
-            <td class="td-pos"><span class="pos-circle ${claseCirc}">${pos <= 3 ? emoji : pos}</span></td>
+            <td class="td-pos"><span class="pos-circle ${claseCirc}">${(!c.esDNF && pos <= 3) ? emoji : (c.esDNF ? '—' : pos)}</span></td>
             <td class="td-robot"><div class="robot-name">${c.robot}</div></td>
-            <td class="td-mejor"><span class="tiempo-valor">${c.tiempo}</span></td>
+            <td class="td-mejor"><span class="${tiempoClase}">${tiempoTexto}</span></td>
             <td class="td-intentos"><span class="intento-num">${c.intentos} intento${c.intentos !== 1 ? 's' : ''}</span></td>
           </tr>`;
       }).join('');
@@ -456,7 +478,7 @@
     // ══════════════════════════════════════════════════════════════
     async function pollJSON() {
       try {
-        const r = await fetch(JSON_URL + '?t=' + Date.now());
+        const r = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-store' });
         datosJSON = await r.json();
         renderTabs();
         actualizarVista();
@@ -471,13 +493,10 @@
         const data = await r.json();
         if (data.ok) {
           bracketSoccer = data.bracket || null;
-          // ✅ Solo actualizar tabs (el puntito) sin tocar el header ni la vista
           renderTabs();
-          // Solo renderizar bracket si el usuario está en esa pestaña
           if (categoriaActiva === 'soc') {
             renderizarBracketSoccer();
           }
-          // Si NO estamos en soc, restaurar el header a la categoría activa
           if (categoriaActiva && categoriaActiva !== 'soc') {
             document.getElementById('tv-ronda').textContent = 'RONDA 1';
             document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[categoriaActiva] || categoriaActiva;
@@ -490,14 +509,12 @@
 
     function actualizarVista() {
       if (!categoriaActiva) {
-        // Solo al inicio: seleccionar primera con datos
         const primera = rutasConDatos[0] || null;
         if (primera) {
           categoriaActiva = primera;
           seleccionarCategoria(primera);
         }
       } else {
-        // Usuario ya eligió: solo refrescar esa vista sin cambiar de pestaña
         if (categoriaActiva === 'soc') {
           renderizarBracketSoccer();
         } else {
@@ -506,7 +523,6 @@
       }
     }
 
-    // Polling cada 5s para tiempos, cada 8s para bracket soccer
     setInterval(pollJSON, 5000);
     setInterval(pollBracketSoccer, 8000);
     pollJSON();
