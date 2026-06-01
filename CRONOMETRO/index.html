@@ -747,19 +747,11 @@
 
   async function desbloquearCategoria(categoria) {
     try {
-      const rutaActual = getRutaActual() || 'general';
-      await Promise.all([
-        fetch(GAS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'clearActivo', ruta: rutaActual })
-        }),
-        fetch(GAS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'setEstado', ruta: rutaActual, estado: null })
-        })
-      ]);
+      await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'desbloquearCategoria', categoria })
+      });
     } catch(e) { console.error('Error al desbloquear:', e); }
   }
 
@@ -788,11 +780,19 @@
       await desbloquearCategoria(categoriaActual);
       localStorage.removeItem(getEstadoKey());
       localStorage.removeItem('cronometro_categoria_activa');
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
-      });
+      const rutaActual = getRutaActual() || 'general';
+      await Promise.all([
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'clearActivo', ruta: rutaActual })
+        }),
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'setEstado', ruta: rutaActual, estado: null })
+        })
+      ]);
       categoriaActual      = null;
       participanteActual   = null;
       rondaActual          = 0;
@@ -845,6 +845,18 @@
 
   function recibirParticipante(p) {
     participanteActual = p;
+    // Notificar a PANTALLA que este participante está activo
+    if (categoriaActual && rondaActual > 0) {
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'setActivo',
+          ruta: getRutaActual() || 'general',
+          participante: { ...p, timestamp: Date.now() }
+        })
+      }).catch(() => {});
+    }
     intentosLog   = [];
     intentoActual = 1;
     actualizarBadges();
@@ -1143,9 +1155,8 @@
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'clearActivo', ruta: getRutaActual() || 'general' })
     }).catch(e => console.error('Error clearing activo:', e));
-   participanteActual = { id: c.id, robot: c.robot, nombre: c.nombre, institucion: c.institucion, ciudad: c.ciudad, categoria: c.categoria };
-
-    // Notificar a GAS/PANTALLA que este participante está activo
+    participanteActual = { id: c.id, robot: c.robot, nombre: c.nombre, institucion: c.institucion, ciudad: c.ciudad, categoria: c.categoria };
+    // Notificar a PANTALLA que este participante está activo
     fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1155,7 +1166,6 @@
         participante: { ...participanteActual, timestamp: Date.now() }
       })
     }).catch(() => {});
-
     intentosLog   = [];
     intentoActual = 1;
     actualizarBadges();
