@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel de Calificación · SucreBot 2026</title>
-
-  <link rel="stylesheet" href="../shared/css/styles.css" />
-  <link rel="stylesheet" href="../shared/css/mobile-fix.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;600;700&family=Exo+2:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
+  <title>SucreBot — Panel de Calificación</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="../shared/js/config.js"></script>
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
     :root {
       --blue:       #1a5ca8;
       --blue-dark:  #0e2a5a;
-      --blue-light: #e8f0fb;
+      --blue-mid:   #1a3a6e;
       --cyan:       #5bc8f0;
-      --text:       #111827;
-      --text-soft:  #4b5563;
-      --text-muted: #9ca3af;
+      --cyan-bright:#90dcff;
+      --blue-light: #e8f0fb;
+      --text:       #1a1a2e;
+      --text-muted: #7a7a8c;
       --border:     #d1d9e6;
       --bg:         #f5f7fa;
       --white:      #ffffff;
@@ -25,111 +26,339 @@
       --danger:     #dc2626;
       --gold:       #ca8a04;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Exo 2', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body { background: #ffffff; color: var(--text); font-family: 'Exo 2', sans-serif; }
 
-    .page-hero { background: var(--blue-dark); padding: 40px 32px 32px; text-align: center; }
-    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 3px; padding: 5px 14px; border-radius: 3px; margin-bottom: 16px; text-transform: uppercase; }
-    .page-hero-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); animation: blink 1.6s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.6rem; letter-spacing: 4px; color: #ffffff; margin-bottom: 8px; }
-    .page-hero h2 span { color: var(--cyan); }
-    .page-hero p { font-size: 0.78rem; letter-spacing: 2px; color: rgba(255,255,255,0.45); text-transform: uppercase; font-family: 'DM Mono', monospace; }
+    /* ── PANEL DECORATIVO IZQUIERDO ── */
+    .wrapper {
+      position: relative;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+      overflow: visible;
+    }
+    .wrapper::before {
+      content: '';
+      position: absolute;
+      left: -600px; top: 0; bottom: 0;
+      width: 580px;
+      background:
+        linear-gradient(135deg, rgba(26,92,168,0.85) 0%, rgba(18,20,26,0.90) 100%),
+        url('https://github.com/sucrebotclub-institute/Sucrebot/blob/main/shared/images/foto3.jpg?raw=true') 5% center / cover no-repeat;
+      border-radius: 0 16px 16px 0;
+      box-shadow: 0 8px 32px rgba(26,92,168,0.3);
+      border-right: 2px solid rgba(91,200,240,0.3);
+      z-index: 1;
+    }
 
-    .wrapper { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
+    /* ── HERO ── */
+    .page-hero {
+      padding: 80px 0 32px;
+      margin-bottom: 32px;
+      text-align: left;
+      position: relative;
+      z-index: 1;
+    }
+    .page-hero-badge {
+      display: block;
+      width: fit-content;
+      background: var(--blue);
+      color: #ffffff;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 3px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .page-hero-badge-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #ffffff;
+      animation: blink 1.6s infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
 
-    .cat-bar { display: flex; align-items: center; gap: 12px; background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 28px; }
-    .cat-bar-label { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; }
-    .cat-bar select { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; cursor: pointer; }
+    .page-hero h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      letter-spacing: 3px;
+      color: var(--blue-mid);
+      line-height: 1;
+      position: relative;
+      display: block;
+      margin-bottom: 20px;
+    }
+    .page-hero h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px; left: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%);
+      border-radius: 2px;
+    }
+    .page-hero h2 span { color: var(--blue); }
+    .page-hero p {
+      font-size: 13px; color: var(--text-muted);
+      letter-spacing: 0.5px; margin-top: 4px;
+    }
+
+    /* ── SELECTOR CATEGORÍA ── */
+    .cat-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      position: relative; z-index: 1;
+    }
+    .cat-bar-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem; letter-spacing: 2px;
+      color: var(--text-muted); text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .cat-bar select {
+      flex: 1; padding: 9px 12px;
+      border: 1.5px solid var(--border); border-radius: 6px;
+      font-family: 'Exo 2', sans-serif; font-size: 0.95rem;
+      font-weight: 600; color: var(--text);
+      background: var(--bg); outline: none;
+      transition: border-color 0.15s; cursor: pointer;
+    }
     .cat-bar select:focus { border-color: var(--blue); }
-    .cat-info { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+    .cat-info {
+      font-family: 'DM Mono', monospace; font-size: 0.72rem;
+      color: var(--text-muted); white-space: nowrap;
+    }
 
-    .layout { display: flex; gap: 24px; align-items: flex-start; }
+    /* ── LAYOUT DOS COLUMNAS ── */
+    .layout {
+      display: flex; gap: 20px; align-items: flex-start;
+      position: relative; z-index: 1;
+    }
 
-    .col-lista { width: 260px; flex-shrink: 0; }
-    .col-lista-header { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; padding: 0 4px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-    .col-lista-header span { background: var(--blue); color: white; font-size: 0.6rem; padding: 2px 7px; border-radius: 10px; }
+    /* ── LISTA PARTICIPANTES ── */
+    .col-lista { width: 240px; flex-shrink: 0; }
+    .col-lista-header {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65rem; letter-spacing: 2px;
+      color: var(--text-muted); text-transform: uppercase;
+      padding: 0 4px; margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .col-lista-header span {
+      background: var(--blue); color: white;
+      font-size: 0.6rem; padding: 2px 7px; border-radius: 10px;
+    }
 
-    .participante-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 7px; cursor: pointer; margin-bottom: 6px; transition: border-color 0.15s, background 0.15s; }
+    .participante-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 13px;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 7px; cursor: pointer;
+      margin-bottom: 5px;
+      transition: border-color 0.15s, background 0.15s;
+    }
     .participante-item:hover { border-color: var(--blue); background: var(--blue-light); }
     .participante-item.active { border-color: var(--blue); background: var(--blue-light); }
     .participante-item.calificado { border-color: #86efac; background: #f0fdf4; }
     .participante-item.calificado.active { border-color: var(--success); background: #dcfce7; }
+
     .p-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
     .participante-item.calificado .p-dot { background: var(--success); }
     .participante-item.active .p-dot { background: var(--blue); }
     .p-info { flex: 1; min-width: 0; }
-    .p-nombre { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    .p-nombre { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .p-robot { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
-    .p-score { font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--success); flex-shrink: 0; }
+    .p-score { font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700; color: var(--success); flex-shrink: 0; }
 
+    /* ── PANEL DERECHO ── */
     .col-panel { flex: 1; min-width: 0; }
 
-    .empty-panel { background: var(--white); border: 1.5px dashed var(--border); border-radius: 8px; padding: 60px 24px; text-align: center; }
+    .empty-panel {
+      background: var(--white); border: 1.5px dashed var(--border);
+      border-radius: 8px; padding: 60px 24px; text-align: center;
+    }
     .empty-panel-icon { font-size: 2.5rem; margin-bottom: 14px; opacity: 0.3; }
-    .empty-panel h3 { font-family: 'Orbitron', sans-serif; font-size: 0.75rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px; }
+    .empty-panel h3 { font-family: 'Orbitron', monospace; font-size: 0.75rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px; }
     .empty-panel p { font-size: 0.82rem; color: var(--text-muted); }
 
-    .participante-header { background: var(--blue-dark); border-radius: 8px 8px 0 0; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
-    .p-avatar { width: 44px; height: 44px; border-radius: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; color: white; flex-shrink: 0; }
+    /* Cabecera participante */
+    .participante-header {
+      background: var(--blue-dark);
+      border-radius: 8px 8px 0 0;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .p-avatar {
+      width: 44px; height: 44px; border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      font-size: 1rem; color: white; flex-shrink: 0;
+    }
     .p-header-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: white; }
     .p-header-info p { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
     .p-header-total { margin-left: auto; text-align: center; }
-    .total-num { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 2rem; color: var(--cyan); line-height: 1; }
+    .total-num { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 2rem; color: var(--cyan); line-height: 1; }
     .total-lbl { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
 
-    .criterios-area { background: var(--white); border: 1.5px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; padding: 20px; }
-    .criterio-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--bg); }
+    /* Criterios */
+    .criterios-area {
+      background: var(--white);
+      border: 1.5px solid var(--border); border-top: none;
+      border-radius: 0 0 8px 8px; padding: 20px;
+    }
+    .criterio-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 0; border-bottom: 1px solid var(--bg);
+    }
     .criterio-row:last-of-type { border-bottom: none; }
     .criterio-label { flex: 1; min-width: 0; }
     .criterio-nombre { font-size: 0.9rem; font-weight: 600; color: var(--text); }
     .criterio-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-    .criterio-val-display { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1.4rem; color: var(--blue); width: 32px; text-align: center; flex-shrink: 0; }
+    .criterio-val-display {
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      font-size: 1.4rem; color: var(--blue);
+      width: 32px; text-align: center; flex-shrink: 0;
+    }
     .criterio-val-display.vacio { color: var(--border); }
     .btns-nota { display: flex; gap: 5px; flex-shrink: 0; }
-    .btn-nota { width: 36px; height: 36px; border: 1.5px solid var(--border); border-radius: 5px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.8rem; color: var(--text-muted); background: var(--bg); transition: all 0.12s; display: flex; align-items: center; justify-content: center; }
+    .btn-nota {
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--border); border-radius: 5px;
+      cursor: pointer; font-family: 'Orbitron', monospace;
+      font-weight: 700; font-size: 0.8rem; color: var(--text-muted);
+      background: var(--bg); transition: all 0.12s;
+      display: flex; align-items: center; justify-content: center;
+    }
     .btn-nota:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
     .btn-nota.sel { background: var(--blue); border-color: var(--blue); color: white; }
 
-    .acciones-bar { display: flex; align-items: center; gap: 10px; padding-top: 18px; margin-top: 4px; border-top: 1px solid var(--border); }
-    .btn-guardar { flex: 1; padding: 13px; background: var(--blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .acciones-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding-top: 18px; margin-top: 4px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-guardar {
+      flex: 1; padding: 13px;
+      background: var(--blue); color: white;
+      border: none; border-radius: 6px; cursor: pointer;
+      font-family: 'Orbitron', monospace; font-size: 0.72rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      transition: background 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
     .btn-guardar:hover:not(:disabled) { background: #1650a0; }
     .btn-guardar:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-limpiar { padding: 13px 16px; background: var(--white); color: var(--text-muted); border: 1.5px solid var(--border); border-radius: 6px; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 0.72rem; transition: all 0.12s; }
+    .btn-limpiar {
+      padding: 13px 16px; background: var(--white);
+      color: var(--text-muted); border: 1.5px solid var(--border);
+      border-radius: 6px; cursor: pointer;
+      font-family: 'DM Mono', monospace; font-size: 0.72rem;
+      transition: all 0.12s;
+    }
     .btn-limpiar:hover { border-color: var(--danger); color: var(--danger); }
-    .aviso-edit { display: none; margin-top: 12px; padding: 10px 14px; background: #fefce8; border: 1px solid #fde047; border-radius: 6px; font-size: 0.78rem; color: #78350f; font-family: 'Exo 2', sans-serif; }
 
-    .ranking-section { margin-top: 28px; background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .ranking-head { padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .ranking-head-title { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--blue); text-transform: uppercase; }
-    .btn-refresh { border: 1px solid var(--border); background: var(--bg); border-radius: 5px; padding: 5px 10px; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--text-muted); transition: all 0.12s; }
+    .aviso-edit {
+      display: none; margin-top: 12px; padding: 10px 14px;
+      background: #fefce8; border: 1px solid #fde047;
+      border-radius: 6px; font-size: 0.78rem; color: #78350f;
+    }
+
+    /* Ranking */
+    .ranking-section {
+      margin-top: 24px; background: var(--white);
+      border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden;
+    }
+    .ranking-head {
+      padding: 12px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .ranking-head-title {
+      font-family: 'Orbitron', monospace; font-size: 0.65rem;
+      letter-spacing: 2px; color: var(--blue); text-transform: uppercase;
+    }
+    .btn-refresh {
+      border: 1px solid var(--border); background: var(--bg);
+      border-radius: 5px; padding: 5px 10px; cursor: pointer;
+      font-family: 'DM Mono', monospace; font-size: 0.68rem;
+      color: var(--text-muted); transition: all 0.12s;
+    }
     .btn-refresh:hover { border-color: var(--blue); color: var(--blue); }
 
     .ranking-table { width: 100%; border-collapse: collapse; }
-    .ranking-table th { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; letter-spacing: 1.5px; color: var(--text-muted); text-align: left; padding: 9px 18px; border-bottom: 1px solid var(--border); background: var(--bg); }
-    .ranking-table td { padding: 12px 18px; font-size: 0.85rem; border-bottom: 1px solid var(--bg); color: var(--text); }
+    .ranking-table th {
+      font-family: 'Orbitron', monospace; font-size: 0.6rem;
+      letter-spacing: 1.5px; color: var(--text-muted);
+      text-align: left; padding: 9px 18px;
+      border-bottom: 1px solid var(--border); background: var(--bg);
+    }
+    .ranking-table td {
+      padding: 12px 18px; font-size: 0.85rem;
+      border-bottom: 1px solid var(--bg); color: var(--text);
+    }
     .ranking-table tr:last-child td { border-bottom: none; }
     .ranking-table tr:hover td { background: var(--blue-light); }
-    .rank-pos { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.9rem; }
+    .rank-pos { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 0.9rem; }
     .r1 { color: var(--gold); } .r2 { color: var(--text-muted); } .r3 { color: #92400e; }
-    .score-pill { display: inline-block; background: var(--blue-light); color: var(--blue); font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.72rem; padding: 3px 10px; border-radius: 4px; }
+    .score-pill {
+      display: inline-block; background: var(--blue-light);
+      color: var(--blue); font-family: 'Orbitron', monospace;
+      font-weight: 700; font-size: 0.72rem;
+      padding: 3px 10px; border-radius: 4px;
+    }
     .score-pill.top { background: var(--blue); color: white; }
 
-    .loading-msg { text-align: center; padding: 28px; font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--text-muted); }
-    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+    /* Loading / utilidades */
+    .loading-msg {
+      text-align: center; padding: 28px;
+      font-family: 'DM Mono', monospace; font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid var(--border); border-top-color: var(--blue);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 6px; font-family: 'Exo 2', sans-serif; font-size: 0.88rem; font-weight: 600; color: white; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transform: translateY(60px); opacity: 0; transition: all 0.25s ease; z-index: 9999; }
+    .sin-cat {
+      background: var(--white); border: 1.5px dashed var(--border);
+      border-radius: 8px; padding: 36px 20px; text-align: center;
+      font-family: 'DM Mono', monospace; font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 12px 20px; border-radius: 6px;
+      font-family: 'Exo 2', sans-serif; font-size: 0.88rem;
+      font-weight: 600; color: white;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      transform: translateY(60px); opacity: 0;
+      transition: all 0.25s ease; z-index: 9999;
+    }
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.success { background: var(--success); }
     .toast.error   { background: var(--danger); }
 
-    .sin-cat { background: var(--white); border: 1.5px dashed var(--border); border-radius: 8px; padding: 40px 24px; text-align: center; font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--text-muted); }
-
     @media (max-width: 768px) {
+      .wrapper::before { display: none; }
       .layout { flex-direction: column; }
       .col-lista { width: 100%; }
-      .page-hero h2 { font-size: 1.8rem; }
+      .page-hero { padding: 32px 0 24px; }
+      .page-hero h2 { font-size: 1.9rem; }
       .btns-nota { gap: 4px; }
       .btn-nota { width: 32px; height: 32px; font-size: 0.75rem; }
     }
@@ -137,23 +366,28 @@
 </head>
 <body>
 
-  <div class="sticky-header">
-    <div data-include="../shared/components/topbar.html"></div>
-    <div data-include="../shared/components/header.html"></div>
-    <div data-include="../shared/components/nav.html"></div>
-  </div>
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
 
-  <div class="page-hero">
-    <div class="page-hero-badge">
-      <div class="page-hero-badge-dot"></div>
-      SUCREBOT 2026 · JUECES
-    </div>
-    <h2>PANEL DE <span>CALIFICACIÓN</span></h2>
-    <p>Ingreso de puntuaciones del jurado</p>
-  </div>
-
+<main>
   <div class="wrapper">
 
+    <!-- HERO -->
+    <div class="page-hero">
+      <div class="page-hero-badge">
+        <div class="page-hero-badge-dot"></div>
+        SUCREBOT 2026 · JUECES
+      </div>
+      <h2>PANEL DE <span>CALIFICACIÓN</span></h2>
+      <div class="page-hero-sub">
+        <p>INGRESO DE PUNTUACIONES DEL JURADO</p>
+      </div>
+    </div>
+
+    <!-- SELECTOR CATEGORÍA -->
     <div class="cat-bar">
       <span class="cat-bar-label">Categoría</span>
       <select id="sel-categoria" onchange="onCategoriaChange()">
@@ -164,24 +398,27 @@
       <span class="cat-info" id="cat-info"></span>
     </div>
 
+    <!-- LAYOUT -->
     <div class="layout">
 
+      <!-- Lista -->
       <div class="col-lista">
         <div class="col-lista-header">
           Participantes
           <span id="badge-count" style="display:none"></span>
         </div>
         <div id="lista-participantes">
-          <div class="sin-cat">Selecciona una categoría para ver los participantes.</div>
+          <div class="sin-cat">Selecciona una categoría.</div>
         </div>
       </div>
 
+      <!-- Panel -->
       <div class="col-panel">
 
         <div id="empty-panel" class="empty-panel">
           <div class="empty-panel-icon">📋</div>
           <h3>Sin participante seleccionado</h3>
-          <p>Elige un participante de la lista para ingresar las calificaciones del jurado.</p>
+          <p>Elige un participante de la lista para ingresar las calificaciones.</p>
         </div>
 
         <div id="panel-activo" style="display:none">
@@ -224,14 +461,14 @@
       </div>
     </div>
   </div>
+</main>
 
-  <div class="toast" id="toast"></div>
-  <div data-include="../shared/components/footer.html"></div>
+<div class="toast" id="toast"></div>
+<div data-include="../shared/components/footer.html"></div>
 
-  <script src="../shared/js/config.js"></script>
-  <script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/load-components.js"></script>
 
-  <script>
+<script>
   let categoriaActual    = '';
   let participanteActual = null;
   let criteriosActuales  = [];
@@ -250,7 +487,7 @@
     resetPanel();
 
     if (!categoriaActual) {
-      document.getElementById('lista-participantes').innerHTML = '<div class="sin-cat">Selecciona una categoría para ver los participantes.</div>';
+      document.getElementById('lista-participantes').innerHTML = '<div class="sin-cat">Selecciona una categoría.</div>';
       document.getElementById('cat-info').textContent = '';
       document.getElementById('badge-count').style.display = 'none';
       document.getElementById('ranking-section').style.display = 'none';
@@ -258,7 +495,6 @@
     }
 
     document.getElementById('lista-participantes').innerHTML = '<div class="loading-msg"><span class="spinner"></span>Cargando...</div>';
-    document.getElementById('cat-info').textContent = '';
 
     try {
       const [criterios, participantes] = await Promise.all([
@@ -280,8 +516,8 @@
   async function cargarCriterios(cat) {
     try {
       const r = await fetch(`${CONFIG.GAS_URL()}?action=getCriterios&categoria=${cat}`);
-      const data = await r.json();
-      if (data.ok && Array.isArray(data.criterios) && data.criterios.length > 0) return data.criterios;
+      const d = await r.json();
+      if (d.ok && Array.isArray(d.criterios) && d.criterios.length > 0) return d.criterios;
     } catch(e) {}
     return criteriosPorDefecto(cat);
   }
@@ -289,18 +525,18 @@
   function criteriosPorDefecto(cat) {
     const d = {
       bai: [
-        { nombre: 'Coreografía',      descripcion: 'Movimientos coordinados y fluidos' },
-        { nombre: 'Sincronía Musical', descripcion: 'Respuesta al ritmo y melodía' },
-        { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño y presentación' },
-        { nombre: 'Construcción',      descripcion: 'Calidad mecánica y acabado del robot' },
-        { nombre: 'Desempeño',         descripcion: 'Ejecución sin fallos técnicos' }
+        { nombre: 'Coreografía',       descripcion: 'Movimientos coordinados y fluidos' },
+        { nombre: 'Sincronía Musical',  descripcion: 'Respuesta al ritmo y melodía' },
+        { nombre: 'Creatividad',        descripcion: 'Originalidad del diseño y presentación' },
+        { nombre: 'Construcción',       descripcion: 'Calidad mecánica y acabado del robot' },
+        { nombre: 'Desempeño',          descripcion: 'Ejecución sin fallos técnicos' }
       ],
       dev: [
-        { nombre: 'Innovación',        descripcion: 'Originalidad y novedad de la solución' },
-        { nombre: 'Funcionalidad',     descripcion: 'El robot cumple su objetivo correctamente' },
-        { nombre: 'Diseño Técnico',    descripcion: 'Calidad de la implementación técnica' },
-        { nombre: 'Presentación',      descripcion: 'Claridad al exponer el proyecto' },
-        { nombre: 'Impacto',           descripcion: 'Utilidad y aplicabilidad de la solución' }
+        { nombre: 'Innovación',         descripcion: 'Originalidad y novedad de la solución' },
+        { nombre: 'Funcionalidad',      descripcion: 'El robot cumple su objetivo correctamente' },
+        { nombre: 'Diseño Técnico',     descripcion: 'Calidad de la implementación técnica' },
+        { nombre: 'Presentación',       descripcion: 'Claridad al exponer el proyecto' },
+        { nombre: 'Impacto',            descripcion: 'Utilidad y aplicabilidad de la solución' }
       ]
     };
     return d[cat] || [];
@@ -316,10 +552,10 @@
   async function cargarTodasLasPuntuaciones(cat) {
     try {
       const r = await fetch(`${CONFIG.GAS_URL()}?action=getPuntuaciones&categoria=${cat}`);
-      const data = await r.json();
+      const d = await r.json();
       puntCache = {};
-      if (data.ok && Array.isArray(data.puntuaciones)) {
-        data.puntuaciones.forEach(p => {
+      if (d.ok && Array.isArray(d.puntuaciones)) {
+        d.puntuaciones.forEach(p => {
           puntCache[p.id_participante] = {
             total: p.total,
             notas: safeParseJson(p.notas_json || p.notas, {})
@@ -330,7 +566,7 @@
   }
 
   function renderLista() {
-    const el = document.getElementById('lista-participantes');
+    const el    = document.getElementById('lista-participantes');
     const badge = document.getElementById('badge-count');
     badge.textContent = participantesCache.length;
     badge.style.display = participantesCache.length > 0 ? '' : 'none';
@@ -339,10 +575,10 @@
       return;
     }
     el.innerHTML = participantesCache.map(p => {
-      const punt = puntCache[p.id];
+      const punt      = puntCache[p.id];
       const calificado = !!punt;
-      const isActive = participanteActual && participanteActual.id === p.id;
-      return `<div class="participante-item ${calificado ? 'calificado' : ''} ${isActive ? 'active' : ''}" onclick="seleccionarParticipante('${p.id}')">
+      const isActive  = participanteActual && participanteActual.id === p.id;
+      return `<div class="participante-item ${calificado?'calificado':''} ${isActive?'active':''}" onclick="seleccionarParticipante('${p.id}')">
         <div class="p-dot"></div>
         <div class="p-info">
           <div class="p-nombre">${p.nombre}</div>
@@ -389,7 +625,7 @@
         </div>
         <div class="criterio-val-display ${notasActuales[i] ? '' : 'vacio'}" id="cv-${i}">${notasActuales[i] || '—'}</div>
         <div class="btns-nota">
-          ${[1,2,3,4,5].map(n => `<button class="btn-nota ${notasActuales[i] === n ? 'sel' : ''}" onclick="setNota(${i}, ${n})">${n}</button>`).join('')}
+          ${[1,2,3,4,5].map(n => `<button class="btn-nota ${notasActuales[i]===n?'sel':''}" onclick="setNota(${i},${n})">${n}</button>`).join('')}
         </div>
       </div>`).join('');
   }
@@ -397,16 +633,16 @@
   function setNota(idx, nota) {
     notasActuales[idx] = nota;
     actualizarTotal();
-    const display = document.getElementById(`cv-${idx}`);
-    if (display) { display.textContent = nota; display.classList.remove('vacio'); }
-    const btns = document.querySelectorAll('.criterio-row')[idx]?.querySelectorAll('.btn-nota');
-    btns?.forEach((b, i) => b.classList.toggle('sel', i + 1 === nota));
+    const d = document.getElementById(`cv-${idx}`);
+    if (d) { d.textContent = nota; d.classList.remove('vacio'); }
+    document.querySelectorAll('.criterio-row')[idx]?.querySelectorAll('.btn-nota')
+      .forEach((b, i) => b.classList.toggle('sel', i+1 === nota));
   }
 
   function actualizarTotal() {
-    const vals = Object.values(notasActuales);
+    const vals     = Object.values(notasActuales);
     const completo = criteriosActuales.length > 0 && vals.length === criteriosActuales.length;
-    const total = vals.length > 0 ? (vals.reduce((a,b)=>a+b,0) / vals.length) : null;
+    const total    = vals.length > 0 ? vals.reduce((a,b)=>a+b,0) / vals.length : null;
     document.getElementById('total-display').textContent = total !== null ? total.toFixed(2) : '—';
     document.getElementById('btn-guardar').disabled = !completo;
   }
@@ -417,24 +653,26 @@
     if (!participanteActual) return;
     const btn = document.getElementById('btn-guardar');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-bottom:0;margin-right:6px;display:inline-block;"></span>GUARDANDO...';
+    btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>GUARDANDO...';
     const total = Object.values(notasActuales).reduce((a,b)=>a+b,0) / criteriosActuales.length;
-    const payload = {
-      action: 'guardarPuntuacion',
-      id_participante: participanteActual.id,
-      nombre:      participanteActual.nombre,
-      robot:       participanteActual.robot,
-      institucion: participanteActual.institucion || '',
-      categoria:   categoriaActual,
-      juez_email:  'operador@sucrebot2026',
-      juez_nombre: 'Operador',
-      notas:       notasActuales,
-      criterios:   criteriosActuales,
-      total:       parseFloat(total.toFixed(4)),
-      timestamp:   new Date().toISOString()
-    };
     try {
-      const r = await fetch(CONFIG.GAS_URL(), { method: 'POST', body: JSON.stringify(payload) });
+      const r = await fetch(CONFIG.GAS_URL(), {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'guardarPuntuacion',
+          id_participante: participanteActual.id,
+          nombre:      participanteActual.nombre,
+          robot:       participanteActual.robot,
+          institucion: participanteActual.institucion || '',
+          categoria:   categoriaActual,
+          juez_email:  'operador@sucrebot2026',
+          juez_nombre: 'Operador',
+          notas:       notasActuales,
+          criterios:   criteriosActuales,
+          total:       parseFloat(total.toFixed(4)),
+          timestamp:   new Date().toISOString()
+        })
+      });
       const data = await r.json();
       if (data.ok) {
         puntCache[participanteActual.id] = { total, notas: { ...notasActuales } };
@@ -454,23 +692,29 @@
     const c = document.getElementById('ranking-container');
     c.innerHTML = '<div class="loading-msg"><span class="spinner"></span>Calculando...</div>';
     try {
-      const r = await fetch(`${CONFIG.GAS_URL()}?action=getRankingCalificacion&categoria=${categoriaActual}`);
+      const r    = await fetch(`${CONFIG.GAS_URL()}?action=getRankingCalificacion&categoria=${categoriaActual}`);
       const data = await r.json();
       if (!data.ok || !data.ranking || data.ranking.length === 0) {
         c.innerHTML = '<div class="loading-msg">Sin calificaciones registradas aún.</div>';
         return;
       }
       const filas = data.ranking.map((item, i) => {
-        const pos = i + 1;
+        const pos   = i + 1;
         const medal = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':pos+'.';
-        const cls = pos===1?'r1':pos===2?'r2':pos===3?'r3':'';
+        const cls   = pos===1?'r1':pos===2?'r2':pos===3?'r3':'';
         return `<tr>
           <td><span class="rank-pos ${cls}">${medal}</span></td>
-          <td><div style="font-weight:600">${item.nombre}</div><div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-muted)">${item.robot}</div></td>
+          <td>
+            <div style="font-weight:600">${item.nombre}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-muted)">${item.robot}</div>
+          </td>
           <td><span class="score-pill ${pos<=3?'top':''}">${Number(item.promedio_final).toFixed(2)}</span></td>
         </tr>`;
       }).join('');
-      c.innerHTML = `<table class="ranking-table"><thead><tr><th>#</th><th>Participante</th><th>Promedio</th></tr></thead><tbody>${filas}</tbody></table>`;
+      c.innerHTML = `<table class="ranking-table">
+        <thead><tr><th>#</th><th>Participante</th><th>Promedio</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>`;
     } catch(e) { c.innerHTML = '<div class="loading-msg" style="color:var(--danger)">Error al cargar ranking</div>'; }
   }
 
@@ -491,6 +735,6 @@
     t.className = `toast ${type} show`;
     setTimeout(() => t.classList.remove('show'), 3000);
   }
-  </script>
+</script>
 </body>
 </html>
