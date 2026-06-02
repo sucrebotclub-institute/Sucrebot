@@ -148,20 +148,21 @@ async function loadComponents() {
     if (currentPath.includes('/INICIO/')) {
       authPath = '../shared/js/auth.js';
     } else if (currentPath.includes('/FAQ/') || 
-           currentPath.includes('/REGISTRO/') || 
-           currentPath.includes('/REGLAMENTO/') ||
-           currentPath.includes('/PARTICIPANTES_REGISTRADOS/') ||
-           currentPath.includes('/MI-REGISTRO/') ||
-           currentPath.includes('/MIS-CERTIFICADOS/') ||
-           currentPath.includes('/ESCANER/') ||
-           currentPath.includes('/CRONOMETRO/') ||
-           currentPath.includes('/CRONOMETRO-SOCCER/') ||
-           currentPath.includes('/ESCANER-SOCCER/') ||
-           currentPath.includes('/PANTALLA/') ||
-           currentPath.includes('/RESULTADOS/') ||
-           currentPath.includes('/GENERAR-CERTIFICADOS/') ||
-           currentPath.includes('/CERTIFICADOS/')) {
-  authPath = '../shared/js/auth.js';
+               currentPath.includes('/REGISTRO/') || 
+               currentPath.includes('/REGLAMENTO/') ||
+               currentPath.includes('/PARTICIPANTES_REGISTRADOS/') ||
+               currentPath.includes('/MI-REGISTRO/') ||
+               currentPath.includes('/MIS-CERTIFICADOS/') ||
+               currentPath.includes('/ESCANER/') ||
+               currentPath.includes('/CRONOMETRO/') ||
+               currentPath.includes('/CRONOMETRO-SOCCER/') ||
+               currentPath.includes('/ESCANER-SOCCER/') ||
+               currentPath.includes('/PANTALLA/') ||
+               currentPath.includes('/RESULTADOS/') ||
+               currentPath.includes('/GENERAR-CERTIFICADOS/') ||
+               currentPath.includes('/CERTIFICADOS/') ||
+               currentPath.includes('/PANEL-CALIFICACION/')) {
+      authPath = '../shared/js/auth.js';
     } else {
       // Por defecto (raíz o páginas no especificadas)
       authPath = './shared/js/auth.js';
