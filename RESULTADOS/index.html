@@ -39,8 +39,21 @@
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: blink 1.2s ease-in-out infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-    /* TABS */
-    .cat-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    /* TABS con grupos */
+    .cat-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+
+    /* Separador de grupo */
+    .cat-group-label {
+      font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.18em;
+      color: #94a3b8; font-weight: 700; text-transform: uppercase;
+      padding: 4px 8px; background: #f1f5f9; border-radius: 6px;
+      white-space: nowrap; flex-shrink: 0; align-self: center;
+      border: 1px solid #e2e8f0;
+    }
+    .cat-group-label.amateur { color: #1a5ca8; background: #e8f0ff; border-color: #c5d8ff; }
+    .cat-group-label.pro     { color: #7c3aed; background: #f3e8ff; border-color: #ddd6fe; }
+    .cat-group-label.open    { color: #b45309; background: #fef3c7; border-color: #fde68a; }
+
     .cat-tab { font-family: 'Exo 2', sans-serif; font-size: 0.75rem; letter-spacing: 0.02em; padding: 12px 10px; background: #2d3748; border: 2px solid #4a5568; border-radius: 8px; color: #e2e8f0; cursor: pointer; transition: all 0.25s; font-weight: 600; white-space: normal; flex: 1; text-align: center; min-width: 0; line-height: 1.3; min-height: 44px; display: flex; align-items: center; justify-content: center; }
     .cat-tab:hover { background: #3d4e63; border-color: #5bc8f0; color: #90dcff; transform: translateY(-1px); }
     .cat-tab.active { background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-color: #1a5ca8; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(26,92,168,0.3); transform: translateY(-2px); }
@@ -69,7 +82,6 @@
     .pc-n { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid rgba(255,255,255,0.07); }
     .td-robot { min-width: 200px; }
     .robot-name { font-size: 1.3rem; font-weight: 700; color: #0e2a5a; letter-spacing: 0.01em; line-height: 1.2; }
-    .robot-inst { font-size: 0.75rem; color: #6a7a94; margin-top: 2px; font-family: var(--font-mono); }
     .td-mejor { text-align: center; min-width: 150px; }
     .tiempo-valor { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; }
     .tiempo-valor.sin-tiempo { color: #cbd5e1; font-size: 1.4rem; }
@@ -77,35 +89,31 @@
     tr.pos-1 .tiempo-valor { font-size: 2.2rem; color: #2474cc; }
     .td-ronda { min-width: 140px; }
     .ronda-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
+    .row-altura { height: 88px; }
 
-    /* ══ BRACKET SOCCER ══ */
+    /* BRACKET SOCCER */
     .soccer-wrap { flex: 1; overflow-x: auto; }
     .soccer-title { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
     .soccer-sin-datos { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; gap: 12px; }
     .soccer-sin-datos-icon { font-size: 3.5rem; opacity: 0.25; }
     .soccer-sin-datos-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.15em; color: #6a7a94; }
-
     .bracket-fases { display: flex; gap: 40px; min-width: max-content; padding-bottom: 8px; }
     .bracket-fase { display: flex; flex-direction: column; gap: 16px; min-width: 260px; }
     .fase-nombre { font-family: var(--font-mono); font-size: 0.7rem; color: #1a5ca8; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; text-align: center; margin-bottom: 8px; padding: 6px; background: rgba(26,92,168,0.08); border-radius: 8px; }
-
     .partido-card { background: #ffffff; border: 2px solid #e0e7ef; border-radius: 12px; padding: 14px; box-shadow: 0 2px 12px rgba(26,92,168,0.08); transition: all 0.2s; }
     .partido-card:hover { border-color: #5bc8f0; box-shadow: 0 4px 16px rgba(91,200,240,0.2); transform: translateY(-2px); }
     .partido-card.finalizado { border-color: #00d95f; background: #f0fdf4; }
     .partido-card.pendiente { border-color: #e0e7ef; }
-
     .partido-equipo-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; background: #f8f9fa; margin-bottom: 6px; border: 1px solid #e0e7ef; }
     .partido-equipo-row:last-of-type { margin-bottom: 0; }
     .partido-equipo-row.ganador { background: #e8f5e9; border-color: #00d95f; }
     .partido-equipo-nombre { font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; color: #1a3a6e; }
     .partido-equipo-goles { font-family: 'Orbitron', monospace; font-size: 1.3rem; font-weight: 900; color: #1a5ca8; }
     .partido-equipo-row.ganador .partido-equipo-goles { color: #00a046; }
-
     .partido-estado { text-align: center; margin-top: 8px; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; font-weight: 700; }
     .partido-estado.fin { color: #00a046; }
     .partido-estado.pend { color: #94a3b8; }
     .partido-estado.pend-equipos { color: #cbd5e1; font-style: italic; }
-
     .partido-bye { background: #fffbeb; border: 2px dashed #fbbf24; border-radius: 12px; padding: 14px; text-align: center; }
     .bye-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: #1a3a6e; }
     .bye-badge { display: inline-block; background: #fbbf24; color: #78350f; font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; font-weight: 700; margin-top: 4px; }
@@ -122,25 +130,13 @@
 
     /* DROPDOWN MÓVIL */
     .cat-select-mobile {
-      display: none;
-      width: 100%;
-      margin-bottom: 20px;
-      background: #2d3748;
-      border: 2px solid #1a5ca8;
-      color: #ffffff;
-      font-family: 'Exo 2', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      padding: 14px 16px;
-      border-radius: 10px;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
+      display: none; width: 100%; margin-bottom: 20px;
+      background: #2d3748; border: 2px solid #1a5ca8; color: #ffffff;
+      font-family: 'Exo 2', sans-serif; font-size: 1rem; font-weight: 700;
+      padding: 14px 16px; border-radius: 10px; outline: none; cursor: pointer;
+      appearance: none; -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235bc8f0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      padding-right: 44px;
+      background-repeat: no-repeat; background-position: right 16px center; padding-right: 44px;
     }
     .cat-select-mobile option { background: #1a3a6b; color: #ffffff; }
     .cat-select-mobile optgroup { background: #0e2a5a; color: #5bc8f0; font-weight: 700; }
@@ -180,11 +176,12 @@
       </div>
     </div>
 
+    <!-- TABS desktop con grupos -->
     <div class="cat-tabs" id="cat-tabs"></div>
 
     <!-- DROPDOWN MÓVIL -->
     <select class="cat-select-mobile" id="cat-select-mobile" onchange="seleccionarManual(this.value)">
-      <option value="">⚽ Selecciona una categoría...</option>
+      <option value="">Selecciona una categoría...</option>
       <optgroup label="🏅 AMATEUR">
         <option value="ins">Insectos</option>
         <option value="trp_a">Trepador (Amateur)</option>
@@ -199,8 +196,9 @@
         <option value="trp_p">Trepador (Pro)</option>
         <option value="soc">Robot Soccer</option>
       </optgroup>
-      <optgroup label="⭐ EXTRA">
+      <optgroup label="🌟 OPEN">
         <option value="cr">Cubo Rubik</option>
+        <option value="lk">Lego Kids</option>
       </optgroup>
     </select>
 
@@ -223,28 +221,47 @@
     const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
     const GAS_URL  = CONFIG.GAS_URL();
 
-    const RUTAS_NOMBRE = {
-      'ins':   'Insectos',
-      'trp_a': 'Trepador (Amateur)',
-      'sl_a':  'Seguidor ST (Amateur)',
-      'sl_p':  'Seguidor ST (Pro)',
-      'ms_a':  'Minisumo Autónomo',
-      'ms_rc': 'Minisumo RC',
-      'bai':   'Bailarín',
-      'bat':   'Batalla',
-      'trp_p': 'Trepador (Pro)',
-      'soc':   'Robot Soccer',
-      'cr':    'Cubo Rubik'
-    };
+    // Grupos de categorías para los tabs
+    const GRUPOS = [
+      {
+        label: '🏅 AMATEUR', clase: 'amateur',
+        rutas: [
+          { ruta: 'ins',   nombre: 'Insectos' },
+          { ruta: 'trp_a', nombre: 'Trepador (Amateur)' },
+          { ruta: 'sl_a',  nombre: 'Seguidor ST (Amateur)' }
+        ]
+      },
+      {
+        label: '🏆 PRO', clase: 'pro',
+        rutas: [
+          { ruta: 'sl_p',  nombre: 'Seguidor ST (Pro)' },
+          { ruta: 'ms_a',  nombre: 'Minisumo Autónomo' },
+          { ruta: 'ms_rc', nombre: 'Minisumo RC' },
+          { ruta: 'bai',   nombre: 'Bailarín' },
+          { ruta: 'bat',   nombre: 'Batalla' },
+          { ruta: 'trp_p', nombre: 'Trepador (Pro)' },
+          { ruta: 'soc',   nombre: 'Robot Soccer' }
+        ]
+      },
+      {
+        label: '🌟 OPEN', clase: 'open',
+        rutas: [
+          { ruta: 'cr', nombre: 'Cubo Rubik' },
+          { ruta: 'lk', nombre: 'Lego Kids' }
+        ]
+      }
+    ];
 
-    // ✅ FIX: ignorar tiempos inválidos — '—', 'DNF' y '00:00:00' (nunca arrancó)
+    // Mapa plano ruta→nombre
+    const RUTAS_NOMBRE = {};
+    GRUPOS.forEach(g => g.rutas.forEach(r => { RUTAS_NOMBRE[r.ruta] = r.nombre; }));
+
     function tiempoASegundos(t) {
       if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
       const p = t.split(':').map(Number);
       return p[0] * 60 + p[1] + p[2] / 100;
     }
 
-    // ✅ Determina si un tiempo es válido para rankear
     function tiempoValido(t) {
       return t && t !== '—' && t !== 'DNF' && t !== '00:00:00';
     }
@@ -263,17 +280,6 @@
 
     const TIEMPO_ROTACION = 10000;
 
-    function iniciarAutoRotar() {
-      if (autoRotarTimer) clearInterval(autoRotarTimer);
-      autoRotarTimer = setInterval(() => {
-        const activas = rutasConDatos;
-        if (activas.length <= 1) return;
-        const idx = activas.indexOf(categoriaActiva);
-        const siguiente = activas[(idx + 1) % activas.length];
-        seleccionarCategoria(siguiente);
-      }, TIEMPO_ROTACION);
-    }
-
     function seleccionarCategoria(ruta) {
       categoriaActiva = ruta;
       document.querySelectorAll('.cat-tab').forEach(t => {
@@ -288,7 +294,6 @@
       }
     }
 
-    // ✅ Cuenta solo robots con al menos un tiempo válido o DNF
     function categoriaTieneDatos(ruta) {
       if (ruta === 'soc') return bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
       const datos = datosJSON && datosJSON.resultados[ruta];
@@ -298,17 +303,23 @@
 
     function renderTabs() {
       const container = document.getElementById('cat-tabs');
-      const rutas = Object.keys(RUTAS_NOMBRE);
+      let html = '';
 
-      container.innerHTML = rutas.map(ruta => {
-        const tieneDatos = categoriaTieneDatos(ruta);
-        return `<button class="cat-tab ${tieneDatos ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
-          data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">
-          ${RUTAS_NOMBRE[ruta]}
-        </button>`;
-      }).join('');
+      GRUPOS.forEach(grupo => {
+        // Etiqueta del grupo
+        html += `<span class="cat-group-label ${grupo.clase}">${grupo.label}</span>`;
+        // Tabs del grupo
+        grupo.rutas.forEach(({ ruta, nombre }) => {
+          const tieneDatos = categoriaTieneDatos(ruta);
+          html += `<button class="cat-tab ${tieneDatos ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
+            data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">
+            ${nombre}
+          </button>`;
+        });
+      });
 
-      rutasConDatos = rutas.filter(categoriaTieneDatos);
+      container.innerHTML = html;
+      rutasConDatos = Object.keys(RUTAS_NOMBRE).filter(categoriaTieneDatos);
     }
 
     function seleccionarManual(ruta) {
@@ -325,90 +336,49 @@
         </div>`;
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // BRACKET SOCCER
-    // ══════════════════════════════════════════════════════════════
+    // ══ BRACKET SOCCER ══
     function renderizarBracketSoccer() {
       document.getElementById('tv-ronda').textContent = 'BRACKET';
       document.getElementById('tv-cat').textContent = 'Robot Soccer';
-
       const wrap = document.getElementById('tv-tabla-wrap');
-
       if (!bracketSoccer || !bracketSoccer.fases || bracketSoccer.fases.length === 0) {
-        wrap.innerHTML = `
-          <div class="soccer-wrap">
-            <div class="soccer-title">⚽ Robot Soccer</div>
-            <div class="soccer-sin-datos">
-              <div class="soccer-sin-datos-icon">⚽</div>
-              <div class="soccer-sin-datos-text">BRACKET AÚN NO GENERADO</div>
-            </div>
-          </div>`;
+        wrap.innerHTML = `<div class="soccer-wrap"><div class="soccer-title">⚽ Robot Soccer</div><div class="soccer-sin-datos"><div class="soccer-sin-datos-icon">⚽</div><div class="soccer-sin-datos-text">BRACKET AÚN NO GENERADO</div></div></div>`;
         return;
       }
-
       const fasesHTML = bracketSoccer.fases.map(fase => {
         const partidosHTML = fase.partidos.map(p => {
           if (p.tipo === 'BYE') {
-            return `
-              <div class="partido-bye">
-                <div class="bye-nombre">${p.equipoNombre}</div>
-                <div class="bye-badge">BYE — Pasa directo</div>
-              </div>`;
+            return `<div class="partido-bye"><div class="bye-nombre">${p.equipoNombre}</div><div class="bye-badge">BYE — Pasa directo</div></div>`;
           }
-
           const matchGoles = p.marcador ? p.marcador.match(/^(\d+)-(\d+)/) : null;
           const golesArr = matchGoles ? [matchGoles[1], matchGoles[2]] : null;
           const finalizado = p.estado === 'FINALIZADO';
           const sinEquipos = !p.equipo_a_id && !p.equipo_b_id;
-
           if (sinEquipos) {
-            return `
-              <div class="partido-card pendiente">
-                <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
-                <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
-                <div class="partido-estado pend-equipos">Esperando ganadores</div>
-              </div>`;
+            return `<div class="partido-card pendiente"><div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div><div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div><div class="partido-estado pend-equipos">Esperando ganadores</div></div>`;
           }
-
-          return `
-            <div class="partido-card ${finalizado ? 'finalizado' : 'pendiente'}">
-              <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_a_id ? 'ganador' : ''}">
-                <span class="partido-equipo-nombre">${p.equipoA_nombre || '—'}</span>
-                ${golesArr ? `<span class="partido-equipo-goles">${golesArr[0]}</span>` : ''}
-              </div>
-              <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_b_id ? 'ganador' : ''}">
-                <span class="partido-equipo-nombre">${p.equipoB_nombre || '—'}</span>
-                ${golesArr ? `<span class="partido-equipo-goles">${golesArr[1]}</span>` : ''}
-              </div>
-              <div class="partido-estado ${finalizado ? 'fin' : 'pend'}">
-                ${finalizado ? `✓ ${p.marcador}` : 'Pendiente'}
-              </div>
-            </div>`;
-        }).join('');
-
-        return `
-          <div class="bracket-fase">
-            <div class="fase-nombre">${fase.nombre}</div>
-            ${partidosHTML}
+          return `<div class="partido-card ${finalizado ? 'finalizado' : 'pendiente'}">
+            <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_a_id ? 'ganador' : ''}">
+              <span class="partido-equipo-nombre">${p.equipoA_nombre || '—'}</span>
+              ${golesArr ? `<span class="partido-equipo-goles">${golesArr[0]}</span>` : ''}
+            </div>
+            <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_b_id ? 'ganador' : ''}">
+              <span class="partido-equipo-nombre">${p.equipoB_nombre || '—'}</span>
+              ${golesArr ? `<span class="partido-equipo-goles">${golesArr[1]}</span>` : ''}
+            </div>
+            <div class="partido-estado ${finalizado ? 'fin' : 'pend'}">${finalizado ? `✓ ${p.marcador}` : 'Pendiente'}</div>
           </div>`;
+        }).join('');
+        return `<div class="bracket-fase"><div class="fase-nombre">${fase.nombre}</div>${partidosHTML}</div>`;
       }).join('');
-
-      wrap.innerHTML = `
-        <div class="soccer-wrap">
-          <div class="soccer-title">⚽ Robot Soccer — Bracket</div>
-          <div class="bracket-fases">${fasesHTML}</div>
-        </div>`;
+      wrap.innerHTML = `<div class="soccer-wrap"><div class="soccer-title">⚽ Robot Soccer — Bracket</div><div class="bracket-fases">${fasesHTML}</div></div>`;
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // TABLA TIEMPOS (categorías normales)
-    // ══════════════════════════════════════════════════════════════
+    // ══ TABLA TIEMPOS ══
     function renderizarTabla(ruta) {
       if (!datosJSON || !datosJSON.resultados[ruta] || datosJSON.resultados[ruta].length === 0) {
-        mostrarVacio();
-        return;
+        mostrarVacio(); return;
       }
-
       document.getElementById('tv-ronda').textContent = 'RONDA 1';
       document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[ruta] || ruta;
 
@@ -416,38 +386,30 @@
       const porRobot = {};
       datos.forEach(d => {
         if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, tiempos: [], rondaMax: 1 };
-        // ✅ Solo agregar tiempos válidos o DNF — ignorar 00:00:00 y '—'
         if (tiempoValido(d.tiempo) || d.tiempo === 'DNF') {
           porRobot[d.robot].tiempos.push(d.tiempo);
         }
-        // Guardar la ronda más alta de este robot
         const ronda = Number(d.ronda) || 1;
         if (ronda > porRobot[d.robot].rondaMax) porRobot[d.robot].rondaMax = ronda;
       });
 
-      // Todos los robots que participaron (con tiempo válido O con DNF)
       const clasificados = Object.values(porRobot)
         .filter(r => r.tiempos.length > 0)
         .map(r => {
           const tiemposValidos = r.tiempos.filter(tiempoValido);
           const mejorTiempo = tiemposValidos.length
-            ? tiemposValidos.reduce((mejor, actual) =>
-                tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor)
+            ? tiemposValidos.reduce((mejor, actual) => tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor)
             : 'DNF';
           return { robot: r.robot, tiempo: mejorTiempo, ronda: r.rondaMax, esDNF: tiemposValidos.length === 0 };
         });
 
-      // Ordenar: primero los con tiempo válido (más rápido arriba), luego DNF al final
       clasificados.sort((a, b) => {
         if (a.esDNF && !b.esDNF) return 1;
         if (!a.esDNF && b.esDNF) return -1;
         return tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo);
       });
 
-      if (clasificados.length === 0) {
-        mostrarVacio();
-        return;
-      }
+      if (clasificados.length === 0) { mostrarVacio(); return; }
 
       const wrap = document.getElementById('tv-tabla-wrap');
       const filas = clasificados.map((c, i) => {
@@ -456,12 +418,11 @@
         const claseCirc = c.esDNF ? 'pc-n' : (pos === 1 ? 'pc-1' : pos === 2 ? 'pc-2' : pos === 3 ? 'pc-3' : 'pc-n');
         const emoji = (!c.esDNF && pos === 1) ? '🥇' : (!c.esDNF && pos === 2) ? '🥈' : (!c.esDNF && pos === 3) ? '🥉' : (c.esDNF ? '—' : pos);
         const tiempoClase = c.esDNF ? 'tiempo-valor dnf' : 'tiempo-valor';
-        const tiempoTexto = c.esDNF ? 'DNF' : c.tiempo;
         return `
           <tr class="row-altura ${claseRow}">
             <td class="td-pos"><span class="pos-circle ${claseCirc}">${emoji}</span></td>
             <td class="td-robot"><div class="robot-name">${c.robot}</div></td>
-            <td class="td-mejor"><span class="${tiempoClase}">${tiempoTexto}</span></td>
+            <td class="td-mejor"><span class="${tiempoClase}">${c.esDNF ? 'DNF' : c.tiempo}</span></td>
             <td class="td-ronda"><span class="ronda-num">Ronda ${c.ronda}</span></td>
           </tr>`;
       }).join('');
@@ -469,27 +430,21 @@
       wrap.innerHTML = `
         <table>
           <thead><tr>
-            <th class="c">#</th>
-            <th>Robot / Equipo</th>
-            <th class="c">Mejor Tiempo</th>
-            <th class="c">Ronda</th>
+            <th class="c">#</th><th>Robot / Equipo</th>
+            <th class="c">Mejor Tiempo</th><th class="c">Ronda</th>
           </tr></thead>
           <tbody>${filas}</tbody>
         </table>`;
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // POLLING
-    // ══════════════════════════════════════════════════════════════
+    // ══ POLLING ══
     async function pollJSON() {
       try {
         const r = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-store' });
         datosJSON = await r.json();
         renderTabs();
         actualizarVista();
-      } catch(e) {
-        console.error('Error al cargar JSON:', e);
-      }
+      } catch(e) { console.error('Error al cargar JSON:', e); }
     }
 
     async function pollBracketSoccer() {
@@ -499,32 +454,22 @@
         if (data.ok) {
           bracketSoccer = data.bracket || null;
           renderTabs();
-          if (categoriaActiva === 'soc') {
-            renderizarBracketSoccer();
-          }
+          if (categoriaActiva === 'soc') renderizarBracketSoccer();
           if (categoriaActiva && categoriaActiva !== 'soc') {
             document.getElementById('tv-ronda').textContent = 'RONDA 1';
             document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[categoriaActiva] || categoriaActiva;
           }
         }
-      } catch(e) {
-        console.error('Error al cargar bracket soccer:', e);
-      }
+      } catch(e) { console.error('Error al cargar bracket soccer:', e); }
     }
 
     function actualizarVista() {
       if (!categoriaActiva) {
         const primera = rutasConDatos[0] || null;
-        if (primera) {
-          categoriaActiva = primera;
-          seleccionarCategoria(primera);
-        }
+        if (primera) { categoriaActiva = primera; seleccionarCategoria(primera); }
       } else {
-        if (categoriaActiva === 'soc') {
-          renderizarBracketSoccer();
-        } else {
-          renderizarTabla(categoriaActiva);
-        }
+        if (categoriaActiva === 'soc') renderizarBracketSoccer();
+        else renderizarTabla(categoriaActiva);
       }
     }
 
