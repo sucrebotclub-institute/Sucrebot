@@ -1272,16 +1272,16 @@ document.addEventListener('componentsLoaded', async function() {
     }
 
     // Seguidor — mismo sensor toggle START/STOP
-    if (msg==='SENS' && CATS_SEGUIDOR.includes(categoriaActual)) {
-      if (!cronoInterval) {
-        iniciarCrono();
-        seguidorArrancado=true;
-      } else {
-        detenerCrono();
-        seguidorArrancado=false;
-      }
-      return;
-    }
+    if (CATS_SEGUIDOR.includes(categoriaActual)) {
+  if (msg === 'START') {
+    iniciarCrono();
+    return;
+  }
+  if (msg === 'STOP') {
+    detenerCrono();
+    return;
+  }
+}
 
     // Cubo Rubik / Lego Kids — pulsador toggle
     if (msg==='BTN' && CATS_PULSADOR.includes(categoriaActual)) {
