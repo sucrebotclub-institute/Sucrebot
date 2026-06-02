@@ -7,308 +7,132 @@
 
   <link rel="stylesheet" href="../shared/css/styles.css" />
   <link rel="stylesheet" href="../shared/css/mobile-fix.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;600;700&family=Exo+2:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      --cyan: #5bc8f0;
-      --cyan-bright: #90dcff;
-      --blue: #1a5ca8;
-      --blue-dark: #0e2a5a;
-      --sucre-blue: #1a5ca8;
-      --bg: #f4f7fc;
-      --card-bg: #ffffff;
-      --text: #1a1a2e;
-      --text-muted: #5a6b85;
-      --border: #dde4ef;
-      --success: #1db87a;
-      --warning: #f5a623;
-      --danger: #e84545;
+      --blue:       #1a5ca8;
+      --blue-dark:  #0e2a5a;
+      --blue-light: #e8f0fb;
+      --cyan:       #5bc8f0;
+      --text:       #111827;
+      --text-soft:  #4b5563;
+      --text-muted: #9ca3af;
+      --border:     #d1d9e6;
+      --bg:         #f5f7fa;
+      --white:      #ffffff;
+      --success:    #16a34a;
+      --danger:     #dc2626;
+      --gold:       #ca8a04;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Exo 2', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    body {
-      font-family: 'Exo 2', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ── PAGE HERO ── */
-    .page-hero {
-      background: linear-gradient(135deg, #0e2a5a 0%, #1a5ca8 60%, #1a3a6e 100%);
-      padding: 48px 24px 40px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .page-hero::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(91,200,240,0.18) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .page-hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(91,200,240,0.4);
-      color: var(--cyan-bright);
-      font-family: 'Orbitron', sans-serif;
-      font-size: 9px; letter-spacing: 3px;
-      padding: 6px 16px; border-radius: 20px;
-      margin-bottom: 18px;
-    }
-    .page-hero-badge-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--cyan);
-      animation: blink 1.6s infinite;
-    }
+    .page-hero { background: var(--blue-dark); padding: 40px 32px 32px; text-align: center; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 3px; padding: 5px 14px; border-radius: 3px; margin-bottom: 16px; text-transform: uppercase; }
+    .page-hero-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-    .page-hero h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2.8rem; letter-spacing: 3px;
-      color: #ffffff;
-      margin-bottom: 10px;
-    }
+    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.6rem; letter-spacing: 4px; color: #ffffff; margin-bottom: 8px; }
     .page-hero h2 span { color: var(--cyan); }
-    .page-hero p {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 0.85rem; letter-spacing: 2px;
-      color: rgba(255,255,255,0.65);
-      text-transform: uppercase;
-    }
+    .page-hero p { font-size: 0.78rem; letter-spacing: 2px; color: rgba(255,255,255,0.45); text-transform: uppercase; font-family: 'DM Mono', monospace; }
 
-    /* ── MAIN LAYOUT ── */
-    .main-container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 32px 20px 60px;
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 24px;
-      align-items: start;
-    }
+    .wrapper { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
 
-    /* ── CARD BASE ── */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 2px 12px rgba(26,92,168,0.07);
-    }
-    .card-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.75rem; letter-spacing: 2px;
-      color: var(--blue);
-      text-transform: uppercase;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid var(--cyan);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .card-title svg { flex-shrink: 0; }
+    .cat-bar { display: flex; align-items: center; gap: 12px; background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 28px; }
+    .cat-bar-label { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; }
+    .cat-bar select { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; cursor: pointer; }
+    .cat-bar select:focus { border-color: var(--blue); }
+    .cat-info { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
 
-    /* ── SIDEBAR ── */
-    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+    .layout { display: flex; gap: 24px; align-items: flex-start; }
 
-    .auth-block {
-      padding: 16px;
-      background: linear-gradient(135deg, #f0f6ff, #e8f0fb);
-      border: 1px solid #c8d9f0;
-      border-radius: 10px;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .auth-avatar {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--blue);
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 18px; flex-shrink: 0;
-      font-family: 'Orbitron', sans-serif; font-weight: 700;
-    }
-    .auth-info { flex: 1; min-width: 0; }
-    .auth-name {
-      font-family: 'Exo 2', sans-serif; font-weight: 600;
-      font-size: 0.85rem; color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .auth-role {
-      font-family: 'Orbitron', sans-serif; font-size: 8px;
-      letter-spacing: 2px; color: var(--blue);
-      text-transform: uppercase; margin-top: 2px;
-    }
-    #btn-login {
-      width: 100%; padding: 12px;
-      background: var(--blue); color: white;
-      border: none; border-radius: 8px; cursor: pointer;
-      font-family: 'Orbitron', sans-serif; font-size: 0.7rem;
-      letter-spacing: 2px; text-transform: uppercase;
-      transition: background 0.2s;
-    }
-    #btn-login:hover { background: #1e6bbf; }
+    .col-lista { width: 260px; flex-shrink: 0; }
+    .col-lista-header { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; padding: 0 4px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+    .col-lista-header span { background: var(--blue); color: white; font-size: 0.6rem; padding: 2px 7px; border-radius: 10px; }
 
-    .form-group { margin-bottom: 16px; }
-    .form-group label {
-      display: block;
-      font-family: 'Orbitron', sans-serif; font-size: 0.65rem;
-      letter-spacing: 2px; color: var(--text-muted);
-      text-transform: uppercase; margin-bottom: 8px;
-    }
-    .form-group select,
-    .form-group input[type="text"] {
-      width: 100%; padding: 10px 14px;
-      border: 1.5px solid var(--border); border-radius: 8px;
-      font-family: 'Exo 2', sans-serif; font-size: 0.9rem;
-      color: var(--text); background: white;
-      transition: border-color 0.2s;
-      appearance: none;
-    }
-    .form-group select:focus,
-    .form-group input:focus { outline: none; border-color: var(--cyan); }
+    .participante-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 7px; cursor: pointer; margin-bottom: 6px; transition: border-color 0.15s, background 0.15s; }
+    .participante-item:hover { border-color: var(--blue); background: var(--blue-light); }
+    .participante-item.active { border-color: var(--blue); background: var(--blue-light); }
+    .participante-item.calificado { border-color: #86efac; background: #f0fdf4; }
+    .participante-item.calificado.active { border-color: var(--success); background: #dcfce7; }
+    .p-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+    .participante-item.calificado .p-dot { background: var(--success); }
+    .participante-item.active .p-dot { background: var(--blue); }
+    .p-info { flex: 1; min-width: 0; }
+    .p-nombre { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    .p-robot { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
+    .p-score { font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--success); flex-shrink: 0; }
 
-    .participante-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: 8px; cursor: pointer;
-      border: 1.5px solid transparent;
-      transition: all 0.18s; margin-bottom: 6px;
-    }
-    .participante-item:hover { background: #f0f6ff; border-color: #c8d9f0; }
-    .participante-item.selected { background: #e8f3ff; border-color: var(--blue); }
-    .participante-item.calificado { background: #f0fff7; border-color: #a8e8cc; }
-    .participante-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
-    .participante-item.calificado .participante-dot { background: var(--success); }
-    .participante-item.selected .participante-dot { background: var(--blue); }
-    .participante-info { flex: 1; min-width: 0; }
-    .participante-nombre { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .participante-robot { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
-    .participante-score { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; font-weight: 700; color: var(--blue); }
+    .col-panel { flex: 1; min-width: 0; }
 
-    /* ── PANEL PRINCIPAL ── */
-    .panel-main { display: flex; flex-direction: column; gap: 20px; }
+    .empty-panel { background: var(--white); border: 1.5px dashed var(--border); border-radius: 8px; padding: 60px 24px; text-align: center; }
+    .empty-panel-icon { font-size: 2.5rem; margin-bottom: 14px; opacity: 0.3; }
+    .empty-panel h3 { font-family: 'Orbitron', sans-serif; font-size: 0.75rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px; }
+    .empty-panel p { font-size: 0.82rem; color: var(--text-muted); }
 
-    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-    .empty-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.4; }
-    .empty-state h3 { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 8px; color: var(--text-muted); }
-    .empty-state p { font-size: 0.85rem; }
+    .participante-header { background: var(--blue-dark); border-radius: 8px 8px 0 0; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+    .p-avatar { width: 44px; height: 44px; border-radius: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; color: white; flex-shrink: 0; }
+    .p-header-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: white; }
+    .p-header-info p { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+    .p-header-total { margin-left: auto; text-align: center; }
+    .total-num { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 2rem; color: var(--cyan); line-height: 1; }
+    .total-lbl { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
 
-    .selected-header {
-      display: flex; align-items: center; gap: 16px;
-      padding: 18px 24px;
-      background: linear-gradient(135deg, #0e2a5a, #1a5ca8);
-      border-radius: 12px; color: white;
-    }
-    .selected-avatar {
-      width: 54px; height: 54px; border-radius: 10px;
-      background: rgba(91,200,240,0.25);
-      border: 2px solid rgba(91,200,240,0.5);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Orbitron', sans-serif; font-weight: 700;
-      font-size: 1.3rem; color: var(--cyan); flex-shrink: 0;
-    }
-    .selected-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 2px; }
-    .selected-info p { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.65); margin-top: 2px; }
-    .selected-total { margin-left: auto; text-align: center; }
-    .selected-total .total-num { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2.2rem; color: var(--cyan); line-height: 1; }
-    .selected-total .total-label { font-size: 0.65rem; letter-spacing: 2px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+    .criterios-area { background: var(--white); border: 1.5px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; padding: 20px; }
+    .criterio-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--bg); }
+    .criterio-row:last-of-type { border-bottom: none; }
+    .criterio-label { flex: 1; min-width: 0; }
+    .criterio-nombre { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .criterio-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+    .criterio-val-display { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1.4rem; color: var(--blue); width: 32px; text-align: center; flex-shrink: 0; }
+    .criterio-val-display.vacio { color: var(--border); }
+    .btns-nota { display: flex; gap: 5px; flex-shrink: 0; }
+    .btn-nota { width: 36px; height: 36px; border: 1.5px solid var(--border); border-radius: 5px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.8rem; color: var(--text-muted); background: var(--bg); transition: all 0.12s; display: flex; align-items: center; justify-content: center; }
+    .btn-nota:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+    .btn-nota.sel { background: var(--blue); border-color: var(--blue); color: white; }
 
-    .criterios-grid { display: grid; gap: 14px; }
-    .criterio-card { border: 1.5px solid var(--border); border-radius: 10px; padding: 16px 20px; background: white; transition: border-color 0.2s; }
-    .criterio-card:focus-within { border-color: var(--cyan); }
-    .criterio-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-    .criterio-name { font-family: 'Exo 2', sans-serif; font-weight: 600; font-size: 0.9rem; }
-    .criterio-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
-    .criterio-val { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1.3rem; color: var(--blue); min-width: 28px; text-align: right; }
-    .stars-row { display: flex; gap: 8px; }
-    .star-btn {
-      flex: 1; height: 38px; border: 1.5px solid var(--border);
-      border-radius: 6px; cursor: pointer;
-      font-family: 'Orbitron', sans-serif; font-weight: 700;
-      font-size: 0.8rem; color: var(--text-muted);
-      background: white; transition: all 0.15s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .star-btn:hover { border-color: var(--cyan); color: var(--blue); background: #f0f9ff; }
-    .star-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
-
-    .actions-row { display: flex; gap: 12px; align-items: center; }
-    .btn-guardar {
-      flex: 1; padding: 14px;
-      background: var(--blue); color: white;
-      border: none; border-radius: 8px; cursor: pointer;
-      font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
-      letter-spacing: 2px; text-transform: uppercase;
-      transition: all 0.2s; display: flex; align-items: center;
-      justify-content: center; gap: 8px;
-    }
-    .btn-guardar:hover:not(:disabled) { background: #1e6bbf; transform: translateY(-1px); }
-    .btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-limpiar {
-      padding: 14px 18px; background: white;
-      border: 1.5px solid var(--border); border-radius: 8px;
-      cursor: pointer; color: var(--text-muted);
-      font-family: 'Orbitron', sans-serif; font-size: 0.7rem;
-      letter-spacing: 1px; transition: all 0.2s;
-    }
+    .acciones-bar { display: flex; align-items: center; gap: 10px; padding-top: 18px; margin-top: 4px; border-top: 1px solid var(--border); }
+    .btn-guardar { flex: 1; padding: 13px; background: var(--blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-guardar:hover:not(:disabled) { background: #1650a0; }
+    .btn-guardar:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-limpiar { padding: 13px 16px; background: var(--white); color: var(--text-muted); border: 1.5px solid var(--border); border-radius: 6px; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 0.72rem; transition: all 0.12s; }
     .btn-limpiar:hover { border-color: var(--danger); color: var(--danger); }
+    .aviso-edit { display: none; margin-top: 12px; padding: 10px 14px; background: #fefce8; border: 1px solid #fde047; border-radius: 6px; font-size: 0.78rem; color: #78350f; font-family: 'Exo 2', sans-serif; }
 
-    .toast {
-      position: fixed; bottom: 24px; right: 24px;
-      padding: 14px 22px; border-radius: 10px;
-      font-family: 'Exo 2', sans-serif; font-size: 0.9rem;
-      font-weight: 600; color: white;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      transform: translateY(80px); opacity: 0;
-      transition: all 0.3s ease; z-index: 9999;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.success { background: var(--success); }
-    .toast.error { background: var(--danger); }
+    .ranking-section { margin-top: 28px; background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .ranking-head { padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .ranking-head-title { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--blue); text-transform: uppercase; }
+    .btn-refresh { border: 1px solid var(--border); background: var(--bg); border-radius: 5px; padding: 5px 10px; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--text-muted); transition: all 0.12s; }
+    .btn-refresh:hover { border-color: var(--blue); color: var(--blue); }
 
     .ranking-table { width: 100%; border-collapse: collapse; }
-    .ranking-table th { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--text-muted); text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); }
-    .ranking-table td { padding: 10px 12px; font-size: 0.85rem; border-bottom: 1px solid #f0f3f8; }
-    .ranking-table tr:hover td { background: #f8faff; }
-    .rank-num { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.85rem; }
-    .rank-1 { color: #d4a017; }
-    .rank-2 { color: #9e9e9e; }
-    .rank-3 { color: #c07a3a; }
-    .score-badge { display: inline-block; background: #e8f0fb; color: var(--blue); font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; }
-    .score-badge.top { background: var(--blue); color: white; }
+    .ranking-table th { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; letter-spacing: 1.5px; color: var(--text-muted); text-align: left; padding: 9px 18px; border-bottom: 1px solid var(--border); background: var(--bg); }
+    .ranking-table td { padding: 12px 18px; font-size: 0.85rem; border-bottom: 1px solid var(--bg); color: var(--text); }
+    .ranking-table tr:last-child td { border-bottom: none; }
+    .ranking-table tr:hover td { background: var(--blue-light); }
+    .rank-pos { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.9rem; }
+    .r1 { color: var(--gold); } .r2 { color: var(--text-muted); } .r3 { color: #92400e; }
+    .score-pill { display: inline-block; background: var(--blue-light); color: var(--blue); font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.72rem; padding: 3px 10px; border-radius: 4px; }
+    .score-pill.top { background: var(--blue); color: white; }
 
-    .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-    .tab-btn {
-      flex: 1; padding: 10px;
-      background: white; border: 1.5px solid var(--border);
-      border-radius: 8px; cursor: pointer;
-      font-family: 'Orbitron', sans-serif; font-size: 0.65rem;
-      letter-spacing: 1.5px; color: var(--text-muted);
-      transition: all 0.15s;
-    }
-    .tab-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
-
-    .criterio-config-row { display: flex; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f3f8; }
-    .criterio-config-row:last-child { border-bottom: none; }
-    .criterio-config-row input[type="text"] { flex: 1; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-family: 'Exo 2', sans-serif; font-size: 0.85rem; }
-    .criterio-config-row input:focus { outline: none; border-color: var(--cyan); }
-    .btn-del { width: 32px; height: 32px; border-radius: 6px; border: 1.5px solid #f0d0d0; background: white; color: var(--danger); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
-    .btn-del:hover { background: #fff0f0; }
-    .btn-add-criterio { width: 100%; padding: 10px; border: 1.5px dashed var(--border); border-radius: 8px; background: transparent; cursor: pointer; font-family: 'Exo 2', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; transition: all 0.15s; }
-    .btn-add-criterio:hover { border-color: var(--cyan); color: var(--blue); }
-    .btn-save-config { width: 100%; padding: 11px; background: var(--blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 2px; margin-top: 14px; transition: background 0.2s; }
-    .btn-save-config:hover { background: #1e6bbf; }
-
-    .loading { text-align: center; padding: 30px; color: var(--text-muted); font-size: 0.85rem; }
-    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 8px; }
+    .loading-msg { text-align: center; padding: 28px; font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--text-muted); }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 768px) {
-      .main-container { grid-template-columns: 1fr; padding: 16px 12px 48px; gap: 16px; }
-      .page-hero h2 { font-size: 1.8rem; }
-      .selected-total .total-num { font-size: 1.6rem; }
-    }
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 6px; font-family: 'Exo 2', sans-serif; font-size: 0.88rem; font-weight: 600; color: white; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transform: translateY(60px); opacity: 0; transition: all 0.25s ease; z-index: 9999; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: var(--success); }
+    .toast.error   { background: var(--danger); }
 
-    .staff-only { display: none; }
+    .sin-cat { background: var(--white); border: 1.5px dashed var(--border); border-radius: 8px; padding: 40px 24px; text-align: center; font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--text-muted); }
+
+    @media (max-width: 768px) {
+      .layout { flex-direction: column; }
+      .col-lista { width: 100%; }
+      .page-hero h2 { font-size: 1.8rem; }
+      .btns-nota { gap: 4px; }
+      .btn-nota { width: 32px; height: 32px; font-size: 0.75rem; }
+    }
   </style>
 </head>
 <body>
@@ -319,241 +143,151 @@
     <div data-include="../shared/components/nav.html"></div>
   </div>
 
-  <!-- HERO -->
   <div class="page-hero">
     <div class="page-hero-badge">
       <div class="page-hero-badge-dot"></div>
       SUCREBOT 2026 · JUECES
     </div>
     <h2>PANEL DE <span>CALIFICACIÓN</span></h2>
-    <p>EVALUACIÓN POR CRITERIOS · BAILARÍN · BATALLA · IMPACTO TECNOLÓGICO</p>
+    <p>Ingreso de puntuaciones del jurado</p>
   </div>
 
-  <!-- MAIN -->
-  <div class="main-container">
+  <div class="wrapper">
 
-    <div class="sidebar">
+    <div class="cat-bar">
+      <span class="cat-bar-label">Categoría</span>
+      <select id="sel-categoria" onchange="onCategoriaChange()">
+        <option value="">— Selecciona una categoría —</option>
+        <option value="bai">Bailarín</option>
+        <option value="dev">Impacto Tecnológico</option>
+      </select>
+      <span class="cat-info" id="cat-info"></span>
+    </div>
 
-      <div id="auth-block-container">
-        <button id="btn-login">INICIAR SESIÓN COMO JUEZ</button>
-      </div>
+    <div class="layout">
 
-      <div class="card" id="card-selector" style="display:none">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-          CATEGORÍA
-        </div>
-        <div class="form-group">
-          <label>Seleccionar categoría</label>
-          <select id="sel-categoria">
-            <option value="">— elige —</option>
-            <option value="bai">Bailarín</option>
-            <option value="bat">Batalla de Robots</option>
-            <option value="dev">Impacto Tecnológico</option>
-          </select>
-        </div>
-        <div id="criterios-count" style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text-muted);"></div>
-      </div>
-
-      <div class="card" id="card-participantes" style="display:none">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          PARTICIPANTES
-          <span id="badge-count" style="margin-left:auto;background:#e8f0fb;color:var(--blue);font-size:0.65rem;padding:2px 8px;border-radius:10px;font-family:'Orbitron',sans-serif;"></span>
+      <div class="col-lista">
+        <div class="col-lista-header">
+          Participantes
+          <span id="badge-count" style="display:none"></span>
         </div>
         <div id="lista-participantes">
-          <div class="loading"><div class="spinner"></div><br>Cargando...</div>
+          <div class="sin-cat">Selecciona una categoría para ver los participantes.</div>
         </div>
       </div>
 
+      <div class="col-panel">
+
+        <div id="empty-panel" class="empty-panel">
+          <div class="empty-panel-icon">📋</div>
+          <h3>Sin participante seleccionado</h3>
+          <p>Elige un participante de la lista para ingresar las calificaciones del jurado.</p>
+        </div>
+
+        <div id="panel-activo" style="display:none">
+          <div class="participante-header">
+            <div class="p-avatar" id="p-avatar">?</div>
+            <div class="p-header-info">
+              <h3 id="p-nombre">—</h3>
+              <p id="p-robot">—</p>
+            </div>
+            <div class="p-header-total">
+              <div class="total-num" id="total-display">—</div>
+              <div class="total-lbl">Promedio</div>
+            </div>
+          </div>
+          <div class="criterios-area">
+            <div id="criterios-container"></div>
+            <div class="acciones-bar">
+              <button class="btn-limpiar" onclick="limpiarNotas()">↺ Limpiar</button>
+              <button class="btn-guardar" id="btn-guardar" onclick="guardarPuntuacion()" disabled>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                GUARDAR CALIFICACIÓN
+              </button>
+            </div>
+            <div class="aviso-edit" id="aviso-edit">
+              ⚠ Este participante ya tiene calificación. Al guardar se reemplazará.
+            </div>
+          </div>
+        </div>
+
+        <div id="ranking-section" class="ranking-section" style="display:none">
+          <div class="ranking-head">
+            <span class="ranking-head-title">Ranking de calificaciones</span>
+            <button class="btn-refresh" onclick="cargarRanking()">↺ Actualizar</button>
+          </div>
+          <div id="ranking-container">
+            <div class="loading-msg"><span class="spinner"></span>Cargando...</div>
+          </div>
+        </div>
+
+      </div>
     </div>
-
-    <div class="panel-main">
-
-      <div class="card" id="empty-state">
-        <div class="empty-state">
-          <div class="empty-icon">🏆</div>
-          <h3>Selecciona un participante</h3>
-          <p>Elige una categoría y un participante de la lista para comenzar la evaluación.</p>
-        </div>
-      </div>
-
-      <div id="panel-evaluacion" style="display:none">
-
-        <div class="selected-header" id="selected-header">
-          <div class="selected-avatar" id="sel-avatar">?</div>
-          <div class="selected-info">
-            <h3 id="sel-nombre">–</h3>
-            <p id="sel-robot">–</p>
-          </div>
-          <div class="selected-total">
-            <div class="total-num" id="total-display">–</div>
-            <div class="total-label">MI PUNTAJE</div>
-          </div>
-        </div>
-
-        <div class="tabs">
-          <button class="tab-btn active" onclick="switchTab('calificar', this)">CALIFICAR</button>
-          <button class="tab-btn" onclick="switchTab('ranking', this)">RANKING</button>
-          <button class="tab-btn staff-only" id="tab-config" onclick="switchTab('config', this)">CONFIG</button>
-        </div>
-
-        <div id="tab-calificar">
-          <div class="criterios-grid" id="criterios-container">
-            <div class="loading"><div class="spinner"></div><br>Cargando criterios...</div>
-          </div>
-          <div class="actions-row" style="margin-top:18px;">
-            <button class="btn-limpiar" onclick="limpiarNotas()">↺ LIMPIAR</button>
-            <button class="btn-guardar" id="btn-guardar" onclick="guardarPuntuacion()" disabled>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              GUARDAR PUNTUACIÓN
-            </button>
-          </div>
-          <div id="prev-eval-msg" style="display:none;margin-top:12px;padding:10px 14px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;font-size:0.8rem;color:#7a6000;font-family:'Exo 2',sans-serif;">
-            ⚠️ Ya tienes una evaluación guardada para este participante. Guardar reemplazará tu puntuación anterior.
-          </div>
-        </div>
-
-        <div id="tab-ranking" style="display:none">
-          <div class="card" style="padding:0;overflow:hidden;">
-            <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:2px;color:var(--blue);">RANKING GENERAL</span>
-              <button onclick="cargarRanking()" style="border:1.5px solid var(--border);background:white;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:1px;color:var(--text-muted);">↺ ACTUALIZAR</button>
-            </div>
-            <div id="ranking-container" style="padding:4px 0;">
-              <div class="loading">Cargando ranking...</div>
-            </div>
-          </div>
-        </div>
-
-        <div id="tab-config-panel" style="display:none">
-          <div class="card">
-            <div class="card-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07 10 10 0 0 0 19.07 4.93z"/></svg>
-              CONFIGURAR CRITERIOS
-            </div>
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">
-              Define los criterios de evaluación para la categoría seleccionada. Los cambios aplican inmediatamente para todos los jueces.
-            </p>
-            <div id="config-criterios-list"></div>
-            <button class="btn-add-criterio" onclick="agregarCriterio()">+ Agregar criterio</button>
-            <button class="btn-save-config" onclick="guardarCriterios()">GUARDAR CONFIGURACIÓN</button>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
   </div>
 
   <div class="toast" id="toast"></div>
-
   <div data-include="../shared/components/footer.html"></div>
 
   <script src="../shared/js/config.js"></script>
   <script src="../shared/js/load-components.js"></script>
 
   <script>
-  let usuarioActual = null;
-  let esStaff = false;
-  let categoriaActual = '';
+  let categoriaActual    = '';
   let participanteActual = null;
-  let criteriosActuales = [];
-  let notasActuales = {};
-  let puntuacionesCache = {};
+  let criteriosActuales  = [];
+  let notasActuales      = {};
   let participantesCache = [];
-  let tabActual = 'calificar';
+  let puntCache          = {};
 
-  document.addEventListener('componentsLoaded', () => {
-    document.addEventListener('authReady', onAuthReady);
-    if (window.SUCREBOT_AUTH_READY) onAuthReady();
-  });
-
-  function onAuthReady() {
-    const user = window.getSucrebotUser ? window.getSucrebotUser() : null;
-    usuarioActual = user;
-    esStaff = user && window.STAFF_EMAILS && window.STAFF_EMAILS.includes(user.email);
-    renderAuthBlock();
-    if (user) inicializarPanel();
-  }
-
-  function renderAuthBlock() {
-    const container = document.getElementById('auth-block-container');
-    if (!usuarioActual) {
-      container.innerHTML = `<button id="btn-login">INICIAR SESIÓN COMO JUEZ</button>`;
-      document.getElementById('btn-login').onclick = () => window.iniciarSesion && window.iniciarSesion();
-      return;
-    }
-    const initials = usuarioActual.name
-      ? usuarioActual.name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase()
-      : usuarioActual.email[0].toUpperCase();
-    container.innerHTML = `
-      <div class="auth-block">
-        <div class="auth-avatar">${initials}</div>
-        <div class="auth-info">
-          <div class="auth-name">${usuarioActual.name || usuarioActual.email}</div>
-          <div class="auth-role">${esStaff ? '⚙️ STAFF · JUEZ' : 'JUEZ'}</div>
-        </div>
-      </div>`;
-  }
-
-  function inicializarPanel() {
-    document.getElementById('card-selector').style.display = '';
-    if (esStaff) {
-      document.querySelectorAll('.staff-only').forEach(el => el.style.display = '');
-    }
-    document.getElementById('sel-categoria').addEventListener('change', onCategoriaChange);
-  }
+  const CAT_NOMBRES = { bai: 'Bailarín', dev: 'Impacto Tecnológico' };
 
   async function onCategoriaChange() {
-    categoriaActual = document.getElementById('sel-categoria').value;
+    categoriaActual    = document.getElementById('sel-categoria').value;
     participanteActual = null;
-    notasActuales = {};
-    criteriosActuales = [];
+    notasActuales      = {};
+    criteriosActuales  = [];
+    puntCache          = {};
+    resetPanel();
 
-    document.getElementById('empty-state').style.display = '';
-    document.getElementById('panel-evaluacion').style.display = 'none';
-    document.getElementById('card-participantes').style.display = 'none';
+    if (!categoriaActual) {
+      document.getElementById('lista-participantes').innerHTML = '<div class="sin-cat">Selecciona una categoría para ver los participantes.</div>';
+      document.getElementById('cat-info').textContent = '';
+      document.getElementById('badge-count').style.display = 'none';
+      document.getElementById('ranking-section').style.display = 'none';
+      return;
+    }
 
-    if (!categoriaActual) return;
-
-    document.getElementById('card-participantes').style.display = '';
-    document.getElementById('lista-participantes').innerHTML =
-      '<div class="loading"><div class="spinner"></div><br>Cargando...</div>';
-    document.getElementById('criterios-count').textContent = '';
+    document.getElementById('lista-participantes').innerHTML = '<div class="loading-msg"><span class="spinner"></span>Cargando...</div>';
+    document.getElementById('cat-info').textContent = '';
 
     try {
       const [criterios, participantes] = await Promise.all([
         cargarCriterios(categoriaActual),
         cargarParticipantes(categoriaActual)
       ]);
-      criteriosActuales = criterios;
+      criteriosActuales  = criterios;
       participantesCache = participantes;
-
-      const n = criterios.length;
-      document.getElementById('criterios-count').textContent =
-        n > 0 ? `${n} criterio${n>1?'s':''} definido${n>1?'s':''}` : '⚠ Sin criterios configurados';
-
+      document.getElementById('cat-info').textContent = criterios.length > 0 ? `${criterios.length} criterios` : '⚠ Sin criterios';
       await cargarTodasLasPuntuaciones(categoriaActual);
-      renderListaParticipantes();
-
+      renderLista();
+      document.getElementById('ranking-section').style.display = '';
+      cargarRanking();
     } catch(e) {
-      document.getElementById('lista-participantes').innerHTML =
-        `<div style="color:var(--danger);font-size:0.8rem;padding:12px;">Error al cargar datos: ${e.message}</div>`;
+      document.getElementById('lista-participantes').innerHTML = `<div class="sin-cat" style="color:var(--danger);">Error: ${e.message}</div>`;
     }
   }
 
   async function cargarCriterios(cat) {
-    const url = `${CONFIG.GAS_URL()}?action=getCriterios&categoria=${cat}`;
-    const r = await fetch(url);
-    const data = await r.json();
-    if (data.ok && Array.isArray(data.criterios) && data.criterios.length > 0) return data.criterios;
+    try {
+      const r = await fetch(`${CONFIG.GAS_URL()}?action=getCriterios&categoria=${cat}`);
+      const data = await r.json();
+      if (data.ok && Array.isArray(data.criterios) && data.criterios.length > 0) return data.criterios;
+    } catch(e) {}
     return criteriosPorDefecto(cat);
   }
 
   function criteriosPorDefecto(cat) {
-    const defaults = {
+    const d = {
       bai: [
         { nombre: 'Coreografía',      descripcion: 'Movimientos coordinados y fluidos' },
         { nombre: 'Sincronía Musical', descripcion: 'Respuesta al ritmo y melodía' },
@@ -562,300 +296,200 @@
         { nombre: 'Desempeño',         descripcion: 'Ejecución sin fallos técnicos' }
       ],
       dev: [
-        { nombre: 'Innovación',      descripcion: 'Originalidad y novedad de la solución' },
-        { nombre: 'Funcionalidad',   descripcion: 'El robot cumple su objetivo correctamente' },
-        { nombre: 'Diseño Técnico',  descripcion: 'Calidad de la implementación técnica' },
-        { nombre: 'Presentación',    descripcion: 'Claridad al exponer el proyecto' },
-        { nombre: 'Impacto',         descripcion: 'Utilidad y aplicabilidad de la solución' }
-      ],
-      bat: [
-        { nombre: 'Construcción',      descripcion: 'Robustez y calidad mecánica' },
-        { nombre: 'Estrategia',        descripcion: 'Táctica de combate empleada' },
-        { nombre: 'Creatividad',       descripcion: 'Diseño innovador de armas o defensas' },
-        { nombre: 'Presentación',      descripcion: 'Apariencia y acabado del robot' },
-        { nombre: 'Desempeño General', descripcion: 'Rendimiento durante el combate' }
+        { nombre: 'Innovación',        descripcion: 'Originalidad y novedad de la solución' },
+        { nombre: 'Funcionalidad',     descripcion: 'El robot cumple su objetivo correctamente' },
+        { nombre: 'Diseño Técnico',    descripcion: 'Calidad de la implementación técnica' },
+        { nombre: 'Presentación',      descripcion: 'Claridad al exponer el proyecto' },
+        { nombre: 'Impacto',           descripcion: 'Utilidad y aplicabilidad de la solución' }
       ]
     };
-    return defaults[cat] || [
-      { nombre: 'Criterio 1', descripcion: '' },
-      { nombre: 'Criterio 2', descripcion: '' },
-      { nombre: 'Criterio 3', descripcion: '' }
-    ];
+    return d[cat] || [];
   }
 
   async function cargarParticipantes(cat) {
-    const url = `${CONFIG.GAS_URL()}?action=getParticipantes`;
-    const r = await fetch(url);
+    const r = await fetch(`${CONFIG.GAS_URL()}?action=getParticipantes`);
     const data = await r.json();
-    if (!Array.isArray(data) && !data.ok) return [];
-    const lista = Array.isArray(data) ? data : (data.participantes || data);
-    const catMap = { bai: 'Bailarín', bat: 'Batalla', dev: 'Impacto Tecnológico' };
-    return lista.filter(p =>
-      p.categoria === catMap[cat] && p.aprobado === 'APROBADO'
-    );
+    const lista = Array.isArray(data) ? data : (data.participantes || data || []);
+    return lista.filter(p => p.categoria === CAT_NOMBRES[cat] && p.aprobado === 'APROBADO');
   }
 
   async function cargarTodasLasPuntuaciones(cat) {
     try {
-      const url = `${CONFIG.GAS_URL()}?action=getPuntuaciones&categoria=${cat}`;
-      const r = await fetch(url);
+      const r = await fetch(`${CONFIG.GAS_URL()}?action=getPuntuaciones&categoria=${cat}`);
       const data = await r.json();
-      puntuacionesCache = {};
+      puntCache = {};
       if (data.ok && Array.isArray(data.puntuaciones)) {
         data.puntuaciones.forEach(p => {
-          if (!puntuacionesCache[p.id_participante]) puntuacionesCache[p.id_participante] = {};
-          puntuacionesCache[p.id_participante][p.juez_email] = p;
+          puntCache[p.id_participante] = {
+            total: p.total,
+            notas: safeParseJson(p.notas_json || p.notas, {})
+          };
         });
       }
-    } catch(e) { puntuacionesCache = {}; }
+    } catch(e) { puntCache = {}; }
   }
 
-  function renderListaParticipantes() {
-    const lista = document.getElementById('lista-participantes');
+  function renderLista() {
+    const el = document.getElementById('lista-participantes');
     const badge = document.getElementById('badge-count');
     badge.textContent = participantesCache.length;
-
+    badge.style.display = participantesCache.length > 0 ? '' : 'none';
     if (participantesCache.length === 0) {
-      lista.innerHTML = `<div style="font-size:0.82rem;color:var(--text-muted);padding:12px;text-align:center;">Sin participantes aprobados en esta categoría</div>`;
+      el.innerHTML = '<div class="sin-cat">Sin participantes aprobados en esta categoría.</div>';
       return;
     }
-
-    lista.innerHTML = participantesCache.map(p => {
-      const misNotas    = puntuacionesCache[p.id] && puntuacionesCache[p.id][usuarioActual.email];
-      const yaCalificado = !!misNotas;
-      const miTotal     = misNotas ? misNotas.total : null;
-      const isSelected  = participanteActual && participanteActual.id === p.id;
-      return `
-        <div class="participante-item ${yaCalificado?'calificado':''} ${isSelected?'selected':''}"
-             onclick="seleccionarParticipante('${p.id}')">
-          <div class="participante-dot"></div>
-          <div class="participante-info">
-            <div class="participante-nombre">${p.nombre}</div>
-            <div class="participante-robot">${p.robot}</div>
-          </div>
-          ${miTotal !== null ? `<div class="participante-score">${miTotal.toFixed(1)}</div>` : ''}
-        </div>`;
+    el.innerHTML = participantesCache.map(p => {
+      const punt = puntCache[p.id];
+      const calificado = !!punt;
+      const isActive = participanteActual && participanteActual.id === p.id;
+      return `<div class="participante-item ${calificado ? 'calificado' : ''} ${isActive ? 'active' : ''}" onclick="seleccionarParticipante('${p.id}')">
+        <div class="p-dot"></div>
+        <div class="p-info">
+          <div class="p-nombre">${p.nombre}</div>
+          <div class="p-robot">${p.robot}</div>
+        </div>
+        ${calificado ? `<div class="p-score">${Number(punt.total).toFixed(1)}</div>` : ''}
+      </div>`;
     }).join('');
   }
 
   function seleccionarParticipante(id) {
     participanteActual = participantesCache.find(p => p.id === id);
     if (!participanteActual) return;
-
     notasActuales = {};
-
-    const initials = participanteActual.nombre.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
-    document.getElementById('sel-avatar').textContent = initials;
-    document.getElementById('sel-nombre').textContent = participanteActual.nombre;
-    document.getElementById('sel-robot').textContent  = `${participanteActual.robot} · ${participanteActual.id}`;
-
-    const prevEval = puntuacionesCache[id] && puntuacionesCache[id][usuarioActual.email];
-    if (prevEval) {
-      criteriosActuales.forEach((_, i) => {
-        if (prevEval[`c${i}`] !== undefined) notasActuales[i] = prevEval[`c${i}`];
-      });
-      document.getElementById('prev-eval-msg').style.display = '';
+    const prev = puntCache[id];
+    if (prev && prev.notas) {
+      Object.entries(prev.notas).forEach(([k, v]) => { notasActuales[Number(k)] = v; });
+      document.getElementById('aviso-edit').style.display = '';
     } else {
-      document.getElementById('prev-eval-msg').style.display = 'none';
+      document.getElementById('aviso-edit').style.display = 'none';
     }
-
+    const ini = participanteActual.nombre.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('p-avatar').textContent = ini;
+    document.getElementById('p-nombre').textContent = participanteActual.nombre;
+    document.getElementById('p-robot').textContent  = `${participanteActual.robot} · ${participanteActual.id}`;
     actualizarTotal();
     renderCriterios();
-    renderListaParticipantes();
-
-    document.getElementById('empty-state').style.display = 'none';
-    document.getElementById('panel-evaluacion').style.display = '';
-
-    renderConfigCriterios();
-    if (tabActual === 'ranking') cargarRanking();
+    renderLista();
+    document.getElementById('empty-panel').style.display  = 'none';
+    document.getElementById('panel-activo').style.display = '';
   }
 
   function renderCriterios() {
-    const container = document.getElementById('criterios-container');
+    const c = document.getElementById('criterios-container');
     if (criteriosActuales.length === 0) {
-      container.innerHTML = `
-        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">
-          ${esStaff
-            ? '⚙️ No hay criterios configurados. Ve a la pestaña CONFIG para agregarlos.'
-            : '⚠️ El staff aún no ha configurado los criterios para esta categoría.'}
-        </div>`;
+      c.innerHTML = '<div class="loading-msg" style="padding:20px;">Sin criterios configurados.</div>';
       return;
     }
-    container.innerHTML = criteriosActuales.map((c, i) => `
-      <div class="criterio-card">
-        <div class="criterio-header">
-          <div>
-            <div class="criterio-name">${c.nombre}</div>
-            ${c.descripcion ? `<div class="criterio-desc">${c.descripcion}</div>` : ''}
-          </div>
-          <div class="criterio-val" id="val-${i}">${notasActuales[i] || '–'}</div>
+    c.innerHTML = criteriosActuales.map((cr, i) => `
+      <div class="criterio-row">
+        <div class="criterio-label">
+          <div class="criterio-nombre">${cr.nombre}</div>
+          ${cr.descripcion ? `<div class="criterio-desc">${cr.descripcion}</div>` : ''}
         </div>
-        <div class="stars-row">
-          ${[1,2,3,4,5].map(n => `
-            <button class="star-btn ${notasActuales[i]===n?'active':''}"
-                    onclick="setNota(${i}, ${n})" title="${n}/5">${n}</button>`).join('')}
+        <div class="criterio-val-display ${notasActuales[i] ? '' : 'vacio'}" id="cv-${i}">${notasActuales[i] || '—'}</div>
+        <div class="btns-nota">
+          ${[1,2,3,4,5].map(n => `<button class="btn-nota ${notasActuales[i] === n ? 'sel' : ''}" onclick="setNota(${i}, ${n})">${n}</button>`).join('')}
         </div>
       </div>`).join('');
   }
 
-  function setNota(criterioIdx, nota) {
-    notasActuales[criterioIdx] = nota;
+  function setNota(idx, nota) {
+    notasActuales[idx] = nota;
     actualizarTotal();
-    const card = document.querySelectorAll('.criterio-card')[criterioIdx];
-    if (!card) return;
-    card.querySelector('.criterio-val').textContent = nota;
-    card.querySelectorAll('.star-btn').forEach((btn, i) => {
-      btn.classList.toggle('active', i+1 === nota);
-    });
+    const display = document.getElementById(`cv-${idx}`);
+    if (display) { display.textContent = nota; display.classList.remove('vacio'); }
+    const btns = document.querySelectorAll('.criterio-row')[idx]?.querySelectorAll('.btn-nota');
+    btns?.forEach((b, i) => b.classList.toggle('sel', i + 1 === nota));
   }
 
   function actualizarTotal() {
-    const notas    = Object.values(notasActuales);
-    const completo = criteriosActuales.length > 0 && notas.length === criteriosActuales.length;
-    const total    = notas.length > 0 ? notas.reduce((a,b)=>a+b,0) / notas.length : null;
-    document.getElementById('total-display').textContent = total !== null ? total.toFixed(1) : '–';
+    const vals = Object.values(notasActuales);
+    const completo = criteriosActuales.length > 0 && vals.length === criteriosActuales.length;
+    const total = vals.length > 0 ? (vals.reduce((a,b)=>a+b,0) / vals.length) : null;
+    document.getElementById('total-display').textContent = total !== null ? total.toFixed(2) : '—';
     document.getElementById('btn-guardar').disabled = !completo;
   }
 
-  function limpiarNotas() {
-    notasActuales = {};
-    actualizarTotal();
-    renderCriterios();
-  }
+  function limpiarNotas() { notasActuales = {}; actualizarTotal(); renderCriterios(); }
 
   async function guardarPuntuacion() {
-    if (!participanteActual || !usuarioActual) return;
+    if (!participanteActual) return;
     const btn = document.getElementById('btn-guardar');
     btn.disabled = true;
-    btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;margin-bottom:0;"></div> GUARDANDO...';
-
+    btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-bottom:0;margin-right:6px;display:inline-block;"></span>GUARDANDO...';
     const total = Object.values(notasActuales).reduce((a,b)=>a+b,0) / criteriosActuales.length;
-
     const payload = {
-      action:          'guardarPuntuacion',
+      action: 'guardarPuntuacion',
       id_participante: participanteActual.id,
-      nombre:          participanteActual.nombre,
-      robot:           participanteActual.robot,
-      institucion:     participanteActual.institucion,
-      categoria:       categoriaActual,
-      juez_email:      usuarioActual.email,
-      juez_nombre:     usuarioActual.name || usuarioActual.email,
-      notas:           notasActuales,
-      criterios:       criteriosActuales,
-      total:           parseFloat(total.toFixed(4)),
-      timestamp:       new Date().toISOString()
+      nombre:      participanteActual.nombre,
+      robot:       participanteActual.robot,
+      institucion: participanteActual.institucion || '',
+      categoria:   categoriaActual,
+      juez_email:  'operador@sucrebot2026',
+      juez_nombre: 'Operador',
+      notas:       notasActuales,
+      criterios:   criteriosActuales,
+      total:       parseFloat(total.toFixed(4)),
+      timestamp:   new Date().toISOString()
     };
-
     try {
-      const r    = await fetch(CONFIG.GAS_URL(), { method: 'POST', body: JSON.stringify(payload) });
+      const r = await fetch(CONFIG.GAS_URL(), { method: 'POST', body: JSON.stringify(payload) });
       const data = await r.json();
       if (data.ok) {
-        if (!puntuacionesCache[participanteActual.id]) puntuacionesCache[participanteActual.id] = {};
-        const notasObj = {};
-        criteriosActuales.forEach((_, i) => { notasObj[`c${i}`] = notasActuales[i]; });
-        puntuacionesCache[participanteActual.id][usuarioActual.email] = { ...notasObj, total, juez_email: usuarioActual.email };
-        document.getElementById('prev-eval-msg').style.display = '';
-        renderListaParticipantes();
-        showToast('✓ Puntuación guardada correctamente', 'success');
-      } else {
-        showToast('Error: ' + (data.error || 'No se pudo guardar'), 'error');
-      }
-    } catch(e) {
-      showToast('Error de conexión: ' + e.message, 'error');
-    } finally {
+        puntCache[participanteActual.id] = { total, notas: { ...notasActuales } };
+        document.getElementById('aviso-edit').style.display = '';
+        renderLista();
+        cargarRanking();
+        showToast('Calificación guardada', 'success');
+      } else { showToast('Error: ' + (data.error || 'No se pudo guardar'), 'error'); }
+    } catch(e) { showToast('Error de conexión', 'error'); }
+    finally {
       btn.disabled = false;
-      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> GUARDAR PUNTUACIÓN`;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> GUARDAR CALIFICACIÓN';
     }
   }
 
   async function cargarRanking() {
-    const container = document.getElementById('ranking-container');
-    container.innerHTML = '<div class="loading"><div class="spinner"></div><br>Calculando...</div>';
+    const c = document.getElementById('ranking-container');
+    c.innerHTML = '<div class="loading-msg"><span class="spinner"></span>Calculando...</div>';
     try {
-      const url  = `${CONFIG.GAS_URL()}?action=getRankingCalificacion&categoria=${categoriaActual}`;
-      const r    = await fetch(url);
+      const r = await fetch(`${CONFIG.GAS_URL()}?action=getRankingCalificacion&categoria=${categoriaActual}`);
       const data = await r.json();
       if (!data.ok || !data.ranking || data.ranking.length === 0) {
-        container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">Sin puntuaciones registradas aún.</div>';
+        c.innerHTML = '<div class="loading-msg">Sin calificaciones registradas aún.</div>';
         return;
       }
-      const rows = data.ranking.map((item, idx) => {
-        const pos        = idx + 1;
-        const rankClass  = pos <= 3 ? `rank-${pos}` : '';
-        const medal      = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':`${pos}.`;
-        const scoreClass = pos <= 3 ? 'top' : '';
-        const jueces     = item.jueces || 1;
+      const filas = data.ranking.map((item, i) => {
+        const pos = i + 1;
+        const medal = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':pos+'.';
+        const cls = pos===1?'r1':pos===2?'r2':pos===3?'r3':'';
         return `<tr>
-          <td><span class="rank-num ${rankClass}">${medal}</span></td>
-          <td>
-            <div style="font-weight:600;font-size:0.85rem;">${item.nombre}</div>
-            <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-muted);">${item.robot}</div>
-          </td>
-          <td><span class="score-badge ${scoreClass}">${item.promedio_final.toFixed(2)}</span></td>
-          <td style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text-muted);">${jueces} juez${jueces>1?'ces':''}</td>
+          <td><span class="rank-pos ${cls}">${medal}</span></td>
+          <td><div style="font-weight:600">${item.nombre}</div><div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-muted)">${item.robot}</div></td>
+          <td><span class="score-pill ${pos<=3?'top':''}">${Number(item.promedio_final).toFixed(2)}</span></td>
         </tr>`;
       }).join('');
-      container.innerHTML = `
-        <table class="ranking-table">
-          <thead><tr><th>#</th><th>PARTICIPANTE</th><th>PROMEDIO</th><th>EVALUACIONES</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>`;
-    } catch(e) {
-      container.innerHTML = `<div style="color:var(--danger);font-size:0.8rem;padding:12px;">Error: ${e.message}</div>`;
-    }
+      c.innerHTML = `<table class="ranking-table"><thead><tr><th>#</th><th>Participante</th><th>Promedio</th></tr></thead><tbody>${filas}</tbody></table>`;
+    } catch(e) { c.innerHTML = '<div class="loading-msg" style="color:var(--danger)">Error al cargar ranking</div>'; }
   }
 
-  function renderConfigCriterios() {
-    if (!esStaff) return;
-    const list = document.getElementById('config-criterios-list');
-    list.innerHTML = criteriosActuales.map((c, i) => `
-      <div class="criterio-config-row" data-idx="${i}">
-        <input type="text" placeholder="Nombre del criterio" value="${c.nombre}"
-               oninput="updateCriterioConfig(${i}, 'nombre', this.value)" />
-        <input type="text" placeholder="Descripción (opcional)" value="${c.descripcion||''}"
-               oninput="updateCriterioConfig(${i}, 'descripcion', this.value)" />
-        <button class="btn-del" onclick="eliminarCriterio(${i})" title="Eliminar">✕</button>
-      </div>`).join('');
+  function resetPanel() {
+    document.getElementById('empty-panel').style.display  = '';
+    document.getElementById('panel-activo').style.display = 'none';
+    participanteActual = null;
   }
 
-  function updateCriterioConfig(idx, campo, valor) { if (criteriosActuales[idx]) criteriosActuales[idx][campo] = valor; }
-  function agregarCriterio() { criteriosActuales.push({ nombre: '', descripcion: '' }); renderConfigCriterios(); }
-  function eliminarCriterio(idx) { criteriosActuales.splice(idx, 1); renderConfigCriterios(); }
-
-  async function guardarCriterios() {
-    const limpios = criteriosActuales.filter(c => c.nombre.trim());
-    if (limpios.length === 0) { showToast('Agrega al menos un criterio', 'error'); return; }
-    criteriosActuales = limpios;
-    const btn = event.target;
-    btn.disabled = true; btn.textContent = 'GUARDANDO...';
-    try {
-      const r    = await fetch(CONFIG.GAS_URL(), { method: 'POST', body: JSON.stringify({ action: 'guardarCriterios', categoria: categoriaActual, criterios: criteriosActuales }) });
-      const data = await r.json();
-      if (data.ok) {
-        showToast('✓ Criterios guardados', 'success');
-        document.getElementById('criterios-count').textContent = `${criteriosActuales.length} criterios definidos`;
-        if (participanteActual) renderCriterios();
-      } else { showToast('Error: ' + (data.error || ''), 'error'); }
-    } catch(e) { showToast('Error: ' + e.message, 'error'); }
-    finally { btn.disabled = false; btn.textContent = 'GUARDAR CONFIGURACIÓN'; }
-  }
-
-  function switchTab(tab, btnEl) {
-    tabActual = tab;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btnEl.classList.add('active');
-    document.getElementById('tab-calificar').style.display    = tab === 'calificar' ? '' : 'none';
-    document.getElementById('tab-ranking').style.display      = tab === 'ranking'   ? '' : 'none';
-    document.getElementById('tab-config-panel').style.display = tab === 'config'    ? '' : 'none';
-    if (tab === 'ranking') cargarRanking();
-    if (tab === 'config')  renderConfigCriterios();
+  function safeParseJson(str, fallback) {
+    try { return typeof str === 'string' ? JSON.parse(str) : (str || fallback); }
+    catch(e) { return fallback; }
   }
 
   function showToast(msg, type = 'success') {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = `toast ${type} show`;
-    setTimeout(() => t.classList.remove('show'), 3500);
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
   </script>
 </body>
