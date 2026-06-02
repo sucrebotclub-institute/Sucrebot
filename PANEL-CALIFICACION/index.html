@@ -9,358 +9,215 @@
   <script src="../shared/js/config.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <!-- SheetJS para exportar Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
-      --blue:       #1a5ca8;
-      --blue-dark:  #0e2a5a;
-      --blue-mid:   #1a3a6e;
-      --cyan:       #5bc8f0;
-      --cyan-bright:#90dcff;
-      --blue-light: #e8f0fb;
-      --text:       #1a1a2e;
-      --text-muted: #7a7a8c;
-      --border:     #d1d9e6;
-      --bg:         #f5f7fa;
-      --white:      #ffffff;
-      --success:    #16a34a;
-      --danger:     #dc2626;
-      --gold:       #ca8a04;
+      --blue:#1a5ca8; --blue-dark:#0e2a5a; --blue-mid:#1a3a6e;
+      --cyan:#5bc8f0; --cyan-bright:#90dcff;
+      --blue-light:#e8f0fb;
+      --text:#1a1a2e; --text-muted:#7a7a8c;
+      --border:#d1d9e6; --bg:#f5f7fa; --white:#ffffff;
+      --success:#16a34a; --danger:#dc2626; --gold:#ca8a04;
+      --warning:#d97706;
     }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:#fff; color:var(--text); font-family:'Exo 2',sans-serif; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #ffffff; color: var(--text); font-family: 'Exo 2', sans-serif; }
-
-    /* ── PANEL DECORATIVO IZQUIERDO ── */
+    /* ── PANEL LATERAL DECORATIVO ── */
     .wrapper {
-      position: relative;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 20px 80px;
-      overflow: visible;
+      position:relative; max-width:1100px;
+      margin:0 auto; padding:0 20px 80px; overflow:visible;
     }
     .wrapper::before {
-      content: '';
-      position: absolute;
-      left: -600px; top: 0; bottom: 0;
-      width: 580px;
+      content:''; position:absolute;
+      left:-600px; top:0; bottom:0; width:580px;
       background:
-        linear-gradient(135deg, rgba(26,92,168,0.85) 0%, rgba(18,20,26,0.90) 100%),
-        url('https://github.com/sucrebotclub-institute/Sucrebot/blob/main/shared/images/foto3.jpg?raw=true') 5% center / cover no-repeat;
-      border-radius: 0 16px 16px 0;
-      box-shadow: 0 8px 32px rgba(26,92,168,0.3);
-      border-right: 2px solid rgba(91,200,240,0.3);
-      z-index: 1;
+        linear-gradient(135deg,rgba(26,92,168,.85) 0%,rgba(18,20,26,.90) 100%),
+        url('https://github.com/sucrebotclub-institute/Sucrebot/blob/main/shared/images/foto3.jpg?raw=true') 5% center/cover no-repeat;
+      border-radius:0 16px 16px 0;
+      box-shadow:0 8px 32px rgba(26,92,168,.3);
+      border-right:2px solid rgba(91,200,240,.3); z-index:1;
     }
 
     /* ── HERO ── */
-    .page-hero {
-      padding: 80px 0 32px;
-      margin-bottom: 32px;
-      text-align: left;
-      position: relative;
-      z-index: 1;
-    }
-    .page-hero-badge {
-      display: block;
-      width: fit-content;
-      background: var(--blue);
-      color: #ffffff;
-      font-family: 'Orbitron', monospace;
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 3px;
-      padding: 6px 16px;
-      border-radius: 20px;
-      margin-bottom: 14px;
-      text-transform: uppercase;
-    }
-    .page-hero-badge-dot {
-      display: inline-block;
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #ffffff;
-      animation: blink 1.6s infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
+    .page-hero { padding:80px 0 32px; margin-bottom:32px; text-align:left; position:relative; z-index:1; }
+    .page-hero-badge { display:block; width:fit-content; background:var(--blue); color:#fff; font-family:'Orbitron',monospace; font-size:9px; font-weight:700; letter-spacing:3px; padding:6px 16px; border-radius:20px; margin-bottom:14px; text-transform:uppercase; }
+    .page-hero-badge-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:#fff; animation:blink 1.6s infinite; margin-right:8px; vertical-align:middle; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+    .page-hero h2 { font-family:'Bebas Neue',sans-serif; font-size:2.8rem; letter-spacing:3px; color:var(--blue-mid); line-height:1; position:relative; display:block; margin-bottom:20px; }
+    .page-hero h2::after { content:''; position:absolute; bottom:-10px; left:0; width:100%; height:3px; background:linear-gradient(90deg,transparent 0%,#5bc8f0 50%,transparent 100%); border-radius:2px; }
+    .page-hero h2 span { color:var(--blue); }
+    .page-hero p { font-size:13px; color:var(--text-muted); letter-spacing:.5px; margin-top:4px; }
 
-    .page-hero h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2.8rem;
-      letter-spacing: 3px;
-      color: var(--blue-mid);
-      line-height: 1;
-      position: relative;
-      display: block;
-      margin-bottom: 20px;
+    /* ── PASOS ── */
+    .pasos-bar {
+      display:flex; gap:0; margin-bottom:28px;
+      border:1.5px solid var(--border); border-radius:8px;
+      overflow:hidden; position:relative; z-index:1;
+      background:var(--white);
     }
-    .page-hero h2::after {
-      content: '';
-      position: absolute;
-      bottom: -10px; left: 0;
-      width: 100%; height: 3px;
-      background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%);
-      border-radius: 2px;
+    .paso-item {
+      flex:1; padding:12px 8px; text-align:center;
+      border-right:1px solid var(--border);
+      font-family:'Orbitron',monospace; font-size:0.6rem;
+      letter-spacing:1.5px; color:var(--text-muted);
+      text-transform:uppercase; transition:all .2s;
+      cursor:default; user-select:none;
     }
-    .page-hero h2 span { color: var(--blue); }
-    .page-hero p {
-      font-size: 13px; color: var(--text-muted);
-      letter-spacing: 0.5px; margin-top: 4px;
-    }
+    .paso-item:last-child { border-right:none; }
+    .paso-item .paso-num { font-size:1rem; font-weight:700; display:block; margin-bottom:3px; color:var(--border); }
+    .paso-item.activo { background:var(--blue); color:#fff; }
+    .paso-item.activo .paso-num { color:var(--cyan); }
+    .paso-item.completo { background:var(--bg); color:var(--success); }
+    .paso-item.completo .paso-num { color:var(--success); }
 
-    /* ── SELECTOR CATEGORÍA ── */
-    .cat-bar {
-      display: flex; align-items: center; gap: 12px;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 18px;
-      margin-bottom: 24px;
-      position: relative; z-index: 1;
-    }
-    .cat-bar-label {
-      font-family: 'Orbitron', monospace;
-      font-size: 0.65rem; letter-spacing: 2px;
-      color: var(--text-muted); text-transform: uppercase;
-      white-space: nowrap;
-    }
-    .cat-bar select {
-      flex: 1; padding: 9px 12px;
-      border: 1.5px solid var(--border); border-radius: 6px;
-      font-family: 'Exo 2', sans-serif; font-size: 0.95rem;
-      font-weight: 600; color: var(--text);
-      background: var(--bg); outline: none;
-      transition: border-color 0.15s; cursor: pointer;
-    }
-    .cat-bar select:focus { border-color: var(--blue); }
-    .cat-info {
-      font-family: 'DM Mono', monospace; font-size: 0.72rem;
-      color: var(--text-muted); white-space: nowrap;
-    }
+    /* ── CARDS GENERALES ── */
+    .card { background:var(--white); border:1.5px solid var(--border); border-radius:8px; padding:24px; position:relative; z-index:1; }
+    .card + .card { margin-top:20px; }
+    .card-title { font-family:'Orbitron',monospace; font-size:.7rem; letter-spacing:2px; color:var(--blue); text-transform:uppercase; margin-bottom:18px; padding-bottom:12px; border-bottom:2px solid var(--cyan); display:flex; align-items:center; gap:8px; }
 
-    /* ── LAYOUT DOS COLUMNAS ── */
-    .layout {
-      display: flex; gap: 20px; align-items: flex-start;
-      position: relative; z-index: 1;
+    /* ── PASO 1: CONFIGURAR ── */
+    .config-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field label { font-family:'Orbitron',monospace; font-size:.62rem; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; }
+    .field select, .field input[type="number"], .field input[type="text"] {
+      padding:10px 12px; border:1.5px solid var(--border); border-radius:6px;
+      font-family:'Exo 2',sans-serif; font-size:.9rem; font-weight:600;
+      color:var(--text); background:var(--bg); outline:none;
+      transition:border-color .15s;
     }
+    .field select:focus, .field input:focus { border-color:var(--blue); }
 
-    /* ── LISTA PARTICIPANTES ── */
-    .col-lista { width: 240px; flex-shrink: 0; }
-    .col-lista-header {
-      font-family: 'Orbitron', monospace;
-      font-size: 0.65rem; letter-spacing: 2px;
-      color: var(--text-muted); text-transform: uppercase;
-      padding: 0 4px; margin-bottom: 10px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .col-lista-header span {
-      background: var(--blue); color: white;
-      font-size: 0.6rem; padding: 2px 7px; border-radius: 10px;
-    }
+    .criterios-config { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .criterio-config-row { display:flex; gap:8px; align-items:center; }
+    .criterio-config-row input { flex:1; padding:9px 12px; border:1.5px solid var(--border); border-radius:6px; font-family:'Exo 2',sans-serif; font-size:.85rem; outline:none; transition:border-color .15s; }
+    .criterio-config-row input:focus { border-color:var(--blue); }
+    .criterio-config-row input.desc { flex:.8; font-size:.78rem; color:var(--text-muted); }
+    .btn-del-criterio { width:30px; height:30px; border:1.5px solid #fecaca; background:#fff; color:var(--danger); border-radius:5px; cursor:pointer; font-size:.9rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .12s; }
+    .btn-del-criterio:hover { background:#fee2e2; }
+    .btn-add-criterio { width:100%; padding:9px; border:1.5px dashed var(--border); border-radius:6px; background:transparent; cursor:pointer; font-family:'Exo 2',sans-serif; font-size:.85rem; color:var(--text-muted); transition:all .12s; }
+    .btn-add-criterio:hover { border-color:var(--blue); color:var(--blue); }
 
-    .participante-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 13px;
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: 7px; cursor: pointer;
-      margin-bottom: 5px;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .participante-item:hover { border-color: var(--blue); background: var(--blue-light); }
-    .participante-item.active { border-color: var(--blue); background: var(--blue-light); }
-    .participante-item.calificado { border-color: #86efac; background: #f0fdf4; }
-    .participante-item.calificado.active { border-color: var(--success); background: #dcfce7; }
+    .jueces-config { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+    .juez-row { display:flex; gap:8px; align-items:center; }
+    .juez-row .juez-num { font-family:'Orbitron',monospace; font-size:.65rem; color:var(--text-muted); width:56px; flex-shrink:0; }
+    .juez-row input { flex:1; padding:8px 12px; border:1.5px solid var(--border); border-radius:6px; font-family:'Exo 2',sans-serif; font-size:.85rem; outline:none; transition:border-color .15s; }
+    .juez-row input:focus { border-color:var(--blue); }
 
-    .p-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
-    .participante-item.calificado .p-dot { background: var(--success); }
-    .participante-item.active .p-dot { background: var(--blue); }
-    .p-info { flex: 1; min-width: 0; }
-    .p-nombre { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .p-robot { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
-    .p-score { font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700; color: var(--success); flex-shrink: 0; }
+    /* ── PASO 2: ESCÁNER ── */
+    .scanner-area { position:relative; }
+    .qr-input-row { display:flex; gap:10px; align-items:center; }
+    .qr-input { flex:1; padding:12px 16px; border:2px solid var(--border); border-radius:8px; font-family:'DM Mono',monospace; font-size:1rem; outline:none; transition:border-color .15s; background:var(--bg); }
+    .qr-input:focus { border-color:var(--blue); background:#fff; }
+    .btn-scan-cam { padding:12px 16px; background:var(--blue); color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Orbitron',monospace; font-size:.65rem; letter-spacing:1.5px; transition:background .15s; white-space:nowrap; }
+    .btn-scan-cam:hover { background:#1650a0; }
 
-    /* ── PANEL DERECHO ── */
-    .col-panel { flex: 1; min-width: 0; }
+    .robot-activo-card {
+      margin-top:16px; padding:16px 20px;
+      background:var(--blue-dark); border-radius:8px;
+      display:flex; align-items:center; gap:16px; color:#fff;
+    }
+    .robot-activo-avatar { width:48px; height:48px; border-radius:7px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-family:'Orbitron',monospace; font-weight:700; font-size:1.1rem; color:var(--cyan); flex-shrink:0; }
+    .robot-activo-info h3 { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:2px; }
+    .robot-activo-info p { font-family:'DM Mono',monospace; font-size:.7rem; color:rgba(255,255,255,.55); margin-top:2px; }
+    .robot-activo-ronda { margin-left:auto; text-align:center; flex-shrink:0; }
+    .ronda-num-display { font-family:'Orbitron',monospace; font-weight:700; font-size:1.6rem; color:var(--cyan); line-height:1; }
+    .ronda-lbl { font-family:'DM Mono',monospace; font-size:.58rem; color:rgba(255,255,255,.4); letter-spacing:2px; margin-top:2px; }
 
-    .empty-panel {
-      background: var(--white); border: 1.5px dashed var(--border);
-      border-radius: 8px; padding: 60px 24px; text-align: center;
-    }
-    .empty-panel-icon { font-size: 2.5rem; margin-bottom: 14px; opacity: 0.3; }
-    .empty-panel h3 { font-family: 'Orbitron', monospace; font-size: 0.75rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px; }
-    .empty-panel p { font-size: 0.82rem; color: var(--text-muted); }
+    .ronda-selector { display:flex; gap:8px; margin-top:12px; align-items:center; flex-wrap:wrap; }
+    .ronda-selector label { font-family:'Orbitron',monospace; font-size:.62rem; letter-spacing:1.5px; color:var(--text-muted); }
+    .btn-ronda { padding:7px 14px; border:1.5px solid var(--border); border-radius:5px; cursor:pointer; font-family:'Orbitron',monospace; font-size:.65rem; font-weight:700; color:var(--text-muted); background:var(--bg); transition:all .12s; }
+    .btn-ronda:hover { border-color:var(--blue); color:var(--blue); }
+    .btn-ronda.sel { background:var(--blue); border-color:var(--blue); color:#fff; }
 
-    /* Cabecera participante */
-    .participante-header {
-      background: var(--blue-dark);
-      border-radius: 8px 8px 0 0;
-      padding: 16px 20px;
-      display: flex; align-items: center; gap: 14px;
-    }
-    .p-avatar {
-      width: 44px; height: 44px; border-radius: 6px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Orbitron', monospace; font-weight: 700;
-      font-size: 1rem; color: white; flex-shrink: 0;
-    }
-    .p-header-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: white; }
-    .p-header-info p { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
-    .p-header-total { margin-left: auto; text-align: center; }
-    .total-num { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 2rem; color: var(--cyan); line-height: 1; }
-    .total-lbl { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+    /* ── PASO 3: CALIFICAR ── */
+    .tabla-calificacion { width:100%; border-collapse:collapse; font-size:.85rem; }
+    .tabla-calificacion thead tr { background:var(--blue-dark); color:#fff; }
+    .tabla-calificacion th { padding:10px 14px; font-family:'Orbitron',monospace; font-size:.6rem; letter-spacing:1.5px; text-align:center; border-right:1px solid rgba(255,255,255,.1); }
+    .tabla-calificacion th:first-child { text-align:left; }
+    .tabla-calificacion th:last-child { border-right:none; }
+    .tabla-calificacion td { padding:10px 14px; border-bottom:1px solid var(--bg); border-right:1px solid var(--border); text-align:center; vertical-align:middle; }
+    .tabla-calificacion td:first-child { text-align:left; border-right:1px solid var(--border); }
+    .tabla-calificacion td:last-child { border-right:none; background:var(--blue-light); }
+    .tabla-calificacion tr:hover td { background:#f0f6ff; }
+    .tabla-calificacion tr:hover td:last-child { background:#dbeafe; }
 
-    /* Criterios */
-    .criterios-area {
-      background: var(--white);
-      border: 1.5px solid var(--border); border-top: none;
-      border-radius: 0 0 8px 8px; padding: 20px;
-    }
-    .criterio-row {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 0; border-bottom: 1px solid var(--bg);
-    }
-    .criterio-row:last-of-type { border-bottom: none; }
-    .criterio-label { flex: 1; min-width: 0; }
-    .criterio-nombre { font-size: 0.9rem; font-weight: 600; color: var(--text); }
-    .criterio-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-    .criterio-val-display {
-      font-family: 'Orbitron', monospace; font-weight: 700;
-      font-size: 1.4rem; color: var(--blue);
-      width: 32px; text-align: center; flex-shrink: 0;
-    }
-    .criterio-val-display.vacio { color: var(--border); }
-    .btns-nota { display: flex; gap: 5px; flex-shrink: 0; }
-    .btn-nota {
-      width: 36px; height: 36px;
-      border: 1.5px solid var(--border); border-radius: 5px;
-      cursor: pointer; font-family: 'Orbitron', monospace;
-      font-weight: 700; font-size: 0.8rem; color: var(--text-muted);
-      background: var(--bg); transition: all 0.12s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .btn-nota:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
-    .btn-nota.sel { background: var(--blue); border-color: var(--blue); color: white; }
+    .criterio-td-nombre { font-weight:600; }
+    .criterio-td-desc { font-size:.7rem; color:var(--text-muted); margin-top:2px; }
 
-    .acciones-bar {
-      display: flex; align-items: center; gap: 10px;
-      padding-top: 18px; margin-top: 4px;
-      border-top: 1px solid var(--border);
-    }
-    .btn-guardar {
-      flex: 1; padding: 13px;
-      background: var(--blue); color: white;
-      border: none; border-radius: 6px; cursor: pointer;
-      font-family: 'Orbitron', monospace; font-size: 0.72rem;
-      letter-spacing: 2px; text-transform: uppercase;
-      transition: background 0.15s;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-guardar:hover:not(:disabled) { background: #1650a0; }
-    .btn-guardar:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-limpiar {
-      padding: 13px 16px; background: var(--white);
-      color: var(--text-muted); border: 1.5px solid var(--border);
-      border-radius: 6px; cursor: pointer;
-      font-family: 'DM Mono', monospace; font-size: 0.72rem;
-      transition: all 0.12s;
-    }
-    .btn-limpiar:hover { border-color: var(--danger); color: var(--danger); }
+    .nota-btns { display:flex; gap:3px; justify-content:center; }
+    .nota-btn { width:30px; height:30px; border:1.5px solid var(--border); border-radius:4px; cursor:pointer; font-family:'Orbitron',monospace; font-weight:700; font-size:.72rem; color:var(--text-muted); background:var(--bg); transition:all .1s; display:flex; align-items:center; justify-content:center; }
+    .nota-btn:hover { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
+    .nota-btn.sel { background:var(--blue); border-color:var(--blue); color:#fff; }
 
-    .aviso-edit {
-      display: none; margin-top: 12px; padding: 10px 14px;
-      background: #fefce8; border: 1px solid #fde047;
-      border-radius: 6px; font-size: 0.78rem; color: #78350f;
-    }
+    .promedio-criterio { font-family:'Orbitron',monospace; font-weight:700; font-size:.9rem; color:var(--blue); }
+    .promedio-criterio.vacio { color:var(--border); }
 
-    /* Ranking */
-    .ranking-section {
-      margin-top: 24px; background: var(--white);
-      border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden;
-    }
-    .ranking-head {
-      padding: 12px 18px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .ranking-head-title {
-      font-family: 'Orbitron', monospace; font-size: 0.65rem;
-      letter-spacing: 2px; color: var(--blue); text-transform: uppercase;
-    }
-    .btn-refresh {
-      border: 1px solid var(--border); background: var(--bg);
-      border-radius: 5px; padding: 5px 10px; cursor: pointer;
-      font-family: 'DM Mono', monospace; font-size: 0.68rem;
-      color: var(--text-muted); transition: all 0.12s;
-    }
-    .btn-refresh:hover { border-color: var(--blue); color: var(--blue); }
+    .total-row td { background:var(--blue-dark) !important; color:#fff; font-family:'Orbitron',monospace; font-weight:700; }
+    .total-val { font-size:1.4rem; color:var(--cyan); }
 
-    .ranking-table { width: 100%; border-collapse: collapse; }
-    .ranking-table th {
-      font-family: 'Orbitron', monospace; font-size: 0.6rem;
-      letter-spacing: 1.5px; color: var(--text-muted);
-      text-align: left; padding: 9px 18px;
-      border-bottom: 1px solid var(--border); background: var(--bg);
-    }
-    .ranking-table td {
-      padding: 12px 18px; font-size: 0.85rem;
-      border-bottom: 1px solid var(--bg); color: var(--text);
-    }
-    .ranking-table tr:last-child td { border-bottom: none; }
-    .ranking-table tr:hover td { background: var(--blue-light); }
-    .rank-pos { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 0.9rem; }
-    .r1 { color: var(--gold); } .r2 { color: var(--text-muted); } .r3 { color: #92400e; }
-    .score-pill {
-      display: inline-block; background: var(--blue-light);
-      color: var(--blue); font-family: 'Orbitron', monospace;
-      font-weight: 700; font-size: 0.72rem;
-      padding: 3px 10px; border-radius: 4px;
-    }
-    .score-pill.top { background: var(--blue); color: white; }
+    /* ── PASO 4: RANKING ── */
+    .ranking-table { width:100%; border-collapse:collapse; }
+    .ranking-table th { font-family:'Orbitron',monospace; font-size:.6rem; letter-spacing:1.5px; color:var(--text-muted); text-align:left; padding:9px 14px; border-bottom:1px solid var(--border); background:var(--bg); }
+    .ranking-table td { padding:12px 14px; font-size:.85rem; border-bottom:1px solid var(--bg); }
+    .ranking-table tr:hover td { background:var(--blue-light); }
+    .rank-pos { font-family:'Orbitron',monospace; font-weight:700; font-size:.9rem; }
+    .r1{color:var(--gold)} .r2{color:var(--text-muted)} .r3{color:#92400e}
+    .score-pill { display:inline-block; background:var(--blue-light); color:var(--blue); font-family:'Orbitron',monospace; font-weight:700; font-size:.72rem; padding:3px 10px; border-radius:4px; }
+    .score-pill.top { background:var(--blue); color:#fff; }
+    .rondas-pill { font-family:'DM Mono',monospace; font-size:.68rem; color:var(--text-muted); }
 
-    /* Loading / utilidades */
-    .loading-msg {
-      text-align: center; padding: 28px;
-      font-family: 'DM Mono', monospace; font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-    .spinner {
-      display: inline-block; width: 18px; height: 18px;
-      border: 2px solid var(--border); border-top-color: var(--blue);
-      border-radius: 50%; animation: spin 0.7s linear infinite;
-      vertical-align: middle; margin-right: 6px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* ── BOTONES ACCIÓN ── */
+    .btn-primary { padding:13px 24px; background:var(--blue); color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:'Orbitron',monospace; font-size:.72rem; letter-spacing:2px; text-transform:uppercase; transition:background .15s; display:inline-flex; align-items:center; gap:8px; }
+    .btn-primary:hover:not(:disabled) { background:#1650a0; }
+    .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+    .btn-secondary { padding:12px 20px; background:var(--white); color:var(--text-muted); border:1.5px solid var(--border); border-radius:6px; cursor:pointer; font-family:'DM Mono',monospace; font-size:.72rem; transition:all .12s; display:inline-flex; align-items:center; gap:8px; }
+    .btn-secondary:hover { border-color:var(--blue); color:var(--blue); }
+    .btn-danger { padding:12px 20px; background:#fff; color:var(--danger); border:1.5px solid #fecaca; border-radius:6px; cursor:pointer; font-family:'Orbitron',monospace; font-size:.68rem; letter-spacing:1.5px; transition:all .12s; display:inline-flex; align-items:center; gap:8px; }
+    .btn-danger:hover { background:#fee2e2; border-color:var(--danger); }
+    .btn-success { padding:13px 24px; background:var(--success); color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:'Orbitron',monospace; font-size:.72rem; letter-spacing:2px; transition:background .15s; display:inline-flex; align-items:center; gap:8px; }
+    .btn-success:hover { background:#15803d; }
 
-    .sin-cat {
-      background: var(--white); border: 1.5px dashed var(--border);
-      border-radius: 8px; padding: 36px 20px; text-align: center;
-      font-family: 'DM Mono', monospace; font-size: 0.78rem;
-      color: var(--text-muted);
-    }
+    .acciones-bar { display:flex; gap:10px; align-items:center; margin-top:20px; flex-wrap:wrap; }
 
-    .toast {
-      position: fixed; bottom: 24px; right: 24px;
-      padding: 12px 20px; border-radius: 6px;
-      font-family: 'Exo 2', sans-serif; font-size: 0.88rem;
-      font-weight: 600; color: white;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-      transform: translateY(60px); opacity: 0;
-      transition: all 0.25s ease; z-index: 9999;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.success { background: var(--success); }
-    .toast.error   { background: var(--danger); }
+    /* ── ESTADO BLOQUEADO ── */
+    .bloqueo-badge { display:inline-flex; align-items:center; gap:8px; background:#fef3c7; border:1.5px solid #fde68a; color:#92400e; padding:8px 14px; border-radius:6px; font-family:'DM Mono',monospace; font-size:.75rem; margin-bottom:16px; }
+    .bloqueo-dot { width:8px; height:8px; border-radius:50%; background:var(--warning); animation:blink 1s infinite; }
 
-    @media (max-width: 768px) {
-      .wrapper::before { display: none; }
-      .layout { flex-direction: column; }
-      .col-lista { width: 100%; }
-      .page-hero { padding: 32px 0 24px; }
-      .page-hero h2 { font-size: 1.9rem; }
-      .btns-nota { gap: 4px; }
-      .btn-nota { width: 32px; height: 32px; font-size: 0.75rem; }
+    /* ── AVISO RE-EDICIÓN ── */
+    .aviso { margin-top:12px; padding:10px 14px; border-radius:6px; font-size:.78rem; font-family:'Exo 2',sans-serif; }
+    .aviso.warning { background:#fefce8; border:1px solid #fde047; color:#78350f; }
+    .aviso.success { background:#f0fdf4; border:1px solid #86efac; color:#14532d; }
+
+    /* ── LOADING ── */
+    .loading-msg { text-align:center; padding:28px; font-family:'DM Mono',monospace; font-size:.78rem; color:var(--text-muted); }
+    .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--blue); border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* ── TOAST ── */
+    .toast { position:fixed; bottom:24px; right:24px; padding:12px 20px; border-radius:6px; font-family:'Exo 2',sans-serif; font-size:.88rem; font-weight:600; color:#fff; box-shadow:0 4px 16px rgba(0,0,0,.15); transform:translateY(60px); opacity:0; transition:all .25s ease; z-index:9999; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.success { background:var(--success); }
+    .toast.error   { background:var(--danger); }
+    .toast.info    { background:var(--blue); }
+
+    /* ── MODAL CONFIRMAR CERRAR ── */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9998; align-items:center; justify-content:center; }
+    .modal-overlay.show { display:flex; }
+    .modal-card { background:#fff; border-radius:12px; padding:28px; max-width:420px; width:90%; box-shadow:0 16px 48px rgba(0,0,0,.2); }
+    .modal-card h3 { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--blue-mid); margin-bottom:10px; }
+    .modal-card p { font-size:.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:20px; }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+    @media(max-width:768px){
+      .wrapper::before{display:none}
+      .page-hero{padding:32px 0 24px}
+      .page-hero h2{font-size:1.9rem}
+      .config-grid{grid-template-columns:1fr}
+      .tabla-calificacion{font-size:.75rem}
+      .nota-btn{width:26px;height:26px;font-size:.65rem}
+      .pasos-bar{display:none}
     }
   </style>
 </head>
@@ -373,95 +230,237 @@
 </div>
 
 <main>
-  <div class="wrapper">
+<div class="wrapper">
 
-    <!-- HERO -->
-    <div class="page-hero">
-      <div class="page-hero-badge">
-        <div class="page-hero-badge-dot"></div>
-        SUCREBOT 2026 · JUECES
-      </div>
-      <h2>PANEL DE <span>CALIFICACIÓN</span></h2>
-      <div class="page-hero-sub">
-        <p>INGRESO DE PUNTUACIONES DEL JURADO</p>
-      </div>
+  <!-- HERO -->
+  <div class="page-hero">
+    <div class="page-hero-badge">
+      <div class="page-hero-badge-dot"></div>
+      SUCREBOT 2026 · JUECES
     </div>
+    <h2>PANEL DE <span>CALIFICACIÓN</span></h2>
+    <p>GESTIÓN COMPLETA DEL CONCURSO POR PUNTUACIÓN</p>
+  </div>
 
-    <!-- SELECTOR CATEGORÍA -->
-    <div class="cat-bar">
-      <span class="cat-bar-label">Categoría</span>
-      <select id="sel-categoria" onchange="onCategoriaChange()">
-        <option value="">— Selecciona una categoría —</option>
-        <option value="bai">Bailarín</option>
-        <option value="dev">Impacto Tecnológico</option>
-      </select>
-      <span class="cat-info" id="cat-info"></span>
+  <!-- BARRA DE PASOS -->
+  <div class="pasos-bar" id="pasos-bar">
+    <div class="paso-item activo" id="paso-1-tab">
+      <span class="paso-num">1</span>Configurar
     </div>
-
-    <!-- LAYOUT -->
-    <div class="layout">
-
-      <!-- Lista -->
-      <div class="col-lista">
-        <div class="col-lista-header">
-          Participantes
-          <span id="badge-count" style="display:none"></span>
-        </div>
-        <div id="lista-participantes">
-          <div class="sin-cat">Selecciona una categoría.</div>
-        </div>
-      </div>
-
-      <!-- Panel -->
-      <div class="col-panel">
-
-        <div id="empty-panel" class="empty-panel">
-          <div class="empty-panel-icon">📋</div>
-          <h3>Sin participante seleccionado</h3>
-          <p>Elige un participante de la lista para ingresar las calificaciones.</p>
-        </div>
-
-        <div id="panel-activo" style="display:none">
-          <div class="participante-header">
-            <div class="p-avatar" id="p-avatar">?</div>
-            <div class="p-header-info">
-              <h3 id="p-nombre">—</h3>
-              <p id="p-robot">—</p>
-            </div>
-            <div class="p-header-total">
-              <div class="total-num" id="total-display">—</div>
-              <div class="total-lbl">Promedio</div>
-            </div>
-          </div>
-          <div class="criterios-area">
-            <div id="criterios-container"></div>
-            <div class="acciones-bar">
-              <button class="btn-limpiar" onclick="limpiarNotas()">↺ Limpiar</button>
-              <button class="btn-guardar" id="btn-guardar" onclick="guardarPuntuacion()" disabled>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                GUARDAR CALIFICACIÓN
-              </button>
-            </div>
-            <div class="aviso-edit" id="aviso-edit">
-              ⚠ Este participante ya tiene calificación. Al guardar se reemplazará.
-            </div>
-          </div>
-        </div>
-
-        <div id="ranking-section" class="ranking-section" style="display:none">
-          <div class="ranking-head">
-            <span class="ranking-head-title">Ranking de calificaciones</span>
-            <button class="btn-refresh" onclick="cargarRanking()">↺ Actualizar</button>
-          </div>
-          <div id="ranking-container">
-            <div class="loading-msg"><span class="spinner"></span>Cargando...</div>
-          </div>
-        </div>
-
-      </div>
+    <div class="paso-item" id="paso-2-tab">
+      <span class="paso-num">2</span>Escanear
+    </div>
+    <div class="paso-item" id="paso-3-tab">
+      <span class="paso-num">3</span>Calificar
+    </div>
+    <div class="paso-item" id="paso-4-tab">
+      <span class="paso-num">4</span>Ranking
     </div>
   </div>
+
+  <!-- ════════════════════════════════════════
+       PASO 1 — CONFIGURAR
+  ════════════════════════════════════════ -->
+  <div id="paso-1">
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07"/></svg>
+        CONFIGURACIÓN DE LA SESIÓN
+      </div>
+
+      <!-- Selector categoría -->
+      <div class="config-grid">
+        <div class="field">
+          <label>Categoría</label>
+          <select id="cfg-categoria" onchange="onCategoriaSelected()">
+            <option value="">— Selecciona —</option>
+            <option value="bai">Bailarín</option>
+            <option value="dev">Impacto Tecnológico</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Número de jueces</label>
+          <input type="number" id="cfg-n-jueces" min="1" max="10" value="3" onchange="renderJuecesConfig()">
+        </div>
+      </div>
+
+      <!-- Bloqueo badge -->
+      <div id="bloqueo-badge" style="display:none" class="bloqueo-badge">
+        <div class="bloqueo-dot"></div>
+        <span id="bloqueo-txt">Categoría bloqueada por este panel</span>
+      </div>
+
+      <!-- Nombres de jueces -->
+      <div class="card-title" style="margin-top:16px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        NOMBRES DE JUECES <span style="font-size:.6rem;opacity:.6;font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;">(opcional)</span>
+      </div>
+      <div class="jueces-config" id="jueces-config"></div>
+
+      <!-- Criterios -->
+      <div class="card-title" style="margin-top:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        CRITERIOS DE EVALUACIÓN
+      </div>
+      <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:12px;">Define los criterios que los jueces evaluarán. Nombre es obligatorio, descripción opcional.</div>
+      <div class="criterios-config" id="criterios-config"></div>
+      <button class="btn-add-criterio" onclick="agregarCriterioConfig()">+ Agregar criterio</button>
+
+      <div class="acciones-bar" style="margin-top:20px;">
+        <button class="btn-primary" id="btn-iniciar-sesion" onclick="iniciarSesion()" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          INICIAR SESIÓN DE CALIFICACIÓN
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PASO 2 — ESCANEAR QR
+  ════════════════════════════════════════ -->
+  <div id="paso-2" style="display:none">
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h.01M14 18h.01M18 14h.01M18 18h.01M18 21v-3M21 18h-3"/></svg>
+        ESCANEAR ROBOT
+      </div>
+
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px;">
+        Escanea el QR de la manilla del participante o ingresa el ID manualmente. También puedes usar el escáner desde otra pestaña.
+      </p>
+
+      <div class="qr-input-row">
+        <input type="text" class="qr-input" id="qr-input"
+          placeholder="Escanea QR o escribe ID (ej: sb-2026-bai-001)"
+          onkeydown="if(event.key==='Enter') procesarQR()" autofocus />
+        <button class="btn-scan-cam" onclick="abrirEscaner()">
+          📷 Abrir escáner
+        </button>
+        <button class="btn-primary" onclick="procesarQR()">Buscar</button>
+      </div>
+
+      <div id="robot-activo-container" style="display:none">
+        <div class="robot-activo-card" id="robot-activo-card">
+          <div class="robot-activo-avatar" id="ra-avatar">?</div>
+          <div class="robot-activo-info">
+            <h3 id="ra-nombre">—</h3>
+            <p id="ra-robot">—</p>
+          </div>
+          <div class="robot-activo-ronda">
+            <div class="ronda-num-display" id="ra-ronda">1</div>
+            <div class="ronda-lbl">RONDA</div>
+          </div>
+        </div>
+
+        <div class="ronda-selector" style="margin-top:12px;">
+          <label>Seleccionar ronda:</label>
+          <div id="btns-ronda" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        </div>
+
+        <div id="aviso-ronda-prev" class="aviso warning" style="display:none">
+          ⚠ Este robot ya tiene puntuación en esta ronda. Al guardar se reemplazará.
+        </div>
+        <div id="aviso-mejor-ronda" class="aviso success" style="display:none"></div>
+      </div>
+
+      <div class="acciones-bar">
+        <button class="btn-secondary" onclick="irAPaso(1)">← Volver</button>
+        <button class="btn-primary" id="btn-ir-calificar" onclick="irAPaso(3)" disabled>
+          Calificar este robot →
+        </button>
+      </div>
+    </div>
+
+    <!-- Ranking compacto visible en paso 2 -->
+    <div class="card" style="margin-top:20px;" id="ranking-paso2">
+      <div class="card-title">🏆 RANKING ACTUAL</div>
+      <div id="ranking-container-2"><div class="loading-msg">Cargando ranking...</div></div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PASO 3 — CALIFICAR
+  ════════════════════════════════════════ -->
+  <div id="paso-3" style="display:none">
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 0 0 .95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 0 0-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 0 0-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 0 0-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 0 0 .951-.69l1.519-4.674z"/></svg>
+        CALIFICACIÓN — <span id="cal-robot-title" style="color:var(--cyan);margin-left:4px;">—</span>
+        <span id="cal-ronda-badge" style="margin-left:auto;background:var(--blue-light);color:var(--blue);font-size:.62rem;padding:3px 10px;border-radius:4px;">RONDA 1</span>
+      </div>
+
+      <div id="tabla-calificacion-wrapper">
+        <!-- tabla generada dinámicamente -->
+      </div>
+
+      <div class="acciones-bar">
+        <button class="btn-secondary" onclick="irAPaso(2)">← Cambiar robot</button>
+        <button class="btn-primary" id="btn-guardar-cal" onclick="guardarCalificacion()" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          GUARDAR CALIFICACIÓN
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PASO 4 — RANKING COMPLETO
+  ════════════════════════════════════════ -->
+  <div id="paso-4" style="display:none">
+
+    <div class="card">
+      <div class="card-title">
+        🏆 RANKING FINAL — <span id="ranking-cat-title" style="color:var(--cyan);margin-left:4px;"></span>
+        <button class="btn-secondary" style="margin-left:auto;padding:6px 12px;font-size:.65rem;" onclick="cargarRanking()">↺ Actualizar</button>
+      </div>
+      <div id="ranking-container-4"><div class="loading-msg"><span class="spinner"></span>Cargando...</div></div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">ACCIONES FINALES</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn-success" onclick="exportarExcel()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          EXPORTAR EXCEL
+        </button>
+        <button class="btn-secondary" onclick="irAPaso(2)">
+          ← Seguir calificando
+        </button>
+        <button class="btn-danger" onclick="confirmarCerrarCategoria()">
+          🔒 CERRAR CATEGORÍA
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Botón flotante de ranking siempre visible desde paso 2+ -->
+  <div id="fab-ranking" style="display:none;position:fixed;bottom:28px;left:28px;z-index:900;">
+    <button onclick="irAPaso(4)" style="background:var(--blue);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:1.5px;cursor:pointer;box-shadow:0 4px 16px rgba(26,92,168,.35);">
+      🏆 VER RANKING
+    </button>
+  </div>
+
+</div>
 </main>
+
+<!-- MODAL CERRAR -->
+<div class="modal-overlay" id="modal-cerrar">
+  <div class="modal-card">
+    <h3>¿CERRAR CATEGORÍA?</h3>
+    <p>Se liberará el bloqueo y otros dispositivos podrán acceder. Asegúrate de haber exportado los resultados antes de cerrar.</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="document.getElementById('modal-cerrar').classList.remove('show')">Cancelar</button>
+      <button class="btn-danger" onclick="cerrarCategoria()">🔒 Confirmar cierre</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 <div data-include="../shared/components/footer.html"></div>
@@ -469,272 +468,627 @@
 <script src="../shared/js/load-components.js"></script>
 
 <script>
-  let categoriaActual    = '';
-  let participanteActual = null;
-  let criteriosActuales  = [];
-  let notasActuales      = {};
-  let participantesCache = [];
-  let puntCache          = {};
+// ═══════════════════════════════════════════
+//  ESTADO GLOBAL
+// ═══════════════════════════════════════════
+let GAS = null;
+let categoriaActual  = '';
+let nJueces          = 3;
+let nombresJueces    = [];    // ['Juez 1', 'Juez 2', ...]
+let criterios        = [];    // [{nombre, descripcion}]
+let participanteActual = null;
+let rondaActual      = 1;
+let notas            = {};    // {criterioIdx: {juezIdx: nota}}
+let historialNotas   = {};    // {participanteId: {ronda: {total, desglose}}}
+let todosPuntuados   = [];    // todos los registros guardados en memoria
+let pasoActual       = 1;
 
-  const CAT_NOMBRES = { bai: 'Bailarín', dev: 'Impacto Tecnológico' };
+const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico' };
 
-  async function onCategoriaChange() {
-    categoriaActual    = document.getElementById('sel-categoria').value;
-    participanteActual = null;
-    notasActuales      = {};
-    criteriosActuales  = [];
-    puntCache          = {};
-    resetPanel();
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+document.addEventListener('componentsLoaded', () => {
+  GAS = CONFIG.GAS_URL();
+  renderJuecesConfig();
+  renderCriteriosConfig();
+  document.getElementById('cfg-n-jueces').addEventListener('input', () => {
+    nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
+    renderJuecesConfig();
+  });
+  document.getElementById('cfg-categoria').addEventListener('change', validarConfig);
+});
 
-    if (!categoriaActual) {
-      document.getElementById('lista-participantes').innerHTML = '<div class="sin-cat">Selecciona una categoría.</div>';
-      document.getElementById('cat-info').textContent = '';
-      document.getElementById('badge-count').style.display = 'none';
-      document.getElementById('ranking-section').style.display = 'none';
+// ═══════════════════════════════════════════
+//  RENDER CONFIG
+// ═══════════════════════════════════════════
+function renderJuecesConfig() {
+  nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
+  // Preservar nombres ya ingresados
+  const inputs = document.querySelectorAll('#jueces-config .juez-row input');
+  const prev = Array.from(inputs).map(i => i.value);
+  const el = document.getElementById('jueces-config');
+  el.innerHTML = Array.from({length: nJueces}, (_, i) => `
+    <div class="juez-row">
+      <span class="juez-num">Juez ${i+1}</span>
+      <input type="text" placeholder="Nombre del juez ${i+1} (opcional)" value="${prev[i]||''}">
+    </div>`).join('');
+  validarConfig();
+}
+
+function renderCriteriosConfig() {
+  // Criterios por defecto al cargar
+  if (criterios.length === 0) {
+    criterios = [
+      { nombre:'Criterio 1', descripcion:'' },
+      { nombre:'Criterio 2', descripcion:'' }
+    ];
+  }
+  _renderCriteriosConfigDOM();
+}
+
+function _renderCriteriosConfigDOM() {
+  const el = document.getElementById('criterios-config');
+  el.innerHTML = criterios.map((c, i) => `
+    <div class="criterio-config-row">
+      <input type="text" placeholder="Nombre del criterio" value="${c.nombre}"
+        oninput="criterios[${i}].nombre=this.value;validarConfig()">
+      <input type="text" class="desc" placeholder="Descripción (opcional)" value="${c.descripcion||''}"
+        oninput="criterios[${i}].descripcion=this.value">
+      <button class="btn-del-criterio" onclick="eliminarCriterioConfig(${i})">✕</button>
+    </div>`).join('');
+  validarConfig();
+}
+
+function agregarCriterioConfig() {
+  criterios.push({ nombre:'', descripcion:'' });
+  _renderCriteriosConfigDOM();
+}
+
+function eliminarCriterioConfig(idx) {
+  criterios.splice(idx, 1);
+  _renderCriteriosConfigDOM();
+}
+
+function validarConfig() {
+  const cat    = document.getElementById('cfg-categoria').value;
+  const validos = criterios.filter(c => c.nombre.trim()).length;
+  document.getElementById('btn-iniciar-sesion').disabled = !cat || validos === 0;
+}
+
+function onCategoriaSelected() {
+  const cat = document.getElementById('cfg-categoria').value;
+  if (!cat) return;
+  // Cargar criterios guardados si existen
+  cargarCriteriosGuardados(cat);
+  validarConfig();
+}
+
+async function cargarCriteriosGuardados(cat) {
+  try {
+    const r = await fetch(`${GAS}?action=getCriterios&categoria=${cat}`);
+    const d = await r.json();
+    if (d.ok && Array.isArray(d.criterios) && d.criterios.length > 0) {
+      criterios = d.criterios;
+      _renderCriteriosConfigDOM();
+      showToast('Criterios cargados desde configuración guardada', 'info');
+    }
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════
+//  INICIAR SESIÓN
+// ═══════════════════════════════════════════
+async function iniciarSesion() {
+  categoriaActual = document.getElementById('cfg-categoria').value;
+  nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
+
+  // Leer nombres de jueces
+  nombresJueces = Array.from(document.querySelectorAll('#jueces-config .juez-row input'))
+    .map((inp, i) => inp.value.trim() || `Juez ${i+1}`);
+
+  // Filtrar criterios válidos
+  criterios = criterios.filter(c => c.nombre.trim());
+
+  const btn = document.getElementById('btn-iniciar-sesion');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>INICIANDO...';
+
+  try {
+    // Bloquear categoría
+    const r = await fetch(GAS, {
+      method:'POST',
+      body: JSON.stringify({ action:'bloquearCategoria', categoria: categoriaActual, usuario:'panel-calificacion' })
+    });
+    const d = await r.json();
+    if (!d.ok && d.bloqueadaPor) {
+      showToast('Categoría bloqueada por otro dispositivo', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg> INICIAR SESIÓN DE CALIFICACIÓN';
       return;
     }
 
-    document.getElementById('lista-participantes').innerHTML = '<div class="loading-msg"><span class="spinner"></span>Cargando...</div>';
+    // Guardar criterios en GAS
+    await fetch(GAS, {
+      method:'POST',
+      body: JSON.stringify({ action:'guardarCriterios', categoria: categoriaActual, criterios })
+    });
 
-    try {
-      const [criterios, participantes] = await Promise.all([
-        cargarCriterios(categoriaActual),
-        cargarParticipantes(categoriaActual)
-      ]);
-      criteriosActuales  = criterios;
-      participantesCache = participantes;
-      document.getElementById('cat-info').textContent = criterios.length > 0 ? `${criterios.length} criterios` : '⚠ Sin criterios';
-      await cargarTodasLasPuntuaciones(categoriaActual);
-      renderLista();
-      document.getElementById('ranking-section').style.display = '';
-      cargarRanking();
-    } catch(e) {
-      document.getElementById('lista-participantes').innerHTML = `<div class="sin-cat" style="color:var(--danger);">Error: ${e.message}</div>`;
+    // Cargar historial existente
+    await cargarHistorial();
+
+    // Mostrar bloqueo badge
+    document.getElementById('bloqueo-badge').style.display = '';
+    document.getElementById('bloqueo-txt').textContent =
+      `Categoría ${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
+
+    irAPaso(2);
+    showToast('Sesión iniciada correctamente', 'success');
+
+  } catch(e) {
+    showToast('Error al iniciar sesión: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg> INICIAR SESIÓN DE CALIFICACIÓN';
+  }
+}
+
+async function cargarHistorial() {
+  try {
+    const r = await fetch(`${GAS}?action=getPuntuaciones&categoria=${categoriaActual}`);
+    const d = await r.json();
+    historialNotas = {};
+    todosPuntuados = [];
+    if (d.ok && Array.isArray(d.puntuaciones)) {
+      todosPuntuados = d.puntuaciones;
+      d.puntuaciones.forEach(p => {
+        if (!historialNotas[p.id_participante]) historialNotas[p.id_participante] = {};
+        const ronda = p.ronda || 1;
+        historialNotas[p.id_participante][ronda] = {
+          total: p.total,
+          notas_json: safeParseJson(p.notas_json || p.notas, {})
+        };
+      });
     }
-  }
+  } catch(e) { historialNotas = {}; }
+}
 
-  async function cargarCriterios(cat) {
-    try {
-      const r = await fetch(`${CONFIG.GAS_URL()}?action=getCriterios&categoria=${cat}`);
-      const d = await r.json();
-      if (d.ok && Array.isArray(d.criterios) && d.criterios.length > 0) return d.criterios;
-    } catch(e) {}
-    return criteriosPorDefecto(cat);
-  }
+// ═══════════════════════════════════════════
+//  PASO 2 — ESCÁNER
+// ═══════════════════════════════════════════
+function abrirEscaner() {
+  // Abre el ESC-NER en nueva pestaña con la ruta de la categoría
+  window.open(`../ESCANER/?ruta=panel_${categoriaActual}`, '_blank');
+}
 
-  function criteriosPorDefecto(cat) {
-    const d = {
-      bai: [
-        { nombre: 'Coreografía',       descripcion: 'Movimientos coordinados y fluidos' },
-        { nombre: 'Sincronía Musical',  descripcion: 'Respuesta al ritmo y melodía' },
-        { nombre: 'Creatividad',        descripcion: 'Originalidad del diseño y presentación' },
-        { nombre: 'Construcción',       descripcion: 'Calidad mecánica y acabado del robot' },
-        { nombre: 'Desempeño',          descripcion: 'Ejecución sin fallos técnicos' }
-      ],
-      dev: [
-        { nombre: 'Innovación',         descripcion: 'Originalidad y novedad de la solución' },
-        { nombre: 'Funcionalidad',      descripcion: 'El robot cumple su objetivo correctamente' },
-        { nombre: 'Diseño Técnico',     descripcion: 'Calidad de la implementación técnica' },
-        { nombre: 'Presentación',       descripcion: 'Claridad al exponer el proyecto' },
-        { nombre: 'Impacto',            descripcion: 'Utilidad y aplicabilidad de la solución' }
-      ]
-    };
-    return d[cat] || [];
-  }
+async function procesarQR() {
+  const raw = document.getElementById('qr-input').value.trim();
+  if (!raw) return;
 
-  async function cargarParticipantes(cat) {
-    const r = await fetch(`${CONFIG.GAS_URL()}?action=getParticipantes`);
+  // Extraer ID (mismo mecanismo que ESC-NER)
+  const id = extraerIdDelQR(raw);
+  if (!id) { showToast('QR no válido', 'error'); return; }
+
+  try {
+    const r = await fetch(`${GAS}?action=getParticipantes`);
     const data = await r.json();
     const lista = Array.isArray(data) ? data : (data.participantes || data || []);
-    return lista.filter(p => p.categoria === CAT_NOMBRES[cat] && p.aprobado === 'APROBADO');
-  }
+    const p = lista.find(x => x.id === id);
 
-  async function cargarTodasLasPuntuaciones(cat) {
-    try {
-      const r = await fetch(`${CONFIG.GAS_URL()}?action=getPuntuaciones&categoria=${cat}`);
-      const d = await r.json();
-      puntCache = {};
-      if (d.ok && Array.isArray(d.puntuaciones)) {
-        d.puntuaciones.forEach(p => {
-          puntCache[p.id_participante] = {
-            total: p.total,
-            notas: safeParseJson(p.notas_json || p.notas, {})
-          };
-        });
-      }
-    } catch(e) { puntCache = {}; }
-  }
-
-  function renderLista() {
-    const el    = document.getElementById('lista-participantes');
-    const badge = document.getElementById('badge-count');
-    badge.textContent = participantesCache.length;
-    badge.style.display = participantesCache.length > 0 ? '' : 'none';
-    if (participantesCache.length === 0) {
-      el.innerHTML = '<div class="sin-cat">Sin participantes aprobados en esta categoría.</div>';
-      return;
+    if (!p) { showToast('Participante no encontrado', 'error'); return; }
+    if (p.aprobado !== 'APROBADO') { showToast('Participante no aprobado', 'error'); return; }
+    if (p.categoria !== CAT_NOMBRES[categoriaActual]) {
+      showToast(`Categoría incorrecta: ${p.categoria}`, 'error'); return;
     }
-    el.innerHTML = participantesCache.map(p => {
-      const punt      = puntCache[p.id];
-      const calificado = !!punt;
-      const isActive  = participanteActual && participanteActual.id === p.id;
-      return `<div class="participante-item ${calificado?'calificado':''} ${isActive?'active':''}" onclick="seleccionarParticipante('${p.id}')">
-        <div class="p-dot"></div>
-        <div class="p-info">
-          <div class="p-nombre">${p.nombre}</div>
-          <div class="p-robot">${p.robot}</div>
-        </div>
-        ${calificado ? `<div class="p-score">${Number(punt.total).toFixed(1)}</div>` : ''}
-      </div>`;
-    }).join('');
+
+    participanteActual = p;
+    document.getElementById('qr-input').value = '';
+
+    // Determinar rondas disponibles
+    const rondasUsadas = Object.keys(historialNotas[p.id] || {}).map(Number);
+    const maxRonda = rondasUsadas.length > 0 ? Math.max(...rondasUsadas) : 0;
+    rondaActual = maxRonda + 1;
+
+    renderRobotActivo();
+    renderBotonesRonda(maxRonda);
+    document.getElementById('robot-activo-container').style.display = '';
+    document.getElementById('btn-ir-calificar').disabled = false;
+
+    showToast(`Robot cargado: ${p.robot}`, 'success');
+    cargarRanking();
+
+  } catch(e) { showToast('Error al buscar participante: ' + e.message, 'error'); }
+}
+
+function renderRobotActivo() {
+  const p = participanteActual;
+  const ini = p.nombre.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('ra-avatar').textContent = ini;
+  document.getElementById('ra-nombre').textContent = p.nombre;
+  document.getElementById('ra-robot').textContent  = `${p.robot} · ${p.id}`;
+  document.getElementById('ra-ronda').textContent  = rondaActual;
+
+  // Avisos
+  const prevRonda = historialNotas[p.id] && historialNotas[p.id][rondaActual];
+  document.getElementById('aviso-ronda-prev').style.display = prevRonda ? '' : 'none';
+
+  // Mejor ronda anterior
+  const rondas = Object.entries(historialNotas[p.id] || {});
+  if (rondas.length > 0) {
+    const mejor = rondas.reduce((a, b) => b[1].total > a[1].total ? b : a);
+    document.getElementById('aviso-mejor-ronda').style.display = '';
+    document.getElementById('aviso-mejor-ronda').textContent =
+      `✓ Mejor puntuación actual: ${Number(mejor[1].total).toFixed(2)} (Ronda ${mejor[0]})`;
+  } else {
+    document.getElementById('aviso-mejor-ronda').style.display = 'none';
   }
+}
 
-  function seleccionarParticipante(id) {
-    participanteActual = participantesCache.find(p => p.id === id);
-    if (!participanteActual) return;
-    notasActuales = {};
-    const prev = puntCache[id];
-    if (prev && prev.notas) {
-      Object.entries(prev.notas).forEach(([k, v]) => { notasActuales[Number(k)] = v; });
-      document.getElementById('aviso-edit').style.display = '';
-    } else {
-      document.getElementById('aviso-edit').style.display = 'none';
-    }
-    const ini = participanteActual.nombre.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
-    document.getElementById('p-avatar').textContent = ini;
-    document.getElementById('p-nombre').textContent = participanteActual.nombre;
-    document.getElementById('p-robot').textContent  = `${participanteActual.robot} · ${participanteActual.id}`;
-    actualizarTotal();
-    renderCriterios();
-    renderLista();
-    document.getElementById('empty-panel').style.display  = 'none';
-    document.getElementById('panel-activo').style.display = '';
-  }
+function renderBotonesRonda(maxRonda) {
+  const c = document.getElementById('btns-ronda');
+  // Mostrar rondas ya usadas + 1 nueva
+  const total = Math.max(maxRonda + 1, 1);
+  c.innerHTML = Array.from({length: total}, (_, i) => i + 1).map(n => `
+    <button class="btn-ronda ${n === rondaActual ? 'sel' : ''}" onclick="seleccionarRonda(${n})">${n}</button>`).join('');
+}
 
-  function renderCriterios() {
-    const c = document.getElementById('criterios-container');
-    if (criteriosActuales.length === 0) {
-      c.innerHTML = '<div class="loading-msg" style="padding:20px;">Sin criterios configurados.</div>';
-      return;
-    }
-    c.innerHTML = criteriosActuales.map((cr, i) => `
-      <div class="criterio-row">
-        <div class="criterio-label">
-          <div class="criterio-nombre">${cr.nombre}</div>
-          ${cr.descripcion ? `<div class="criterio-desc">${cr.descripcion}</div>` : ''}
-        </div>
-        <div class="criterio-val-display ${notasActuales[i] ? '' : 'vacio'}" id="cv-${i}">${notasActuales[i] || '—'}</div>
-        <div class="btns-nota">
-          ${[1,2,3,4,5].map(n => `<button class="btn-nota ${notasActuales[i]===n?'sel':''}" onclick="setNota(${i},${n})">${n}</button>`).join('')}
-        </div>
-      </div>`).join('');
-  }
+function seleccionarRonda(n) {
+  rondaActual = n;
+  document.getElementById('ra-ronda').textContent = n;
+  document.querySelectorAll('.btn-ronda').forEach((b, i) => b.classList.toggle('sel', i+1 === n));
+  const prevRonda = historialNotas[participanteActual?.id] && historialNotas[participanteActual?.id][n];
+  document.getElementById('aviso-ronda-prev').style.display = prevRonda ? '' : 'none';
+}
 
-  function setNota(idx, nota) {
-    notasActuales[idx] = nota;
-    actualizarTotal();
-    const d = document.getElementById(`cv-${idx}`);
-    if (d) { d.textContent = nota; d.classList.remove('vacio'); }
-    document.querySelectorAll('.criterio-row')[idx]?.querySelectorAll('.btn-nota')
-      .forEach((b, i) => b.classList.toggle('sel', i+1 === nota));
-  }
+// ═══════════════════════════════════════════
+//  PASO 3 — CALIFICAR
+// ═══════════════════════════════════════════
+function prepararCalificacion() {
+  const p = participanteActual;
+  document.getElementById('cal-robot-title').textContent = `${p.nombre} · ${p.robot}`;
+  document.getElementById('cal-ronda-badge').textContent = `RONDA ${rondaActual}`;
 
-  function actualizarTotal() {
-    const vals     = Object.values(notasActuales);
-    const completo = criteriosActuales.length > 0 && vals.length === criteriosActuales.length;
-    const total    = vals.length > 0 ? vals.reduce((a,b)=>a+b,0) / vals.length : null;
-    document.getElementById('total-display').textContent = total !== null ? total.toFixed(2) : '—';
-    document.getElementById('btn-guardar').disabled = !completo;
-  }
-
-  function limpiarNotas() { notasActuales = {}; actualizarTotal(); renderCriterios(); }
-
-  async function guardarPuntuacion() {
-    if (!participanteActual) return;
-    const btn = document.getElementById('btn-guardar');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>GUARDANDO...';
-    const total = Object.values(notasActuales).reduce((a,b)=>a+b,0) / criteriosActuales.length;
-    try {
-      const r = await fetch(CONFIG.GAS_URL(), {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'guardarPuntuacion',
-          id_participante: participanteActual.id,
-          nombre:      participanteActual.nombre,
-          robot:       participanteActual.robot,
-          institucion: participanteActual.institucion || '',
-          categoria:   categoriaActual,
-          juez_email:  'operador@sucrebot2026',
-          juez_nombre: 'Operador',
-          notas:       notasActuales,
-          criterios:   criteriosActuales,
-          total:       parseFloat(total.toFixed(4)),
-          timestamp:   new Date().toISOString()
-        })
+  // Inicializar notas: cargar previas si existen
+  notas = {};
+  const prev = historialNotas[p.id] && historialNotas[p.id][rondaActual];
+  if (prev && prev.notas_json) {
+    criterios.forEach((_, ci) => {
+      notas[ci] = {};
+      Array.from({length: nJueces}, (_, ji) => {
+        const key = `c${ci}_j${ji}`;
+        if (prev.notas_json[key] !== undefined) notas[ci][ji] = prev.notas_json[key];
       });
-      const data = await r.json();
-      if (data.ok) {
-        puntCache[participanteActual.id] = { total, notas: { ...notasActuales } };
-        document.getElementById('aviso-edit').style.display = '';
-        renderLista();
-        cargarRanking();
-        showToast('Calificación guardada', 'success');
-      } else { showToast('Error: ' + (data.error || 'No se pudo guardar'), 'error'); }
-    } catch(e) { showToast('Error de conexión', 'error'); }
-    finally {
-      btn.disabled = false;
-      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> GUARDAR CALIFICACIÓN';
-    }
+    });
   }
 
-  async function cargarRanking() {
-    const c = document.getElementById('ranking-container');
-    c.innerHTML = '<div class="loading-msg"><span class="spinner"></span>Calculando...</div>';
-    try {
-      const r    = await fetch(`${CONFIG.GAS_URL()}?action=getRankingCalificacion&categoria=${categoriaActual}`);
-      const data = await r.json();
-      if (!data.ok || !data.ranking || data.ranking.length === 0) {
-        c.innerHTML = '<div class="loading-msg">Sin calificaciones registradas aún.</div>';
-        return;
+  renderTablaCalificacion();
+}
+
+function renderTablaCalificacion() {
+  const wrapper = document.getElementById('tabla-calificacion-wrapper');
+
+  // Cabecera con nombres de jueces
+  const thJueces = nombresJueces.map(n =>
+    `<th>${n}</th>`).join('');
+
+  // Filas de criterios
+  const filas = criterios.map((c, ci) => {
+    const celdasJueces = Array.from({length: nJueces}, (_, ji) => {
+      const nota = notas[ci] && notas[ci][ji];
+      const btns = [1,2,3,4,5].map(n =>
+        `<button class="nota-btn ${nota===n?'sel':''}" onclick="setNota(${ci},${ji},${n})">${n}</button>`
+      ).join('');
+      return `<td><div class="nota-btns">${btns}</div></td>`;
+    }).join('');
+
+    const promCriterio = calcularPromedioCriterio(ci);
+    const promHtml = promCriterio !== null
+      ? `<span class="promedio-criterio">${promCriterio.toFixed(2)}</span>`
+      : `<span class="promedio-criterio vacio">—</span>`;
+
+    return `<tr>
+      <td>
+        <div class="criterio-td-nombre">${c.nombre}</div>
+        ${c.descripcion ? `<div class="criterio-td-desc">${c.descripcion}</div>` : ''}
+      </td>
+      ${celdasJueces}
+      <td>${promHtml}</td>
+    </tr>`;
+  }).join('');
+
+  // Fila total
+  const totalGeneral = calcularTotalGeneral();
+  const totalHtml = totalGeneral !== null ? totalGeneral.toFixed(2) : '—';
+
+  wrapper.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table class="tabla-calificacion">
+        <thead>
+          <tr>
+            <th>CRITERIO</th>
+            ${thJueces}
+            <th>PROMEDIO</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filas}
+          <tr class="total-row">
+            <td colspan="${nJueces + 1}" style="text-align:right;letter-spacing:2px;">TOTAL FINAL</td>
+            <td><span class="total-val">${totalHtml}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+
+  // Habilitar guardar solo si todo está completo
+  const completo = criterios.every((_, ci) =>
+    Array.from({length: nJueces}, (_, ji) => notas[ci] && notas[ci][ji] !== undefined).every(Boolean)
+  );
+  document.getElementById('btn-guardar-cal').disabled = !completo;
+}
+
+function setNota(ci, ji, nota) {
+  if (!notas[ci]) notas[ci] = {};
+  notas[ci][ji] = nota;
+  renderTablaCalificacion();
+}
+
+function calcularPromedioCriterio(ci) {
+  if (!notas[ci]) return null;
+  const vals = Array.from({length: nJueces}, (_, ji) => notas[ci][ji]).filter(v => v !== undefined);
+  if (vals.length === 0) return null;
+  return vals.reduce((a,b)=>a+b,0) / vals.length;
+}
+
+function calcularTotalGeneral() {
+  const proms = criterios.map((_, ci) => calcularPromedioCriterio(ci));
+  if (proms.some(p => p === null)) return null;
+  return proms.reduce((a,b)=>a+b,0) / proms.length;
+}
+
+// ═══════════════════════════════════════════
+//  GUARDAR CALIFICACIÓN
+// ═══════════════════════════════════════════
+async function guardarCalificacion() {
+  const total = calcularTotalGeneral();
+  if (total === null) return;
+
+  const btn = document.getElementById('btn-guardar-cal');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>GUARDANDO...';
+
+  // Construir notas_json plano {c0_j0: nota, c0_j1: nota, ...}
+  const notas_json = {};
+  criterios.forEach((_, ci) => {
+    Array.from({length: nJueces}, (_, ji) => {
+      if (notas[ci] && notas[ci][ji] !== undefined) {
+        notas_json[`c${ci}_j${ji}`] = notas[ci][ji];
       }
-      const filas = data.ranking.map((item, i) => {
-        const pos   = i + 1;
-        const medal = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':pos+'.';
-        const cls   = pos===1?'r1':pos===2?'r2':pos===3?'r3':'';
-        return `<tr>
-          <td><span class="rank-pos ${cls}">${medal}</span></td>
-          <td>
-            <div style="font-weight:600">${item.nombre}</div>
-            <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-muted)">${item.robot}</div>
-          </td>
-          <td><span class="score-pill ${pos<=3?'top':''}">${Number(item.promedio_final).toFixed(2)}</span></td>
-        </tr>`;
-      }).join('');
-      c.innerHTML = `<table class="ranking-table">
-        <thead><tr><th>#</th><th>Participante</th><th>Promedio</th></tr></thead>
-        <tbody>${filas}</tbody>
-      </table>`;
-    } catch(e) { c.innerHTML = '<div class="loading-msg" style="color:var(--danger)">Error al cargar ranking</div>'; }
+    });
+  });
+
+  const payload = {
+    action:          'guardarPuntuacion',
+    id_participante: participanteActual.id,
+    nombre:          participanteActual.nombre,
+    robot:           participanteActual.robot,
+    institucion:     participanteActual.institucion || '',
+    categoria:       categoriaActual,
+    juez_email:      'operador@sucrebot2026',
+    juez_nombre:     'Operador',
+    ronda:           rondaActual,
+    n_jueces:        nJueces,
+    nombres_jueces:  nombresJueces,
+    criterios:       criterios,
+    notas:           notas_json,
+    total:           parseFloat(total.toFixed(4)),
+    timestamp:       new Date().toISOString()
+  };
+
+  try {
+    const r = await fetch(GAS, { method:'POST', body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (d.ok) {
+      // Actualizar historial local
+      if (!historialNotas[participanteActual.id]) historialNotas[participanteActual.id] = {};
+      historialNotas[participanteActual.id][rondaActual] = { total, notas_json };
+
+      // Actualizar todosPuntuados
+      const idx = todosPuntuados.findIndex(p =>
+        p.id_participante === participanteActual.id && (p.ronda||1) === rondaActual);
+      const reg = { ...payload, id_participante: participanteActual.id, notas_json: JSON.stringify(notas_json) };
+      if (idx >= 0) todosPuntuados[idx] = reg; else todosPuntuados.push(reg);
+
+      showToast('Calificación guardada', 'success');
+      await cargarRanking();
+      irAPaso(2);
+
+    } else { showToast('Error: ' + (d.error||'No se pudo guardar'), 'error'); }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> GUARDAR CALIFICACIÓN';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  RANKING
+// ═══════════════════════════════════════════
+async function cargarRanking() {
+  ['ranking-container-2','ranking-container-4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<div class="loading-msg"><span class="spinner"></span>Calculando...</div>';
+  });
+
+  try {
+    const r    = await fetch(`${GAS}?action=getRankingCalificacion&categoria=${categoriaActual}`);
+    const data = await r.json();
+    if (!data.ok || !data.ranking || data.ranking.length === 0) {
+      const msg = '<div class="loading-msg">Sin calificaciones registradas aún.</div>';
+      ['ranking-container-2','ranking-container-4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = msg;
+      });
+      return;
+    }
+
+    const html = renderRankingHTML(data.ranking);
+    ['ranking-container-2','ranking-container-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    });
+
+    document.getElementById('ranking-cat-title').textContent = CAT_NOMBRES[categoriaActual] || '';
+
+  } catch(e) {
+    const msg = '<div class="loading-msg" style="color:var(--danger)">Error al cargar ranking</div>';
+    ['ranking-container-2','ranking-container-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = msg;
+    });
+  }
+}
+
+function renderRankingHTML(ranking) {
+  const filas = ranking.map((item, i) => {
+    const pos   = i + 1;
+    const medal = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':pos+'.';
+    const cls   = pos===1?'r1':pos===2?'r2':pos===3?'r3':'';
+    const rondas = item.jueces || 1;
+    return `<tr>
+      <td><span class="rank-pos ${cls}">${medal}</span></td>
+      <td>
+        <div style="font-weight:600">${item.nombre}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--text-muted)">${item.robot}</div>
+      </td>
+      <td><span class="score-pill ${pos<=3?'top':''}">${Number(item.promedio_final).toFixed(2)}</span></td>
+      <td><span class="rondas-pill">${rondas} reg.</span></td>
+    </tr>`;
+  }).join('');
+
+  return `<table class="ranking-table">
+    <thead><tr><th>#</th><th>Participante</th><th>Mejor puntaje</th><th>Registros</th></tr></thead>
+    <tbody>${filas}</tbody>
+  </table>`;
+}
+
+// ═══════════════════════════════════════════
+//  EXPORTAR EXCEL
+// ═══════════════════════════════════════════
+function exportarExcel() {
+  if (todosPuntuados.length === 0) {
+    showToast('No hay datos para exportar', 'error'); return;
   }
 
-  function resetPanel() {
-    document.getElementById('empty-panel').style.display  = '';
-    document.getElementById('panel-activo').style.display = 'none';
-    participanteActual = null;
-  }
+  const rows = todosPuntuados.map(p => {
+    const notasObj = safeParseJson(p.notas_json || p.notas, {});
+    const row = {
+      'ID':          p.id_participante,
+      'Nombre':      p.nombre,
+      'Robot':       p.robot,
+      'Institución': p.institucion,
+      'Categoría':   CAT_NOMBRES[categoriaActual] || categoriaActual,
+      'Ronda':       p.ronda || 1,
+      'Puntaje Total': Number(p.total).toFixed(2),
+      'Fecha':       p.timestamp || ''
+    };
+    // Nota de cada juez por criterio + promedio del criterio
+    criterios.forEach((c, ci) => {
+      Array.from({length: nJueces}, (_, ji) => {
+        const k = `c${ci}_j${ji}`;
+        row[`${c.nombre} (${nombresJueces[ji] || 'Juez '+(ji+1)})`] = notasObj[k] ?? '';
+      });
+      const vals = Array.from({length: nJueces}, (_, ji) => notasObj[`c${ci}_j${ji}`])
+        .filter(v => v !== undefined && v !== '');
+      row[`Promedio ${c.nombre}`] = vals.length > 0
+        ? (vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(2) : '';
+    });
+    return row;
+  });
 
-  function safeParseJson(str, fallback) {
-    try { return typeof str === 'string' ? JSON.parse(str) : (str || fallback); }
-    catch(e) { return fallback; }
-  }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Resultados');
 
-  function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = `toast ${type} show`;
-    setTimeout(() => t.classList.remove('show'), 3000);
+  const catNombre = CAT_NOMBRES[categoriaActual] || categoriaActual;
+  const fecha = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `SucreBot2026_${catNombre}_${fecha}.xlsx`);
+  showToast('Excel exportado', 'success');
+}
+
+// ═══════════════════════════════════════════
+//  CERRAR CATEGORÍA
+// ═══════════════════════════════════════════
+function confirmarCerrarCategoria() {
+  document.getElementById('modal-cerrar').classList.add('show');
+}
+
+async function cerrarCategoria() {
+  document.getElementById('modal-cerrar').classList.remove('show');
+  try {
+    await fetch(GAS, {
+      method:'POST',
+      body: JSON.stringify({ action:'desbloquearCategoria', categoria: categoriaActual })
+    });
+    showToast('Categoría cerrada y liberada', 'success');
+    // Resetear estado
+    categoriaActual = ''; participanteActual = null;
+    historialNotas = {}; todosPuntuados = [];
+    document.getElementById('bloqueo-badge').style.display = 'none';
+    document.getElementById('cfg-categoria').value = '';
+    irAPaso(1);
+  } catch(e) { showToast('Error al cerrar: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  NAVEGACIÓN ENTRE PASOS
+// ═══════════════════════════════════════════
+function irAPaso(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById(`paso-${i}`).style.display = i === n ? '' : 'none';
+    const tab = document.getElementById(`paso-${i}-tab`);
+    tab.classList.remove('activo','completo');
+    if (i < n)       tab.classList.add('completo');
+    else if (i === n) tab.classList.add('activo');
+  });
+  pasoActual = n;
+  document.getElementById('fab-ranking').style.display = n >= 2 ? '' : 'none';
+  if (n === 3) prepararCalificacion();
+  if (n === 4) cargarRanking();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function extraerIdDelQR(raw) {
+  if (!raw) return null;
+  // Formato: id~nombre~m2~m3  o  sb-2026-xxx-001  o  URL con data=
+  const partes = raw.split('~');
+  const candidato = partes[0].trim();
+  // Buscar patrón sb-YYYY-cat-NNN
+  const match = candidato.match(/(sb-\d{4}-[a-z_]+-\d{3})/i);
+  if (match) return match[1].toLowerCase();
+  // Buscar en URL
+  const urlMatch = raw.match(/data=([^&]+)/);
+  if (urlMatch) {
+    const decoded = decodeURIComponent(urlMatch[1]);
+    return extraerIdDelQR(decoded);
   }
+  // Retornar raw si parece ID
+  if (/^sb-/i.test(candidato)) return candidato.toLowerCase();
+  return null;
+}
+
+function safeParseJson(str, fallback) {
+  try { return typeof str === 'string' ? JSON.parse(str) : (str || fallback); }
+  catch(e) { return fallback; }
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
 </script>
 </body>
 </html>
