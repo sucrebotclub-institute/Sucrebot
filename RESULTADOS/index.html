@@ -75,9 +75,8 @@
     .tiempo-valor.sin-tiempo { color: #cbd5e1; font-size: 1.4rem; }
     .tiempo-valor.dnf { color: #c82020; font-size: 1.4rem; }
     tr.pos-1 .tiempo-valor { font-size: 2.2rem; color: #2474cc; }
-    .td-intentos { min-width: 140px; }
-    .intento-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
-    .row-altura { height: 88px; }
+    .td-ronda { min-width: 140px; }
+    .ronda-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
 
     /* ══ BRACKET SOCCER ══ */
     .soccer-wrap { flex: 1; overflow-x: auto; }
@@ -289,12 +288,11 @@
       }
     }
 
-    // ✅ Cuenta solo robots con al menos un tiempo válido
+    // ✅ Cuenta solo robots con al menos un tiempo válido o DNF
     function categoriaTieneDatos(ruta) {
       if (ruta === 'soc') return bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
       const datos = datosJSON && datosJSON.resultados[ruta];
       if (!datos || datos.length === 0) return false;
-      // Al menos un resultado con tiempo válido O DNF (participó de alguna forma)
       return datos.some(d => tiempoValido(d.tiempo) || d.tiempo === 'DNF');
     }
 
@@ -417,11 +415,14 @@
       const datos = datosJSON.resultados[ruta];
       const porRobot = {};
       datos.forEach(d => {
-        if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, tiempos: [] };
+        if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, tiempos: [], rondaMax: 1 };
         // ✅ Solo agregar tiempos válidos o DNF — ignorar 00:00:00 y '—'
         if (tiempoValido(d.tiempo) || d.tiempo === 'DNF') {
           porRobot[d.robot].tiempos.push(d.tiempo);
         }
+        // Guardar la ronda más alta de este robot
+        const ronda = Number(d.ronda) || 1;
+        if (ronda > porRobot[d.robot].rondaMax) porRobot[d.robot].rondaMax = ronda;
       });
 
       // Todos los robots que participaron (con tiempo válido O con DNF)
@@ -433,8 +434,7 @@
             ? tiemposValidos.reduce((mejor, actual) =>
                 tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor)
             : 'DNF';
-          const totalIntentos = r.tiempos.length;
-          return { robot: r.robot, tiempo: mejorTiempo, intentos: totalIntentos, esDNF: tiemposValidos.length === 0 };
+          return { robot: r.robot, tiempo: mejorTiempo, ronda: r.rondaMax, esDNF: tiemposValidos.length === 0 };
         });
 
       // Ordenar: primero los con tiempo válido (más rápido arriba), luego DNF al final
@@ -454,15 +454,15 @@
         const pos = i + 1;
         const claseRow  = c.esDNF ? '' : (pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '');
         const claseCirc = c.esDNF ? 'pc-n' : (pos === 1 ? 'pc-1' : pos === 2 ? 'pc-2' : pos === 3 ? 'pc-3' : 'pc-n');
-        const emoji = c.esDNF ? '—' : (pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos);
+        const emoji = (!c.esDNF && pos === 1) ? '🥇' : (!c.esDNF && pos === 2) ? '🥈' : (!c.esDNF && pos === 3) ? '🥉' : (c.esDNF ? '—' : pos);
         const tiempoClase = c.esDNF ? 'tiempo-valor dnf' : 'tiempo-valor';
         const tiempoTexto = c.esDNF ? 'DNF' : c.tiempo;
         return `
           <tr class="row-altura ${claseRow}">
-            <td class="td-pos"><span class="pos-circle ${claseCirc}">${(!c.esDNF && pos <= 3) ? emoji : (c.esDNF ? '—' : pos)}</span></td>
+            <td class="td-pos"><span class="pos-circle ${claseCirc}">${emoji}</span></td>
             <td class="td-robot"><div class="robot-name">${c.robot}</div></td>
             <td class="td-mejor"><span class="${tiempoClase}">${tiempoTexto}</span></td>
-            <td class="td-intentos"><span class="intento-num">${c.intentos} intento${c.intentos !== 1 ? 's' : ''}</span></td>
+            <td class="td-ronda"><span class="ronda-num">Ronda ${c.ronda}</span></td>
           </tr>`;
       }).join('');
 
@@ -472,7 +472,7 @@
             <th class="c">#</th>
             <th>Robot / Equipo</th>
             <th class="c">Mejor Tiempo</th>
-            <th class="c">Intentos</th>
+            <th class="c">Ronda</th>
           </tr></thead>
           <tbody>${filas}</tbody>
         </table>`;
