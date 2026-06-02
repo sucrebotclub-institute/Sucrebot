@@ -925,12 +925,25 @@ function seleccionarCompetido(ts, r) {
   fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'clearActivo', ruta: getRuta()||'general' }) }).catch(()=>{});
   participanteActual = { id:c.id, robot:c.robot, nombre:c.nombre, institucion:c.institucion, ciudad:c.ciudad, categoria:c.categoria };
   fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setActivo', ruta: getRuta()||'general', participante:{ ...participanteActual, timestamp:Date.now() } }) }).catch(()=>{});
-  intentosLog = []; intentoActual = 1;
-  actualizarBadges(); reiniciarCrono(); desbloquearBtn(); ocultarBotonesAccion();
+  // Restaurar intentosLog desde rondasData para no perder intentos ya registrados
+  const tiemposYa = (c.tiempos || []).filter(t => t && t !== '—' && t !== '00:00:00');
+  intentosLog = tiemposYa.map((t, i) => ({ ronda: rondaActual, intento: i+1, tiempo: t, esDNF: t==='DNF' }));
+  intentoActual = intentosLog.length + 1;
+  actualizarBadges(); reiniciarCrono(); ocultarBotonesAccion();
+  // Si ya completó sus intentos, bloquear; si no, desbloquear
+  if (intentosLog.length >= maxIntentos) {
+    bloquearBtn();
+    document.getElementById('btn-sig-part').classList.add('visible');
+    document.getElementById('crono-status').textContent = `✓ ${intentosLog.length}/${maxIntentos} intentos completados`;
+  } else {
+    desbloquearBtn();
+    document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
+  }
   const strip = document.getElementById('participante-strip');
   strip.className = 'participante-strip';
-  strip.innerHTML = `<div><div class="p-robot">${c.robot}</div><div class="p-inst">${c.institucion||''}${c.ciudad?' · '+c.ciudad:''}</div></div><div class="p-badge">LISTO ✓</div>`;
-  showToast('✓ '+c.robot+' seleccionado');
+  const badgeTexto = intentosLog.length >= maxIntentos ? `✓ ${intentosLog.length}/${maxIntentos}` : `LISTO ✓`;
+  strip.innerHTML = `<div><div class="p-robot">${c.robot}</div><div class="p-inst">${c.institucion||''}${c.ciudad?' · '+c.ciudad:''}</div></div><div class="p-badge">${badgeTexto}</div>`;
+  showToast('✓ '+c.robot+' seleccionado · Intento '+intentoActual+' de '+maxIntentos);
 }
 
 function actualizarContador() {
