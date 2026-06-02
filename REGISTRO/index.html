@@ -44,7 +44,7 @@
     .page-hero h2 span { color: var(--r-blue); }
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
     
-    /* ── LAYOUT REORGANIZADO ── */
+    /* ── LAYOUT ── */
     .wrapper::before {
       content: '';
       position: absolute;
@@ -82,7 +82,7 @@
     .form-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--r-cyan-bright); margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
     .form-section-title { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 0.14em; color: rgba(255,255,255,0.7); text-transform: uppercase; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.15); font-weight: 700; }
     
-    /* ── GRID 3 COLUMNAS ── */
+    /* ── GRID ── */
     .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 4px; }
     .field { position: relative; }
     .field.full-width { grid-column: 1 / -1; }
@@ -140,7 +140,7 @@
     }
     .field select option[value=""] { color: rgba(255,255,255,0.35); }
     
-    /* ── BOTÓN REGISTRO ── */
+    /* ── BOTÓN ── */
     .btn-register { 
       width: 100%; 
       margin-top: 16px; 
@@ -333,6 +333,7 @@
             <optgroup label="🌟 OPEN">
               <option value="Cubo Rubik">Cubo Rubik</option>
               <option value="Lego Kids">Lego Kids</option>
+              <option value="Impacto Tecnológico">Impacto Tecnológico</option>
             </optgroup>
           </select>
         </div>
@@ -353,7 +354,7 @@
         </div>
       </div>
 
-      <!-- ACOMPAÑANTES -->
+      <!-- INTEGRANTES -->
       <div class="form-section-title">👥 Integrantes del Equipo <span style="font-size:9px;opacity:0.6;font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;">(opcional)</span></div>
       <div style="font-family:'Exo 2',sans-serif;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;">
         Sus nombres aparecerán en los diplomas. El QR se envía únicamente al capitán.
@@ -413,37 +414,38 @@
   }
 
   async function registrarParticipante() {
-    const nombre=document.getElementById('f-nombre').value.trim();
-    const institucion=document.getElementById('f-institucion').value.trim();
-    const ciudad=document.getElementById('f-ciudad').value.trim();
-    const robot=document.getElementById('f-robot').value.trim();
-    const contacto=document.getElementById('f-contacto').value.trim();
-    const correo=document.getElementById('f-correo').value.trim();
-    const categoria=document.getElementById('f-categoria').value;
-    const comprobante=document.getElementById('f-comprobante').value.trim();
-    const archivoInput=document.getElementById('f-archivo');
-    const archivo=archivoInput.files[0]||null;
-    const miembro2=document.getElementById('f-miembro2').value.trim();
-    const miembro3=document.getElementById('f-miembro3').value.trim();
+    const nombre      = document.getElementById('f-nombre').value.trim();
+    const institucion = document.getElementById('f-institucion').value.trim();
+    const ciudad      = document.getElementById('f-ciudad').value.trim();
+    const robot       = document.getElementById('f-robot').value.trim();
+    const contacto    = document.getElementById('f-contacto').value.trim();
+    const correo      = document.getElementById('f-correo').value.trim();
+    const categoria   = document.getElementById('f-categoria').value;
+    const comprobante = document.getElementById('f-comprobante').value.trim();
+    const archivoInput = document.getElementById('f-archivo');
+    const archivo     = archivoInput.files[0] || null;
+    const miembro2    = document.getElementById('f-miembro2').value.trim();
+    const miembro3    = document.getElementById('f-miembro3').value.trim();
     
-    if (!nombre) { showToast('El nombre completo es obligatorio',true); return; }
-    if (!institucion) { showToast('La institución es obligatoria',true); return; }
-    if (!ciudad) { showToast('Selecciona una provincia',true); return; }
-    if (!robot) { showToast('El nombre del robot es obligatorio',true); return; }
-    if (!contacto) { showToast('El número de contacto es obligatorio',true); return; }
-    if (contacto.length < 10) { showToast('El número debe tener al menos 10 dígitos',true); return; }
-    if (!correo) { showToast('El correo electrónico es obligatorio',true); return; }
-    if (!categoria) { showToast('Selecciona una categoría',true); return; }
-    if (!comprobante) { showToast('El número de comprobante es obligatorio',true); return; }
-    if (!archivo) { showToast('Debes adjuntar el comprobante de pago',true); return; }
+    if (!nombre)                  { showToast('El nombre completo es obligatorio', true); return; }
+    if (!institucion)             { showToast('La institución es obligatoria', true); return; }
+    if (!ciudad)                  { showToast('Selecciona una provincia', true); return; }
+    if (!robot)                   { showToast('El nombre del robot es obligatorio', true); return; }
+    if (!contacto)                { showToast('El número de contacto es obligatorio', true); return; }
+    if (contacto.length < 10)     { showToast('El número debe tener al menos 10 dígitos', true); return; }
+    if (!correo)                  { showToast('El correo electrónico es obligatorio', true); return; }
+    if (!categoria)               { showToast('Selecciona una categoría', true); return; }
+    if (!comprobante)             { showToast('El número de comprobante es obligatorio', true); return; }
+    if (!archivo)                 { showToast('Debes adjuntar el comprobante de pago', true); return; }
     
-    const btn=document.querySelector('.btn-register');
-    btn.disabled=true; 
-    btn.textContent='⏳ Registrando participante...';
+    const btn = document.querySelector('.btn-register');
+    btn.disabled = true;
+    btn.textContent = '⏳ Registrando participante...';
     
     try {
+      // Paso 1: crear participante y obtener ID
       const respuestaRegistro = await gasPost({
-        action:'setParticipante',
+        action: 'setParticipante',
         id: '',
         nombre, institucion, ciudad, robot, contacto, correo, categoria,
         miembro2, miembro3, comprobante,
@@ -457,54 +459,72 @@
       const idGenerado = respuestaRegistro.id;
       console.log('ID generado por GAS:', idGenerado);
       
-      btn.textContent='⏳ Subiendo comprobante...';
+      // Paso 2: subir comprobante a Drive
+      btn.textContent = '⏳ Subiendo comprobante...';
       let archivoUrl = '';
-      try { 
-        archivoUrl = await subirComprobanteDrive(archivo, idGenerado); 
-      } catch(e) { 
-        showToast('Error al subir comprobante: '+e.message, true); 
-        btn.disabled=false; 
-        btn.textContent='⚡ Registrar Participante'; 
-        return; 
+      try {
+        archivoUrl = await subirComprobanteDrive(archivo, idGenerado);
+      } catch(e) {
+        showToast('Error al subir comprobante: ' + e.message, true);
+        btn.disabled = false;
+        btn.textContent = '⚡ Registrar Participante';
+        return;
       }
       
-      btn.textContent='⏳ Finalizando registro...';
+      // Paso 3: actualizar con URL del comprobante
+      btn.textContent = '⏳ Finalizando registro...';
       await gasPost({
-        action:'setParticipante',
+        action: 'setParticipante',
         id: idGenerado,
         nombre, institucion, ciudad, robot, contacto, correo, categoria,
         miembro2, miembro3, comprobante,
         archivoUrl
       });
       
-      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
-      const idx=lista.findIndex(p=>p.id===idGenerado);
-      const datosLocal={id:idGenerado,nombre,institucion,ciudad,robot,contacto,correo,categoria};
-      if(idx>=0) lista[idx]=datosLocal; else lista.push(datosLocal);
-      localStorage.setItem('participantes',JSON.stringify(lista));
+      // Guardar en localStorage
+      const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
+      const idx   = lista.findIndex(p => p.id === idGenerado);
+      const datosLocal = { id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria };
+      if (idx >= 0) lista[idx] = datosLocal; else lista.push(datosLocal);
+      localStorage.setItem('participantes', JSON.stringify(lista));
       
       showToast('✅ Registrado con ID: ' + idGenerado, false);
-      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3'].forEach(id=>document.getElementById(id).value='');
-      document.getElementById('f-ciudad').value='';
-      document.getElementById('f-categoria').value=''; archivoInput.value='';
+
+      // Limpiar formulario
+      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3']
+        .forEach(id => document.getElementById(id).value = '');
+      document.getElementById('f-ciudad').value    = '';
+      document.getElementById('f-categoria').value = '';
+      archivoInput.value = '';
       
-    } catch(e) { 
-      showToast('Error al registrar: '+e.message, true); 
-    } finally { 
-      btn.disabled=false; 
-      btn.textContent='⚡ Registrar Participante'; 
+    } catch(e) {
+      showToast('Error al registrar: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⚡ Registrar Participante';
     }
   }
 
-  let toastTimer=null;
-  function showToast(msg,error=false) {
-    const t=document.getElementById('toast'), icon=document.getElementById('toast-icon'), text=document.getElementById('toast-msg');
-    text.textContent=msg;
-    if(error){ icon.textContent='⚠'; t.style.borderLeftColor='#e05555'; t.style.color='#ffb3b3'; t.style.background='#2a1a1a'; } 
-    else { icon.textContent='✓'; t.style.borderLeftColor='#3dd68c'; t.style.color='#d0f5e8'; t.style.background='#1e2438'; }
-    if(toastTimer){ clearTimeout(toastTimer); t.classList.remove('show'); }
-    requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
-    toastTimer=setTimeout(()=>{ t.classList.remove('show'); toastTimer=null; },3500);
+  let toastTimer = null;
+  function showToast(msg, error = false) {
+    const t    = document.getElementById('toast');
+    const icon = document.getElementById('toast-icon');
+    const text = document.getElementById('toast-msg');
+    text.textContent = msg;
+    if (error) {
+      icon.textContent = '⚠';
+      t.style.borderLeftColor = '#e05555';
+      t.style.color           = '#ffb3b3';
+      t.style.background      = '#2a1a1a';
+    } else {
+      icon.textContent = '✓';
+      t.style.borderLeftColor = '#3dd68c';
+      t.style.color           = '#d0f5e8';
+      t.style.background      = '#1e2438';
+    }
+    if (toastTimer) { clearTimeout(toastTimer); t.classList.remove('show'); }
+    requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+    toastTimer = setTimeout(() => { t.classList.remove('show'); toastTimer = null; }, 3500);
   }
 </script>
 
