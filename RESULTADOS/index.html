@@ -424,7 +424,7 @@
         }
       });
 
-      // ✅ Solo robots que tienen al menos un intento real
+      // Todos los robots que participaron (con tiempo válido O con DNF)
       const clasificados = Object.values(porRobot)
         .filter(r => r.tiempos.length > 0)
         .map(r => {
@@ -433,11 +433,16 @@
             ? tiemposValidos.reduce((mejor, actual) =>
                 tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor)
             : 'DNF';
-          return { robot: r.robot, tiempo: mejorTiempo, intentos: r.tiempos.length, esDNF: tiemposValidos.length === 0 };
+          const totalIntentos = r.tiempos.length;
+          return { robot: r.robot, tiempo: mejorTiempo, intentos: totalIntentos, esDNF: tiemposValidos.length === 0 };
         });
 
-      // Ordenar: primero los que tienen tiempo válido (más rápido arriba), luego DNF
-      clasificados.sort((a, b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
+      // Ordenar: primero los con tiempo válido (más rápido arriba), luego DNF al final
+      clasificados.sort((a, b) => {
+        if (a.esDNF && !b.esDNF) return 1;
+        if (!a.esDNF && b.esDNF) return -1;
+        return tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo);
+      });
 
       if (clasificados.length === 0) {
         mostrarVacio();
