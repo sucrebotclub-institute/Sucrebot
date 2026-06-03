@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PARTICIPANTES_REGISTRADOS - VERSIÓN 4 FINAL - Badge y título en líneas separadas - 26 MAY 2026 -->
+<!-- PARTICIPANTES_REGISTRADOS - Fix p.miembro2.trim is not a function - JUN 2026 -->
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -247,8 +247,10 @@
                   <option value="Trepador (Pro)">Trepador (Pro)</option>
                   <option value="Robot soccer">Robot soccer</option>
                 </optgroup>
-                <optgroup label="⭐ EXTRA">
+                <optgroup label="⭐ OPEN">
                   <option value="Cubo Rubik">Cubo Rubik</option>
+                  <option value="Lego Kids">Lego Kids</option>
+                  <option value="Impacto Tecnológico">Impacto Tecnológico</option>
                 </optgroup>
               </select>
               <input type="text" class="busqueda-input" id="busqueda-input" placeholder="🔍 Buscar por nombre, robot, ID o institución...">
@@ -411,8 +413,25 @@
     'Batalla': 'pro',
     'Trepador (Pro)': 'pro',
     'Robot soccer': 'pro',
-    'Cubo Rubik': 'extra'
+    'Cubo Rubik': 'extra',
+    'Lego Kids': 'extra',
+    'Impacto Tecnológico': 'extra'
   };
+
+  const TODAS_CATEGORIAS = [
+    'Insectos','Trepador (Amateur)','Seguidor de línea ST (Amateur)',
+    'Seguidor de línea ST (Pro)','Minisumo Autónomo','Minisumo RC',
+    'Bailarín','Batalla','Trepador (Pro)','Robot soccer',
+    'Cubo Rubik','Lego Kids','Impacto Tecnológico'
+  ];
+
+  // ── Helper: convierte cualquier valor a string limpio ──────────────────
+  // Esto evita el error "p.miembro2.trim is not a function" cuando GAS
+  // devuelve null, undefined, número u otro tipo no-string en esos campos.
+  function sv(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).trim();
+  }
 
   function gasGet(params) {
     const qs = new URLSearchParams(params).toString();
@@ -426,9 +445,9 @@
 
   function construirTextoQR(p) {
     const partes = [p.id];
-    if (p.nombre)   partes.push(p.nombre);
-    if (p.miembro2) partes.push(p.miembro2);
-    if (p.miembro3) partes.push(p.miembro3);
+    if (sv(p.nombre))   partes.push(sv(p.nombre));
+    if (sv(p.miembro2)) partes.push(sv(p.miembro2));
+    if (sv(p.miembro3)) partes.push(sv(p.miembro3));
     return partes.join('~');
   }
 
@@ -438,18 +457,18 @@
   }
 
   function cargarListaLocal() {
-    const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
+    const lista    = JSON.parse(localStorage.getItem('participantes') || '[]');
     actualizarEstadisticas(lista);
-    const filtro = document.getElementById('filtro-categoria').value;
+    const filtro   = document.getElementById('filtro-categoria').value;
     const busqueda = document.getElementById('busqueda-input').value.toLowerCase();
-    let filtrados = lista;
+    let filtrados  = lista;
     if (filtro !== 'todos') filtrados = filtrados.filter(p => p.categoria === filtro);
     if (busqueda) {
       filtrados = filtrados.filter(p =>
-        (p.nombre || '').toLowerCase().includes(busqueda) ||
-        (p.robot || '').toLowerCase().includes(busqueda) ||
-        (p.institucion || '').toLowerCase().includes(busqueda) ||
-        (p.id || '').toLowerCase().includes(busqueda)
+        sv(p.nombre).toLowerCase().includes(busqueda) ||
+        sv(p.robot).toLowerCase().includes(busqueda) ||
+        sv(p.institucion).toLowerCase().includes(busqueda) ||
+        sv(p.id).toLowerCase().includes(busqueda)
       );
     }
     const tbody = document.getElementById('tabla-body');
@@ -459,48 +478,48 @@
     }
     tbody.innerHTML = filtrados.map(p => {
       let estadoClass = 'pendiente', estadoTexto = 'EN REVISIÓN';
-      if (p.aprobado === 'APROBADO') { estadoClass = 'aprobado'; estadoTexto = 'APROBADO'; }
+      if (p.aprobado === 'APROBADO')   { estadoClass = 'aprobado';  estadoTexto = 'APROBADO'; }
       else if (p.aprobado === 'NO CUMPLE') { estadoClass = 'nocumple'; estadoTexto = 'NO CUMPLE'; }
       const nivel = CATEGORIAS_NIVEL[p.categoria] || 'pro';
-      const nombres = [p.nombre, p.miembro2, p.miembro3].filter(Boolean);
+
+      // Construir lista de nombres con sv() para evitar TypeError
+      const nombres = [sv(p.nombre), sv(p.miembro2), sv(p.miembro3)].filter(Boolean);
       const nombresHtml = nombres.map((n, i) =>
         i === 0
           ? '<div style="font-weight:700;">' + n + '</div>'
           : '<div style="font-size:0.8em;opacity:0.75;margin-top:2px;">+ ' + n + '</div>'
       ).join('');
-      return '<tr onclick=\'abrirModalRevisar(' + JSON.stringify(p).replace(/'/g, "&apos;") + ')\'>' +
-        '<td>' + (p.robot || '—') + '</td>' +
-        '<td><span class="categoria-badge ' + nivel + '">' + (p.categoria || '—') + '</span></td>' +
+
+      return '<tr onclick=\'abrirModalRevisar(' + JSON.stringify(p).replace(/'/g, '&#39;') + ')\'>' +
+        '<td>' + (sv(p.robot) || '—') + '</td>' +
+        '<td><span class="categoria-badge ' + nivel + '">' + (sv(p.categoria) || '—') + '</span></td>' +
         '<td>' + nombresHtml + '</td>' +
-        '<td>' + (p.institucion || '—') + '</td>' +
+        '<td>' + (sv(p.institucion) || '—') + '</td>' +
         '<td><span class="estado-badge ' + estadoClass + '">' + estadoTexto + '</span></td>' +
         '</tr>';
     }).join('');
   }
 
-  const TODAS_CATEGORIAS = [
-    'Insectos','Trepador (Amateur)','Seguidor de línea ST (Amateur)',
-    'Seguidor de línea ST (Pro)','Minisumo Autónomo','Minisumo RC',
-    'Bailarín','Batalla','Trepador (Pro)','Robot soccer','Cubo Rubik'
-  ];
-
   function actualizarEstadisticas(lista) {
+    // Contar personas: 1 por robot + miembros adicionales con sv()
     let totalPersonas = 0;
     lista.forEach(p => {
       totalPersonas += 1;
-      if (p.miembro2 && p.miembro2.trim()) totalPersonas++;
-      if (p.miembro3 && p.miembro3.trim()) totalPersonas++;
+      if (sv(p.miembro2)) totalPersonas++;
+      if (sv(p.miembro3)) totalPersonas++;
     });
     const totalRobots = lista.length;
     document.getElementById('stat-personas').textContent = totalPersonas;
-    document.getElementById('stat-robots').textContent = totalRobots;
-    const equipos = lista.filter(p => p.miembro2 || p.miembro3).length;
-    const solos = totalRobots - equipos;
-    let detalle = [];
-    if (solos > 0) detalle.push(solos + ' individual' + (solos > 1 ? 'es' : ''));
-    if (equipos > 0) detalle.push(equipos + ' equipo' + (equipos > 1 ? 's' : ''));
+    document.getElementById('stat-robots').textContent   = totalRobots;
+
+    const equipos = lista.filter(p => sv(p.miembro2) || sv(p.miembro3)).length;
+    const solos   = totalRobots - equipos;
+    const detalle = [];
+    if (solos   > 0) detalle.push(solos   + ' individual' + (solos   > 1 ? 'es' : ''));
+    if (equipos > 0) detalle.push(equipos + ' equipo'     + (equipos > 1 ? 's'  : ''));
     document.getElementById('stat-personas-detalle').textContent = detalle.join(' · ') || '—';
 
+    // Sección staff
     const savedUser = localStorage.getItem('sucrebot_user');
     let esStaff = false;
     if (savedUser) {
@@ -523,21 +542,24 @@
     document.getElementById('bar-aprobados').style.width  = porcAprobados  + '%';
     document.getElementById('bar-pendientes').style.width = porcPendientes + '%';
 
-    const ciudades = [...new Set(lista.map(p => p.ciudad).filter(Boolean))];
-    document.getElementById('stat-ciudades').textContent = ciudades.length;
-    document.getElementById('stat-ciudades-lista').textContent = ciudades.slice(0, 3).join(', ') + (ciudades.length > 3 ? '...' : '') || '—';
-    const instituciones = [...new Set(lista.map(p => p.institucion).filter(Boolean))];
+    const ciudades     = [...new Set(lista.map(p => sv(p.ciudad)).filter(Boolean))];
+    const instituciones = [...new Set(lista.map(p => sv(p.institucion)).filter(Boolean))];
+    document.getElementById('stat-ciudades').textContent      = ciudades.length;
+    document.getElementById('stat-ciudades-lista').textContent =
+      ciudades.slice(0, 3).join(', ') + (ciudades.length > 3 ? '...' : '') || '—';
     document.getElementById('stat-instituciones').textContent = instituciones.length;
 
     const catConteo = {};
     lista.forEach(p => { if (p.categoria) catConteo[p.categoria] = (catConteo[p.categoria] || 0) + 1; });
     const catLista = document.getElementById('stat-categorias-lista');
     catLista.innerHTML = TODAS_CATEGORIAS.map(cat => {
-      const n = catConteo[cat] || 0;
+      const n     = catConteo[cat] || 0;
       const color = n > 0 ? '#00ff88' : 'rgba(255,255,255,0.3)';
       const icono = n > 0 ? '🟢' : '🔴';
       const texto = n > 0 ? n + ' inscrito' + (n > 1 ? 's' : '') : 'Sin participantes';
-      return '<div style="display:flex;justify-content:space-between;align-items:center;font-family:DM Mono,monospace;font-size:9px;padding:4px 6px;background:rgba(0,0,0,0.15);border-radius:6px;border-left:3px solid ' + color + ';">' +
+      return '<div style="display:flex;justify-content:space-between;align-items:center;' +
+        'font-family:DM Mono,monospace;font-size:9px;padding:4px 6px;' +
+        'background:rgba(0,0,0,0.15);border-radius:6px;border-left:3px solid ' + color + ';">' +
         '<span style="color:#fff;opacity:0.9;">' + icono + ' ' + cat + '</span>' +
         '<span style="color:' + color + ';font-weight:700;">' + texto + '</span>' +
         '</div>';
@@ -573,21 +595,23 @@
     }
     participanteEnRevision = p;
     const estado = (p.aprobado === 'APROBADO') ? 'aprobado' : 'pendiente';
-    document.getElementById('rev-id').textContent        = p.id || '—';
-    document.getElementById('rev-nombre').textContent    = p.nombre || '—';
-    document.getElementById('rev-robot').textContent     = p.robot || '—';
-    document.getElementById('rev-categoria').textContent = p.categoria || '—';
-    document.getElementById('rev-institucion').textContent = p.institucion || '—';
-    document.getElementById('rev-ciudad').textContent    = p.ciudad || '—';
-    document.getElementById('rev-correo').textContent    = p.correo || '—';
-    document.getElementById('rev-contacto').textContent  = p.contacto || '—';
+    document.getElementById('rev-id').textContent          = sv(p.id)          || '—';
+    document.getElementById('rev-nombre').textContent      = sv(p.nombre)      || '—';
+    document.getElementById('rev-robot').textContent       = sv(p.robot)       || '—';
+    document.getElementById('rev-categoria').textContent   = sv(p.categoria)   || '—';
+    document.getElementById('rev-institucion').textContent = sv(p.institucion) || '—';
+    document.getElementById('rev-ciudad').textContent      = sv(p.ciudad)      || '—';
+    document.getElementById('rev-correo').textContent      = sv(p.correo)      || '—';
+    document.getElementById('rev-contacto').textContent    = sv(p.contacto)    || '—';
 
-    const tieneEquipo = p.miembro2 || p.miembro3;
+    const m2 = sv(p.miembro2);
+    const m3 = sv(p.miembro3);
+    const tieneEquipo = m2 || m3;
     document.getElementById('rev-seccion-equipo').style.display = tieneEquipo ? 'block' : 'none';
-    if (p.miembro2) { document.getElementById('rev-miembro2').textContent = p.miembro2; document.getElementById('rev-campo-miembro2').style.display = 'flex'; }
-    else { document.getElementById('rev-campo-miembro2').style.display = 'none'; }
-    if (p.miembro3) { document.getElementById('rev-miembro3').textContent = p.miembro3; document.getElementById('rev-campo-miembro3').style.display = 'flex'; }
-    else { document.getElementById('rev-campo-miembro3').style.display = 'none'; }
+    if (m2) { document.getElementById('rev-miembro2').textContent = m2; document.getElementById('rev-campo-miembro2').style.display = 'flex'; }
+    else     { document.getElementById('rev-campo-miembro2').style.display = 'none'; }
+    if (m3) { document.getElementById('rev-miembro3').textContent = m3; document.getElementById('rev-campo-miembro3').style.display = 'flex'; }
+    else     { document.getElementById('rev-campo-miembro3').style.display = 'none'; }
 
     const imgEl  = document.getElementById('rev-comprobante');
     const linkEl = document.getElementById('rev-comprobante-link');
@@ -600,18 +624,18 @@
       linkEl.href = p.archivoUrl; linkEl.style.display = 'inline-block';
     } else { imgEl.style.display = 'none'; linkEl.style.display = 'none'; }
 
-    const btnEliminar  = document.getElementById('btn-eliminar');
-    const btnAprobar   = document.getElementById('btn-aprobar');
-    const btnReenviar  = document.getElementById('btn-reenviar');
+    const btnEliminar   = document.getElementById('btn-eliminar');
+    const btnAprobar    = document.getElementById('btn-aprobar');
+    const btnReenviar   = document.getElementById('btn-reenviar');
     const btnDesaprobar = document.getElementById('btn-desaprobar');
     if (estado === 'aprobado') {
-      btnEliminar.style.display = 'none'; btnAprobar.style.display = 'none';
-      btnReenviar.style.display = 'flex';  btnReenviar.disabled = false;  btnReenviar.innerHTML = '📧 Reenviar QR';
+      btnEliminar.style.display  = 'none';  btnAprobar.style.display   = 'none';
+      btnReenviar.style.display  = 'flex';  btnReenviar.disabled  = false;  btnReenviar.innerHTML  = '📧 Reenviar QR';
       btnDesaprobar.style.display = 'flex'; btnDesaprobar.disabled = false; btnDesaprobar.innerHTML = '↩ Marcar pendiente';
     } else {
-      btnEliminar.style.display = 'flex'; btnEliminar.disabled = false; btnEliminar.innerHTML = '✖ No cumple';
-      btnAprobar.style.display = 'flex';  btnAprobar.disabled = false;  btnAprobar.innerHTML = '✔ Aprobar y enviar QR';
-      btnReenviar.style.display = 'none'; btnDesaprobar.style.display = 'none';
+      btnEliminar.style.display  = 'flex';  btnEliminar.disabled  = false;  btnEliminar.innerHTML  = '✖ No cumple';
+      btnAprobar.style.display   = 'flex';  btnAprobar.disabled   = false;  btnAprobar.innerHTML   = '✔ Aprobar y enviar QR';
+      btnReenviar.style.display  = 'none';  btnDesaprobar.style.display = 'none';
     }
     document.getElementById('modal-revisar').classList.add('show');
   }
