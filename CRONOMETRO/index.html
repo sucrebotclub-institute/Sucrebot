@@ -3,363 +3,457 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Cronómetro</title>
+  <title>SucreBot — Panel de Calificación</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="../shared/js/config.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
+    /* ── Variables locales que extienden styles.css ── */
     :root {
-      --cyan: #5bc8f0; --cyan-dark: #2b8ab8; --blue: #1a5ca8;
-      --text: #ffffff; --text-dark: #0d1f42; --muted: #64748b;
-      --border: #2d4a6e;
-      --surface: #0d2847; --surface2: #1a3a6b; --surface-light: #ffffff;
-      --accent2: #ff6b35;
-      --green: #3dd68c; --green-dark: #2ab870;
-      --red: #ff3b3b; --red-dark: #cc2f2f;
-      --yellow: #fbbf24;
-      --font-display: 'Bebas Neue', sans-serif;
-      --font-mono: 'DM Mono', monospace;
-      --font-body: 'DM Sans', sans-serif;
-      --bg-start: #f0f4f8; --bg-end: #e1e8ed;
-    }
-    body {
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%) !important;
-      color: var(--text-dark) !important;
-      min-height: 100vh;
-    }
-    body::before {
-      content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle at 20% 80%, rgba(91,200,240,0.07) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 20%, rgba(26,92,168,0.07) 0%, transparent 50%);
-      pointer-events: none; z-index: 0;
+      --panel-bg:     #1e2030;   /* bg3 */
+      --panel-bg2:    #1a1c24;   /* bg2 */
+      --panel-border: rgba(91,200,240,0.14);
+      --panel-border-active: rgba(91,200,240,0.45);
+      --success: #22c55e;
+      --danger:  #ef4444;
+      --warning: #f59e0b;
+      --gold:    #ca8a04;
     }
 
-    /* ── Layout ── */
-    .crono-wrapper {
-      max-width: 1400px; margin: 0 auto;
-      padding: 52px 16px 24px;
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column;
-      min-height: calc(100vh - 180px);
+    .wrapper {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
     }
-    .crono-title {
-      font-family: var(--font-display); font-size: 2.2rem;
-      letter-spacing: 0.12em; color: var(--surface);
-      text-align: center; margin-bottom: 20px;
-      position: relative; padding-left: 48px;
-      display: inline-flex; align-items: center; align-self: center;
+
+    /* ── HERO (igual a PARTICIPANTES_REGISTRADOS) ── */
+    .page-hero { padding: 80px 0 32px; margin-bottom: 32px; text-align: left; }
+    .page-hero-badge {
+      display: block; width: fit-content;
+      background: #1a5ca8; color: #ffffff;
+      font-family: 'Orbitron', monospace; font-size: 9px;
+      font-weight: 700; letter-spacing: 3px;
+      padding: 6px 16px; border-radius: 20px;
+      margin-bottom: 14px; text-transform: uppercase;
     }
-    .crono-title::before { content: "⏱️"; position: absolute; left: 0; font-size: 2rem; }
-    .crono-title::after {
-      content: ""; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
-      width: 120px; height: 3px;
-      background: linear-gradient(90deg, transparent 0%, var(--cyan) 50%, transparent 100%);
+    .page-hero-badge-dot {
+      display: inline-block; width: 6px; height: 6px;
+      border-radius: 50%; background: #ffffff;
+      animation: blink 1.6s infinite;
+      margin-right: 8px; vertical-align: middle;
+    }
+    .page-hero h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem; letter-spacing: 3px;
+      color: #1a3a6e; line-height: 1;
+      position: relative; display: block; margin-bottom: 20px;
+    }
+    .page-hero h2::after {
+      content: '';
+      position: absolute; bottom: -10px; left: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%);
       border-radius: 2px;
     }
-    .crono-layout {
-      display: grid; grid-template-columns: 260px 1fr 320px;
-      gap: 16px; flex: 1;
-    }
-    .col-config { display: flex; flex-direction: column; gap: 10px; }
-    .col-crono  { display: flex; flex-direction: column; gap: 12px; }
-    .col-ranking { display: flex; flex-direction: column; }
-
-    /* ── Tarjetas config ── */
-    .card-dark {
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-      border: 2px solid var(--border); border-radius: 10px;
-      padding: 12px 14px;
-    }
-    .card-label {
-      font-family: var(--font-mono); font-size: 0.65rem;
-      letter-spacing: 0.2em; color: var(--cyan); font-weight: 700;
-      text-transform: uppercase; margin-bottom: 8px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .card-label::before { content: '⚡'; font-size: 1rem; }
-    .cat-select {
-      width: 100%; background: var(--surface-light);
-      border: 2px solid #e2e8f0; color: var(--surface);
-      font-family: var(--font-body); font-size: 0.9rem; font-weight: 700;
-      padding: 10px 12px; border-radius: 8px; outline: none; cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .cat-select:hover { border-color: var(--cyan); }
-    .cat-select:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
-    .cat-select:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    /* ── Aviso sensor ── */
-    .aviso-sensor {
-      background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-      border: 2px solid #f59e0b; border-radius: 8px;
-      padding: 10px 12px; display: none;
-      font-family: var(--font-body); font-size: 0.72rem;
-      font-weight: 600; color: #78350f;
-      align-items: flex-start; gap: 8px;
-    }
-    .aviso-sensor.visible { display: flex; }
-    .aviso-sensor-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .aviso-sensor-texto b { display: block; font-size: 0.78rem; margin-bottom: 2px; }
-
-    /* ── Aviso categoría ── */
-    .aviso-categoria {
-      background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-      border: 2px solid #ffc107; border-radius: 8px;
-      padding: 8px 10px; color: #856404;
-      font-family: var(--font-body); font-size: 0.7rem; font-weight: 600;
-      display: flex; align-items: center; gap: 6px;
+    .page-hero h2 span { color: #1a5ca8; }
+    .page-hero p {
+      font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; margin-top: 4px;
     }
 
-    /* ── Config rondas/intentos ── */
-    .config-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .config-row label { font-size: 0.75rem; color: var(--text); font-family: var(--font-body); font-weight: 600; }
-    .config-input {
-      width: 60px; background: var(--surface-light);
-      border: 2px solid #e2e8f0; color: var(--surface);
-      font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700;
-      padding: 6px 8px; border-radius: 8px; outline: none; text-align: center;
+    /* ── BARRA DE PASOS ── */
+    .pasos-bar {
+      display: flex; gap: 0;
+      margin-bottom: 24px;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px; overflow: hidden;
+      background: var(--panel-bg2);
     }
-    .config-input:focus { border-color: var(--cyan); }
-    .config-title { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--cyan); font-weight: 700; margin-bottom: 8px; }
+    .paso-item {
+      flex: 1; padding: 12px 8px; text-align: center;
+      border-right: 1px solid var(--panel-border);
+      font-family: 'Orbitron', monospace; font-size: 0.58rem;
+      letter-spacing: 1.5px; color: var(--muted);
+      text-transform: uppercase; cursor: default; user-select: none;
+      transition: all .2s;
+    }
+    .paso-item:last-child { border-right: none; }
+    .paso-item .paso-num {
+      font-size: 1rem; font-weight: 700;
+      display: block; margin-bottom: 3px; color: var(--muted);
+    }
+    .paso-item.activo {
+      background: var(--sucre-blue); color: #fff;
+    }
+    .paso-item.activo .paso-num { color: var(--cyan); }
+    .paso-item.completo { color: var(--success); }
+    .paso-item.completo .paso-num { color: var(--success); }
 
-    /* ── Badges ronda/intento ── */
-    .badges-wrap { display: flex; flex-direction: column; gap: 6px; }
-    .badge-ronda {
-      font-family: var(--font-mono); font-size: 0.72rem;
-      padding: 6px 14px; border-radius: 6px;
-      background: var(--cyan); color: var(--surface); font-weight: 700;
-      text-align: center; width: 100%;
+    /* ── CARD BASE ── */
+    .panel-card {
+      background: #1a5ca8;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 24px; max-width: none !important; transform: none !important; cursor: default;
+      margin-bottom: 20px;
     }
-    .badge-intento {
-      font-family: var(--font-mono); font-size: 0.72rem;
-      padding: 6px 14px; border-radius: 6px;
-      background: var(--accent2); color: var(--text); font-weight: 700;
-      text-align: center; width: 100%;
+    .panel-card-title {
+      font-family: 'Orbitron', monospace; font-size: .68rem;
+      letter-spacing: 2px; color: #90dcff;
+      text-transform: uppercase; margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; gap: 8px;
+    }
+    /* Textos dentro de panel-card */
+    .panel-card .field label { color: rgba(255,255,255,0.65); }
+    .panel-card p { color: rgba(255,255,255,0.6); }
+    .panel-card .juez-num { color: rgba(255,255,255,0.5); }
+    .panel-card .field select,
+    .panel-card .field input[type="number"],
+    .panel-card .field input[type="text"],
+    .panel-card .juez-row input,
+    .panel-card .criterio-config-row input {
+      background: #0e2a5a;
+      border-color: rgba(255,255,255,0.15);
+      color: #e8f0ff;
+    }
+    .panel-card .field select option { background: #0e2a5a; color: #fff; }
+    .panel-card .field select:focus,
+    .panel-card .field input:focus,
+    .panel-card .juez-row input:focus,
+    .panel-card .criterio-config-row input:focus {
+      border-color: #90dcff;
+      background: #0a1f45;
+    }
+    .panel-card .juez-row input::placeholder,
+    .panel-card .criterio-config-row input::placeholder { color: rgba(255,255,255,0.35); }
+    .panel-card .btn-add-criterio {
+      border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.6);
+    }
+    .panel-card .btn-add-criterio:hover { border-color: #90dcff; color: #90dcff; }
+    .panel-card .btn-del-criterio {
+      border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.1);
     }
 
-    /* ── Botones config ── */
-    .btn-bloque {
-      width: 100%; padding: 10px 12px; border-radius: 8px;
-      font-family: var(--font-body); font-size: 0.75rem; font-weight: 700;
-      cursor: pointer; border: 2px solid; transition: all 0.2s;
-      text-transform: uppercase; letter-spacing: 0.03em; display: none;
+    /* ── CAMPOS ── */
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .field label {
+      font-family: 'Orbitron', monospace; font-size: .6rem;
+      letter-spacing: 2px; color: var(--muted); text-transform: uppercase;
     }
-    .btn-bloque.visible { display: block; }
-    .btn-bloque:hover { transform: translateY(-2px); }
-    .btn-iniciar-comp {
-      width: 100%; padding: 10px 14px; border-radius: 8px;
-      font-family: var(--font-body); font-size: 0.75rem; font-weight: 700;
-      cursor: pointer; transition: all 0.2s; text-transform: uppercase;
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      border: 2px solid #f59e0b; color: #78350f;
-      box-shadow: 0 4px 12px rgba(251,191,36,0.3);
+    .field select,
+    .field input[type="number"],
+    .field input[type="text"] {
+      padding: 10px 12px;
+      background: var(--panel-bg2);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      font-family: 'Exo 2', sans-serif; font-size: .9rem;
+      color: var(--text); outline: none;
+      transition: border-color .15s;
     }
-    .btn-iniciar-comp:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251,191,36,0.5); }
-    .btn-iniciar-comp.oculto { display: none; }
-    .btn-cerrar-cat { background: linear-gradient(135deg, #ff6b35 0%, #e05a2f 100%); border-color: #e05a2f; color: #fff; }
-    .btn-cerrar-cat:hover { box-shadow: 0 6px 20px rgba(255,107,53,0.4); }
-    .btn-excel { background: linear-gradient(135deg, #1a7a3c 0%, #0e5a28 100%); border-color: #0e5a28; color: #fff; }
-    .btn-excel:hover { box-shadow: 0 6px 20px rgba(26,122,60,0.4); }
+    .field select:focus,
+    .field input:focus { border-color: var(--cyan); }
+    .field select option { background: #1a1c24; }
 
-    /* ── Strip participante ── */
-    .participante-strip {
-      background: linear-gradient(135deg, var(--surface) 0%, #0f2d52 100%);
-      border: 2px solid var(--border); border-left: 5px solid var(--cyan);
-      border-radius: 10px; padding: 10px 14px;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(13,40,71,0.25); flex-shrink: 0;
-    }
-    .participante-strip.empty { border-left-color: var(--muted); background: linear-gradient(135deg, #1a2b47 0%, #0f1d35 100%); }
-    .p-robot { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-    .p-inst  { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
-    .p-badge { font-family: var(--font-mono); font-size: 0.75rem; background: var(--cyan); color: var(--surface); padding: 6px 14px; border-radius: 20px; font-weight: 700; white-space: nowrap; }
-    .participante-strip.empty .p-robot { color: var(--muted); font-weight: 500; }
+    .config-row { display: flex; gap: 16px; }
+    .config-row .field { flex: 1; }
 
-    /* ── Display cronómetro ── */
-    .crono-display {
-      background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%);
-      border: 3px solid var(--border); border-radius: 14px;
-      padding: 50px 20px; text-align: center;
-      position: relative; overflow: hidden;
-      box-shadow: 0 8px 32px rgba(13,40,71,0.4); flex-shrink: 0;
+    /* ── JUECES ── */
+    .jueces-config { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .juez-row { display: flex; gap: 10px; align-items: center; }
+    .juez-num {
+      font-family: 'Orbitron', monospace; font-size: .6rem;
+      color: var(--muted); width: 54px; flex-shrink: 0;
     }
-    .crono-display::after {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      opacity: 0; transition: opacity 0.3s;
+    .juez-row input {
+      flex: 1; padding: 8px 12px;
+      background: var(--panel-bg2);
+      border: 1px solid var(--panel-border); border-radius: 6px;
+      font-family: 'Exo 2', sans-serif; font-size: .85rem;
+      color: var(--text); outline: none; transition: border-color .15s;
     }
-    .crono-display.running::after { opacity: 1; animation: scanline 2s linear infinite; }
-    @keyframes scanline { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
-    #cronometro {
-      font-family: var(--font-display); font-size: 6rem;
-      letter-spacing: 0.08em; color: var(--text); line-height: 1;
-      transition: all 0.3s; text-shadow: 0 0 20px rgba(91,200,240,0.3);
-    }
-    .crono-display.running  #cronometro { color: var(--cyan);   text-shadow: 0 0 30px rgba(91,200,240,0.6); }
-    .crono-display.stopped  #cronometro { color: var(--accent2); text-shadow: 0 0 30px rgba(255,107,53,0.5); }
-    .crono-display.dnf      #cronometro { color: var(--red);    text-shadow: 0 0 30px rgba(255,59,59,0.5); font-size: 5rem; }
-    .crono-status { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.2em; color: var(--muted); margin-top: 12px; }
+    .juez-row input:focus { border-color: var(--cyan); }
 
-    /* ── Botones cronómetro ── */
-    .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .btn-crono {
-      border: 2px solid; background: var(--surface); color: var(--text);
-      font-family: var(--font-body); font-size: 0.9rem; font-weight: 700;
-      padding: 14px 10px; border-radius: 12px; cursor: pointer;
-      transition: all 0.2s; text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    /* ── CRITERIOS CONFIG ── */
+    .criterios-config { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .criterio-config-row { display: flex; gap: 8px; align-items: center; }
+    .criterio-config-row input {
+      flex: 1; padding: 9px 12px;
+      background: var(--panel-bg2);
+      border: 1px solid var(--panel-border); border-radius: 6px;
+      font-family: 'Exo 2', sans-serif; font-size: .85rem;
+      color: var(--text); outline: none; transition: border-color .15s;
     }
-    .btn-crono:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-    .btn-crono:disabled { cursor: not-allowed; opacity: 0.4; }
-    .btn-start  { border-color: var(--green);   background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); }
-    .btn-stop   { border-color: var(--red);     background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%); }
-    .btn-reset  { border-color: var(--accent2); background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); }
-    .btn-dnf {
-      border-color: var(--red); background: linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 100%);
-      color: #ff6b6b; font-size: 0.85rem; grid-column: 1 / -1; display: none;
+    .criterio-config-row input.desc { flex: .8; font-size: .78rem; color: var(--muted); }
+    .criterio-config-row input:focus { border-color: var(--cyan); }
+    .btn-del-criterio {
+      width: 30px; height: 30px;
+      border: 1px solid rgba(239,68,68,.4);
+      background: transparent; color: var(--danger);
+      border-radius: 5px; cursor: pointer; font-size: .9rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all .12s;
     }
-    .btn-dnf:hover:not(:disabled) { background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%); color: #fff; }
+    .btn-del-criterio:hover { background: rgba(239,68,68,.15); }
+    .btn-add-criterio {
+      width: 100%; padding: 9px;
+      border: 1px dashed var(--panel-border);
+      border-radius: 6px; background: transparent; cursor: pointer;
+      font-family: 'Exo 2', sans-serif; font-size: .85rem;
+      color: var(--muted); transition: all .12s;
+    }
+    .btn-add-criterio:hover { border-color: var(--cyan); color: var(--cyan); }
 
-    /* ── Botones acción ── */
-    .btn-accion {
-      width: 100%; font-family: var(--font-body); font-weight: 700;
-      padding: 10px; border-radius: 8px; cursor: pointer;
-      transition: all 0.2s; text-transform: uppercase; font-size: 0.8rem;
-      display: none;
+    /* ── BLOQUEO BADGE ── */
+    .bloqueo-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(245,158,11,.1);
+      border: 1px solid rgba(245,158,11,.35);
+      color: var(--warning); padding: 8px 14px;
+      border-radius: 6px; font-family: 'DM Mono', monospace;
+      font-size: .72rem; margin-bottom: 16px;
     }
-    .btn-accion.visible { display: block; }
-    .btn-accion:hover { transform: translateY(-2px); }
-    .btn-siguiente-intento {
-      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-      border: 2px solid var(--green-dark); color: var(--text);
-      box-shadow: 0 4px 12px rgba(61,214,140,0.3);
+    .bloqueo-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--warning); animation: blink 1s infinite;
     }
-    .btn-siguiente-participante {
-      background: linear-gradient(135deg, #1a5ca8 0%, #0e4a8f 100%);
-      border: 2px solid #0e4a8f; color: var(--text);
-      box-shadow: 0 4px 12px rgba(26,92,168,0.3);
-    }
-    .btn-saltar {
-      background: linear-gradient(135deg, #e8f4ff 0%, #d0e8ff 100%);
-      border: 2px solid var(--cyan); color: var(--blue);
-    }
-    .btn-cerrar-ronda {
-      background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%);
-      border: 2px solid #e05a2f; color: var(--text);
-      box-shadow: 0 4px 12px rgba(255,107,53,0.3);
-      width: 100%; font-family: var(--font-body); font-weight: 700;
-      padding: 10px; border-radius: 8px; cursor: pointer;
-      transition: all 0.2s; text-transform: uppercase; font-size: 0.8rem;
-    }
-    .btn-cerrar-ronda:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,53,0.5); }
-    .btn-cerrar-ronda:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    /* ── Ranking ── */
-    .ranking-card {
-      background: linear-gradient(135deg, var(--surface-light) 0%, #f8fafc 100%);
-      border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px;
-      display: flex; flex-direction: column; height: 100%; overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    /* ── BOTONES ── */
+    .btn-prim {
+      padding: 12px 22px;
+      background: var(--sucre-blue); color: #fff;
+      border: none; border-radius: 6px; cursor: pointer;
+      font-family: 'Orbitron', monospace; font-size: .68rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      transition: background .15s;
+      display: inline-flex; align-items: center; gap: 8px;
     }
-    .ranking-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;
-      flex-shrink: 0;
-    }
-    .ranking-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.15em; color: var(--surface); font-weight: 700; }
-    .ranking-count { font-family: var(--font-mono); font-size: 0.72rem; background: var(--cyan); color: var(--surface); padding: 4px 12px; border-radius: 20px; font-weight: 700; }
-    #rondas-container { flex: 1; overflow-y: auto; min-height: 0; }
-    .ronda-seccion { margin-bottom: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
-    .ronda-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-    }
-    .ronda-header-title { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--blue); font-weight: 700; }
-    .ronda-header-title.cerrada { color: var(--muted); }
-    .ronda-header-badge { font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; background: var(--cyan); color: var(--surface); font-weight: 700; }
-    .ronda-header-badge.cerrada { background: var(--muted); }
-    .ronda-body { padding: 8px 12px; background: #fff; }
-    .comp-item {
-      display: flex; align-items: center; gap: 8px; padding: 10px 8px;
-      border-bottom: 1px solid #e8f0ff; background: #e8f4ff; transition: all 0.2s;
-    }
-    .comp-item:nth-child(even) { background: #f1f5f9; }
-    .comp-item:hover { background: #d0e8ff; transform: translateX(3px); }
-    .comp-item:last-child { border-bottom: none; }
-    .comp-item.es-dnf { background: #fff0f0; }
-    .comp-item.es-dnf:nth-child(even) { background: #ffe8e8; }
-    .comp-num {
-      font-family: var(--font-mono); font-size: 0.75rem; color: #0d2847;
-      min-width: 28px; flex-shrink: 0; font-weight: 700;
-      background: rgba(26,92,168,0.2); padding: 4px 8px; border-radius: 6px; text-align: center;
-    }
-    .comp-num.dnf { background: rgba(255,59,59,0.15); color: var(--red); }
-    .comp-info { flex: 1; min-width: 0; }
-    .comp-robot { font-size: 0.9rem; font-weight: 700; color: #0d2847; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .comp-tiempos { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
-    .comp-tag {
-      font-size: 0.65rem; font-family: var(--font-mono); color: #475569;
-      background: rgba(100,116,139,0.12); padding: 3px 7px; border-radius: 4px; font-weight: 500;
-    }
-    .comp-tag.mejor { color: #16a34a; font-weight: 700; background: rgba(34,197,94,0.2); }
-    .comp-tag.es-dnf { color: var(--red); font-weight: 700; background: rgba(255,59,59,0.15); }
-    .comp-actions { display: flex; gap: 4px; flex-shrink: 0; }
-    .btn-sel { background: var(--cyan); border: none; color: var(--surface); font-size: 0.72rem; padding: 5px 9px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 700; }
-    .btn-sel:hover { background: var(--cyan-dark); }
-    .btn-del { background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.3); color: var(--red); font-size: 0.72rem; padding: 5px 9px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-    .btn-del:hover { background: rgba(255,59,59,0.2); }
-    .eliminados-wrap { padding: 8px 12px; background: #fef5f5; border-top: 1px dashed #fecaca; }
-    .eliminados-title { font-family: var(--font-mono); font-size: 0.62rem; color: var(--red); margin-bottom: 6px; font-weight: 700; letter-spacing: 0.1em; }
-    .elim-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #fecaca; opacity: 0.85; }
-    .elim-item:last-child { border-bottom: none; }
-    .elim-robot { font-size: 0.8rem; font-weight: 500; color: var(--muted); flex: 1; text-decoration: line-through; }
-    .btn-recuperar { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green-dark); font-size: 0.68rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 700; }
-    .btn-recuperar:hover { background: rgba(0,255,136,0.2); }
-    .ranking-empty { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 20px 0; }
+    .btn-prim:hover:not(:disabled) { background: #1e6bbf; }
+    .btn-prim:disabled { opacity: .35; cursor: not-allowed; }
 
-    /* ── Modales ── */
-    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
-    .modal.show { display: flex; }
-    .modal-box { background: #fff; border-radius: 16px; padding: 28px; max-width: 420px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-    .modal-title { font-family: var(--font-display); font-size: 1.6rem; color: var(--surface); margin-bottom: 12px; }
-    .modal-text  { color: var(--muted); font-size: 0.92rem; margin-bottom: 22px; line-height: 1.5; }
-    .modal-btns  { display: flex; gap: 10px; justify-content: flex-end; }
-    .modal-btn { padding: 10px 20px; border-radius: 10px; font-family: var(--font-body); font-weight: 700; font-size: 0.88rem; cursor: pointer; border: 2px solid; transition: all 0.2s; text-transform: uppercase; }
-    .modal-btn.cancel  { background: #fff; border-color: #cbd5e1; color: var(--muted); }
-    .modal-btn.cancel:hover { background: #f1f5f9; }
-    .modal-btn.confirm { background: linear-gradient(135deg, var(--accent2) 0%, #e05a2f 100%); border-color: #e05a2f; color: #fff; }
-    .modal-btn.confirm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,53,0.4); }
+    .btn-sec {
+      padding: 11px 18px;
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--panel-border); border-radius: 6px;
+      cursor: pointer; font-family: 'DM Mono', monospace;
+      font-size: .72rem; transition: all .12s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-sec:hover { border-color: var(--cyan); color: var(--cyan); }
 
-    /* ── Toast ── */
+    .btn-success {
+      padding: 12px 22px;
+      background: #16a34a; color: #fff;
+      border: none; border-radius: 6px; cursor: pointer;
+      font-family: 'Orbitron', monospace; font-size: .68rem;
+      letter-spacing: 2px; transition: background .15s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-success:hover { background: #15803d; }
+
+    .btn-danger {
+      padding: 11px 18px;
+      background: transparent; color: var(--danger);
+      border: 1px solid rgba(239,68,68,.4); border-radius: 6px;
+      cursor: pointer; font-family: 'Orbitron', monospace;
+      font-size: .65rem; letter-spacing: 1.5px; transition: all .12s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,.12); border-color: var(--danger); }
+
+    .acciones-bar { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+
+    /* ── PASO 2: ESCÁNER ── */
+    .qr-input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .qr-input {
+      flex: 1; padding: 12px 16px;
+      background: var(--panel-bg2);
+      border: 1.5px solid var(--panel-border); border-radius: 8px;
+      font-family: 'DM Mono', monospace; font-size: .95rem;
+      color: var(--text); outline: none; transition: border-color .15s;
+    }
+    .qr-input:focus { border-color: var(--cyan); }
+    .qr-input::placeholder { color: var(--muted); }
+
+    /* Robot activo */
+    .robot-activo-card {
+      background: var(--sucre-blue);
+      border-radius: 8px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 14px;
+    }
+    .ra-avatar {
+      width: 48px; height: 48px; border-radius: 7px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      font-size: 1.1rem; color: var(--cyan); flex-shrink: 0;
+    }
+    .ra-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: #fff; }
+    .ra-info p { font-family: 'DM Mono', monospace; font-size: .7rem; color: rgba(255,255,255,.55); margin-top: 2px; }
+    .ra-ronda { margin-left: auto; text-align: center; flex-shrink: 0; }
+    .ra-ronda-num { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 1.7rem; color: var(--cyan); line-height: 1; }
+    .ra-ronda-lbl { font-family: 'DM Mono', monospace; font-size: .58rem; color: rgba(255,255,255,.4); letter-spacing: 2px; margin-top: 2px; }
+
+    .ronda-selector { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .ronda-selector label { font-family: 'Orbitron', monospace; font-size: .6rem; letter-spacing: 1.5px; color: var(--muted); }
+    .btn-ronda {
+      padding: 6px 13px;
+      background: var(--panel-bg2);
+      border: 1px solid var(--panel-border); border-radius: 5px;
+      cursor: pointer; font-family: 'Orbitron', monospace;
+      font-size: .65rem; font-weight: 700; color: var(--muted);
+      transition: all .12s;
+    }
+    .btn-ronda:hover { border-color: var(--cyan); color: var(--cyan); }
+    .btn-ronda.sel { background: var(--sucre-blue); border-color: var(--sucre-blue); color: #fff; }
+
+    .aviso {
+      padding: 10px 14px; border-radius: 6px;
+      font-size: .78rem; font-family: 'Exo 2', sans-serif;
+      margin-bottom: 12px;
+    }
+    .aviso.warning { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #fde68a; }
+    .aviso.success { background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.3); color: #86efac; }
+
+    /* ── PASO 3: TABLA CALIFICACIÓN ── */
+    .tabla-calificacion { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .tabla-calificacion thead tr { background: var(--sucre-blue); }
+    .tabla-calificacion th {
+      padding: 10px 12px;
+      font-family: 'Orbitron', monospace; font-size: .58rem;
+      letter-spacing: 1.5px; color: rgba(255,255,255,.85);
+      text-align: center; border-right: 1px solid rgba(255,255,255,.1);
+    }
+    .tabla-calificacion th:first-child { text-align: left; }
+    .tabla-calificacion th:last-child { border-right: none; }
+    .tabla-calificacion td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--panel-border);
+      border-right: 1px solid var(--panel-border);
+      text-align: center; vertical-align: middle; color: var(--text);
+    }
+    .tabla-calificacion td:first-child { text-align: left; }
+    .tabla-calificacion td:last-child {
+      border-right: none;
+      background: rgba(91,200,240,.06);
+    }
+    .tabla-calificacion tr:hover td { background: rgba(91,200,240,.04); }
+    .tabla-calificacion tr:hover td:last-child { background: rgba(91,200,240,.1); }
+
+    .criterio-nombre { font-weight: 600; color: var(--text); }
+    .criterio-desc { font-size: .7rem; color: var(--muted); margin-top: 2px; }
+
+    .nota-btns { display: flex; gap: 3px; justify-content: center; }
+    .nota-btn {
+      width: 30px; height: 30px;
+      background: var(--panel-bg2);
+      border: 1px solid var(--panel-border); border-radius: 4px;
+      cursor: pointer; font-family: 'Orbitron', monospace;
+      font-weight: 700; font-size: .7rem; color: var(--muted);
+      transition: all .1s; display: flex; align-items: center; justify-content: center;
+    }
+    .nota-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .nota-btn.sel { background: var(--sucre-blue); border-color: var(--sucre-blue); color: #fff; }
+
+    .prom-criterio { font-family: 'Orbitron', monospace; font-weight: 700; font-size: .88rem; color: var(--cyan); }
+    .prom-criterio.vacio { color: var(--panel-border); }
+
+    .total-row td {
+      background: var(--sucre-blue) !important;
+      color: #fff !important;
+      font-family: 'Orbitron', monospace; font-weight: 700;
+      border-color: rgba(255,255,255,.15) !important;
+    }
+    .total-val { font-size: 1.3rem; color: var(--cyan); }
+
+    /* ── RANKING ── */
+    .ranking-table { width: 100%; border-collapse: collapse; }
+    .ranking-table th {
+      font-family: 'Orbitron', monospace; font-size: .58rem;
+      letter-spacing: 1.5px; color: var(--muted); text-align: left;
+      padding: 9px 14px; border-bottom: 1px solid var(--panel-border);
+      background: rgba(91,200,240,.04);
+    }
+    .ranking-table td {
+      padding: 12px 14px; font-size: .85rem;
+      border-bottom: 1px solid var(--panel-border); color: var(--text);
+    }
+    .ranking-table tr:last-child td { border-bottom: none; }
+    .ranking-table tr:hover td { background: rgba(91,200,240,.04); }
+    .rank-pos { font-family: 'Orbitron', monospace; font-weight: 700; font-size: .9rem; }
+    .r1 { color: var(--gold); } .r2 { color: var(--muted); } .r3 { color: #92400e; }
+    .score-pill {
+      display: inline-block; background: rgba(91,200,240,.12);
+      color: var(--cyan); font-family: 'Orbitron', monospace;
+      font-weight: 700; font-size: .7rem; padding: 3px 10px; border-radius: 4px;
+    }
+    .score-pill.top { background: var(--sucre-blue); color: #fff; }
+    .rondas-pill { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--muted); }
+
+    /* ── LOADING / TOAST ── */
+    .loading-msg {
+      text-align: center; padding: 28px;
+      font-family: 'DM Mono', monospace; font-size: .78rem; color: var(--muted);
+    }
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid var(--panel-border); border-top-color: var(--cyan);
+      border-radius: 50%; animation: spin .7s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .toast {
-      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-      border: 2px solid var(--green); color: var(--text);
-      font-family: var(--font-body); font-size: 0.9rem; font-weight: 600;
-      padding: 14px 28px; border-radius: 30px; transition: transform 0.3s; z-index: 9999;
-      box-shadow: 0 8px 32px rgba(13,40,71,0.5);
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 12px 20px; border-radius: 6px;
+      font-family: 'Exo 2', sans-serif; font-size: .88rem; font-weight: 600;
+      color: #fff; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+      transform: translateY(60px); opacity: 0;
+      transition: all .25s ease; z-index: 9999;
     }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.error { border-color: var(--red); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #16a34a; }
+    .toast.error   { background: #dc2626; }
+    .toast.info    { background: var(--sucre-blue); }
 
-    /* ── Responsive ── */
-    @media (max-width: 1200px) {
-      .crono-wrapper { padding: 20px 12px; }
-      .crono-layout { grid-template-columns: 1fr; gap: 20px; }
-      .col-config, .col-crono { max-width: 700px; margin: 0 auto; width: 100%; }
-      .col-ranking { max-width: 700px; margin: 0 auto; width: 100%; }
-      .ranking-card { height: auto; }
-      #rondas-container { overflow-y: visible; }
-      #cronometro { font-size: 4rem; }
-      .btn-row { grid-template-columns: 1fr; gap: 8px; }
+    /* ── MODAL ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 9998; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal-card { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 10px; padding: 28px; max-width: 420px; width: 90%; }
+    .modal-card h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: var(--text); margin-bottom: 10px; }
+    .modal-card p { font-size: .85rem; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+    /* ── FAB RANKING ── */
+    #fab-ranking {
+      display: none; position: fixed;
+      bottom: 28px; left: 28px; z-index: 900;
+    }
+    #fab-ranking button {
+      background: var(--sucre-blue); color: #fff;
+      border: 1px solid var(--panel-border-active);
+      border-radius: 50px; padding: 11px 20px;
+      font-family: 'Orbitron', monospace; font-size: .62rem;
+      letter-spacing: 1.5px; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,.35);
+      transition: background .15s;
+    }
+    #fab-ranking button:hover { background: #1e6bbf; }
+
+    @media (max-width: 768px) {
+      .pasos-bar { display: none; }
+      .config-row { flex-direction: column; }
+      .tabla-calificacion { font-size: .75rem; }
+      .nota-btn { width: 26px; height: 26px; font-size: .65rem; }
     }
   </style>
 </head>
-<body>
+<body style="background:#ffffff !important;">
 
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
@@ -367,944 +461,720 @@
   <div data-include="../shared/components/nav.html"></div>
 </div>
 
-<div class="crono-wrapper">
-  <h1 class="crono-title">CRONÓMETRO</h1>
+<main>
+<div class="wrapper">
 
-  <div class="crono-layout">
-
-    <!-- ══ COLUMNA CONFIG ══ -->
-    <div class="col-config">
-
-      <!-- Categoría -->
-      <div class="card-dark">
-        <div class="card-label">CATEGORÍA</div>
-        <select class="cat-select" id="select-categoria">
-          <option value="">— Selecciona —</option>
-          <optgroup label="⏱ CON CRONÓMETRO">
-            <option value="Insectos">Insectos</option>
-            <option value="Trepador (Amateur)">Trepador (Amateur)</option>
-            <option value="Trepador (Pro)">Trepador (Pro)</option>
-            <option value="Seguidor de línea ST (Amateur)">Seguidor ST (Amateur)</option>
-            <option value="Seguidor de línea ST (Pro)">Seguidor ST (Pro)</option>
-            <option value="Cubo Rubik">Cubo Rubik</option>
-            <option value="Lego Kids">Lego Kids</option>
-          </optgroup>
-        </select>
-      </div>
-
-      <!-- Aviso categoría -->
-      <div class="aviso-categoria" id="aviso-categoria">
-        ⚠️ Selecciona una categoría para empezar
-      </div>
-
-      <!-- Aviso sensor -->
-      <div class="aviso-sensor" id="aviso-sensor">
-        <div class="aviso-sensor-icon">🔌</div>
-        <div class="aviso-sensor-texto">
-          <b id="aviso-sensor-titulo">CONECTA EL DISPOSITIVO</b>
-          <span id="aviso-sensor-desc">Antes de iniciar la competencia, conecta el ESP32 usando el botón de abajo.</span>
-        </div>
-      </div>
-
-      <!-- Config rondas/intentos -->
-      <div class="card-dark">
-        <div class="config-title">CONFIG</div>
-        <div class="config-row">
-          <label>Rondas:</label>
-          <input type="number" class="config-input" id="cfg-rondas" value="3" min="1" max="10" />
-        </div>
-        <div style="height:8px"></div>
-        <div class="config-row">
-          <label>Intentos:</label>
-          <input type="number" class="config-input" id="cfg-intentos" value="2" min="1" max="5" />
-        </div>
-      </div>
-
-      <!-- Badges ronda/intento -->
-      <div class="card-dark badges-wrap">
-        <span class="badge-ronda" id="badge-ronda">RONDA 0 · REVISIÓN</span>
-        <span class="badge-intento" id="badge-intento">—</span>
-      </div>
-
-      <!-- Botones -->
-      <button class="btn-iniciar-comp" id="btn-iniciar-comp" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
-      <button class="btn-bloque btn-cerrar-cat visible" id="btn-cerrar-cat" style="display:none" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
-      <button class="btn-bloque btn-excel" id="btn-excel" onclick="exportarExcel()">📊 Descargar Excel</button>
+  <!-- HERO -->
+  <div class="page-hero">
+    <div class="page-hero-badge">
+      <div class="page-hero-badge-dot"></div>
+      SUCREBOT 2026 · JUECES
     </div>
-
-    <!-- ══ COLUMNA CRONÓMETRO ══ -->
-    <div class="col-crono">
-
-      <!-- Strip participante -->
-      <div class="participante-strip empty" id="participante-strip">
-        <div>
-          <div class="p-robot">Sin participante</div>
-          <div class="p-inst">Esperando escáner...</div>
-        </div>
-        <div class="p-badge">—</div>
-      </div>
-
-      <!-- Display -->
-      <div class="crono-display" id="crono-display">
-        <div id="cronometro">00:00:00</div>
-        <div class="crono-status" id="crono-status">LISTO</div>
-      </div>
-
-      <!-- Botones cronómetro -->
-      <div class="btn-row">
-        <button class="btn-crono btn-start" id="btn-start" onclick="iniciarCrono()">▶ Iniciar</button>
-        <button class="btn-crono btn-stop"  onclick="detenerCrono()">⏸ Detener</button>
-        <button class="btn-crono btn-reset" onclick="reiniciarCrono()">↻ Reiniciar</button>
-      </div>
-      <div class="btn-row" style="margin-top:8px">
-        <button class="btn-crono btn-dnf" id="btn-dnf" onclick="marcarDNF()">⛔ DNF — No completó</button>
-      </div>
-
-      <!-- Botones acción -->
-      <button class="btn-accion btn-siguiente-intento"    id="btn-sig-intento"  onclick="siguienteIntento()">➜ Siguiente intento</button>
-      <button class="btn-accion btn-siguiente-participante" id="btn-sig-part" onclick="pasarSiguienteParticipante()">⏭ Siguiente participante</button>
-      <button class="btn-accion btn-saltar"               id="btn-saltar"       onclick="saltarParticipante()">⏭ Saltar participante</button>
-      <button class="btn-cerrar-ronda" id="btn-cerrar-ronda" onclick="pedirCerrarRonda()" style="display:none">
-        🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>
-      </button>
-    </div>
-
-    <!-- ══ COLUMNA RANKING ══ -->
-    <div class="col-ranking">
-      <div class="ranking-card">
-        <div class="ranking-header">
-          <div class="ranking-title">RANKING</div>
-          <div class="ranking-count" id="ranking-count">0</div>
-        </div>
-        <div id="rondas-container">
-          <p class="ranking-empty">Sin participantes aún</p>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- Modal cerrar ronda -->
-<div class="modal" id="modal-ronda">
-  <div class="modal-box">
-    <div class="modal-title">Cerrar <span id="modal-ronda-nom">Ronda 1</span></div>
-    <div class="modal-text">Los clasificados pasan a la siguiente ronda. Los eliminados quedan fuera. ¿Confirmar?</div>
-    <div class="modal-btns">
-      <button class="modal-btn cancel" onclick="cerrarModal('modal-ronda')">Cancelar</button>
-      <button class="modal-btn confirm" onclick="confirmarCerrarRonda()">Sí, cerrar</button>
+    <h2>PANEL DE <span>CALIFICACIÓN</span></h2>
+    <div class="page-hero-sub">
+      <p>GESTIÓN COMPLETA DEL CONCURSO POR PUNTUACIÓN</p>
     </div>
   </div>
+
+  <!-- PASOS -->
+  <div class="pasos-bar" id="pasos-bar">
+    <div class="paso-item activo" id="paso-1-tab"><span class="paso-num">1</span>Configurar</div>
+    <div class="paso-item" id="paso-2-tab"><span class="paso-num">2</span>Escanear</div>
+    <div class="paso-item" id="paso-3-tab"><span class="paso-num">3</span>Calificar</div>
+    <div class="paso-item" id="paso-4-tab"><span class="paso-num">4</span>Ranking</div>
+  </div>
+
+  <!-- ════ PASO 1: CONFIGURAR ════ -->
+  <div id="paso-1">
+    <div class="panel-card">
+      <div class="panel-card-title">⚙ CONFIGURACIÓN DE LA SESIÓN</div>
+
+      <div id="bloqueo-badge" style="display:none" class="bloqueo-badge">
+        <div class="bloqueo-dot"></div>
+        <span id="bloqueo-txt">Categoría bloqueada</span>
+      </div>
+
+      <div class="config-row">
+        <div class="field">
+          <label>Categoría</label>
+          <select id="cfg-categoria" onchange="onCategoriaSelected()">
+            <option value="">— Selecciona —</option>
+            <option value="bai">Bailarín</option>
+            <option value="dev">Impacto Tecnológico</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Número de jueces</label>
+          <input type="number" id="cfg-n-jueces" min="1" max="10" value="3" onchange="renderJuecesConfig()">
+        </div>
+      </div>
+
+      <div class="panel-card-title" style="margin-top:4px;">👤 NOMBRES DE JUECES <span style="font-size:.6rem;color:var(--muted);font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;">(opcional)</span></div>
+      <div class="jueces-config" id="jueces-config"></div>
+
+      <div class="panel-card-title" style="margin-top:4px;">📋 CRITERIOS DE EVALUACIÓN</div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;">Define los criterios que los jueces evaluarán (nombre obligatorio, descripción opcional).</p>
+      <div class="criterios-config" id="criterios-config"></div>
+      <button class="btn-add-criterio" onclick="agregarCriterioConfig()">+ Agregar criterio</button>
+
+      <div class="acciones-bar">
+        <button class="btn-prim" id="btn-iniciar-sesion" onclick="iniciarSesion()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          INICIAR CALIFICACIÓN
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 2: ESCANEAR ════ -->
+  <div id="paso-2" style="display:none">
+    <div class="panel-card">
+      <div class="panel-card-title">📷 ESCANEAR ROBOT</div>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Escanea el QR de la manilla o ingresa el ID manualmente.</p>
+
+      <div class="qr-input-row">
+        <input type="text" class="qr-input" id="qr-input"
+          placeholder="Escanea QR o escribe ID (ej: sb-2026-bai-001)"
+          onkeydown="if(event.key==='Enter') procesarQR()" />
+        <button class="btn-prim" onclick="procesarQR()">Buscar</button>
+      </div>
+
+      <div id="robot-activo-container" style="display:none">
+        <div class="robot-activo-card">
+          <div class="ra-avatar" id="ra-avatar">?</div>
+          <div class="ra-info">
+            <h3 id="ra-nombre">—</h3>
+            <p id="ra-robot">—</p>
+          </div>
+          <div class="ra-ronda">
+            <div class="ra-ronda-num" id="ra-ronda">1</div>
+            <div class="ra-ronda-lbl">RONDA</div>
+          </div>
+        </div>
+
+        <div class="ronda-selector">
+          <label>Seleccionar ronda:</label>
+          <div id="btns-ronda" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        </div>
+
+        <div id="aviso-ronda-prev" class="aviso warning" style="display:none">
+          ⚠ Este robot ya tiene puntuación en esta ronda. Al guardar se reemplazará.
+        </div>
+        <div id="aviso-mejor-ronda" class="aviso success" style="display:none"></div>
+      </div>
+
+      <div class="acciones-bar">
+        <button class="btn-sec" onclick="irAPaso(1)">← Volver</button>
+        <button class="btn-prim" id="btn-ir-calificar" onclick="irAPaso(3)" disabled>
+          Calificar este robot →
+        </button>
+      </div>
+    </div>
+
+    <!-- Ranking compacto -->
+    <div class="panel-card">
+      <div class="panel-card-title">🏆 RANKING ACTUAL</div>
+      <div id="ranking-container-2"><div class="loading-msg">Cargando ranking...</div></div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 3: CALIFICAR ════ -->
+  <div id="paso-3" style="display:none">
+    <div class="panel-card">
+      <div class="panel-card-title">
+        ⭐ CALIFICACIÓN —
+        <span id="cal-robot-title" style="color:var(--cyan);margin-left:4px;">—</span>
+        <span id="cal-ronda-badge" style="margin-left:auto;background:rgba(91,200,240,.12);color:var(--cyan);font-size:.6rem;padding:3px 10px;border-radius:4px;">RONDA 1</span>
+      </div>
+
+      <div style="overflow-x:auto;" id="tabla-calificacion-wrapper"></div>
+
+      <div class="acciones-bar">
+        <button class="btn-sec" onclick="irAPaso(2)">← Cambiar robot</button>
+        <button class="btn-prim" id="btn-guardar-cal" onclick="guardarCalificacion()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          GUARDAR CALIFICACIÓN
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 4: RANKING ════ -->
+  <div id="paso-4" style="display:none">
+    <div class="panel-card">
+      <div class="panel-card-title">
+        🏆 RANKING FINAL —
+        <span id="ranking-cat-title" style="color:var(--cyan);margin-left:4px;"></span>
+        <button class="btn-sec" style="margin-left:auto;padding:5px 11px;font-size:.62rem;" onclick="cargarRanking()">↺ Actualizar</button>
+      </div>
+      <div id="ranking-container-4"><div class="loading-msg"><span class="spinner"></span>Cargando...</div></div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-card-title">ACCIONES FINALES</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn-success" onclick="exportarExcel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          EXPORTAR EXCEL
+        </button>
+        <button class="btn-sec" onclick="irAPaso(2)">← Seguir calificando</button>
+        <button class="btn-danger" onclick="confirmarCerrarCategoria()">🔒 CERRAR CATEGORÍA</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<!-- FAB Ranking -->
+<div id="fab-ranking">
+  <button onclick="irAPaso(4)">🏆 VER RANKING</button>
 </div>
 
-<!-- Modal cerrar categoría -->
-<div class="modal" id="modal-cat">
-  <div class="modal-box">
-    <div class="modal-title">Cerrar Categoría</div>
-    <div class="modal-text">¿Cerrar "<span id="modal-cat-nom"></span>"? Se liberará la categoría y se borrará el progreso local.</div>
-    <div class="modal-btns">
-      <button class="modal-btn cancel" onclick="cerrarModal('modal-cat')">Cancelar</button>
-      <button class="modal-btn confirm" onclick="confirmarCerrarCategoria()">Sí, cerrar</button>
+<!-- Modal cerrar -->
+<div class="modal-overlay" id="modal-cerrar">
+  <div class="modal-card">
+    <h3>¿CERRAR CATEGORÍA?</h3>
+    <p>Se liberará el bloqueo y otros dispositivos podrán acceder. Asegúrate de haber exportado los resultados antes.</p>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="document.getElementById('modal-cerrar').classList.remove('show')">Cancelar</button>
+      <button class="btn-danger" onclick="cerrarCategoria()">🔒 Confirmar cierre</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
+<div data-include="../shared/components/footer.html"></div>
 <script src="../shared/js/load-components.js"></script>
-<script src="../shared/js/auth.js"></script>
 
 <script>
-const GAS_URL = CONFIG.GAS_URL();
-
-// ── Rutas (minúsculas — deben coincidir con GAS y resultados.json) ──
-const RUTAS = {
-  'Insectos':                       'ins',
-  'Trepador (Amateur)':             'trp_a',
-  'Trepador (Pro)':                 'trp_p',
-  'Seguidor de línea ST (Amateur)': 'sl_a',
-  'Seguidor de línea ST (Pro)':     'sl_p',
-  'Cubo Rubik':                     'cr',
-  'Lego Kids':                      'lk'
-};
-
-// ── Categorías que requieren dispositivo serial ──
-const CATS_SENSOR   = ['Trepador (Amateur)', 'Trepador (Pro)', 'Seguidor de línea ST (Amateur)', 'Seguidor de línea ST (Pro)'];
-const CATS_PULSADOR = ['Cubo Rubik', 'Lego Kids'];
-const CATS_SERIAL   = [...CATS_SENSOR, ...CATS_PULSADOR];
-
-// ── Info del aviso sensor por categoría ──
-const AVISO_SENSOR = {
-  'Trepador (Amateur)':             { titulo: 'SENSOR REQUERIDO (E18-D80NK)', desc: 'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.' },
-  'Trepador (Pro)':                 { titulo: 'SENSOR REQUERIDO (E18-D80NK)', desc: 'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.' },
-  'Seguidor de línea ST (Amateur)': { titulo: 'SENSOR REQUERIDO (TOGGLE)', desc: 'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.' },
-  'Seguidor de línea ST (Pro)':     { titulo: 'SENSOR REQUERIDO (TOGGLE)', desc: 'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.' },
-  'Cubo Rubik':                     { titulo: 'PULSADOR REQUERIDO', desc: 'Conecta el ESP32. El pulsador inicia y detiene el tiempo manualmente.' },
-  'Lego Kids':                      { titulo: 'PULSADOR REQUERIDO', desc: 'Conecta el ESP32. El pulsador inicia y detiene el tiempo manualmente.' }
-};
-
-// ── Estado ──
-let categoriaActual    = null;
+// ═══════════════════════════════════════
+//  ESTADO
+// ═══════════════════════════════════════
+let GAS = null;
+let categoriaActual    = '';
+let nJueces            = 3;
+let nombresJueces      = [];
+let criterios          = [];
 let participanteActual = null;
-let pollingInterval    = null;
-let cronoInterval      = null;
-let cronoInicio        = null;
-let rondaActual        = 0;
-let intentoActual      = 1;
-let maxRondas          = 3;
-let maxIntentos        = 2;
-let rondasData         = { 0: { clasificados: [], eliminados: [], cerrada: false } };
-let intentosLog        = [];
-let competenciaIniciada = false;
+let rondaActual        = 1;
+let notas              = {};
+let historialNotas     = {};
+let todosPuntuados     = [];
+const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico' };
 
-// ── Helpers ──
-function getRuta()     { return RUTAS[categoriaActual] || null; }
-function getKey()      { return 'sucrebot_estado_' + (getRuta() || 'general'); }
-function bloquearBtn() { const b = document.getElementById('btn-start'); if (b) b.disabled = true; }
-function desbloquearBtn() { const b = document.getElementById('btn-start'); if (b) b.disabled = false; }
+document.addEventListener('componentsLoaded', () => {
+  GAS = CONFIG.GAS_URL();
+  renderJuecesConfig();
+  renderCriteriosConfigDOM();
+  document.getElementById('cfg-n-jueces').addEventListener('input', () => {
+    nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
+    renderJuecesConfig();
+  });
+  document.getElementById('cfg-categoria').addEventListener('change', validarConfig);
 
-function tiempoASegundos(t) {
-  if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
-  const p = t.split(':').map(Number);
-  return p[0] * 60 + p[1] + p[2] / 100;
-}
-
-// ── Selector de categoría ──
-document.getElementById('select-categoria').addEventListener('change', async function() {
-  const nueva = this.value;
-  if (!nueva) return;
-  const bloqueada = await verificarBloqueo(nueva);
-  const userData  = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
-  if (bloqueada && bloqueada.usuario !== userData.email) {
-    showToast(`⚠️ Categoría en uso por ${bloqueada.usuario}`, true);
-    this.value = categoriaActual || '';
-    return;
-  }
-  if (categoriaActual && categoriaActual !== nueva) {
-    await desbloquearCategoria(categoriaActual);
-    localStorage.removeItem('cronometro_categoria_activa');
-  }
-  const ok = await bloquearCategoria(nueva);
-  if (ok) {
-    categoriaActual = nueva;
-    localStorage.setItem('cronometro_categoria_activa', nueva);
-    activarUI();
-    cargarEstado();
-    showToast(`✓ Categoría "${nueva}" bloqueada`);
-  } else {
-    showToast('❌ No se pudo bloquear la categoría', true);
-    this.value = '';
-  }
+  // Restaurar sesión si había una activa antes del F5
+  restaurarSesion();
 });
 
-// ── UI categoría ──
-function activarUI() {
-  document.getElementById('btn-cerrar-cat').style.display = 'block';
-  document.getElementById('aviso-categoria').style.display = 'none';
-  document.getElementById('select-categoria').disabled = true;
-  // Aviso sensor
-  const aviso = document.getElementById('aviso-sensor');
-  if (CATS_SERIAL.includes(categoriaActual)) {
-    const info = AVISO_SENSOR[categoriaActual] || { titulo: 'DISPOSITIVO REQUERIDO', desc: 'Conecta el ESP32 antes de iniciar.' };
-    document.getElementById('aviso-sensor-titulo').textContent = info.titulo;
-    document.getElementById('aviso-sensor-desc').textContent   = info.desc;
-    aviso.classList.add('visible');
-  } else {
-    aviso.classList.remove('visible');
-  }
-  // Botón serial
-  if (typeof mostrarBotonSerial === 'function') {
-    setTimeout(() => mostrarBotonSerial(CATS_SERIAL.includes(categoriaActual)), 100);
-  }
-}
+async function restaurarSesion() {
+  const sesion = JSON.parse(localStorage.getItem('panel_cal_sesion') || 'null');
+  if (!sesion) return;
 
-function desactivarUI() {
-  document.getElementById('btn-cerrar-cat').style.display = 'none';
-  document.getElementById('btn-excel').classList.remove('visible');
-  document.getElementById('aviso-categoria').style.display = 'flex';
-  document.getElementById('aviso-sensor').classList.remove('visible');
-  document.getElementById('select-categoria').disabled = false;
-  document.getElementById('select-categoria').value = '';
-  if (typeof mostrarBotonSerial === 'function') mostrarBotonSerial(false);
-}
-
-// ── GAS — bloqueo categoría ──
-async function bloquearCategoria(cat) {
-  const user = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
+  // Verificar que el bloqueo sigue siendo de este panel
   try {
-    const r = await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'bloquearCategoria', categoria:cat, usuario:user.email }) });
-    const d = await r.json(); return d.ok;
-  } catch(e) { return false; }
-}
-async function desbloquearCategoria(cat) {
-  try { await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'desbloquearCategoria', categoria:cat }) }); } catch(e) {}
-}
-async function verificarBloqueo(cat) {
-  try {
-    const r = await fetch(GAS_URL + '?' + new URLSearchParams({ action:'getCategoriasActivas' }));
-    const a = await r.json();
-    return a.find(c => String(c.categoria||'').toLowerCase().trim() === String(cat||'').toLowerCase().trim());
-  } catch(e) { return null; }
-}
-
-// ── Polling ──
-function iniciarPolling() {
-  if (pollingInterval) return;
-  pollingInterval = setInterval(async () => {
-    if (!categoriaActual) return;
-    try {
-      const r    = await fetch(GAS_URL + '?' + new URLSearchParams({ action:'getActivo', ruta: getRuta()||'general' }));
-      const data = await r.json();
-      if (!data?.raw || data.raw === '') return;
-      let nuevoP;
-      try { nuevoP = JSON.parse(data.raw); } catch { return; }
-      if (cronoInterval) return; // no interrumpir mientras corre
-      const marcaActual = participanteActual ? (participanteActual.inicio || participanteActual.timestamp || 0) : 0;
-      const marcaNueva  = nuevoP.inicio || nuevoP.timestamp || 0;
-      if (!participanteActual || participanteActual.id !== nuevoP.id || marcaNueva > marcaActual) {
-        recibirParticipante(nuevoP);
-      }
-    } catch(e) {}
-  }, 2000);
-}
-
-function recibirParticipante(p) {
-  participanteActual = p;
-  // Restaurar intentos previos desde rondasData si ya compitió en esta ronda
-  if (rondaActual > 0) {
-    const rd = getRonda(rondaActual);
-    const yaEnRanking = rd.clasificados.find(c => c.id === p.id || c.robot === p.robot);
-    const tiemposYa = yaEnRanking ? (yaEnRanking.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00') : [];
-    intentosLog = tiemposYa.map((t,i) => ({ ronda:rondaActual, intento:i+1, tiempo:t, esDNF:t==='DNF' }));
-    intentoActual = intentosLog.length + 1;
-  } else {
-    intentosLog = [];
-    intentoActual = 1;
-  }
-  actualizarBadges();
-  reiniciarCrono();
-  if (rondaActual > 0) enviarSerial('R'); 
-  // Si ya completó sus intentos, bloquear
-  if (intentosLog.length >= maxIntentos) {
-    bloquearBtn();
-    document.getElementById('btn-sig-part').classList.add('visible');
-    document.getElementById('crono-status').textContent = `✓ ${intentosLog.length}/${maxIntentos} intentos completados`;
-  } else {
-    desbloquearBtn();
-  }
-  ocultarBotonesAccion();
-  if (intentosLog.length >= maxIntentos) {
-    document.getElementById('btn-sig-part').classList.add('visible');
-  }
-  // Strip
-  const strip = document.getElementById('participante-strip');
-  strip.className = 'participante-strip';
-  strip.innerHTML = `<div><div class="p-robot">${p.robot||'—'}</div><div class="p-inst">${p.institucion||''}${p.ciudad?' · '+p.ciudad:''}</div></div><div class="p-badge">${rondaActual===0?'REVISIÓN ✓':'LISTO ✓'}</div>`;
-  // Ronda 0 — agregar al registro
-  if (rondaActual === 0) {
-    const rd = getRonda(0);
-    if (rd.clasificados.some(c => c.robot === p.robot)) { showToast('⚠️ '+p.robot+' ya está en el registro'); return; }
-    rd.clasificados.push({ id:p.id, robot:p.robot, nombre:p.nombre||'', institucion:p.institucion||'', ciudad:p.ciudad||'', categoria:p.categoria||'', tiempo:'—', tiempos:[], esDNF:false, ts:Date.now()+rd.clasificados.length });
-    actualizarContador();
-    renderRondas();
-    guardarEstado();
-  }
-  showToast(rondaActual===0 ? '✓ Revisión: '+p.robot : '✓ Nuevo: '+p.robot);
-}
-
-function limpiarParticipante() {
-  participanteActual = null;
-  intentosLog   = [];
-  intentoActual = 1;
-  actualizarBadges();
-  const strip = document.getElementById('participante-strip');
-  strip.className = 'participante-strip empty';
-  strip.innerHTML = `<div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner...</div></div><div class="p-badge">—</div>`;
-  ocultarBotonesAccion();
-  if (categoriaActual) {
-    fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'clearActivo', ruta: getRuta()||'general' }) }).catch(()=>{});
-  }
-}
-
-// ── Cronómetro ──
-function iniciarCrono() {
-  if (rondaActual === 0)         { showToast('⚠️ Ronda 0 es solo revisión', true); return; }
-  if (!participanteActual)       { showToast('⚠️ Sin participante', true); return; }
-  if (cronoInterval)             return;
-  if (intentosLog.length >= maxIntentos) { showToast(`⚠️ ${participanteActual.robot} ya completó sus ${maxIntentos} intentos`, true); return; }
-  cronoInicio   = Date.now();
-  cronoInterval = setInterval(tickCrono, 10);
-  document.getElementById('crono-display').className  = 'crono-display running';
-  document.getElementById('crono-status').textContent = `EN MARCHA · Intento ${intentoActual} de ${maxIntentos}`;
-  document.getElementById('btn-dnf').style.display    = 'block';
-  ocultarBotonesAccion();
-  enviarSerial('R');
-}
-
-function detenerCrono() {
-  if (!cronoInterval) return;
-  clearInterval(cronoInterval);
-  cronoInterval = null;
-  const tiempo = document.getElementById('cronometro').textContent;
-  // No registrar si nunca arrancó
-  if (tiempo === '00:00:00') {
-    document.getElementById('crono-display').className  = 'crono-display';
-    document.getElementById('crono-status').textContent = participanteActual ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
-    document.getElementById('btn-dnf').style.display    = 'none';
-    showToast('⚠️ El cronómetro no arrancó — intento no registrado', true);
-    enviarSerial('S');
-    return;
-  }
-  document.getElementById('crono-display').className  = 'crono-display stopped';
-  document.getElementById('crono-status').textContent = 'DETENIDO';
-  document.getElementById('btn-dnf').style.display    = 'none';
-  registrarIntento(tiempo);
-  enviarSerial('S');
-}
-
-function reiniciarCrono() {
-  if (cronoInterval) clearInterval(cronoInterval);
-  cronoInterval = null; cronoInicio = null;
-  document.getElementById('cronometro').textContent    = '00:00:00';
-  document.getElementById('crono-display').className  = 'crono-display';
-  document.getElementById('crono-status').textContent = participanteActual ? `LISTO · Intento ${intentoActual} de ${maxIntentos}` : 'LISTO';
-  document.getElementById('btn-dnf').style.display    = 'none';
-}
-
-function marcarDNF() {
-  if (!participanteActual) return;
-  if (intentosLog.length >= maxIntentos) { showToast(`⚠️ ${participanteActual.robot} ya completó sus intentos`, true); return; }
-  // Solo se puede marcar DNF si el cronómetro está corriendo
-  if (!cronoInterval) { showToast('⚠️ Inicia el cronómetro antes de marcar DNF', true); return; }
-  clearInterval(cronoInterval); cronoInterval = null;
-  document.getElementById('crono-display').className  = 'crono-display dnf';
-  document.getElementById('cronometro').textContent   = 'DNF';
-  document.getElementById('crono-status').textContent = 'DID NOT FINISH';
-  document.getElementById('btn-dnf').style.display    = 'none';
-  bloquearBtn();
-  registrarIntento('DNF');
-  enviarSerial('S');
-  showToast(`⛔ DNF — ${participanteActual.robot}`);
-}
-
-function tickCrono() {
-  if (!cronoInicio) return;
-  const t  = Date.now() - cronoInicio;
-  const cs = Math.floor((t % 1000) / 10);
-  const sg = Math.floor((t / 1000) % 60);
-  const mn = Math.floor(t / 60000);
-  document.getElementById('cronometro').textContent =
-    String(mn).padStart(2,'0')+':'+String(sg).padStart(2,'0')+':'+String(cs).padStart(2,'0');
-}
-
-// ── Registrar intento ──
-function registrarIntento(tiempo) {
-  if (!participanteActual) return;
-  const esDNF = tiempo === 'DNF';
-  intentosLog.push({ ronda:rondaActual, intento:intentoActual, tiempo, esDNF });
-  agregarAlRanking(tiempo, esDNF);
-  guardarResultadoGAS(tiempo);
-  // Determinar botones siguientes
-  ocultarBotonesAccion();
-  if (intentosLog.length < maxIntentos) {
-    // Quedan intentos
-    document.getElementById('btn-sig-intento').classList.add('visible');
-    document.getElementById('crono-status').textContent = esDNF ? `DNF · ${maxIntentos - intentosLog.length} intento(s) restante(s)` : `⏸ ${maxIntentos - intentosLog.length} intento(s) restante(s)`;
-  } else {
-    // Completó todos los intentos
-    bloquearBtn();
-    document.getElementById('btn-sig-part').classList.add('visible');
-    document.getElementById('crono-status').textContent = esDNF ? `⛔ DNF · ${maxIntentos}/${maxIntentos} intentos` : `✓ COMPLETÓ ${maxIntentos}/${maxIntentos} INTENTOS`;
-  }
-  guardarEstado();
-}
-
-function siguienteIntento() {
-  intentoActual++;
-  actualizarBadges();
-  reiniciarCrono();
-  desbloquearBtn();
-  ocultarBotonesAccion();
-  document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
-  enviarSerial('R')
-}
-
-function pasarSiguienteParticipante() {
-  const nom = participanteActual?.robot || 'participante';
-  limpiarParticipante();
-  desbloquearBtn();
-  ocultarBotonesAccion();
-  document.getElementById('crono-status').textContent = '⏳ ESPERANDO SIGUIENTE PARTICIPANTE';
-  showToast(`✓ ${nom} — listo`);
-}
-
-function saltarParticipante() {
-  if (participanteActual && intentosLog.length < maxIntentos) {
-    if (!confirm(`⚠️ ${participanteActual.robot} solo hizo ${intentosLog.length}/${maxIntentos} intentos.\n¿Saltar de todas formas?`)) return;
-  }
-  limpiarParticipante();
-  desbloquearBtn();
-  ocultarBotonesAccion();
-  document.getElementById('crono-status').textContent = '⏳ ESPERANDO SIGUIENTE PARTICIPANTE';
-  showToast('⏭ Esperando siguiente participante');
-}
-
-function ocultarBotonesAccion() {
-  ['btn-sig-intento','btn-sig-part','btn-saltar'].forEach(id => {
-    document.getElementById(id).classList.remove('visible');
-  });
-}
-
-// ── Badges ──
-function actualizarBadges() {
-  const bronda = document.getElementById('badge-ronda');
-  const bint   = document.getElementById('badge-intento');
-  const bcr    = document.getElementById('btn-cerrar-ronda');
-  const numEl  = document.getElementById('cerrar-ronda-num');
-  if (rondaActual === 0) {
-    bronda.textContent = 'RONDA 0 · REVISIÓN';
-    bint.textContent   = '—';
-    bcr.style.display  = 'none';
-  } else {
-    bronda.textContent = 'RONDA ' + rondaActual;
-    bint.textContent   = 'INTENTO ' + intentoActual;
-    bcr.style.display  = 'block';
-  }
-  if (numEl) numEl.textContent = rondaActual;
-}
-
-// ── Competencia ──
-function iniciarCompetencia() {
-  if (!categoriaActual) { showToast('⚠️ Selecciona una categoría primero', true); return; }
-  maxRondas   = parseInt(document.getElementById('cfg-rondas').value)   || 3;
-  maxIntentos = parseInt(document.getElementById('cfg-intentos').value) || 2;
-  if (!confirm(`¿Iniciar competencia?\n• Rondas: ${maxRondas}\n• Intentos: ${maxIntentos}\n\nEsto bloqueará la configuración.`)) return;
-  competenciaIniciada = true;
-  document.getElementById('cfg-rondas').disabled    = true;
-  document.getElementById('cfg-intentos').disabled  = true;
-  document.getElementById('cfg-rondas').style.opacity   = '0.5';
-  document.getElementById('cfg-intentos').style.opacity = '0.5';
-  document.getElementById('btn-iniciar-comp').classList.add('oculto');
-  const ronda0 = getRonda(0);
-  rondaActual  = 1; intentoActual = 1;
-  rondasData[1] = {
-    clasificados: ronda0.clasificados.map((c,i) => ({ ...c, tiempo:'—', tiempos:[], esDNF:false, ronda:1, ts:Date.now()+i })),
-    eliminados: [], cerrada: false
-  };
-  actualizarBadges();
-  renderRondas();
-  limpiarParticipante();
-  guardarEstado();
-  showToast(`🏁 Competencia iniciada · ${rondasData[1].clasificados.length} participantes`);
-}
-
-function getRonda(r) {
-  if (!rondasData[r]) rondasData[r] = { clasificados:[], eliminados:[], cerrada:false };
-  return rondasData[r];
-}
-
-// ── Ranking ──
-function agregarAlRanking(tiempo, esDNF) {
-  if (!participanteActual) return;
-  const rd  = getRonda(rondaActual);
-  const idx = rd.clasificados.findIndex(c => c.robot === participanteActual.robot);
-  if (idx >= 0) {
-    const ant = rd.clasificados[idx];
-    ant.tiempos = ant.tiempos || [];
-    if (tiempo && tiempo !== '—' && tiempo !== '00:00:00') ant.tiempos.push(tiempo);
-    if (!esDNF && (ant.esDNF || tiempoASegundos(tiempo) < tiempoASegundos(ant.tiempo))) {
-      ant.tiempo = tiempo; ant.esDNF = false;
+    const r = await fetch(`${GAS}?action=getCategoriasActivas`);
+    const d = await r.json();
+    const cats = Array.isArray(d) ? d : (d.categorias || []);
+    const bloqueada = cats.find(c => c.categoria === sesion.categoria && c.usuario === 'panel-calificacion');
+    if (!bloqueada) {
+      localStorage.removeItem('panel_cal_sesion');
+      return;
     }
+  } catch(e) { return; }
+
+  // Restaurar estado
+  categoriaActual = sesion.categoria;
+  nJueces        = sesion.nJueces || 3;
+  nombresJueces  = sesion.nombresJueces || [];
+  criterios      = sesion.criterios || [];
+
+  document.getElementById('cfg-categoria').value = categoriaActual;
+  document.getElementById('cfg-n-jueces').value  = nJueces;
+  renderJuecesConfig();
+  // Restaurar nombres de jueces
+  nombresJueces.forEach((nombre, i) => {
+    const inputs = document.querySelectorAll('#jueces-config .juez-row input');
+    if (inputs[i]) inputs[i].value = nombre;
+  });
+  renderCriteriosConfigDOM();
+
+  document.getElementById('bloqueo-badge').style.display = '';
+  document.getElementById('bloqueo-txt').textContent =
+    `${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
+
+  await cargarHistorial();
+  validarConfig();
+  showToast('Sesión restaurada', 'info');
+}
+
+function guardarSesionLocal() {
+  localStorage.setItem('panel_cal_sesion', JSON.stringify({
+    categoria:     categoriaActual,
+    nJueces,
+    nombresJueces,
+    criterios
+  }));
+}
+
+// ── Config ──────────────────────────────
+function renderJuecesConfig() {
+  nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
+  const prev = Array.from(document.querySelectorAll('#jueces-config .juez-row input')).map(i => i.value);
+  document.getElementById('jueces-config').innerHTML = Array.from({length: nJueces}, (_, i) => `
+    <div class="juez-row">
+      <span class="juez-num">Juez ${i+1}</span>
+      <input type="text" placeholder="Nombre del juez ${i+1} (opcional)" value="${prev[i]||''}">
+    </div>`).join('');
+  validarConfig();
+}
+
+function renderCriteriosConfigDOM() {
+  if (criterios.length === 0) criterios = [{nombre:'Criterio 1',descripcion:''},{nombre:'Criterio 2',descripcion:''}];
+  document.getElementById('criterios-config').innerHTML = criterios.map((c, i) => `
+    <div class="criterio-config-row">
+      <input type="text" placeholder="Nombre del criterio" value="${c.nombre}"
+        oninput="criterios[${i}].nombre=this.value;validarConfig()">
+      <input type="text" class="desc" placeholder="Descripción (opcional)" value="${c.descripcion||''}"
+        oninput="criterios[${i}].descripcion=this.value">
+      <button class="btn-del-criterio" onclick="eliminarCriterioConfig(${i})">✕</button>
+    </div>`).join('');
+  validarConfig();
+}
+
+function agregarCriterioConfig() { criterios.push({nombre:'',descripcion:''}); renderCriteriosConfigDOM(); }
+function eliminarCriterioConfig(idx) { criterios.splice(idx,1); renderCriteriosConfigDOM(); }
+
+function validarConfig() {
+  const cat    = document.getElementById('cfg-categoria').value;
+  const validos = criterios.filter(c => c.nombre.trim()).length;
+  document.getElementById('btn-iniciar-sesion').disabled = !cat || validos === 0;
+}
+
+async function onCategoriaSelected() {
+  const cat = document.getElementById('cfg-categoria').value;
+  if (!cat) return;
+  validarConfig();
+
+  // Bloquear categoría apenas se selecciona
+  try {
+    const catNombre = CAT_NOMBRES[cat] || cat;
+    const r = await fetch(GAS || CONFIG.GAS_URL(), {
+      method: 'POST',
+      body: JSON.stringify({ action:'bloquearCategoria', categoria: catNombre, usuario:'panel-calificacion' })
+    });
+    const d = await r.json();
+    if (!d.ok && d.bloqueadaPor) {
+      showToast('Categoría bloqueada por otro dispositivo', 'error');
+      document.getElementById('cfg-categoria').value = '';
+      validarConfig();
+      return;
+    }
+    categoriaActual = cat;
+    document.getElementById('bloqueo-badge').style.display = '';
+    document.getElementById('bloqueo-txt').textContent =
+      `${CAT_NOMBRES[cat]} — bloqueada por este panel`;
+    guardarSesionLocal();
+  } catch(e) {
+    showToast('Error al bloquear categoría', 'error');
+  }
+
+  // Cargar criterios guardados
+  fetch(`${GAS || CONFIG.GAS_URL()}?action=getCriterios&categoria=${cat}`)
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok && Array.isArray(d.criterios) && d.criterios.length > 0) {
+        criterios = d.criterios;
+        renderCriteriosConfigDOM();
+        showToast('Criterios cargados', 'info');
+      }
+    }).catch(() => {});
+}
+
+// ── Iniciar sesión ───────────────────────
+async function iniciarSesion() {
+  categoriaActual = document.getElementById('cfg-categoria').value;
+  nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
+  nombresJueces = Array.from(document.querySelectorAll('#jueces-config .juez-row input'))
+    .map((inp, i) => inp.value.trim() || `Juez ${i+1}`);
+  criterios = criterios.filter(c => c.nombre.trim());
+
+  const btn = document.getElementById('btn-iniciar-sesion');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>INICIANDO...';
+
+  try {
+    const r = await fetch(GAS, {
+      method: 'POST',
+      body: JSON.stringify({ action:'bloquearCategoria', categoria: CAT_NOMBRES[categoriaActual] || categoriaActual, usuario:'panel-calificacion' })
+    });
+    const d = await r.json();
+    if (!d.ok && d.bloqueadaPor) {
+      showToast('Categoría bloqueada por otro dispositivo', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg> INICIAR CALIFICACIÓN';
+      return;
+    }
+    await fetch(GAS, { method:'POST', body: JSON.stringify({ action:'guardarCriterios', categoria: categoriaActual, criterios }) });
+    guardarSesionLocal();
+    await cargarHistorial();
+    document.getElementById('bloqueo-badge').style.display = '';
+    document.getElementById('bloqueo-txt').textContent = `${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
+    irAPaso(2);
+    showToast('Sesión iniciada', 'success');
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg> INICIAR CALIFICACIÓN';
+  }
+}
+
+async function cargarHistorial() {
+  try {
+    const r = await fetch(`${GAS}?action=getPuntuaciones&categoria=${categoriaActual}`);
+    const d = await r.json();
+    historialNotas = {}; todosPuntuados = [];
+    if (d.ok && Array.isArray(d.puntuaciones)) {
+      todosPuntuados = d.puntuaciones;
+      d.puntuaciones.forEach(p => {
+        if (!historialNotas[p.id_participante]) historialNotas[p.id_participante] = {};
+        historialNotas[p.id_participante][p.ronda || 1] = {
+          total: p.total, notas_json: safeParseJson(p.notas_json || p.notas, {})
+        };
+      });
+    }
+  } catch(e) { historialNotas = {}; }
+}
+
+// ── Paso 2: Escanear ────────────────────
+function abrirEscaner() {
+  window.open(`../ESCANER/?ruta=panel_${categoriaActual}`, '_blank');
+}
+
+async function procesarQR() {
+  const raw = document.getElementById('qr-input').value.trim();
+  if (!raw) return;
+  const id = extraerIdDelQR(raw);
+  if (!id) { showToast('QR no válido', 'error'); return; }
+  try {
+    const r = await fetch(`${GAS}?action=getParticipantes`);
+    const data = await r.json();
+    const lista = Array.isArray(data) ? data : (data.participantes || data || []);
+    const p = lista.find(x => x.id === id);
+    if (!p) { showToast('Participante no encontrado', 'error'); return; }
+    if (p.aprobado !== 'APROBADO') { showToast('Participante no aprobado', 'error'); return; }
+    if (p.categoria !== CAT_NOMBRES[categoriaActual]) { showToast(`Categoría incorrecta: ${p.categoria}`, 'error'); return; }
+
+    participanteActual = p;
+    document.getElementById('qr-input').value = '';
+
+    const rondasUsadas = Object.keys(historialNotas[p.id] || {}).map(Number);
+    const maxRonda = rondasUsadas.length > 0 ? Math.max(...rondasUsadas) : 0;
+    rondaActual = maxRonda + 1;
+
+    renderRobotActivo();
+    renderBotonesRonda(maxRonda);
+    document.getElementById('robot-activo-container').style.display = '';
+    document.getElementById('btn-ir-calificar').disabled = false;
+    showToast(`Robot cargado: ${p.robot}`, 'success');
+    cargarRanking();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+function renderRobotActivo() {
+  const p = participanteActual;
+  const ini = p.nombre.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('ra-avatar').textContent = ini;
+  document.getElementById('ra-nombre').textContent = p.nombre;
+  document.getElementById('ra-robot').textContent  = `${p.robot} · ${p.id}`;
+  document.getElementById('ra-ronda').textContent  = rondaActual;
+  const prevRonda = historialNotas[p.id] && historialNotas[p.id][rondaActual];
+  document.getElementById('aviso-ronda-prev').style.display = prevRonda ? '' : 'none';
+  const rondas = Object.entries(historialNotas[p.id] || {});
+  if (rondas.length > 0) {
+    const mejor = rondas.reduce((a, b) => b[1].total > a[1].total ? b : a);
+    document.getElementById('aviso-mejor-ronda').style.display = '';
+    document.getElementById('aviso-mejor-ronda').textContent =
+      `✓ Mejor puntuación: ${Number(mejor[1].total).toFixed(2)} (Ronda ${mejor[0]})`;
   } else {
-    rd.clasificados.push({
-      id: participanteActual.id, robot: participanteActual.robot,
-      nombre: participanteActual.nombre||'', institucion: participanteActual.institucion||'',
-      ciudad: participanteActual.ciudad||'', categoria: participanteActual.categoria||'',
-      tiempo, tiempos: (tiempo && tiempo !== '—' && tiempo !== '00:00:00') ? [tiempo] : [],
-      esDNF, ronda: rondaActual, ts: Date.now()+rd.clasificados.length
+    document.getElementById('aviso-mejor-ronda').style.display = 'none';
+  }
+}
+
+function renderBotonesRonda(maxRonda) {
+  const total = Math.max(maxRonda + 1, 1);
+  document.getElementById('btns-ronda').innerHTML = Array.from({length: total}, (_, i) => i+1)
+    .map(n => `<button class="btn-ronda ${n===rondaActual?'sel':''}" onclick="seleccionarRonda(${n})">${n}</button>`).join('');
+}
+
+function seleccionarRonda(n) {
+  rondaActual = n;
+  document.getElementById('ra-ronda').textContent = n;
+  document.querySelectorAll('.btn-ronda').forEach((b,i) => b.classList.toggle('sel', i+1===n));
+  const prev = historialNotas[participanteActual?.id] && historialNotas[participanteActual?.id][n];
+  document.getElementById('aviso-ronda-prev').style.display = prev ? '' : 'none';
+}
+
+// ── Paso 3: Calificar ───────────────────
+function prepararCalificacion() {
+  const p = participanteActual;
+  document.getElementById('cal-robot-title').textContent = `${p.nombre} · ${p.robot}`;
+  document.getElementById('cal-ronda-badge').textContent = `RONDA ${rondaActual}`;
+  notas = {};
+  const prev = historialNotas[p.id] && historialNotas[p.id][rondaActual];
+  if (prev && prev.notas_json) {
+    criterios.forEach((_, ci) => {
+      notas[ci] = {};
+      Array.from({length: nJueces}, (_, ji) => {
+        const k = `c${ci}_j${ji}`;
+        if (prev.notas_json[k] !== undefined) notas[ci][ji] = prev.notas_json[k];
+      });
     });
   }
-  renderRondas();
-  actualizarContador();
+  renderTablaCalificacion();
 }
 
-function eliminarCompetido(ts, r) {
-  const rd = getRonda(r); const c = rd.clasificados.find(x => x.ts===ts); if (!c) return;
-  rd.clasificados = rd.clasificados.filter(x => x.ts!==ts); rd.eliminados.push(c);
-  renderRondas(); actualizarContador(); guardarEstado(); showToast('🗑 '+c.robot);
-}
-
-function recuperarEliminado(ts, r) {
-  const rd = getRonda(r); const c = rd.eliminados.find(x => x.ts===ts); if (!c) return;
-  rd.eliminados = rd.eliminados.filter(x => x.ts!==ts); rd.clasificados.push(c);
-  renderRondas(); actualizarContador(); guardarEstado(); showToast('↩ '+c.robot);
-}
-
-function seleccionarCompetido(ts, r) {
-  const rd = getRonda(r); const c = rd.clasificados.find(x => x.ts===ts); if (!c) return;
-  if (participanteActual && participanteActual.robot !== c.robot) {
-    if (!confirm(`Ya tienes "${participanteActual.robot}". ¿Cambiar a "${c.robot}"?`)) return;
-  }
-  fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'clearActivo', ruta: getRuta()||'general' }) }).catch(()=>{});
-  participanteActual = { id:c.id, robot:c.robot, nombre:c.nombre, institucion:c.institucion, ciudad:c.ciudad, categoria:c.categoria };
-  fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setActivo', ruta: getRuta()||'general', participante:{ ...participanteActual, timestamp:Date.now() } }) }).catch(()=>{});
-  // Restaurar intentosLog desde rondasData para no perder intentos ya registrados
-  const tiemposYa = (c.tiempos || []).filter(t => t && t !== '—' && t !== '00:00:00');
-  intentosLog = tiemposYa.map((t, i) => ({ ronda: rondaActual, intento: i+1, tiempo: t, esDNF: t==='DNF' }));
-  intentoActual = intentosLog.length + 1;
-  actualizarBadges(); reiniciarCrono(); ocultarBotonesAccion();
-  // Si ya completó sus intentos, bloquear; si no, desbloquear
-  if (intentosLog.length >= maxIntentos) {
-    bloquearBtn();
-    document.getElementById('btn-sig-part').classList.add('visible');
-    document.getElementById('crono-status').textContent = `✓ ${intentosLog.length}/${maxIntentos} intentos completados`;
-  } else {
-    desbloquearBtn();
-    document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
-  }
-  const strip = document.getElementById('participante-strip');
-  strip.className = 'participante-strip';
-  const badgeTexto = intentosLog.length >= maxIntentos ? `✓ ${intentosLog.length}/${maxIntentos}` : `LISTO ✓`;
-  strip.innerHTML = `<div><div class="p-robot">${c.robot}</div><div class="p-inst">${c.institucion||''}${c.ciudad?' · '+c.ciudad:''}</div></div><div class="p-badge">${badgeTexto}</div>`;
-  showToast('✓ '+c.robot+' seleccionado · Intento '+intentoActual+' de '+maxIntentos);
-  enviarSerial('R');
-}
-
-function actualizarContador() {
-  document.getElementById('ranking-count').textContent = getRonda(rondaActual).clasificados.length;
-}
-
-function renderRondas() {
-  const container = document.getElementById('rondas-container');
-  const rondas    = Object.keys(rondasData).map(Number).sort((a,b)=>b-a);
-  const total     = Object.values(rondasData).reduce((a,r)=>a+r.clasificados.length+r.eliminados.length,0);
-  if (total === 0) { container.innerHTML = '<p class="ranking-empty">Sin participantes aún</p>'; return; }
-  container.innerHTML = rondas.map(r => {
-    const rd = rondasData[r]; const esActual = r===rondaActual; const cerrada = rd.cerrada;
-    const conT = rd.clasificados.filter(c=>!c.esDNF && c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
-    const sinT = rd.clasificados.filter(c=>c.tiempo==='—');
-    const dnfs = rd.clasificados.filter(c=>c.esDNF);
-    const clases = [...conT,...sinT,...dnfs];
-    const items = clases.length===0 ? '<p class="ranking-empty" style="padding:8px 0">Ninguno aún</p>' :
-      clases.map((c,i)=>{
-        const tiempos = (c.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00');
-        const chips = tiempos.length===0 && !c.esDNF ? '<span class="comp-tag">Sin intentos</span>' :
-          (c.esDNF && tiempos.length===0) ? '<span class="comp-tag es-dnf">DNF</span>' :
-          [...(c.esDNF?['DNF']:tiempos.map((t,idx)=>{
-            const mejor = t===c.tiempo && tiempos.length>0;
-            return `<span class="comp-tag ${mejor?'mejor':''}">${t}${mejor?' ★':''}</span>`;
-          }))].join('');
-        const numClass = c.esDNF ? 'comp-num dnf' : 'comp-num';
-        const itemClass = c.esDNF ? 'comp-item es-dnf' : 'comp-item';
-        const acc = esActual&&!cerrada ? `<div class="comp-actions"><button class="btn-sel" onclick="seleccionarCompetido(${c.ts},${r})">▶</button><button class="btn-del" onclick="eliminarCompetido(${c.ts},${r})">🗑</button></div>` : '';
-        return `<div class="${itemClass}"><span class="${numClass}">${c.esDNF?'DNF':i+1}</span><div class="comp-info"><div class="comp-robot">${c.robot}</div><div class="comp-tiempos">${chips}</div></div>${acc}</div>`;
-      }).join('');
-    const elims = rd.eliminados.length===0?'':
-      `<div class="eliminados-wrap"><div class="eliminados-title">ELIMINADOS</div>${rd.eliminados.map(c=>`<div class="elim-item"><div><div class="elim-robot">${c.robot}</div></div>${esActual&&!cerrada?`<button class="btn-recuperar" onclick="recuperarEliminado(${c.ts},${r})">↩</button>`:''}</div>`).join('')}</div>`;
-    return `<div class="ronda-seccion"><div class="ronda-header"><span class="ronda-header-title ${cerrada?'cerrada':''}">${cerrada?'✓':'●'} RONDA ${r}</span><span class="ronda-header-badge ${cerrada?'cerrada':''}">${clases.length} clasif.</span></div><div class="ronda-body">${items}</div>${elims}</div>`;
+function renderTablaCalificacion() {
+  const thJueces = nombresJueces.map(n => `<th>${n}</th>`).join('');
+  const filas = criterios.map((c, ci) => {
+    const celdas = Array.from({length: nJueces}, (_, ji) => {
+      const nota = notas[ci] && notas[ci][ji];
+      const btns = [1,2,3,4,5].map(n =>
+        `<button class="nota-btn ${nota===n?'sel':''}" onclick="setNota(${ci},${ji},${n})">${n}</button>`).join('');
+      return `<td><div class="nota-btns">${btns}</div></td>`;
+    }).join('');
+    const prom = calcularPromedioCriterio(ci);
+    const promHtml = prom !== null
+      ? `<span class="prom-criterio">${prom.toFixed(2)}</span>`
+      : `<span class="prom-criterio vacio">—</span>`;
+    return `<tr>
+      <td><div class="criterio-nombre">${c.nombre}</div>${c.descripcion?`<div class="criterio-desc">${c.descripcion}</div>`:''}</td>
+      ${celdas}
+      <td>${promHtml}</td>
+    </tr>`;
   }).join('');
+
+  const total = calcularTotalGeneral();
+  document.getElementById('tabla-calificacion-wrapper').innerHTML = `
+    <table class="tabla-calificacion">
+      <thead><tr>
+        <th>CRITERIO</th>${thJueces}<th>PROMEDIO</th>
+      </tr></thead>
+      <tbody>
+        ${filas}
+        <tr class="total-row">
+          <td colspan="${nJueces+1}" style="text-align:right;letter-spacing:2px;">PUNTAJE TOTAL</td>
+          <td><span class="total-val">${total !== null ? total.toFixed(2) : '—'}</span></td>
+        </tr>
+      </tbody>
+    </table>`;
+
+  const completo = criterios.every((_, ci) =>
+    Array.from({length: nJueces}, (_, ji) => notas[ci] && notas[ci][ji] !== undefined).every(Boolean));
+  document.getElementById('btn-guardar-cal').disabled = !completo;
 }
 
-// ── Cerrar ronda ──
-function pedirCerrarRonda() {
-  if (getRonda(rondaActual).clasificados.length===0) { showToast('⚠️ No hay participantes', true); return; }
-  document.getElementById('modal-ronda-nom').textContent = 'Ronda '+rondaActual;
-  document.getElementById('modal-ronda').classList.add('show');
-}
-function confirmarCerrarRonda() {
-  cerrarModal('modal-ronda');
-  getRonda(rondaActual).cerrada = true;
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general'})}).catch(()=>{});
-  if (rondaActual < maxRondas) {
-    const ant = rondaActual++;
-    intentoActual = 1;
-    actualizarBadges();
-    getRonda(rondaActual).clasificados = getRonda(ant).clasificados.filter(c=>!c.esDNF).map((c,i)=>({...c,tiempo:'—',tiempos:[],esDNF:false,ronda:rondaActual,ts:c.ts+rondaActual+i}));
-    actualizarContador(); renderRondas(); limpiarParticipante(); desbloquearBtn(); guardarEstado();
-    showToast(`🏁 Ronda ${ant} cerrada · Ronda ${rondaActual} lista`);
-  } else {
-    const btn = document.getElementById('btn-cerrar-ronda');
-    btn.disabled=true; btn.innerHTML='✓ Competencia finalizada'; btn.style.opacity='0.5';
-    renderRondas(); limpiarParticipante(); guardarEstado();
-    document.getElementById('btn-excel').classList.add('visible');
-    showToast('🏆 ¡Competencia finalizada!');
-    setTimeout(()=>exportarExcel(),500);
-  }
+function setNota(ci, ji, nota) {
+  if (!notas[ci]) notas[ci] = {};
+  notas[ci][ji] = nota;
+  renderTablaCalificacion();
 }
 
-// ── Cerrar categoría ──
-function pedirCerrarCategoria() {
-  if (!categoriaActual) return;
-  document.getElementById('modal-cat-nom').textContent = categoriaActual;
-  document.getElementById('modal-cat').classList.add('show');
+function calcularPromedioCriterio(ci) {
+  if (!notas[ci]) return null;
+  const vals = Array.from({length: nJueces}, (_, ji) => notas[ci][ji]).filter(v => v !== undefined);
+  if (vals.length === 0) return null;
+  return vals.reduce((a,b)=>a+b,0) / vals.length;
 }
-async function confirmarCerrarCategoria() {
-  cerrarModal('modal-cat');
-  if (!categoriaActual) return;
+
+function calcularTotalGeneral() {
+  const proms = criterios.map((_, ci) => calcularPromedioCriterio(ci));
+  if (proms.some(p => p === null)) return null;
+  return proms.reduce((a,b)=>a+b,0) / proms.length;
+}
+
+// ── Guardar ─────────────────────────────
+async function guardarCalificacion() {
+  const total = calcularTotalGeneral();
+  if (total === null) return;
+  const btn = document.getElementById('btn-guardar-cal');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>GUARDANDO...';
+
+  const notas_json = {};
+  criterios.forEach((_, ci) => Array.from({length: nJueces}, (_, ji) => {
+    if (notas[ci] && notas[ci][ji] !== undefined) notas_json[`c${ci}_j${ji}`] = notas[ci][ji];
+  }));
+
   try {
-    await desbloquearCategoria(categoriaActual);
-    localStorage.removeItem(getKey());
-    localStorage.removeItem('cronometro_categoria_activa');
-    const ruta = getRuta()||'general';
-    await Promise.all([
-      fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta})}),
-      fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null})})
-    ]);
-    // Reset completo
-    categoriaActual=null; participanteActual=null; rondaActual=0; intentoActual=1;
-    maxRondas=3; maxIntentos=2; rondasData={0:{clasificados:[],eliminados:[],cerrada:false}};
-    intentosLog=[]; competenciaIniciada=false;
-    desactivarUI(); reiniciarCrono(); limpiarParticipante(); actualizarBadges(); renderRondas();
-    document.getElementById('cfg-rondas').value='3'; document.getElementById('cfg-intentos').value='2';
-    document.getElementById('cfg-rondas').disabled=false; document.getElementById('cfg-intentos').disabled=false;
-    document.getElementById('cfg-rondas').style.opacity=''; document.getElementById('cfg-intentos').style.opacity='';
-    document.getElementById('btn-iniciar-comp').classList.remove('oculto');
-    document.getElementById('ranking-count').textContent='0';
-    const bcr=document.getElementById('btn-cerrar-ronda'); bcr.disabled=false; bcr.style.opacity='';
-    bcr.innerHTML='🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>';
-    showToast('✅ Categoría cerrada');
-  } catch(e) { showToast('❌ Error al cerrar categoría', true); }
-}
-
-// ── Guardar/cargar estado ──
-function guardarEstado() {
-  if (!categoriaActual) return;
-  const estado = { rondaActual,intentoActual,maxRondas,maxIntentos,rondasData,categoria:categoriaActual,competenciaIniciada };
-  localStorage.setItem(getKey(), JSON.stringify(estado));
-  const ruta = getRuta(); if (!ruta) return;
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado})}).catch(()=>{});
-}
-
-function cargarEstado() {
-  try {
-    const raw = localStorage.getItem(getKey());
-    if (!raw) { rondaActual=0;intentoActual=1;maxRondas=parseInt(document.getElementById('cfg-rondas').value)||3;maxIntentos=parseInt(document.getElementById('cfg-intentos').value)||2;rondasData={0:{clasificados:[],eliminados:[],cerrada:false}};competenciaIniciada=false;actualizarBadges();renderRondas();actualizarContador();return; }
-    const e=JSON.parse(raw);
-    rondaActual=e.rondaActual??0; intentoActual=e.intentoActual||1; maxRondas=e.maxRondas||3; maxIntentos=e.maxIntentos||2;
-    rondasData=e.rondasData||{0:{clasificados:[],eliminados:[],cerrada:false}}; competenciaIniciada=e.competenciaIniciada||false;
-    document.getElementById('cfg-rondas').value=maxRondas; document.getElementById('cfg-intentos').value=maxIntentos;
-    if (competenciaIniciada) {
-      document.getElementById('cfg-rondas').disabled=true; document.getElementById('cfg-intentos').disabled=true;
-      document.getElementById('cfg-rondas').style.opacity='0.5'; document.getElementById('cfg-intentos').style.opacity='0.5';
-      document.getElementById('btn-iniciar-comp').classList.add('oculto');
-    }
-    actualizarBadges(); renderRondas(); actualizarContador();
-    if (rondaActual>=maxRondas && getRonda(rondaActual).cerrada) {
-      const btn=document.getElementById('btn-cerrar-ronda'); btn.disabled=true; btn.innerHTML='✓ Competencia finalizada'; btn.style.opacity='0.5';
-      document.getElementById('btn-excel').classList.add('visible');
-    }
-  } catch(e) { console.error('Error cargar estado:',e); }
-}
-
-// ── GAS resultado ──
-async function guardarResultadoGAS(tiempo) {
-  if (!participanteActual||!categoriaActual) return;
-  try {
-    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({
-      action:'pushResultado', participanteId:participanteActual.id, nombre:participanteActual.nombre||'',
-      robot:participanteActual.robot||'', institucion:participanteActual.institucion||'',
-      tiempo, ronda:rondaActual, intento:intentoActual, ruta:getRuta()||'general', fecha:new Date().toISOString()
+    const r = await fetch(GAS, { method:'POST', body: JSON.stringify({
+      action: 'guardarPuntuacion',
+      id_participante: participanteActual.id,
+      nombre:          participanteActual.nombre,
+      robot:           participanteActual.robot,
+      institucion:     participanteActual.institucion || '',
+      categoria:       categoriaActual,
+      juez_email:      'operador@sucrebot2026',
+      juez_nombre:     'Operador',
+      ronda:           rondaActual,
+      n_jueces:        nJueces,
+      nombres_jueces:  nombresJueces,
+      criterios,
+      notas:           notas_json,
+      total:           parseFloat(total.toFixed(4)),
+      timestamp:       new Date().toISOString()
     })});
-  } catch(e) { console.error('Error guardar resultado:',e); }
-}
-
-// ── Config listeners ──
-document.getElementById('cfg-rondas').addEventListener('change', function() {
-  if (competenciaIniciada) { showToast('⚠️ No se puede cambiar durante la competencia', true); this.value=maxRondas; return; }
-  maxRondas=parseInt(this.value)||3; guardarEstado();
-});
-document.getElementById('cfg-intentos').addEventListener('change', function() {
-  if (competenciaIniciada) { showToast('⚠️ No se puede cambiar durante la competencia', true); this.value=maxIntentos; return; }
-  maxIntentos=parseInt(this.value)||2; guardarEstado();
-});
-
-// ── Excel ──
-function exportarExcel() {
-  try {
-    const wb=XLSX.utils.book_new(); const cat=categoriaActual||'Sin categoría';
-    Object.keys(rondasData).map(Number).sort((a,b)=>a-b).forEach(r=>{
-      XLSX.utils.book_append_sheet(wb, crearHoja(rondasData[r],r,cat,false), 'Ronda '+r);
-    });
-    const ult=Object.keys(rondasData).map(Number).filter(r=>rondasData[r].cerrada).sort((a,b)=>b-a)[0]||rondaActual;
-    XLSX.utils.book_append_sheet(wb, crearHoja(rondasData[ult],ult,cat,true), 'Ranking General');
-    XLSX.writeFile(wb, `SucreBot_${cat.replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
-    showToast('✓ Excel descargado');
-  } catch(e) { showToast('❌ Error Excel', true); }
-}
-function crearHoja(rd,r,cat,esGeneral) {
-  const todos=rd.clasificados; const maxI=Math.max(...todos.map(c=>(c.tiempos||[c.tiempo]).length),1);
-  const conT=[...todos].filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
-  const dnfs=todos.filter(c=>c.esDNF); const sin=todos.filter(c=>c.tiempo==='—');
-  const lista=[...conT,...sin,...dnfs];
-  const aoa=[[esGeneral?'SucreBot — Ranking General':'SucreBot — Ronda '+r],['Categoría: '+cat],[],
-    ['#','Robot','Nombre','Institución','Ciudad','Mejor Tiempo',...Array.from({length:maxI},(_,i)=>'I'+(i+1))]];
-  lista.forEach((c,i)=>aoa.push([c.esDNF?'DNF':i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo,...(c.tiempos||[c.tiempo])]));
-  if (!esGeneral&&rd.eliminados?.length) { aoa.push([],['ELIMINADOS']); rd.eliminados.forEach((c,i)=>aoa.push([i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo||'—'])); }
-  const ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...Array(maxI).fill({wch:12})];
-  return ws;
-}
-
-// ── Modal helpers ──
-function cerrarModal(id) { document.getElementById(id).classList.remove('show'); }
-
-// ── Toast ──
-function showToast(msg, error=false) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast'+(error?' error':'');
-  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-// ── Init ──
-document.addEventListener('componentsLoaded', async function() {
-  const savedUser = localStorage.getItem('sucrebot_user');
-  if (!savedUser) { window.location.href='../INICIO/'; return; }
-  const catGuardada = localStorage.getItem('cronometro_categoria_activa');
-  if (catGuardada) {
-    const bloqueada = await verificarBloqueo(catGuardada);
-    const userData  = JSON.parse(savedUser);
-    if (bloqueada && bloqueada.usuario===userData.email) {
-      document.getElementById('select-categoria').value=catGuardada;
-      categoriaActual=catGuardada; activarUI(); cargarEstado();
-      showToast(`✅ Categoría "${catGuardada}" restaurada`);
-    } else if (!bloqueada) {
-      const ok = await bloquearCategoria(catGuardada);
-      if (ok) { document.getElementById('select-categoria').value=catGuardada; categoriaActual=catGuardada; activarUI(); cargarEstado(); showToast(`✅ Categoría re-bloqueada`); }
-      else localStorage.removeItem('cronometro_categoria_activa');
-    } else {
-      localStorage.removeItem('cronometro_categoria_activa');
-      showToast(`⚠️ Categoría tomada por ${bloqueada.usuario}`, true);
-    }
-  }
-  iniciarPolling();
-  console.log('✅ Cronómetro listo');
-});
-</script>
-
-<!-- ══ WEB SERIAL ══ -->
-<script>
-(function(){
-  let puerto=null, writer=null, buffer='';
-  const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)'];
-  const CATS_SEGUIDOR = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
-  const CATS_PULSADOR = ['Cubo Rubik','Lego Kids'];
-  const CATS_SERIAL   = [...CATS_SENSOR,...CATS_SEGUIDOR,...CATS_PULSADOR];
-  let seguidorArrancado = false; // Para toggle del seguidor
-
-  function inyectarBoton() {
-    if (document.getElementById('btn-serial')) return;
-    const btn = document.createElement('button');
-    btn.id = 'btn-serial';
-    btn.style.cssText = `width:100%;padding:10px 14px;border-radius:8px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.03em;cursor:pointer;border:2px solid #4ab8e8;background:linear-gradient(135deg,#0e2a5a 0%,#1a3a6b 100%);color:#5bc8f0;transition:all 0.2s;display:none;margin-top:0;`;
-    btn.onmouseenter=()=>btn.style.transform='translateY(-2px)';
-    btn.onmouseleave=()=>btn.style.transform='';
-    btn.onclick=toggle;
-    actualizarBoton(btn,false);
-    const badges=document.querySelector('.badges-wrap');
-    if (badges) badges.after(btn);
-  }
-
-  function actualizarBoton(btn,conectado) {
-    if (!btn) return;
-    if (conectado) { btn.textContent='🟢 Dispositivo conectado'; btn.style.borderColor='#3dd68c'; btn.style.color='#3dd68c'; btn.style.background='linear-gradient(135deg,#0a2a1a 0%,#0e3a22 100%)'; }
-    else { btn.textContent='🔌 Conectar dispositivo'; btn.style.borderColor='#4ab8e8'; btn.style.color='#5bc8f0'; btn.style.background='linear-gradient(135deg,#0e2a5a 0%,#1a3a6b 100%)'; }
-  }
-
-  window.mostrarBotonSerial = function(visible) {
-    const btn=document.getElementById('btn-serial');
-    if (!btn) { if (visible) setTimeout(()=>window.mostrarBotonSerial(visible),200); return; }
-    btn.style.display=visible?'block':'none';
-    if (visible) actualizarBoton(btn,!!puerto);
-  };
-
-  async function toggle() { if (puerto) await desconectar(); else await conectar(); }
-
-  async function conectar() {
-    if (!('serial' in navigator)) { showToast('❌ Web Serial solo funciona en Chrome',true); return; }
-    try {
-      puerto=await navigator.serial.requestPort();
-      await puerto.open({baudRate:115200});
-      const enc=new TextEncoderStream();
-      enc.readable.pipeTo(puerto.writable);
-      writer=enc.writable.getWriter();
-      actualizarBoton(document.getElementById('btn-serial'),true);
-      // Ocultar aviso sensor al conectar
-      document.getElementById('aviso-sensor').classList.remove('visible');
-      showToast('🟢 Dispositivo conectado');
-      // Enviar modo al ESP32
-      if (CATS_SEGUIDOR.includes(categoriaActual)) enviarSerial('F');
-      escuchar();
-    } catch(e) { puerto=null;writer=null; if(e.name!=='NotFoundError') showToast('❌ '+e.message,true); }
-  }
-
-  async function desconectar() {
-    try { if(writer){await writer.close();writer=null;} if(puerto){await puerto.close();puerto=null;} } catch(e){}
-    actualizarBoton(document.getElementById('btn-serial'),false);
-    // Mostrar aviso sensor si la categoría lo requiere
-    if (categoriaActual && CATS_SERIAL.includes(categoriaActual)) {
-      document.getElementById('aviso-sensor').classList.add('visible');
-    }
-    showToast('🔴 Dispositivo desconectado');
-  }
-
-  async function escuchar() {
-    const dec=new TextDecoderStream();
-    puerto.readable.pipeTo(dec.writable);
-    const lector=dec.readable.getReader();
-    try {
-      while(true) {
-        const {value,done}=await lector.read(); if(done) break;
-        buffer+=value;
-        const lineas=buffer.split('\n'); buffer=lineas.pop();
-        for(const l of lineas) procesarMensaje(l.trim());
-      }
-    } catch(e) {
-      if(e.name!=='AbortError') { showToast('⚠️ Dispositivo desconectado',true); actualizarBoton(document.getElementById('btn-serial'),false); puerto=null;writer=null; }
-    }
-  }
-
-  function procesarMensaje(msg) {
-    if (!CATS_SERIAL.includes(categoriaActual)) return;
-    if (rondaActual===0) return;
-    if (!participanteActual) return;
-
-    // Trepador — sensor detiene
-    if (msg==='STOP' && CATS_SENSOR.includes(categoriaActual)) {
-      if (cronoInterval) { detenerCrono(); showToast('✅ Meta detectada'); }
-      return;
-    }
-
-    // Seguidor — mismo sensor toggle START/STOP
-    if (CATS_SEGUIDOR.includes(categoriaActual)) {
-  if (msg === 'START') {
-    iniciarCrono();
-    return;
-  }
-  if (msg === 'STOP') {
-    detenerCrono();
-    return;
+    const d = await r.json();
+    if (d.ok) {
+      if (!historialNotas[participanteActual.id]) historialNotas[participanteActual.id] = {};
+      historialNotas[participanteActual.id][rondaActual] = { total, notas_json };
+      const idx = todosPuntuados.findIndex(p => p.id_participante === participanteActual.id && (p.ronda||1) === rondaActual);
+      const reg = { id_participante: participanteActual.id, nombre: participanteActual.nombre, robot: participanteActual.robot, institucion: participanteActual.institucion, ronda: rondaActual, total, notas_json: JSON.stringify(notas_json) };
+      if (idx >= 0) todosPuntuados[idx] = reg; else todosPuntuados.push(reg);
+      showToast('Calificación guardada', 'success');
+      await cargarRanking();
+      irAPaso(2);
+    } else { showToast('Error: ' + (d.error||'No se pudo guardar'), 'error'); }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> GUARDAR CALIFICACIÓN';
   }
 }
 
-    // Cubo Rubik / Lego Kids — pulsador toggle
-    if (msg==='BTN' && CATS_PULSADOR.includes(categoriaActual)) {
-      if (!cronoInterval) iniciarCrono(); else detenerCrono();
-      return;
-    }
-  }
-
-  window.enviarSerial = async function(cmd) {
-    if (!writer) return;
-    try { await writer.write(cmd); } catch(e) {}
-  };
-
-  document.addEventListener('componentsLoaded',()=>{
-    inyectarBoton();
-    if (categoriaActual && CATS_SERIAL.includes(categoriaActual)) setTimeout(()=>window.mostrarBotonSerial(true),300);
+// ── Ranking ─────────────────────────────
+async function cargarRanking() {
+  ['ranking-container-2','ranking-container-4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<div class="loading-msg"><span class="spinner"></span>Calculando...</div>';
   });
-  if (document.readyState==='complete') setTimeout(()=>{ inyectarBoton(); },500);
-})();
-</script>
+  try {
+    const r = await fetch(`${GAS}?action=getRankingCalificacion&categoria=${categoriaActual}`);
+    const d = await r.json();
+    const html = (!d.ok || !d.ranking || d.ranking.length === 0)
+      ? '<div class="loading-msg">Sin calificaciones registradas aún.</div>'
+      : renderRankingHTML(d.ranking);
+    ['ranking-container-2','ranking-container-4'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerHTML = html;
+    });
+    document.getElementById('ranking-cat-title').textContent = CAT_NOMBRES[categoriaActual] || '';
+  } catch(e) {
+    ['ranking-container-2','ranking-container-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div class="loading-msg" style="color:var(--danger)">Error al cargar</div>';
+    });
+  }
+}
 
+function renderRankingHTML(ranking) {
+  return `<table class="ranking-table">
+    <thead><tr><th>#</th><th>Participante</th><th>Mejor puntaje</th><th>Registros</th></tr></thead>
+    <tbody>${ranking.map((item, i) => {
+      const pos = i+1, medal = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':pos+'.';
+      const cls = pos===1?'r1':pos===2?'r2':pos===3?'r3':'';
+      return `<tr>
+        <td><span class="rank-pos ${cls}">${medal}</span></td>
+        <td>
+          <div style="font-weight:600">${item.nombre}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted)">${item.robot}</div>
+        </td>
+        <td><span class="score-pill ${pos<=3?'top':''}">${Number(item.promedio_final).toFixed(2)}</span></td>
+        <td><span class="rondas-pill">${item.jueces} reg.</span></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+// ── Excel ────────────────────────────────
+function exportarExcel() {
+  if (todosPuntuados.length === 0) { showToast('No hay datos para exportar', 'error'); return; }
+  const rows = todosPuntuados.map(p => {
+    const nObj = safeParseJson(p.notas_json || p.notas, {});
+    const row = {
+      'ID': p.id_participante, 'Nombre': p.nombre, 'Robot': p.robot,
+      'Institución': p.institucion,
+      'Categoría': CAT_NOMBRES[categoriaActual] || categoriaActual,
+      'Ronda': p.ronda || 1,
+      'Puntaje Total': Number(p.total).toFixed(2),
+      'Fecha': p.timestamp || ''
+    };
+    criterios.forEach((c, ci) => {
+      Array.from({length: nJueces}, (_, ji) => {
+        row[`${c.nombre} (${nombresJueces[ji]||'Juez '+(ji+1)})`] = nObj[`c${ci}_j${ji}`] ?? '';
+      });
+      const vals = Array.from({length: nJueces}, (_, ji) => nObj[`c${ci}_j${ji}`]).filter(v => v !== undefined && v !== '');
+      row[`Promedio ${c.nombre}`] = vals.length > 0 ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : '';
+    });
+    return row;
+  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Resultados');
+  XLSX.writeFile(wb, `SucreBot2026_${CAT_NOMBRES[categoriaActual]||categoriaActual}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast('Excel exportado', 'success');
+}
+
+// ── Cerrar categoría ─────────────────────
+function confirmarCerrarCategoria() { document.getElementById('modal-cerrar').classList.add('show'); }
+async function cerrarCategoria() {
+  document.getElementById('modal-cerrar').classList.remove('show');
+  try {
+    const catNombreD = CAT_NOMBRES[categoriaActual] || categoriaActual;
+    await fetch(GAS, { method:'POST', body: JSON.stringify({ action:'desbloquearCategoria', categoria: catNombreD }) });
+    categoriaActual = ''; participanteActual = null; historialNotas = {}; todosPuntuados = [];
+    localStorage.removeItem('panel_cal_sesion');
+    document.getElementById('bloqueo-badge').style.display = 'none';
+    document.getElementById('cfg-categoria').value = '';
+    showToast('Categoría cerrada y liberada', 'success');
+    irAPaso(1);
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+// ── Navegación ───────────────────────────
+function irAPaso(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById(`paso-${i}`).style.display = i===n ? '' : 'none';
+    const tab = document.getElementById(`paso-${i}-tab`);
+    tab.classList.remove('activo','completo');
+    if (i < n) tab.classList.add('completo');
+    else if (i === n) tab.classList.add('activo');
+  });
+  document.getElementById('fab-ranking').style.display = n >= 2 ? '' : 'none';
+  if (n === 3) prepararCalificacion();
+  if (n === 4) cargarRanking();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ── Helpers ──────────────────────────────
+function extraerIdDelQR(raw) {
+  if (!raw) return null;
+  const partes = raw.split('~');
+  const candidato = partes[0].trim();
+  const match = candidato.match(/(sb-\d{4}-[a-z_]+-\d{3})/i);
+  if (match) return match[1].toLowerCase();
+  if (/^sb-/i.test(candidato)) return candidato.toLowerCase();
+  return null;
+}
+
+function safeParseJson(str, fallback) {
+  try { return typeof str === 'string' ? JSON.parse(str) : (str || fallback); }
+  catch(e) { return fallback; }
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
 </body>
 </html>
