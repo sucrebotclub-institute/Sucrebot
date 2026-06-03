@@ -9,12 +9,8 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/@zxing/library@latest"></script>
   <script src="../shared/js/config.js"></script>
-  
-  <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  
-  <!-- CSS específico de ESCANER -->
   <style>
     body { background: #ffffff !important; color: #1a1a2e !important; }
     main { min-height: calc(100vh - 174px); background: #ffffff; }
@@ -199,7 +195,6 @@
 </main>
 
 <div data-include="../shared/components/footer.html"></div>
-
 <div class="toast" id="toast"></div>
 
 <script src="../shared/js/load-components.js"></script>
@@ -207,8 +202,7 @@
 
 <script>
   const GAS_URL = CONFIG.GAS_URL();
-  
-  // ✅ MAPEO DE CATEGORÍAS A RUTAS - SUCREBOT 2026
+
   const RUTAS_SCANNER = {
     'Insectos': 'ins',
     'Trepador (Amateur)': 'trp_a',
@@ -224,7 +218,7 @@
     'Lego Kids': 'lk',
     'Desarrollo Tecnológico': 'dt'
   };
-  
+
   let codeReader = null;
   let videoStream = null;
   let scannerActivo = false;
@@ -233,11 +227,10 @@
   let ultimoQrProcesado = null;
   let tiempoUltimoQr = 0;
 
-  // ✅ SISTEMA DE CACHE INTELIGENTE
   let cacheParticipantes = [];
   let cacheCategoriasActivas = [];
   let ultimaActualizacionCache = 0;
-  const INTERVALO_CACHE = 5 * 60 * 1000; // 5 minutos
+  const INTERVALO_CACHE = 5 * 60 * 1000;
 
   window.addEventListener('DOMContentLoaded', async () => {
     await actualizarCache();
@@ -245,112 +238,61 @@
   });
 
   async function actualizarCache() {
-    console.log('🔄 Actualizando cache...');
     try {
-      const qsP = new URLSearchParams({ action: 'getParticipantes' }).toString();
-      const rP = await fetch(GAS_URL + '?' + qsP);
+      const rP = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getParticipantes' }));
       const participantes = await rP.json();
-      
       if (Array.isArray(participantes) && participantes.length > 0) {
         cacheParticipantes = participantes;
         localStorage.setItem('participantes_cache', JSON.stringify(participantes));
-        console.log(`✅ Cache participantes: ${participantes.length} registros`);
       }
-
-      const qsC = new URLSearchParams({ action: 'getCategoriasActivas' }).toString();
-      const rC = await fetch(GAS_URL + '?' + qsC);
+      const rC = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getCategoriasActivas' }));
       const categorias = await rC.json();
-      
-      if (Array.isArray(categorias)) {
-        cacheCategoriasActivas = categorias;
-        console.log(`✅ Cache categorías activas: ${categorias.length} categorías`);
-      }
-
+      if (Array.isArray(categorias)) cacheCategoriasActivas = categorias;
       ultimaActualizacionCache = Date.now();
-      
     } catch (error) {
-      console.warn('⚠️ Error al actualizar cache, usando datos locales:', error);
       const cached = localStorage.getItem('participantes_cache');
-      if (cached) {
-        cacheParticipantes = JSON.parse(cached);
-        console.log('📦 Usando cache local de participantes');
-      }
+      if (cached) cacheParticipantes = JSON.parse(cached);
     }
   }
 
   async function toggleScanner() {
-    if (scannerActivo) {
-      stopScanner();
-    } else {
-      await iniciarScanner();
-    }
+    if (scannerActivo) stopScanner();
+    else await iniciarScanner();
   }
 
   async function iniciarScanner() {
     try {
       codeReader = new ZXing.BrowserMultiFormatReader();
       const videoInputDevices = await codeReader.listVideoInputDevices();
-
-      if (videoInputDevices.length === 0) {
-        showToast('No se detectaron cámaras', true);
-        return;
-      }
-
+      if (videoInputDevices.length === 0) { showToast('No se detectaron cámaras', true); return; }
       let selectedDeviceId = null;
-      const backCamera = videoInputDevices.find(device =>
-        /back|rear|environment|trasera/i.test(device.label)
-      );
-
-      if (backCamera) {
-        selectedDeviceId = backCamera.deviceId;
-      } else if (videoInputDevices.length > 1) {
-        selectedDeviceId = videoInputDevices[videoInputDevices.length - 1].deviceId;
-      } else {
-        selectedDeviceId = videoInputDevices[0].deviceId;
-      }
-
+      const backCamera = videoInputDevices.find(d => /back|rear|environment|trasera/i.test(d.label));
+      if (backCamera) selectedDeviceId = backCamera.deviceId;
+      else if (videoInputDevices.length > 1) selectedDeviceId = videoInputDevices[videoInputDevices.length - 1].deviceId;
+      else selectedDeviceId = videoInputDevices[0].deviceId;
       document.getElementById('qr-placeholder').style.display = 'none';
       document.getElementById('qr-video').style.display = 'block';
-
       codeReader.decodeFromVideoDevice(selectedDeviceId, 'qr-video', (result, err) => {
-        if (result) {
-          procesarQR(result.text);
-        }
+        if (result) procesarQR(result.text);
       });
-
       const video = document.getElementById('qr-video');
       videoStream = video.srcObject;
-
       scannerActivo = true;
       const btn = document.getElementById('btn-camera');
       btn.textContent = '⏸ Detener cámara';
       btn.classList.add('active');
-
     } catch (error) {
-      console.error('Error al iniciar escáner:', error);
       showToast('Error al iniciar la cámara', true);
     }
   }
 
   function stopScanner() {
-    if (codeReader) {
-      codeReader.reset();
-    }
-
-    if (videoStream) {
-      const tracks = videoStream.getTracks();
-      tracks.forEach(track => track.stop());
-      videoStream = null;
-    }
-
+    if (codeReader) codeReader.reset();
+    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
     const video = document.getElementById('qr-video');
-    if (video.srcObject) {
-      video.srcObject = null;
-    }
-
+    if (video.srcObject) video.srcObject = null;
     document.getElementById('qr-video').style.display = 'none';
     document.getElementById('qr-placeholder').style.display = 'flex';
-
     scannerActivo = false;
     const btn = document.getElementById('btn-camera');
     btn.textContent = '📷 Activar cámara';
@@ -358,276 +300,187 @@
   }
 
   async function procesarQR(qrData) {
-    console.log('QR escaneado (RAW):', qrData);
-    
     const ahora = Date.now();
-    if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 1000) {
-      console.log('⏭ Ignorando QR duplicado');
-      return;
-    }
-    
+    if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 1000) return;
     ultimoQrProcesado = qrData;
     tiempoUltimoQr = ahora;
-    
+
     try {
       let codigo = extraerIdDelQR(qrData);
-      console.log('ID extraído:', codigo);
-      
       if (!codigo) {
-        console.error('❌ No se pudo extraer ID del QR. RAW:', qrData);
-        showToast('⚠️ QR inválido - No se detectó ID', true);
+        showToast('⚠️ QR inválido', true);
         mostrarEstadoError('QR INVÁLIDO', 'No se pudo leer un ID válido del código QR');
         return;
       }
 
       let participante = cacheParticipantes.find(p => p.id === codigo);
-      
       if (!participante) {
-        console.error('❌ Participante no encontrado. ID:', codigo);
         showToast('⚠️ ID no encontrado en el sistema', true);
         mostrarEstadoError('NO REGISTRADO', 'El ID "' + codigo + '" no está en el sistema');
         return;
       }
 
       const categoriaParticipante = participante.categoria;
-      
       if (!categoriaParticipante) {
-        console.error('❌ Participante sin categoría:', participante);
         showToast('⚠️ El participante no tiene categoría asignada', true);
         mostrarEstadoError('SIN CATEGORÍA', 'Este participante no tiene categoría asignada');
         return;
       }
 
       const categoriaBloqueada = cacheCategoriasActivas.find(c => {
-        const catActiva = String(c.categoria || '').toLowerCase().trim();
+        const catActiva  = String(c.categoria || '').toLowerCase().trim();
         const catBuscada = String(categoriaParticipante || '').toLowerCase().trim();
         return catActiva === catBuscada;
       });
-      
+
       if (!categoriaBloqueada) {
-        console.warn('⚠️ Categoría no bloqueada:', categoriaParticipante);
-        showToast(`⚠️ La categoría "${categoriaParticipante}" no está activa`, true);
-        mostrarEstadoCategoriaNoBloqueada(categoriaParticipante);
+        // ── CAMBIO: mensaje "INHABILITADA" en lugar de "NO ACTIVA" ──
+        showToast(`⚠️ Categoría "${categoriaParticipante}" inhabilitada`, true);
+        mostrarCategoriaInhabilitada(categoriaParticipante);
         return;
       }
 
-      console.log('✅ Participante válido y categoría bloqueada:', participante);
-      
       const yaEnviado = historial.find(h => h.id === participante.id);
-      
       stopScanner();
-      
       participanteActual = participante;
 
       const card = document.getElementById('result-card');
       card.className = 'result-card ' + (yaEnviado ? 'warning' : 'success');
-      
-      document.getElementById('res-robot').textContent = participante.robot || '—';
+      document.getElementById('res-robot').textContent  = participante.robot || '—';
       document.getElementById('res-nombre').textContent = participante.nombre || '—';
-      document.getElementById('res-inst').textContent = participante.institucion || '—';
+      document.getElementById('res-inst').textContent   = participante.institucion || '—';
       document.getElementById('res-ciudad').textContent = participante.ciudad || '—';
-      document.getElementById('res-cat').textContent = participante.categoria || '—';
-      
+      document.getElementById('res-cat').textContent    = participante.categoria || '—';
       document.getElementById('res-grid').style.display = 'grid';
-      
-      const statusEl = document.getElementById('res-status');
+
+      const statusEl  = document.getElementById('res-status');
       const btnEnviar = document.getElementById('btn-enviar');
-      
-      const iconSVG = `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="9" y1="13" x2="15" y2="13"></line>
-            <line x1="9" y1="17" x2="15" y2="17"></line>
-            <circle cx="10" cy="18" r="3"></circle>
-            <line x1="12.5" y1="20.5" x2="15" y2="23"></line>
-          </svg>`;
-      
+      const iconSVG   = iconRevisar();
+
       if (yaEnviado) {
-        statusEl.textContent = 'YA ENVIADO';
-        statusEl.className = 'result-status warning';
-        btnEnviar.innerHTML = iconSVG + ' Enviar de nuevo a revisión';
+        statusEl.textContent  = 'YA ENVIADO';
+        statusEl.className    = 'result-status warning';
+        btnEnviar.innerHTML   = iconSVG + ' Enviar de nuevo a revisión';
         btnEnviar.classList.remove('inactivo');
       } else {
-        statusEl.textContent = 'LISTO';
-        statusEl.className = 'result-status success';
-        btnEnviar.innerHTML = iconSVG + ' Enviar a revisión';
+        statusEl.textContent  = 'LISTO';
+        statusEl.className    = 'result-status success';
+        btnEnviar.innerHTML   = iconSVG + ' Enviar a revisión';
         btnEnviar.classList.remove('inactivo');
       }
-
-      showToast((yaEnviado ? '⚠ ' : '✓ ') + 'QR leído: ' + (participante.robot || participante.nombre || 'Participante'), yaEnviado);
+      showToast((yaEnviado ? '⚠ ' : '✓ ') + 'QR leído: ' + (participante.robot || participante.nombre), yaEnviado);
 
     } catch (error) {
-      console.error('❌ Error al procesar QR:', error);
-      console.error('Datos del QR:', qrData);
-      showToast('❌ Error al procesar QR: ' + error.message, true);
+      showToast('❌ Error: ' + error.message, true);
       mostrarEstadoError('ERROR', error.message);
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // EXTRAER ID DEL QR
-  // Separador actual de manillas: ~ (tilde)
-  // Formato: sb-2026-bai-001~Juan López~María García~Pedro Gómez
-  // Solo se usa el primer segmento como ID.
-  // ══════════════════════════════════════════════════════════════
+  // ── NUEVO: mostrar estado categoría inhabilitada ──
+  function mostrarCategoriaInhabilitada(categoria) {
+    const card = document.getElementById('result-card');
+    card.className = 'result-card error';
+    document.getElementById('res-robot').textContent  = '🚫 CATEGORÍA INHABILITADA';
+    document.getElementById('res-nombre').textContent = `La categoría "${categoria}" no está habilitada. Solicita al staff que la habilite.`;
+    document.getElementById('res-inst').textContent   = '';
+    document.getElementById('res-ciudad').textContent = '';
+    document.getElementById('res-cat').textContent    = categoria;
+    document.getElementById('res-grid').style.display = 'grid';
+    document.getElementById('res-status').textContent = 'INHABILITADA';
+    document.getElementById('res-status').className   = 'result-status error';
+    document.getElementById('btn-enviar').classList.add('inactivo');
+    participanteActual = null;
+  }
+
   function extraerIdDelQR(rawText) {
     if (!rawText) return null;
-    
     let texto = String(rawText).trim();
-
-    // 0️⃣ FORMATO MANILLA: "sb-2026-bai-001~nombre~miembro2~miembro3"
-    //    Partir por ~ y tomar solo el primer segmento
     if (texto.includes('~')) {
       const id = texto.split('~')[0].trim();
       if (id) return id.toLowerCase();
     }
-    
-    // 1️⃣ FORMATO JSON: {"id":"sb-2026-..."}
     try {
       const json = JSON.parse(texto);
       if (json && json.id) return String(json.id).trim();
-    } catch(e) { /* no es JSON, seguir */ }
-    
-    // 2️⃣ FORMATO URL: https://...?id=sb-2026-...
+    } catch(e) {}
     if (texto.includes('?id=') || texto.includes('&id=')) {
-      const matchUrl = texto.match(/[?&]id=([^&\s]+)/i);
-      if (matchUrl) return decodeURIComponent(matchUrl[1]).trim();
+      const m = texto.match(/[?&]id=([^&\s]+)/i);
+      if (m) return decodeURIComponent(m[1]).trim();
     }
-    
-    // 3️⃣ FORMATO ETIQUETADO: "ID: sb-2026-... | Robot: ..."
-    const matchEtiqueta = texto.match(/ID\s*[:=]\s*([^\|\n\r~]+)/i);
-    if (matchEtiqueta) return matchEtiqueta[1].trim();
-    
-    // 4️⃣ PATRÓN DIRECTO: "sb-2026-rl-001"
-    const matchPatron = texto.match(/sb-\d{4}-[a-z_]+-\d{3}/i);
-    if (matchPatron) return matchPatron[0].toLowerCase().trim();
-    
-    // 5️⃣ FALLBACK: texto corto sin espacios ni separadores
+    const mEtiqueta = texto.match(/ID\s*[:=]\s*([^\|\n\r~]+)/i);
+    if (mEtiqueta) return mEtiqueta[1].trim();
+    const mPatron = texto.match(/sb-\d{4}-[a-z_]+-\d{3}/i);
+    if (mPatron) return mPatron[0].toLowerCase().trim();
     const limpio = texto.replace(/[\r\n]+/g, '').trim();
-    if (limpio && limpio.length < 50 && !limpio.includes(' ') && !limpio.includes('~')) {
+    if (limpio && limpio.length < 50 && !limpio.includes(' ') && !limpio.includes('~'))
       return limpio.toLowerCase();
-    }
-    
     return null;
   }
 
   async function enviarAlCronometro() {
     const btn = document.getElementById('btn-enviar');
-    if (btn.classList.contains('inactivo')) {
-      showToast('⚠️ No hay participante escaneado', true);
-      return;
+    if (btn.classList.contains('inactivo') || !participanteActual) {
+      showToast('⚠️ No hay participante para enviar', true); return;
     }
-
-    if (!participanteActual) {
-      showToast('⚠️ No hay participante para enviar', true);
-      return;
-    }
-
-    btn.disabled = true;
-    btn.classList.add('inactivo');
-    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.classList.add('inactivo');
     btn.textContent = '⏳ Enviando...';
-
     try {
       const ruta = RUTAS_SCANNER[participanteActual.categoria] || 'general';
-      
       const response = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
-          action: 'setActivo',
-          ruta: ruta,
+          action: 'setActivo', ruta,
           participante: {
-            id: participanteActual.id,
-            robot: participanteActual.robot,
-            nombre: participanteActual.nombre || '',
-            institucion: participanteActual.institucion || '',
-            ciudad: participanteActual.ciudad || '',
-            categoria: participanteActual.categoria || '',
+            id: participanteActual.id, robot: participanteActual.robot,
+            nombre: participanteActual.nombre || '', institucion: participanteActual.institucion || '',
+            ciudad: participanteActual.ciudad || '', categoria: participanteActual.categoria || '',
             timestamp: Date.now()
           }
         })
       });
-
       const data = await response.json();
-
       if (data.ok) {
         showToast('✓ ' + participanteActual.robot + ' → enviado a revisión');
-        const checkSVG = `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>`;
-        btn.innerHTML = checkSVG + ' Enviado a revisión';
+        btn.innerHTML = '<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Enviado';
         btn.classList.add('sent');
-        
         document.getElementById('res-status').textContent = 'ENVIADO';
-        document.getElementById('res-status').className = 'result-status success';
-        
+        document.getElementById('res-status').className   = 'result-status success';
         agregarAlHistorial(participanteActual);
-        
         setTimeout(() => {
-          const iconSVG = `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="9" y1="13" x2="15" y2="13"></line>
-            <line x1="9" y1="17" x2="15" y2="17"></line>
-            <circle cx="10" cy="18" r="3"></circle>
-            <line x1="12.5" y1="20.5" x2="15" y2="23"></line>
-          </svg>`;
-          btn.innerHTML = iconSVG + ' Enviar a revisión';
-          btn.disabled = false;
-          btn.classList.remove('sent');
+          btn.innerHTML = iconRevisar() + ' Enviar a revisión';
+          btn.disabled = false; btn.classList.remove('sent');
         }, 2000);
-      } else {
-        throw new Error(data.error || 'Error desconocido');
-      }
+      } else { throw new Error(data.error || 'Error desconocido'); }
     } catch (error) {
-      showToast('Error al enviar: ' + error.message, true);
-      const iconSVG = `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <line x1="9" y1="13" x2="15" y2="13"></line>
-        <line x1="9" y1="17" x2="15" y2="17"></line>
-        <circle cx="10" cy="18" r="3"></circle>
-        <line x1="12.5" y1="20.5" x2="15" y2="23"></line>
-      </svg>`;
-      btn.innerHTML = iconSVG + ' Enviar a revisión';
-      btn.disabled = false;
-      btn.classList.remove('inactivo');
+      showToast('Error: ' + error.message, true);
+      btn.innerHTML = iconRevisar() + ' Enviar a revisión';
+      btn.disabled = false; btn.classList.remove('inactivo');
     }
   }
 
+  function iconRevisar() {
+    return `<svg class="icon-revisar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="9" y1="13" x2="15" y2="13"></line>
+      <line x1="9" y1="17" x2="15" y2="17"></line>
+    </svg>`;
+  }
+
   function agregarAlHistorial(p) {
-    const ahora = new Date();
-    const hora = ahora.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
-    
+    const hora = new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
     const existeIdx = historial.findIndex(h => h.id === p.id);
-    
-    if (existeIdx >= 0) {
-      historial[existeIdx].hora = hora;
-      const item = historial.splice(existeIdx, 1)[0];
-      historial.unshift(item);
-    } else {
-      historial.unshift({ ...p, hora });
-    }
-    
-    if (historial.length > 10) {
-      historial = historial.slice(0, 10);
-    }
-    
+    if (existeIdx >= 0) { const item = historial.splice(existeIdx, 1)[0]; item.hora = hora; historial.unshift(item); }
+    else historial.unshift({ ...p, hora });
+    if (historial.length > 10) historial = historial.slice(0, 10);
     renderHistorial();
   }
 
   function renderHistorial() {
     const container = document.getElementById('historial');
-    const count = document.getElementById('hist-count');
-    
-    count.textContent = historial.length;
-    
-    if (historial.length === 0) {
-      container.innerHTML = '<p class="empty-hist">Ningún QR escaneado aún</p>';
-      return;
-    }
-    
+    document.getElementById('hist-count').textContent = historial.length;
+    if (historial.length === 0) { container.innerHTML = '<p class="empty-hist">Ningún QR escaneado aún</p>'; return; }
     container.innerHTML = historial.map(h => `
       <div class="hist-item">
         <div class="hist-item-top">
@@ -635,46 +488,29 @@
           <div class="hist-time">${h.hora}</div>
         </div>
         <div class="hist-nombre">${h.nombre || '—'}</div>
-      </div>
-    `).join('');
-  }
-
-  function mostrarEstadoCategoriaNoBloqueada(categoria) {
-    const card = document.getElementById('result-card');
-    card.className = 'result-card error';
-    document.getElementById('res-robot').textContent = '⚠️ CATEGORÍA NO ACTIVA';
-    document.getElementById('res-nombre').textContent = `La categoría "${categoria}" no está bloqueada en ningún cronómetro`;
-    document.getElementById('res-inst').textContent = 'Solicita al staff que active esta categoría en el cronómetro';
-    document.getElementById('res-ciudad').textContent = '';
-    document.getElementById('res-cat').textContent = categoria;
-    document.getElementById('res-grid').style.display = 'grid';
-    document.getElementById('res-status').textContent = 'NO ACTIVA';
-    document.getElementById('res-status').className = 'result-status error';
-    document.getElementById('btn-enviar').classList.add('inactivo');
-    participanteActual = null;
+      </div>`).join('');
   }
 
   function mostrarEstadoError(titulo, mensaje) {
     const card = document.getElementById('result-card');
     card.className = 'result-card error';
-    document.getElementById('res-robot').textContent = titulo;
+    document.getElementById('res-robot').textContent  = titulo;
     document.getElementById('res-nombre').textContent = mensaje;
     document.getElementById('res-grid').style.display = 'none';
     document.getElementById('res-status').textContent = 'ERROR';
-    document.getElementById('res-status').className = 'result-status error';
+    document.getElementById('res-status').className   = 'result-status error';
     document.getElementById('btn-enviar').classList.add('inactivo');
     participanteActual = null;
   }
 
   function showToast(msg, error = false) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.color = error ? '#ff8080' : '#00ff88';
+    t.textContent    = msg;
+    t.style.color    = error ? '#ff8080' : '#00ff88';
     t.style.borderColor = error ? 'rgba(255,100,100,0.4)' : 'rgba(0,255,136,0.4)';
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
   }
 </script>
-
 </body>
 </html>
