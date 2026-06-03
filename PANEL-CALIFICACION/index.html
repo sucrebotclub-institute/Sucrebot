@@ -11,12 +11,11 @@
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    /* ── Variables locales que extienden styles.css ── */
     :root {
-      --panel-bg:     #1e2030;   /* bg3 */
-      --panel-bg2:    #1a1c24;   /* bg2 */
-      --panel-border: rgba(91,200,240,0.14);
-      --panel-border-active: rgba(91,200,240,0.45);
+      --panel-bg:             #1e2030;
+      --panel-bg2:            #1a1c24;
+      --panel-border:         rgba(91,200,240,0.14);
+      --panel-border-active:  rgba(91,200,240,0.45);
       --success: #22c55e;
       --danger:  #ef4444;
       --warning: #f59e0b;
@@ -29,11 +28,11 @@
       padding: 0 20px 80px;
     }
 
-    /* ── HERO (igual a PARTICIPANTES_REGISTRADOS) ── */
+    /* HERO */
     .page-hero { padding: 80px 0 32px; margin-bottom: 32px; text-align: left; }
     .page-hero-badge {
       display: block; width: fit-content;
-      background: #1a5ca8; color: #ffffff;
+      background: #1a5ca8; color: #fff;
       font-family: 'Orbitron', monospace; font-size: 9px;
       font-weight: 700; letter-spacing: 3px;
       padding: 6px 16px; border-radius: 20px;
@@ -41,10 +40,11 @@
     }
     .page-hero-badge-dot {
       display: inline-block; width: 6px; height: 6px;
-      border-radius: 50%; background: #ffffff;
+      border-radius: 50%; background: #fff;
       animation: blink 1.6s infinite;
       margin-right: 8px; vertical-align: middle;
     }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .page-hero h2 {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 2.8rem; letter-spacing: 3px;
@@ -52,21 +52,17 @@
       position: relative; display: block; margin-bottom: 20px;
     }
     .page-hero h2::after {
-      content: '';
-      position: absolute; bottom: -10px; left: 0;
+      content: ''; position: absolute; bottom: -10px; left: 0;
       width: 100%; height: 3px;
       background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%);
       border-radius: 2px;
     }
     .page-hero h2 span { color: #1a5ca8; }
-    .page-hero p {
-      font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; margin-top: 4px;
-    }
+    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; margin-top: 4px; }
 
-    /* ── BARRA DE PASOS ── */
+    /* BARRA DE PASOS */
     .pasos-bar {
-      display: flex; gap: 0;
-      margin-bottom: 24px;
+      display: flex; gap: 0; margin-bottom: 24px;
       border: 1px solid var(--panel-border);
       border-radius: 8px; overflow: hidden;
       background: var(--panel-bg2);
@@ -84,19 +80,25 @@
       font-size: 1rem; font-weight: 700;
       display: block; margin-bottom: 3px; color: var(--muted);
     }
-    .paso-item.activo {
-      background: var(--sucre-blue); color: #fff;
-    }
-    .paso-item.activo .paso-num { color: var(--cyan); }
+    .paso-item.activo { background: #1a5ca8; color: #fff; }
+    .paso-item.activo .paso-num { color: #5bc8f0; }
     .paso-item.completo { color: var(--success); }
     .paso-item.completo .paso-num { color: var(--success); }
 
-    /* ── CARD BASE ── */
+    /* PANEL CARD */
     .panel-card {
       background: #1a5ca8;
       border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px; padding: 24px; max-width: none !important; transform: none !important; cursor: default;
-      margin-bottom: 20px;
+      border-radius: 10px; padding: 24px;
+      max-width: none !important; transform: none !important;
+      cursor: default; margin-bottom: 20px;
+    }
+    .panel-card-dark {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px; padding: 24px;
+      max-width: none !important; transform: none !important;
+      cursor: default; margin-bottom: 20px;
     }
     .panel-card-title {
       font-family: 'Orbitron', monospace; font-size: .68rem;
@@ -106,108 +108,84 @@
       border-bottom: 1px solid rgba(255,255,255,0.2);
       display: flex; align-items: center; gap: 8px;
     }
-    /* Textos dentro de panel-card */
-    .panel-card .field label { color: rgba(255,255,255,0.65); }
-    .panel-card p { color: rgba(255,255,255,0.6); }
-    .panel-card .juez-num { color: rgba(255,255,255,0.5); }
-    .panel-card .field select,
-    .panel-card .field input[type="number"],
-    .panel-card .field input[type="text"],
-    .panel-card .juez-row input,
-    .panel-card .criterio-config-row input {
-      background: #0e2a5a;
-      border-color: rgba(255,255,255,0.15);
-      color: #e8f0ff;
-    }
-    .panel-card .field select option { background: #0e2a5a; color: #fff; }
-    .panel-card .field select:focus,
-    .panel-card .field input:focus,
-    .panel-card .juez-row input:focus,
-    .panel-card .criterio-config-row input:focus {
-      border-color: #90dcff;
-      background: #0a1f45;
-    }
-    .panel-card .juez-row input::placeholder,
-    .panel-card .criterio-config-row input::placeholder { color: rgba(255,255,255,0.35); }
-    .panel-card .btn-add-criterio {
-      border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.6);
-    }
-    .panel-card .btn-add-criterio:hover { border-color: #90dcff; color: #90dcff; }
-    .panel-card .btn-del-criterio {
-      border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.1);
+    .panel-card-dark .panel-card-title {
+      border-bottom-color: var(--panel-border);
+      color: #90dcff;
     }
 
-    /* ── CAMPOS ── */
+    /* CAMPOS */
     .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
     .field label {
       font-family: 'Orbitron', monospace; font-size: .6rem;
-      letter-spacing: 2px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 2px; color: rgba(255,255,255,0.65); text-transform: uppercase;
     }
     .field select,
     .field input[type="number"],
     .field input[type="text"] {
       padding: 10px 12px;
-      background: var(--panel-bg2);
-      border: 1px solid var(--panel-border);
+      background: #0e2a5a;
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 6px;
       font-family: 'Exo 2', sans-serif; font-size: .9rem;
-      color: var(--text); outline: none;
+      color: #e8f0ff; outline: none;
       transition: border-color .15s;
     }
     .field select:focus,
-    .field input:focus { border-color: var(--cyan); }
-    .field select option { background: #1a1c24; }
+    .field input:focus { border-color: #90dcff; background: #0a1f45; }
+    .field select option { background: #0e2a5a; color: #fff; }
 
     .config-row { display: flex; gap: 16px; }
     .config-row .field { flex: 1; }
 
-    /* ── JUECES ── */
+    /* JUECES */
     .jueces-config { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
     .juez-row { display: flex; gap: 10px; align-items: center; }
     .juez-num {
       font-family: 'Orbitron', monospace; font-size: .6rem;
-      color: var(--muted); width: 54px; flex-shrink: 0;
+      color: rgba(255,255,255,0.5); width: 54px; flex-shrink: 0;
     }
     .juez-row input {
       flex: 1; padding: 8px 12px;
-      background: var(--panel-bg2);
-      border: 1px solid var(--panel-border); border-radius: 6px;
+      background: #0e2a5a;
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
       font-family: 'Exo 2', sans-serif; font-size: .85rem;
-      color: var(--text); outline: none; transition: border-color .15s;
+      color: #e8f0ff; outline: none; transition: border-color .15s;
     }
-    .juez-row input:focus { border-color: var(--cyan); }
+    .juez-row input:focus { border-color: #90dcff; }
+    .juez-row input::placeholder { color: rgba(255,255,255,0.35); }
 
-    /* ── CRITERIOS CONFIG ── */
+    /* CRITERIOS CONFIG */
     .criterios-config { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
     .criterio-config-row { display: flex; gap: 8px; align-items: center; }
     .criterio-config-row input {
       flex: 1; padding: 9px 12px;
-      background: var(--panel-bg2);
-      border: 1px solid var(--panel-border); border-radius: 6px;
+      background: #0e2a5a;
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
       font-family: 'Exo 2', sans-serif; font-size: .85rem;
-      color: var(--text); outline: none; transition: border-color .15s;
+      color: #e8f0ff; outline: none; transition: border-color .15s;
     }
-    .criterio-config-row input.desc { flex: .8; font-size: .78rem; color: var(--muted); }
-    .criterio-config-row input:focus { border-color: var(--cyan); }
+    .criterio-config-row input.desc { flex: .8; font-size: .78rem; color: rgba(255,255,255,0.6); }
+    .criterio-config-row input:focus { border-color: #90dcff; }
+    .criterio-config-row input::placeholder { color: rgba(255,255,255,0.35); }
     .btn-del-criterio {
       width: 30px; height: 30px;
-      border: 1px solid rgba(239,68,68,.4);
-      background: transparent; color: var(--danger);
+      border: 1px solid rgba(239,68,68,.5);
+      background: rgba(239,68,68,0.1); color: #ef4444;
       border-radius: 5px; cursor: pointer; font-size: .9rem;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; transition: all .12s;
     }
-    .btn-del-criterio:hover { background: rgba(239,68,68,.15); }
+    .btn-del-criterio:hover { background: rgba(239,68,68,.25); }
     .btn-add-criterio {
       width: 100%; padding: 9px;
-      border: 1px dashed var(--panel-border);
+      border: 1px dashed rgba(255,255,255,0.25);
       border-radius: 6px; background: transparent; cursor: pointer;
       font-family: 'Exo 2', sans-serif; font-size: .85rem;
-      color: var(--muted); transition: all .12s;
+      color: rgba(255,255,255,0.6); transition: all .12s;
     }
-    .btn-add-criterio:hover { border-color: var(--cyan); color: var(--cyan); }
+    .btn-add-criterio:hover { border-color: #90dcff; color: #90dcff; }
 
-    /* ── BLOQUEO BADGE ── */
+    /* BLOQUEO BADGE */
     .bloqueo-badge {
       display: inline-flex; align-items: center; gap: 8px;
       background: rgba(245,158,11,.1);
@@ -221,28 +199,28 @@
       background: var(--warning); animation: blink 1s infinite;
     }
 
-    /* ── BOTONES ── */
+    /* BOTONES */
     .btn-prim {
       padding: 12px 22px;
-      background: var(--sucre-blue); color: #fff;
-      border: none; border-radius: 6px; cursor: pointer;
+      background: #0e2a5a; color: #fff;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; cursor: pointer;
       font-family: 'Orbitron', monospace; font-size: .68rem;
       letter-spacing: 2px; text-transform: uppercase;
       transition: background .15s;
       display: inline-flex; align-items: center; gap: 8px;
     }
-    .btn-prim:hover:not(:disabled) { background: #1e6bbf; }
+    .btn-prim:hover:not(:disabled) { background: #163a7a; }
     .btn-prim:disabled { opacity: .35; cursor: not-allowed; }
 
     .btn-sec {
       padding: 11px 18px;
-      background: transparent; color: var(--muted);
-      border: 1px solid var(--panel-border); border-radius: 6px;
+      background: transparent; color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
       cursor: pointer; font-family: 'DM Mono', monospace;
       font-size: .72rem; transition: all .12s;
       display: inline-flex; align-items: center; gap: 6px;
     }
-    .btn-sec:hover { border-color: var(--cyan); color: var(--cyan); }
+    .btn-sec:hover { border-color: #90dcff; color: #90dcff; }
 
     .btn-success {
       padding: 12px 22px;
@@ -256,62 +234,29 @@
 
     .btn-danger {
       padding: 11px 18px;
-      background: transparent; color: var(--danger);
+      background: transparent; color: #ef4444;
       border: 1px solid rgba(239,68,68,.4); border-radius: 6px;
       cursor: pointer; font-family: 'Orbitron', monospace;
       font-size: .65rem; letter-spacing: 1.5px; transition: all .12s;
       display: inline-flex; align-items: center; gap: 8px;
     }
-    .btn-danger:hover { background: rgba(239,68,68,.12); border-color: var(--danger); }
+    .btn-danger:hover { background: rgba(239,68,68,.12); border-color: #ef4444; }
 
     .acciones-bar { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
 
-    /* ── PASO 2: ESCÁNER ── */
+    /* QR INPUT */
     .qr-input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
     .qr-input {
       flex: 1; padding: 12px 16px;
-      background: var(--panel-bg2);
-      border: 1.5px solid var(--panel-border); border-radius: 8px;
+      background: #0e2a5a;
+      border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px;
       font-family: 'DM Mono', monospace; font-size: .95rem;
-      color: var(--text); outline: none; transition: border-color .15s;
+      color: #e8f0ff; outline: none; transition: border-color .15s;
     }
-    .qr-input:focus { border-color: var(--cyan); }
-    .qr-input::placeholder { color: var(--muted); }
+    .qr-input:focus { border-color: #90dcff; }
+    .qr-input::placeholder { color: rgba(255,255,255,0.4); }
 
-    /* Robot activo */
-    .robot-activo-card {
-      background: var(--sucre-blue);
-      border-radius: 8px; padding: 16px 20px;
-      display: flex; align-items: center; gap: 14px;
-      margin-bottom: 14px;
-    }
-    .ra-avatar {
-      width: 48px; height: 48px; border-radius: 7px;
-      background: rgba(255,255,255,.15);
-      border: 1px solid rgba(255,255,255,.2);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Orbitron', monospace; font-weight: 700;
-      font-size: 1.1rem; color: var(--cyan); flex-shrink: 0;
-    }
-    .ra-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: #fff; }
-    .ra-info p { font-family: 'DM Mono', monospace; font-size: .7rem; color: rgba(255,255,255,.55); margin-top: 2px; }
-    .ra-ronda { margin-left: auto; text-align: center; flex-shrink: 0; }
-    .ra-ronda-num { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 1.7rem; color: var(--cyan); line-height: 1; }
-    .ra-ronda-lbl { font-family: 'DM Mono', monospace; font-size: .58rem; color: rgba(255,255,255,.4); letter-spacing: 2px; margin-top: 2px; }
-
-    .ronda-selector { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-    .ronda-selector label { font-family: 'Orbitron', monospace; font-size: .6rem; letter-spacing: 1.5px; color: var(--muted); }
-    .btn-ronda {
-      padding: 6px 13px;
-      background: var(--panel-bg2);
-      border: 1px solid var(--panel-border); border-radius: 5px;
-      cursor: pointer; font-family: 'Orbitron', monospace;
-      font-size: .65rem; font-weight: 700; color: var(--muted);
-      transition: all .12s;
-    }
-    .btn-ronda:hover { border-color: var(--cyan); color: var(--cyan); }
-    .btn-ronda.sel { background: var(--sucre-blue); border-color: var(--sucre-blue); color: #fff; }
-
+    /* AVISO */
     .aviso {
       padding: 10px 14px; border-radius: 6px;
       font-size: .78rem; font-family: 'Exo 2', sans-serif;
@@ -319,95 +264,95 @@
     }
     .aviso.warning { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #fde68a; }
     .aviso.success { background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.3); color: #86efac; }
+    .aviso.error   { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; }
 
-    /* ── PASO 3: TABLA CALIFICACIÓN ── */
+    /* TABLA CALIFICACIÓN */
     .tabla-calificacion { width: 100%; border-collapse: collapse; font-size: .82rem; }
-    .tabla-calificacion thead tr { background: var(--sucre-blue); }
+    .tabla-calificacion thead tr { background: #0e2a5a; }
     .tabla-calificacion th {
       padding: 10px 12px;
-      font-family: 'Orbitron', monospace; font-size: .58rem;
+      font-family: 'Orbitron', monospace; font-size: .55rem;
       letter-spacing: 1.5px; color: rgba(255,255,255,.85);
       text-align: center; border-right: 1px solid rgba(255,255,255,.1);
+      white-space: nowrap;
     }
     .tabla-calificacion th:first-child { text-align: left; }
     .tabla-calificacion th:last-child { border-right: none; }
     .tabla-calificacion td {
       padding: 10px 12px;
-      border-bottom: 1px solid var(--panel-border);
-      border-right: 1px solid var(--panel-border);
-      text-align: center; vertical-align: middle; color: var(--text);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      text-align: center; vertical-align: middle; color: #e8f0ff;
     }
     .tabla-calificacion td:first-child { text-align: left; }
-    .tabla-calificacion td:last-child {
-      border-right: none;
-      background: rgba(91,200,240,.06);
-    }
+    .tabla-calificacion td:last-child { border-right: none; background: rgba(91,200,240,.06); }
     .tabla-calificacion tr:hover td { background: rgba(91,200,240,.04); }
     .tabla-calificacion tr:hover td:last-child { background: rgba(91,200,240,.1); }
 
-    .criterio-nombre { font-weight: 600; color: var(--text); }
-    .criterio-desc { font-size: .7rem; color: var(--muted); margin-top: 2px; }
+    .criterio-nombre { font-weight: 600; color: #e8f0ff; }
+    .criterio-desc { font-size: .7rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
 
     .nota-btns { display: flex; gap: 3px; justify-content: center; }
     .nota-btn {
       width: 30px; height: 30px;
-      background: var(--panel-bg2);
-      border: 1px solid var(--panel-border); border-radius: 4px;
+      background: #0e2a5a;
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
       cursor: pointer; font-family: 'Orbitron', monospace;
-      font-weight: 700; font-size: .7rem; color: var(--muted);
+      font-weight: 700; font-size: .7rem; color: rgba(255,255,255,0.6);
       transition: all .1s; display: flex; align-items: center; justify-content: center;
     }
-    .nota-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-    .nota-btn.sel { background: var(--sucre-blue); border-color: var(--sucre-blue); color: #fff; }
+    .nota-btn:hover { border-color: #90dcff; color: #90dcff; }
+    .nota-btn.sel { background: #1a5ca8; border-color: #5bc8f0; color: #fff; }
 
-    .prom-criterio { font-family: 'Orbitron', monospace; font-weight: 700; font-size: .88rem; color: var(--cyan); }
-    .prom-criterio.vacio { color: var(--panel-border); }
+    .prom-criterio { font-family: 'Orbitron', monospace; font-weight: 700; font-size: .88rem; color: #5bc8f0; }
+    .prom-criterio.vacio { color: rgba(255,255,255,0.2); }
 
     .total-row td {
-      background: var(--sucre-blue) !important;
+      background: #0e2a5a !important;
       color: #fff !important;
       font-family: 'Orbitron', monospace; font-weight: 700;
-      border-color: rgba(255,255,255,.15) !important;
+      border-color: rgba(255,255,255,.1) !important;
     }
-    .total-val { font-size: 1.3rem; color: var(--cyan); }
+    .total-val { font-size: 1.3rem; color: #5bc8f0; }
 
-    /* ── RANKING ── */
+    /* RANKING */
     .ranking-table { width: 100%; border-collapse: collapse; }
     .ranking-table th {
       font-family: 'Orbitron', monospace; font-size: .58rem;
-      letter-spacing: 1.5px; color: var(--muted); text-align: left;
-      padding: 9px 14px; border-bottom: 1px solid var(--panel-border);
+      letter-spacing: 1.5px; color: rgba(255,255,255,0.6); text-align: left;
+      padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.1);
       background: rgba(91,200,240,.04);
     }
     .ranking-table td {
       padding: 12px 14px; font-size: .85rem;
-      border-bottom: 1px solid var(--panel-border); color: var(--text);
+      border-bottom: 1px solid rgba(255,255,255,0.08); color: #e8f0ff;
     }
     .ranking-table tr:last-child td { border-bottom: none; }
     .ranking-table tr:hover td { background: rgba(91,200,240,.04); }
     .rank-pos { font-family: 'Orbitron', monospace; font-weight: 700; font-size: .9rem; }
-    .r1 { color: var(--gold); } .r2 { color: var(--muted); } .r3 { color: #92400e; }
+    .r1 { color: #ca8a04; } .r2 { color: #9ca3af; } .r3 { color: #92400e; }
     .score-pill {
       display: inline-block; background: rgba(91,200,240,.12);
-      color: var(--cyan); font-family: 'Orbitron', monospace;
+      color: #5bc8f0; font-family: 'Orbitron', monospace;
       font-weight: 700; font-size: .7rem; padding: 3px 10px; border-radius: 4px;
     }
-    .score-pill.top { background: var(--sucre-blue); color: #fff; }
-    .rondas-pill { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--muted); }
+    .score-pill.top { background: #1a5ca8; color: #fff; }
+    .rondas-pill { font-family: 'DM Mono', monospace; font-size: .68rem; color: rgba(255,255,255,0.4); }
 
-    /* ── LOADING / TOAST ── */
+    /* LOADING / SPINNER */
     .loading-msg {
       text-align: center; padding: 28px;
-      font-family: 'DM Mono', monospace; font-size: .78rem; color: var(--muted);
+      font-family: 'DM Mono', monospace; font-size: .78rem; color: rgba(255,255,255,0.4);
     }
     .spinner {
       display: inline-block; width: 18px; height: 18px;
-      border: 2px solid var(--panel-border); border-top-color: var(--cyan);
+      border: 2px solid rgba(91,200,240,0.2); border-top-color: #5bc8f0;
       border-radius: 50%; animation: spin .7s linear infinite;
       vertical-align: middle; margin-right: 6px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* TOAST */
     .toast {
       position: fixed; bottom: 24px; right: 24px;
       padding: 12px 20px; border-radius: 6px;
@@ -419,24 +364,34 @@
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.success { background: #16a34a; }
     .toast.error   { background: #dc2626; }
-    .toast.info    { background: var(--sucre-blue); }
+    .toast.info    { background: #1a5ca8; }
 
-    /* ── MODAL ── */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 9998; align-items: center; justify-content: center; }
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); z-index: 9998;
+      align-items: center; justify-content: center;
+    }
     .modal-overlay.show { display: flex; }
-    .modal-card { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 10px; padding: 28px; max-width: 420px; width: 90%; }
-    .modal-card h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: var(--text); margin-bottom: 10px; }
-    .modal-card p { font-size: .85rem; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+    .modal-card {
+      background: var(--panel-bg); border: 1px solid var(--panel-border);
+      border-radius: 10px; padding: 28px; max-width: 420px; width: 90%;
+    }
+    .modal-card h3 {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+      letter-spacing: 2px; color: #e8f0ff; margin-bottom: 10px;
+    }
+    .modal-card p { font-size: .85rem; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 20px; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
-    /* ── FAB RANKING ── */
+    /* FAB */
     #fab-ranking {
       display: none; position: fixed;
       bottom: 28px; left: 28px; z-index: 900;
     }
     #fab-ranking button {
-      background: var(--sucre-blue); color: #fff;
-      border: 1px solid var(--panel-border-active);
+      background: #1a5ca8; color: #fff;
+      border: 1px solid rgba(91,200,240,0.45);
       border-radius: 50px; padding: 11px 20px;
       font-family: 'Orbitron', monospace; font-size: .62rem;
       letter-spacing: 1.5px; cursor: pointer;
@@ -445,11 +400,30 @@
     }
     #fab-ranking button:hover { background: #1e6bbf; }
 
+    /* Lista robots sidebar (paso 3) */
+    .robot-sidebar-item {
+      padding: 10px 12px; border-radius: 7px; cursor: pointer;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      margin-bottom: 6px; transition: all .15s;
+    }
+    .robot-sidebar-item:hover { border-color: #90dcff; }
+    .robot-sidebar-item.activo { background: rgba(91,200,240,0.15); border-color: #5bc8f0; }
+    .robot-sidebar-item.calificado { border-color: rgba(34,197,94,0.4); }
+    .robot-sidebar-nombre {
+      font-weight: 700; font-size: .82rem; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .robot-sidebar-sub {
+      font-size: .65rem; color: rgba(255,255,255,0.45); margin-top: 2px;
+    }
+
     @media (max-width: 768px) {
       .pasos-bar { display: none; }
       .config-row { flex-direction: column; }
-      .tabla-calificacion { font-size: .75rem; }
-      .nota-btn { width: 26px; height: 26px; font-size: .65rem; }
+      .tabla-calificacion { font-size: .72rem; }
+      .nota-btn { width: 26px; height: 26px; font-size: .62rem; }
+      .paso3-layout { flex-direction: column !important; }
+      .paso3-sidebar { width: 100% !important; }
     }
   </style>
 </head>
@@ -471,20 +445,20 @@
       SUCREBOT 2026 · JUECES
     </div>
     <h2>PANEL DE <span>CALIFICACIÓN</span></h2>
-    <div class="page-hero-sub">
-      <p>GESTIÓN COMPLETA DEL CONCURSO POR PUNTUACIÓN</p>
-    </div>
+    <p>GESTIÓN COMPLETA DEL CONCURSO POR PUNTUACIÓN</p>
   </div>
 
   <!-- PASOS -->
   <div class="pasos-bar" id="pasos-bar">
     <div class="paso-item activo" id="paso-1-tab"><span class="paso-num">1</span>Configurar</div>
-    <div class="paso-item" id="paso-2-tab"><span class="paso-num">2</span>Escanear</div>
+    <div class="paso-item" id="paso-2-tab"><span class="paso-num">2</span>Registro</div>
     <div class="paso-item" id="paso-3-tab"><span class="paso-num">3</span>Calificar</div>
     <div class="paso-item" id="paso-4-tab"><span class="paso-num">4</span>Ranking</div>
   </div>
 
-  <!-- ════ PASO 1: CONFIGURAR ════ -->
+  <!-- ══════════════════════════════════════
+       PASO 1 — CONFIGURAR
+  ══════════════════════════════════════ -->
   <div id="paso-1">
     <div class="panel-card">
       <div class="panel-card-title">⚙ CONFIGURACIÓN DE LA SESIÓN</div>
@@ -497,161 +471,192 @@
       <div class="config-row">
         <div class="field">
           <label>Categoría</label>
-          <select id="cfg-categoria" onchange="onCategoriaSelected()">
+          <select id="cfg-categoria">
             <option value="">— Selecciona —</option>
             <option value="bai">Bailarín</option>
+            <option value="bat">Batalla</option>
             <option value="dev">Impacto Tecnológico</option>
           </select>
         </div>
         <div class="field">
           <label>Número de jueces</label>
-          <input type="number" id="cfg-n-jueces" min="1" max="10" value="3" onchange="renderJuecesConfig()">
+          <input type="number" id="cfg-n-jueces" min="1" max="10" value="3">
         </div>
       </div>
 
-      <div class="panel-card-title" style="margin-top:4px;">👤 NOMBRES DE JUECES <span style="font-size:.6rem;color:var(--muted);font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;">(opcional)</span></div>
+      <div class="panel-card-title" style="margin-top:4px;">
+        👤 NOMBRES DE JUECES
+        <span style="font-size:.6rem;color:rgba(255,255,255,0.4);font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;margin-left:4px;">(opcional)</span>
+      </div>
       <div class="jueces-config" id="jueces-config"></div>
 
       <div class="panel-card-title" style="margin-top:4px;">📋 CRITERIOS DE EVALUACIÓN</div>
-      <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;">Define los criterios que los jueces evaluarán (nombre obligatorio, descripción opcional).</p>
+      <p style="font-size:.78rem;color:rgba(255,255,255,0.6);margin-bottom:12px;">
+        Define los criterios que los jueces evaluarán. Nota máxima por criterio: 5.
+      </p>
       <div class="criterios-config" id="criterios-config"></div>
       <button class="btn-add-criterio" onclick="agregarCriterioConfig()">+ Agregar criterio</button>
 
       <div class="acciones-bar">
         <button class="btn-prim" id="btn-iniciar-sesion" onclick="iniciarSesion()" disabled>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          INICIAR CALIFICACIÓN
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════ PASO 2: REGISTRO DE ROBOTS ════ -->
-  <div id="paso-2" style="display:none">
-    <div class="panel-card">
-      <div class="panel-card-title">📷 REGISTRO DE ROBOTS</div>
-      <p style="font-size:.82rem;color:rgba(255,255,255,0.6);margin-bottom:16px;">
-        Escanea el QR de cada robot. Cuando hayas registrado todos presiona <strong style="color:#90dcff;">Iniciar Calificación</strong>.
-      </p>
-
-      <div class="qr-input-row">
-        <input type="text" class="qr-input" id="qr-input"
-          placeholder="Escanea QR o escribe ID (ej: sb-2026-bai-001)"
-          onkeydown="if(event.key==='Enter') registrarRobot()" />
-        <button class="btn-prim" onclick="registrarRobot()">Agregar</button>
-      </div>
-
-      <div id="aviso-registro" class="aviso warning" style="display:none;margin-top:10px;"></div>
-
-      <div style="margin-top:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span style="font-family:'Orbitron',monospace;font-size:.62rem;letter-spacing:2px;color:#90dcff;">
-            ROBOTS REGISTRADOS
-            <span id="registro-count" style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;margin-left:6px;">0</span>
-          </span>
-        </div>
-        <div id="lista-registro">
-          <div style="text-align:center;padding:24px;font-family:'DM Mono',monospace;font-size:.78rem;color:rgba(255,255,255,0.4);">
-            Escanea robots para agregarlos a la lista
-          </div>
-        </div>
-      </div>
-
-      <div class="acciones-bar">
-        <button class="btn-sec" onclick="irAPaso(1)">← Volver</button>
-        <button class="btn-prim" id="btn-iniciar-cal" onclick="iniciarCalificacion()" disabled>
           ▶ INICIAR CALIFICACIÓN
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ════ PASO 2B: LISTA PARA CALIFICAR ════ -->
-  <div id="paso-2b" style="display:none">
+  <!-- ══════════════════════════════════════
+       PASO 2 — REGISTRO DE ROBOTS
+  ══════════════════════════════════════ -->
+  <div id="paso-2" style="display:none">
     <div class="panel-card">
       <div class="panel-card-title">
-        🤖 SELECCIONAR ROBOT A CALIFICAR
-        <span id="p2b-estado" style="margin-left:auto;background:rgba(255,255,255,0.15);color:#fff;font-size:.6rem;padding:2px 10px;border-radius:10px;"></span>
+        📷 REGISTRO DE ROBOTS
+        <span id="registro-count-badge" style="margin-left:auto;background:rgba(255,255,255,0.15);color:#fff;font-size:.6rem;padding:2px 10px;border-radius:10px;">0 robots</span>
       </div>
-      <div id="lista-para-calificar"></div>
-      <div class="acciones-bar" style="margin-top:16px;">
-        <button class="btn-sec" onclick="irAPaso(4)">🏆 Ver Ranking</button>
-        <button class="btn-sec" onclick="irAPaso(2)" style="font-size:.65rem;">+ Agregar robot</button>
+
+      <p style="font-size:.82rem;color:rgba(255,255,255,0.6);margin-bottom:16px;">
+        Escanea el QR de cada participante. Cuando hayas registrado todos, presiona <strong style="color:#90dcff;">Continuar</strong>.
+      </p>
+
+      <div class="qr-input-row">
+        <input type="text" class="qr-input" id="qr-input"
+          placeholder="Escanea QR o escribe ID (ej: sb-2026-bai-001)" />
+        <button class="btn-prim" onclick="registrarRobot()">Agregar</button>
+      </div>
+
+      <div id="aviso-registro" class="aviso" style="display:none;"></div>
+
+      <div id="lista-registro">
+        <div class="loading-msg" style="color:rgba(255,255,255,0.35);">
+          Escanea robots para agregarlos a la lista
+        </div>
+      </div>
+
+      <div class="acciones-bar">
+        <button class="btn-sec" onclick="irAPaso(1)">← Volver</button>
+        <button class="btn-prim" id="btn-continuar-reg" onclick="irAPaso('2b')" disabled>
+          Continuar →
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- ════ PASO 3: CALIFICAR ════ -->
+  <!-- ══════════════════════════════════════
+       PASO 2B — SELECCIONAR ROBOT
+  ══════════════════════════════════════ -->
+  <div id="paso-2b" style="display:none">
+    <div class="panel-card">
+      <div class="panel-card-title">
+        🤖 SELECCIONAR ROBOT A CALIFICAR
+        <span id="p2b-progreso" style="margin-left:auto;background:rgba(255,255,255,0.15);color:#fff;font-size:.6rem;padding:2px 10px;border-radius:10px;"></span>
+      </div>
+      <div id="lista-para-calificar"></div>
+      <div class="acciones-bar" style="margin-top:16px;">
+        <button class="btn-sec" onclick="irAPaso(2)">+ Agregar robot</button>
+        <button class="btn-sec" onclick="irAPaso(4)">🏆 Ver Ranking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PASO 3 — CALIFICAR
+  ══════════════════════════════════════ -->
   <div id="paso-3" style="display:none">
+    <div class="paso3-layout" style="display:flex;gap:16px;align-items:flex-start;">
 
-    <!-- Layout: lista izquierda + calificación derecha -->
-    <div style="display:flex;gap:16px;align-items:flex-start;">
-
-      <!-- Lista de robots -->
-      <div style="width:220px;flex-shrink:0;">
+      <!-- Sidebar lista robots -->
+      <div class="paso3-sidebar" style="width:210px;flex-shrink:0;">
         <div class="panel-card" style="padding:16px;">
-          <div class="panel-card-title" style="margin-bottom:12px;font-size:.6rem;">ROBOTS</div>
-          <div id="lista-robots-cal"></div>
+          <div class="panel-card-title" style="font-size:.58rem;margin-bottom:10px;">ROBOTS</div>
+          <div id="lista-robots-sidebar"></div>
         </div>
       </div>
 
       <!-- Panel calificación -->
       <div style="flex:1;min-width:0;">
-        <div class="panel-card" id="panel-cal-vacio">
+
+        <!-- Estado vacío -->
+        <div class="panel-card" id="cal-vacio">
           <div style="text-align:center;padding:40px 20px;">
-            <div style="font-size:2rem;margin-bottom:12px;opacity:.3;">📋</div>
-            <div style="font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:2px;color:rgba(255,255,255,.4);">SELECCIONA UN ROBOT</div>
-            <div style="font-size:.8rem;color:rgba(255,255,255,.3);margin-top:6px;">Elige un robot de la lista para calificar</div>
+            <div style="font-size:2.5rem;margin-bottom:12px;opacity:.3;">📋</div>
+            <div style="font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:2px;color:rgba(255,255,255,.4);">
+              SELECCIONA UN ROBOT
+            </div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.3);margin-top:6px;">
+              Elige un participante de la lista para calificar
+            </div>
           </div>
         </div>
 
-        <div id="panel-cal-activo" style="display:none;">
+        <!-- Panel activo -->
+        <div id="cal-activo" style="display:none;">
           <div class="panel-card">
             <div class="panel-card-title">
               ⭐ CALIFICANDO —
-              <span id="cal-robot-title" style="color:#90dcff;margin-left:4px;">—</span>
-              <span id="cal-ronda-badge" style="margin-left:auto;background:rgba(255,255,255,.12);color:#90dcff;font-size:.6rem;padding:3px 10px;border-radius:4px;">RONDA 1</span>
+              <span id="cal-robot-nombre" style="color:#90dcff;margin-left:4px;"></span>
+              <span id="cal-ronda-badge" style="margin-left:auto;background:rgba(255,255,255,.12);color:#90dcff;font-size:.6rem;padding:3px 10px;border-radius:4px;"></span>
             </div>
-            <div style="overflow-x:auto;" id="tabla-calificacion-wrapper"></div>
+
+            <!-- Selector de ronda -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+              <span style="font-family:'Orbitron',monospace;font-size:.58rem;letter-spacing:1.5px;color:rgba(255,255,255,0.5);">RONDA:</span>
+              <div id="btns-ronda" style="display:flex;gap:5px;"></div>
+              <button onclick="nuevaRonda()" style="padding:5px 10px;background:rgba(255,255,255,0.08);border:1px dashed rgba(255,255,255,0.2);border-radius:4px;color:rgba(255,255,255,0.5);font-family:'DM Mono',monospace;font-size:.68rem;cursor:pointer;" title="Agregar ronda">+ ronda</button>
+            </div>
+
+            <div id="aviso-ronda-prev" class="aviso warning" style="display:none;">
+              ⚠ Ya existe calificación para esta ronda. Guardar reemplazará los datos anteriores.
+            </div>
+
+            <div id="aviso-mejor-ronda" class="aviso success" style="display:none;"></div>
+
+            <div style="overflow-x:auto;">
+              <div id="tabla-cal-wrapper"></div>
+            </div>
+
             <div class="acciones-bar">
-              <button class="btn-sec" onclick="irAPaso(4)">Ver ranking →</button>
+              <button class="btn-sec" onclick="irAPaso('2b')">← Lista</button>
+              <button class="btn-sec" onclick="irAPaso(4)">🏆 Ranking</button>
               <button class="btn-prim" id="btn-guardar-cal" onclick="guardarCalificacion()" disabled>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                GUARDAR CALIFICACIÓN
+                ✓ GUARDAR CALIFICACIÓN
               </button>
             </div>
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
   </div>
 
-  <!-- ════ PASO 4: RANKING ════ -->
+  <!-- ══════════════════════════════════════
+       PASO 4 — RANKING
+  ══════════════════════════════════════ -->
   <div id="paso-4" style="display:none">
     <div class="panel-card">
       <div class="panel-card-title">
-        🏆 RANKING FINAL —
-        <span id="ranking-cat-title" style="color:var(--cyan);margin-left:4px;"></span>
-        <button class="btn-sec" style="margin-left:auto;padding:5px 11px;font-size:.62rem;" onclick="cargarRanking()">↺ Actualizar</button>
+        🏆 RANKING —
+        <span id="ranking-cat-titulo" style="color:#5bc8f0;margin-left:4px;"></span>
+        <button class="btn-sec" style="margin-left:auto;padding:5px 12px;font-size:.6rem;" onclick="cargarRanking()">↺ Actualizar</button>
       </div>
-      <div id="ranking-container-4"><div class="loading-msg"><span class="spinner"></span>Cargando...</div></div>
+      <div id="ranking-container"></div>
     </div>
 
     <div class="panel-card">
-      <div class="panel-card-title">ACCIONES FINALES</div>
+      <div class="panel-card-title">ACCIONES</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <button class="btn-success" onclick="exportarExcel()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          EXPORTAR EXCEL
+          ↓ EXPORTAR EXCEL
         </button>
-        <button class="btn-sec" onclick="irAPaso(2)">← Seguir calificando</button>
-        <button class="btn-danger" onclick="confirmarCerrarCategoria()">🔒 CERRAR CATEGORÍA</button>
+        <button class="btn-sec" onclick="irAPaso('2b')">← Seguir calificando</button>
+        <button class="btn-danger" onclick="document.getElementById('modal-cerrar').classList.add('show')">
+          🔒 CERRAR CATEGORÍA
+        </button>
       </div>
     </div>
   </div>
 
-</div>
+</div><!-- /wrapper -->
 </main>
 
 <!-- FAB Ranking -->
@@ -659,14 +664,14 @@
   <button onclick="irAPaso(4)">🏆 VER RANKING</button>
 </div>
 
-<!-- Modal cerrar -->
+<!-- Modal cerrar categoría -->
 <div class="modal-overlay" id="modal-cerrar">
   <div class="modal-card">
     <h3>¿CERRAR CATEGORÍA?</h3>
-    <p>Se liberará el bloqueo y otros dispositivos podrán acceder. Asegúrate de haber exportado los resultados antes.</p>
+    <p>Se liberará el bloqueo y la categoría quedará disponible para otros dispositivos. Asegúrate de haber exportado los resultados.</p>
     <div class="modal-actions">
       <button class="btn-sec" onclick="document.getElementById('modal-cerrar').classList.remove('show')">Cancelar</button>
-      <button class="btn-danger" onclick="cerrarCategoria()">🔒 Confirmar cierre</button>
+      <button class="btn-danger" onclick="cerrarCategoria()">🔒 Confirmar</button>
     </div>
   </div>
 </div>
@@ -676,113 +681,152 @@
 <script src="../shared/js/load-components.js"></script>
 
 <script>
-// ═══════════════════════════════════════
-//  ESTADO
-// ═══════════════════════════════════════
-let GAS = null;
-let categoriaActual    = '';
-let robotsRegistrados  = [];  // [{id, nombre, robot, institucion}]
-let nJueces            = 3;
-let nombresJueces      = [];
-let criterios          = [];
-let participanteActual = null;
-let rondaActual        = 1;
-let notas              = {};
-let historialNotas     = {};
-let todosPuntuados     = [];
-const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico' };
+// ═══════════════════════════════════════════════════
+//  ESTADO GLOBAL
+// ═══════════════════════════════════════════════════
+let GAS              = null;
+let categoriaActual  = '';     // código: 'bai', 'bat', 'dev'
+let nJueces          = 3;
+let nombresJueces    = [];
+let criterios        = [];     // [{nombre, descripcion}]
+let robotsReg        = [];     // participantes registrados en este panel
+let participante     = null;   // participante actualmente seleccionado en paso 3
+let rondaActual      = 1;
+let notas            = {};     // {ci: {ji: nota}}
+let historial        = {};     // {id_participante: {ronda: {total, notas_json}}}
+let puntCache        = {};     // {id_participante: {total, notas}} — mejor puntuación por participante
+let todosPuntuados   = [];     // array plano de todas las puntuaciones guardadas
 
+const CAT_NOMBRES = {
+  bai: 'Bailarín',
+  bat: 'Batalla',
+  dev: 'Impacto Tecnológico'
+};
+
+const CRITERIOS_DEFAULT = {
+  bai: [
+    { nombre: 'Coreografía',       descripcion: 'Coordinación y secuencia de movimientos' },
+    { nombre: 'Sincronía Musical', descripcion: 'Sincronización con la música' },
+    { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño y presentación' },
+    { nombre: 'Construcción',      descripcion: 'Calidad del hardware y acabado' },
+    { nombre: 'Desempeño',         descripcion: 'Ejecución sin errores durante la presentación' }
+  ],
+  bat: [
+    { nombre: 'Estrategia',        descripcion: 'Táctica y comportamiento en batalla' },
+    { nombre: 'Velocidad',         descripcion: 'Respuesta y velocidad de reacción' },
+    { nombre: 'Robustez',          descripcion: 'Resistencia y durabilidad del robot' },
+    { nombre: 'Construcción',      descripcion: 'Calidad de construcción' },
+    { nombre: 'Control',           descripcion: 'Precisión en el control del robot' }
+  ],
+  dev: [
+    { nombre: 'Innovación',        descripcion: 'Originalidad de la propuesta tecnológica' },
+    { nombre: 'Funcionalidad',     descripcion: 'El proyecto funciona correctamente' },
+    { nombre: 'Diseño Técnico',    descripcion: 'Calidad técnica de la solución' },
+    { nombre: 'Presentación',      descripcion: 'Claridad y calidad de la presentación' },
+    { nombre: 'Impacto',           descripcion: 'Impacto potencial del proyecto' }
+  ]
+};
+
+// ═══════════════════════════════════════════════════
+//  INICIALIZACIÓN
+// ═══════════════════════════════════════════════════
 document.addEventListener('componentsLoaded', () => {
   GAS = CONFIG.GAS_URL();
-  renderJuecesConfig();
-  renderCriteriosConfigDOM();
+
+  // Listeners
   document.getElementById('cfg-n-jueces').addEventListener('input', () => {
     nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
     renderJuecesConfig();
   });
-  document.getElementById('cfg-categoria').addEventListener('change', validarConfig);
+  document.getElementById('cfg-categoria').addEventListener('change', onCategoriaChange);
+  document.getElementById('qr-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') registrarRobot();
+  });
 
-  // Restaurar sesión si había una activa antes del F5
+  // Render inicial
+  renderJuecesConfig();
+  criterios = CRITERIOS_DEFAULT['bai'].map(c => ({...c}));
+  renderCriteriosConfig();
+
+  // Restaurar sesión si hay una activa
   restaurarSesion();
 });
 
-async function restaurarSesion() {
-  const sesion = JSON.parse(localStorage.getItem('panel_cal_sesion') || 'null');
-  if (!sesion) return;
+// ═══════════════════════════════════════════════════
+//  PASO 1 — CONFIGURAR
+// ═══════════════════════════════════════════════════
+function onCategoriaChange() {
+  const cat = document.getElementById('cfg-categoria').value;
+  if (!cat) { validarConfig(); return; }
 
-  // Verificar que el bloqueo sigue siendo de este panel
-  try {
-    const r = await fetch(`${GAS}?action=getCategoriasActivas`);
-    const d = await r.json();
-    const cats = Array.isArray(d) ? d : (d.categorias || []);
-    const bloqueada = cats.find(c => c.categoria === sesion.categoria && c.usuario === 'panel-calificacion');
-    if (!bloqueada) {
-      localStorage.removeItem('panel_cal_sesion');
-      return;
-    }
-  } catch(e) { return; }
+  // Cargar criterios por defecto según categoría
+  criterios = (CRITERIOS_DEFAULT[cat] || [{ nombre: 'Criterio 1', descripcion: '' }])
+    .map(c => ({...c}));
+  renderCriteriosConfig();
 
-  // Restaurar estado
-  categoriaActual = sesion.categoria;
-  nJueces        = sesion.nJueces || 3;
-  nombresJueces  = sesion.nombresJueces || [];
-  criterios      = sesion.criterios || [];
+  // Intentar cargar criterios guardados en GAS
+  fetch(`${GAS}?action=getCriterios&categoria=${cat}`)
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok && Array.isArray(d.criterios) && d.criterios.length > 0) {
+        criterios = d.criterios;
+        renderCriteriosConfig();
+        showToast('Criterios previos cargados', 'info');
+      }
+    }).catch(() => {});
 
-  document.getElementById('cfg-categoria').value = categoriaActual;
-  document.getElementById('cfg-n-jueces').value  = nJueces;
-  renderJuecesConfig();
-  // Restaurar nombres de jueces
-  nombresJueces.forEach((nombre, i) => {
-    const inputs = document.querySelectorAll('#jueces-config .juez-row input');
-    if (inputs[i]) inputs[i].value = nombre;
-  });
-  renderCriteriosConfigDOM();
-
-  document.getElementById('bloqueo-badge').style.display = '';
-  document.getElementById('bloqueo-txt').textContent =
-    `${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
-
-  await cargarHistorial();
   validarConfig();
-  showToast('Sesión restaurada', 'info');
 }
 
-function guardarSesionLocal() {
-  localStorage.setItem('panel_cal_sesion', JSON.stringify({
-    categoria:     categoriaActual,
-    nJueces,
-    nombresJueces,
-    criterios
-  }));
-}
-
-// ── Config ──────────────────────────────
 function renderJuecesConfig() {
-  nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
-  const prev = Array.from(document.querySelectorAll('#jueces-config .juez-row input')).map(i => i.value);
-  document.getElementById('jueces-config').innerHTML = Array.from({length: nJueces}, (_, i) => `
+  nJueces = Math.max(1, Math.min(10, parseInt(document.getElementById('cfg-n-jueces').value) || 1));
+  const prev = Array.from(document.querySelectorAll('#jueces-config .juez-row input'))
+    .map(i => i.value);
+
+  const html = Array.from({ length: nJueces }, (_, i) => `
     <div class="juez-row">
       <span class="juez-num">Juez ${i+1}</span>
-      <input type="text" placeholder="Nombre del juez ${i+1} (opcional)" value="${prev[i]||''}">
+      <input type="text" placeholder="Nombre del juez ${i+1} (opcional)"
+        value="${prev[i] || ''}"
+        oninput="nombresJuecesTemp()">
     </div>`).join('');
+
+  document.getElementById('jueces-config').innerHTML = html;
   validarConfig();
 }
 
-function renderCriteriosConfigDOM() {
-  if (criterios.length === 0) criterios = [{nombre:'Criterio 1',descripcion:''},{nombre:'Criterio 2',descripcion:''}];
+function nombresJuecesTemp() {
+  // Solo actualiza validación; los nombres se leen al iniciar
+  validarConfig();
+}
+
+function renderCriteriosConfig() {
   document.getElementById('criterios-config').innerHTML = criterios.map((c, i) => `
     <div class="criterio-config-row">
-      <input type="text" placeholder="Nombre del criterio" value="${c.nombre}"
+      <input type="text" placeholder="Nombre del criterio *"
+        value="${c.nombre}"
         oninput="criterios[${i}].nombre=this.value;validarConfig()">
-      <input type="text" class="desc" placeholder="Descripción (opcional)" value="${c.descripcion||''}"
+      <input type="text" class="desc" placeholder="Descripción (opcional)"
+        value="${c.descripcion || ''}"
         oninput="criterios[${i}].descripcion=this.value">
-      <button class="btn-del-criterio" onclick="eliminarCriterioConfig(${i})">✕</button>
+      <button class="btn-del-criterio" onclick="eliminarCriterio(${i})" title="Eliminar">✕</button>
     </div>`).join('');
   validarConfig();
 }
 
-function agregarCriterioConfig() { criterios.push({nombre:'',descripcion:''}); renderCriteriosConfigDOM(); }
-function eliminarCriterioConfig(idx) { criterios.splice(idx,1); renderCriteriosConfigDOM(); }
+function agregarCriterioConfig() {
+  criterios.push({ nombre: '', descripcion: '' });
+  renderCriteriosConfig();
+  // Focus en el nuevo input
+  const inputs = document.querySelectorAll('#criterios-config .criterio-config-row input');
+  if (inputs.length) inputs[inputs.length - 2].focus();
+}
+
+function eliminarCriterio(idx) {
+  if (criterios.length <= 1) { showToast('Debe haber al menos un criterio', 'error'); return; }
+  criterios.splice(idx, 1);
+  renderCriteriosConfig();
+}
 
 function validarConfig() {
   const cat    = document.getElementById('cfg-categoria').value;
@@ -790,49 +834,10 @@ function validarConfig() {
   document.getElementById('btn-iniciar-sesion').disabled = !cat || validos === 0;
 }
 
-async function onCategoriaSelected() {
+async function iniciarSesion() {
   const cat = document.getElementById('cfg-categoria').value;
   if (!cat) return;
-  validarConfig();
 
-  // Bloquear categoría apenas se selecciona
-  try {
-    const catNombre = CAT_NOMBRES[cat] || cat;
-    const r = await fetch(GAS || CONFIG.GAS_URL(), {
-      method: 'POST',
-      body: JSON.stringify({ action:'bloquearCategoria', categoria: catNombre, usuario:'panel-calificacion' })
-    });
-    const d = await r.json();
-    if (!d.ok && d.bloqueadaPor) {
-      showToast('Categoría bloqueada por otro dispositivo', 'error');
-      document.getElementById('cfg-categoria').value = '';
-      validarConfig();
-      return;
-    }
-    categoriaActual = cat;
-    document.getElementById('bloqueo-badge').style.display = '';
-    document.getElementById('bloqueo-txt').textContent =
-      `${CAT_NOMBRES[cat]} — bloqueada por este panel`;
-    guardarSesionLocal();
-  } catch(e) {
-    showToast('Error al bloquear categoría', 'error');
-  }
-
-  // Cargar criterios guardados
-  fetch(`${GAS || CONFIG.GAS_URL()}?action=getCriterios&categoria=${cat}`)
-    .then(r => r.json())
-    .then(d => {
-      if (d.ok && Array.isArray(d.criterios) && d.criterios.length > 0) {
-        criterios = d.criterios;
-        renderCriteriosConfigDOM();
-        showToast('Criterios cargados', 'info');
-      }
-    }).catch(() => {});
-}
-
-// ── Iniciar sesión ───────────────────────
-async function iniciarSesion() {
-  categoriaActual = document.getElementById('cfg-categoria').value;
   nJueces = parseInt(document.getElementById('cfg-n-jueces').value) || 1;
   nombresJueces = Array.from(document.querySelectorAll('#jueces-config .juez-row input'))
     .map((inp, i) => inp.value.trim() || `Juez ${i+1}`);
@@ -840,484 +845,764 @@ async function iniciarSesion() {
 
   const btn = document.getElementById('btn-iniciar-sesion');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>INICIANDO...';
+  btn.textContent = 'INICIANDO...';
 
   try {
+    // Bloquear categoría en GAS
     const r = await fetch(GAS, {
       method: 'POST',
-      body: JSON.stringify({ action:'bloquearCategoria', categoria: CAT_NOMBRES[categoriaActual] || categoriaActual, usuario:'panel-calificacion' })
+      body: JSON.stringify({
+        action:    'bloquearCategoria',
+        categoria: CAT_NOMBRES[cat],
+        usuario:   'panel-calificacion'
+      })
     });
     const d = await r.json();
+
     if (!d.ok && d.bloqueadaPor) {
       showToast('Categoría bloqueada por otro dispositivo', 'error');
       btn.disabled = false;
-      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg> INICIAR CALIFICACIÓN';
+      btn.textContent = '▶ INICIAR CALIFICACIÓN';
       return;
     }
-    await fetch(GAS, { method:'POST', body: JSON.stringify({ action:'guardarCriterios', categoria: categoriaActual, criterios }) });
+
+    // Guardar criterios en GAS
+    await fetch(GAS, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'guardarCriterios', categoria: cat, criterios })
+    });
+
+    categoriaActual = cat;
+    robotsReg = [];
+
+    // Guardar sesión en localStorage
     guardarSesionLocal();
+
+    // Cargar historial de puntuaciones
     await cargarHistorial();
+
+    // Mostrar badge de bloqueo
     document.getElementById('bloqueo-badge').style.display = '';
-    document.getElementById('bloqueo-txt').textContent = `${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
-    robotsRegistrados = [];
+    document.getElementById('bloqueo-txt').textContent =
+      `${CAT_NOMBRES[cat]} — bloqueada por este panel`;
+
     irAPaso(2);
-    showToast('Sesión iniciada — escanea los robots', 'success');
-  } catch(e) {
-    showToast('Error: ' + e.message, 'error');
+    showToast('Sesión iniciada — registra los robots', 'success');
+
+  } catch (e) {
+    showToast('Error al iniciar: ' + e.message, 'error');
     btn.disabled = false;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg> INICIAR CALIFICACIÓN';
+    btn.textContent = '▶ INICIAR CALIFICACIÓN';
   }
 }
 
-async function cargarHistorial() {
+// ═══════════════════════════════════════════════════
+//  PERSISTENCIA
+// ═══════════════════════════════════════════════════
+function guardarSesionLocal() {
+  localStorage.setItem('panel_cal_sesion', JSON.stringify({
+    categoria:     categoriaActual,
+    nJueces,
+    nombresJueces,
+    criterios,
+    robotsReg
+  }));
+}
+
+async function restaurarSesion() {
+  const sesion = JSON.parse(localStorage.getItem('panel_cal_sesion') || 'null');
+  if (!sesion || !sesion.categoria) return;
+
+  // Verificar que el bloqueo sigue activo
   try {
-    const r = await fetch(`${GAS}?action=getPuntuaciones&categoria=${categoriaActual}`);
-    const d = await r.json();
-    historialNotas = {}; todosPuntuados = [];
-    if (d.ok && Array.isArray(d.puntuaciones)) {
-      todosPuntuados = d.puntuaciones;
-      d.puntuaciones.forEach(p => {
-        if (!historialNotas[p.id_participante]) historialNotas[p.id_participante] = {};
-        historialNotas[p.id_participante][p.ronda || 1] = {
-          total: p.total, notas_json: safeParseJson(p.notas_json || p.notas, {})
-        };
-      });
-    }
-  } catch(e) { historialNotas = {}; }
+    const r  = await fetch(`${GAS}?action=getCategoriasActivas`);
+    const d  = await r.json();
+    const cats = Array.isArray(d) ? d : (d.categorias || []);
+    const bloqueada = cats.find(c =>
+      c.categoria === CAT_NOMBRES[sesion.categoria] &&
+      c.usuario   === 'panel-calificacion'
+    );
+    if (!bloqueada) { localStorage.removeItem('panel_cal_sesion'); return; }
+  } catch (e) { return; }
+
+  // Restaurar estado
+  categoriaActual = sesion.categoria;
+  nJueces         = sesion.nJueces || 3;
+  nombresJueces   = sesion.nombresJueces || [];
+  criterios       = sesion.criterios || [];
+  robotsReg       = sesion.robotsReg || [];
+
+  // Actualizar UI config
+  document.getElementById('cfg-categoria').value  = categoriaActual;
+  document.getElementById('cfg-n-jueces').value   = nJueces;
+  renderJuecesConfig();
+  nombresJueces.forEach((nombre, i) => {
+    const inputs = document.querySelectorAll('#jueces-config .juez-row input');
+    if (inputs[i]) inputs[i].value = nombre;
+  });
+  renderCriteriosConfig();
+
+  // Badge bloqueo
+  document.getElementById('bloqueo-badge').style.display = '';
+  document.getElementById('bloqueo-txt').textContent =
+    `${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
+
+  await cargarHistorial();
+  validarConfig();
+  irAPaso('2b');
+  showToast('Sesión restaurada', 'info');
 }
 
-// ── Paso 2: Escanear ────────────────────
-function abrirEscaner() {
-  window.open(`../ESCANER/?ruta=panel_${categoriaActual}`, '_blank');
-}
-
-// ── Registrar robot en la lista ──────────────────
+// ═══════════════════════════════════════════════════
+//  PASO 2 — REGISTRO DE ROBOTS
+// ═══════════════════════════════════════════════════
 async function registrarRobot() {
-  const raw = document.getElementById('qr-input').value.trim();
-  if (!raw) return;
-  const id = extraerIdDelQR(raw);
-  document.getElementById('qr-input').value = '';
-
+  const input   = document.getElementById('qr-input');
+  const raw     = input.value.trim();
   const avisoEl = document.getElementById('aviso-registro');
+  if (!raw) return;
+  input.value = '';
 
+  const id = extraerIdDelQR(raw);
   if (!id) {
-    avisoEl.textContent = '⚠ QR no válido';
-    avisoEl.style.display = '';
-    setTimeout(() => avisoEl.style.display = 'none', 2000);
+    mostrarAviso(avisoEl, 'error', '⚠ QR no válido — formato incorrecto');
     return;
   }
 
   // Verificar duplicado
-  if (robotsRegistrados.find(r => r.id === id)) {
-    avisoEl.textContent = '⚠ Este robot ya está en la lista';
-    avisoEl.style.display = '';
-    setTimeout(() => avisoEl.style.display = 'none', 2000);
+  if (robotsReg.find(r => r.id === id)) {
+    mostrarAviso(avisoEl, 'warning', '⚠ Este robot ya está registrado en la lista');
     return;
   }
 
   try {
-    const r = await fetch(`${GAS}?action=getParticipantes`);
+    const r    = await fetch(`${GAS}?action=getParticipantes`);
     const data = await r.json();
-    const lista = Array.isArray(data) ? data : (data.participantes || data || []);
+    const lista = Array.isArray(data) ? data : (data.participantes || []);
     const p = lista.find(x => x.id === id);
 
     if (!p) {
-      avisoEl.textContent = '⚠ ID no encontrado: ' + id;
-      avisoEl.style.display = '';
-      setTimeout(() => avisoEl.style.display = 'none', 3000);
+      mostrarAviso(avisoEl, 'error', `⚠ ID no encontrado: ${id}`);
       return;
     }
     if (p.aprobado !== 'APROBADO') {
-      avisoEl.textContent = '⚠ Participante no aprobado';
-      avisoEl.style.display = '';
-      setTimeout(() => avisoEl.style.display = 'none', 2000);
+      mostrarAviso(avisoEl, 'error', `⚠ Participante no aprobado (estado: ${p.aprobado})`);
       return;
     }
     if (p.categoria !== CAT_NOMBRES[categoriaActual]) {
-      avisoEl.textContent = `⚠ Categoría incorrecta: ${p.categoria}`;
-      avisoEl.style.display = '';
-      setTimeout(() => avisoEl.style.display = 'none', 2500);
+      mostrarAviso(avisoEl, 'error', `⚠ Categoría incorrecta: ${p.categoria}`);
       return;
     }
 
-    robotsRegistrados.push(p);
+    robotsReg.push(p);
+    guardarSesionLocal();
     avisoEl.style.display = 'none';
     renderListaRegistro();
-    document.getElementById('btn-iniciar-cal').disabled = robotsRegistrados.length === 0;
-    showToast('✓ ' + p.robot + ' agregado', 'success');
+    document.getElementById('btn-continuar-reg').disabled = false;
+    showToast(`✓ ${p.robot} registrado`, 'success');
 
-  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+  } catch (e) {
+    mostrarAviso(avisoEl, 'error', 'Error de conexión: ' + e.message);
+  }
+}
+
+function mostrarAviso(el, tipo, msg) {
+  el.className = `aviso ${tipo}`;
+  el.textContent = msg;
+  el.style.display = '';
+  setTimeout(() => { el.style.display = 'none'; }, 3500);
 }
 
 function renderListaRegistro() {
-  const el = document.getElementById('lista-registro');
-  const count = document.getElementById('registro-count');
-  count.textContent = robotsRegistrados.length;
+  const el    = document.getElementById('lista-registro');
+  const badge = document.getElementById('registro-count-badge');
+  badge.textContent = `${robotsReg.length} robot${robotsReg.length !== 1 ? 's' : ''}`;
 
-  if (robotsRegistrados.length === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:24px;font-family:'DM Mono',monospace;font-size:.78rem;color:rgba(255,255,255,0.4);">Escanea robots para agregarlos</div>';
+  if (robotsReg.length === 0) {
+    el.innerHTML = `<div class="loading-msg" style="color:rgba(255,255,255,0.35);">
+      Escanea robots para agregarlos a la lista
+    </div>`;
     return;
   }
 
-  el.innerHTML = robotsRegistrados.map((p, i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.1);border-radius:7px;margin-bottom:6px;">
-      <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:700;font-size:.7rem;color:#90dcff;flex-shrink:0;">${i+1}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:600;font-size:.88rem;color:#fff;">${p.robot}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.68rem;color:rgba(255,255,255,0.5);">${p.nombre} · ${p.id}</div>
-      </div>
-      <button onclick="quitarRobot('${p.id}')" style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem;">✕</button>
-    </div>`).join('');
+  el.innerHTML = robotsReg.map((p, i) => {
+    const ini = p.nombre.split(' ').map(x => x[0] || '').join('').slice(0, 2).toUpperCase();
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+        background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);
+        border-radius:7px;margin-bottom:6px;">
+        <div style="width:32px;height:32px;border-radius:50%;
+          background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);
+          display:flex;align-items:center;justify-content:center;
+          font-family:'Orbitron',monospace;font-weight:700;font-size:.7rem;
+          color:#90dcff;flex-shrink:0;">${i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:.88rem;color:#fff;">${p.robot}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.68rem;
+            color:rgba(255,255,255,0.5);">${p.nombre} · ${p.id}</div>
+        </div>
+        <button onclick="quitarRobot('${p.id}')"
+          style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);
+          color:#fca5a5;border-radius:5px;padding:4px 9px;cursor:pointer;
+          font-size:.75rem;transition:background .12s;"
+          onmouseover="this.style.background='rgba(239,68,68,0.3)'"
+          onmouseout="this.style.background='rgba(239,68,68,0.15)'">✕</button>
+      </div>`;
+  }).join('');
 }
 
 function quitarRobot(id) {
-  robotsRegistrados = robotsRegistrados.filter(r => r.id !== id);
+  robotsReg = robotsReg.filter(r => r.id !== id);
+  guardarSesionLocal();
   renderListaRegistro();
-  document.getElementById('btn-iniciar-cal').disabled = robotsRegistrados.length === 0;
+  document.getElementById('btn-continuar-reg').disabled = robotsReg.length === 0;
 }
 
-function iniciarCalificacion() {
-  if (robotsRegistrados.length === 0) return;
-  irAPaso('2b');
-}
-
+// ═══════════════════════════════════════════════════
+//  PASO 2B — SELECCIONAR ROBOT
+// ═══════════════════════════════════════════════════
 function renderListaParaCalificar() {
-  const el = document.getElementById('lista-para-calificar');
-  const estadoEl = document.getElementById('p2b-estado');
+  const el        = document.getElementById('lista-para-calificar');
+  const progresoEl = document.getElementById('p2b-progreso');
 
-  const calificados   = robotsRegistrados.filter(p => puntCache[p.id]);
-  const pendientes    = robotsRegistrados.filter(p => !puntCache[p.id]);
-  estadoEl.textContent = `${calificados.length}/${robotsRegistrados.length} calificados`;
+  const calificados = robotsReg.filter(p => puntCache[p.id]);
+  progresoEl.textContent = `${calificados.length}/${robotsReg.length} calificados`;
 
-  if (robotsRegistrados.length === 0) {
-    el.innerHTML = '<div class="loading-msg">Sin robots registrados</div>';
+  if (robotsReg.length === 0) {
+    el.innerHTML = `<div class="loading-msg">Sin robots registrados — vuelve al paso anterior.</div>`;
     return;
   }
 
-  el.innerHTML = robotsRegistrados.map(p => {
-    const punt = puntCache[p.id];
+  el.innerHTML = robotsReg.map(p => {
+    const punt       = puntCache[p.id];
     const calificado = !!punt;
+    const puntaje    = calificado ? Number(punt.total).toFixed(2) : null;
+
     return `
-      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;
-        background:${calificado ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.06)'};
-        border:1.5px solid ${calificado ? 'rgba(34,197,94,0.3)' : 'var(--panel-border)'};
-        border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .15s;"
-        onclick="seleccionarRobotCalificar('${p.id}')"
-        onmouseenter="this.style.borderColor='#90dcff'"
-        onmouseleave="this.style.borderColor='${calificado ? 'rgba(34,197,94,0.3)' : 'var(--panel-border)'}'">
-        <div style="width:10px;height:10px;border-radius:50%;background:${calificado ? '#22c55e' : 'rgba(255,255,255,0.2)'};flex-shrink:0;"></div>
+      <div onclick="seleccionarRobot('${p.id}')"
+        style="display:flex;align-items:center;gap:12px;padding:13px 16px;
+          background:${calificado ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.04)'};
+          border:1.5px solid ${calificado ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'};
+          border-radius:9px;margin-bottom:8px;cursor:pointer;transition:all .15s;"
+        onmouseover="this.style.borderColor='#90dcff'"
+        onmouseout="this.style.borderColor='${calificado ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}'">
+        <div style="width:10px;height:10px;border-radius:50%;flex-shrink:0;
+          background:${calificado ? '#22c55e' : 'rgba(255,255,255,0.2)'};"></div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:700;font-size:.92rem;color:#fff;">${p.robot}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.68rem;color:rgba(255,255,255,0.5);">${p.nombre}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.68rem;
+            color:rgba(255,255,255,0.5);">${p.nombre}</div>
         </div>
         ${calificado
-          ? `<div style="font-family:'Orbitron',monospace;font-weight:700;font-size:.8rem;color:#22c55e;">${Number(punt.total).toFixed(2)}</div>`
-          : `<div style="font-family:'Orbitron',monospace;font-size:.65rem;color:rgba(255,255,255,0.35);">PENDIENTE</div>`}
-        <div style="font-family:'Orbitron',monospace;font-size:.65rem;color:#90dcff;flex-shrink:0;">
+          ? `<div style="font-family:'Orbitron',monospace;font-weight:700;
+              font-size:.82rem;color:#22c55e;">${puntaje}</div>`
+          : `<div style="font-family:'Orbitron',monospace;font-size:.62rem;
+              color:rgba(255,255,255,0.3);">PENDIENTE</div>`}
+        <div style="font-family:'Orbitron',monospace;font-size:.62rem;
+          color:#90dcff;flex-shrink:0;">
           ${calificado ? '✏ EDITAR' : '▶ CALIFICAR'}
         </div>
       </div>`;
   }).join('');
 }
 
-function seleccionarRobotCalificar(id) {
-  participanteActual = robotsRegistrados.find(p => p.id === id);
-  if (!participanteActual) return;
-  rondaActual = 1;
+function seleccionarRobot(id) {
+  participante = robotsReg.find(p => p.id === id);
+  if (!participante) return;
 
-  const prev = puntCache[id];
-  if (prev && prev.notas) {
-    Object.entries(prev.notas).forEach(([k, v]) => { notas[Number(k)] = v; });
-  } else {
-    notas = {};
-  }
+  // Determinar ronda inicial
+  const rondasExistentes = Object.keys(historial[id] || {}).map(Number);
+  rondaActual = rondasExistentes.length > 0
+    ? Math.max(...rondasExistentes)
+    : 1;
+
+  notas = {};
+  cargarNotasRonda(id, rondaActual);
   irAPaso(3);
 }
 
-function renderRobotActivo() {
-  const p = participanteActual;
-  const ini = p.nombre.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('ra-avatar').textContent = ini;
-  document.getElementById('ra-nombre').textContent = p.nombre;
-  document.getElementById('ra-robot').textContent  = `${p.robot} · ${p.id}`;
-  document.getElementById('ra-ronda').textContent  = rondaActual;
-  const prevRonda = historialNotas[p.id] && historialNotas[p.id][rondaActual];
-  document.getElementById('aviso-ronda-prev').style.display = prevRonda ? '' : 'none';
-  const rondas = Object.entries(historialNotas[p.id] || {});
-  if (rondas.length > 0) {
-    const mejor = rondas.reduce((a, b) => b[1].total > a[1].total ? b : a);
-    document.getElementById('aviso-mejor-ronda').style.display = '';
-    document.getElementById('aviso-mejor-ronda').textContent =
-      `✓ Mejor puntuación: ${Number(mejor[1].total).toFixed(2)} (Ronda ${mejor[0]})`;
-  } else {
-    document.getElementById('aviso-mejor-ronda').style.display = 'none';
-  }
-}
-
-function renderBotonesRonda(maxRonda) {
-  const total = Math.max(maxRonda + 1, 1);
-  document.getElementById('btns-ronda').innerHTML = Array.from({length: total}, (_, i) => i+1)
-    .map(n => `<button class="btn-ronda ${n===rondaActual?'sel':''}" onclick="seleccionarRonda(${n})">${n}</button>`).join('');
-}
-
-function seleccionarRonda(n) {
-  rondaActual = n;
-  document.getElementById('ra-ronda').textContent = n;
-  document.querySelectorAll('.btn-ronda').forEach((b,i) => b.classList.toggle('sel', i+1===n));
-  const prev = historialNotas[participanteActual?.id] && historialNotas[participanteActual?.id][n];
-  document.getElementById('aviso-ronda-prev').style.display = prev ? '' : 'none';
-}
-
-// ── Paso 3: Calificar ───────────────────
-function prepararCalificacion() {
-  const p = participanteActual;
-  document.getElementById('cal-robot-title').textContent = `${p.nombre} · ${p.robot}`;
-  document.getElementById('cal-ronda-badge').textContent = `CALIFICACIÓN`;
-
-  // Cargar notas previas si existen
+function cargarNotasRonda(id, ronda) {
   notas = {};
-  const prev = puntCache[p.id];
-  if (prev && prev.notas) {
+  const prev = historial[id] && historial[id][ronda];
+  if (prev && prev.notas_json) {
     criterios.forEach((_, ci) => {
       notas[ci] = {};
-      Array.from({length: nJueces}, (_, ji) => {
+      Array.from({ length: nJueces }, (_, ji) => {
         const k = `c${ci}_j${ji}`;
-        if (prev.notas[k] !== undefined) notas[ci][ji] = prev.notas[k];
+        if (prev.notas_json[k] !== undefined) notas[ci][ji] = prev.notas_json[k];
       });
     });
   }
+}
+
+// ═══════════════════════════════════════════════════
+//  PASO 3 — CALIFICAR
+// ═══════════════════════════════════════════════════
+function prepararCalificacion() {
+  if (!participante) return;
+
+  // Actualizar header
+  document.getElementById('cal-robot-nombre').textContent =
+    `${participante.robot} — ${participante.nombre}`;
+  document.getElementById('cal-ronda-badge').textContent =
+    `RONDA ${rondaActual}`;
+
+  // Renderizar sidebar
+  renderSidebar();
+
+  // Renderizar botones de ronda
+  const rondasExistentes = Object.keys(historial[participante.id] || {}).map(Number);
+  const maxRonda = rondasExistentes.length > 0 ? Math.max(...rondasExistentes) : 0;
+  renderBotonesRonda(Math.max(maxRonda, rondaActual));
+
+  // Avisos
+  const prevRonda = historial[participante.id] && historial[participante.id][rondaActual];
+  document.getElementById('aviso-ronda-prev').style.display = prevRonda ? '' : 'none';
+
+  const rondasConPuntaje = Object.entries(historial[participante.id] || {});
+  if (rondasConPuntaje.length > 0) {
+    const mejor = rondasConPuntaje.reduce((a, b) => b[1].total > a[1].total ? b : a);
+    const avisoBest = document.getElementById('aviso-mejor-ronda');
+    avisoBest.style.display = '';
+    avisoBest.textContent = `✓ Mejor puntuación registrada: ${Number(mejor[1].total).toFixed(2)} (Ronda ${mejor[0]})`;
+  } else {
+    document.getElementById('aviso-mejor-ronda').style.display = 'none';
+  }
+
+  // Mostrar panel activo
+  document.getElementById('cal-vacio').style.display    = 'none';
+  document.getElementById('cal-activo').style.display   = '';
+
+  renderTablaCalificacion();
+}
+
+function renderSidebar() {
+  document.getElementById('lista-robots-sidebar').innerHTML = robotsReg.map(p => {
+    const calificado = !!puntCache[p.id];
+    const activo     = participante && p.id === participante.id;
+    return `
+      <div class="robot-sidebar-item ${activo ? 'activo' : ''} ${calificado && !activo ? 'calificado' : ''}"
+        onclick="seleccionarRobot('${p.id}')">
+        <div class="robot-sidebar-nombre">${p.robot}</div>
+        <div class="robot-sidebar-sub">
+          ${calificado
+            ? `✓ ${Number(puntCache[p.id].total).toFixed(2)}`
+            : 'Pendiente'}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderBotonesRonda(maxRonda) {
+  const total = Math.max(maxRonda, rondaActual);
+  document.getElementById('btns-ronda').innerHTML = Array.from({ length: total }, (_, i) => i + 1)
+    .map(n => `
+      <button class="btn-ronda ${n === rondaActual ? 'sel' : ''}"
+        onclick="cambiarRonda(${n})"
+        style="padding:5px 12px;background:${n === rondaActual ? '#1a5ca8' : 'rgba(255,255,255,0.06)'};
+          border:1px solid ${n === rondaActual ? '#5bc8f0' : 'rgba(255,255,255,0.15)'};
+          border-radius:4px;cursor:pointer;font-family:'Orbitron',monospace;
+          font-size:.65rem;font-weight:700;
+          color:${n === rondaActual ? '#fff' : 'rgba(255,255,255,0.5)'};
+          transition:all .12s;">${n}</button>`).join('');
+}
+
+function nuevaRonda() {
+  const rondasExistentes = Object.keys(historial[participante?.id] || {}).map(Number);
+  const maxRonda = rondasExistentes.length > 0 ? Math.max(...rondasExistentes) : rondaActual;
+  cambiarRonda(maxRonda + 1);
+}
+
+function cambiarRonda(n) {
+  rondaActual = n;
+  notas = {};
+  cargarNotasRonda(participante.id, n);
+  document.getElementById('cal-ronda-badge').textContent = `RONDA ${n}`;
+  const prevRonda = historial[participante.id] && historial[participante.id][n];
+  document.getElementById('aviso-ronda-prev').style.display = prevRonda ? '' : 'none';
+  renderBotonesRonda(Math.max(...Object.keys(historial[participante.id] || { 0: 0 }).map(Number), n));
   renderTablaCalificacion();
 }
 
 function renderTablaCalificacion() {
-  const thJueces = nombresJueces.map(n => `<th>${n}</th>`).join('');
+  const thJueces = nombresJueces.map(n =>
+    `<th>${n}</th>`).join('');
+
   const filas = criterios.map((c, ci) => {
-    const celdas = Array.from({length: nJueces}, (_, ji) => {
-      const nota = notas[ci] && notas[ci][ji];
-      const btns = [1,2,3,4,5].map(n =>
-        `<button class="nota-btn ${nota===n?'sel':''}" onclick="setNota(${ci},${ji},${n})">${n}</button>`).join('');
+    const celdas = Array.from({ length: nJueces }, (_, ji) => {
+      const nota = notas[ci] && notas[ci][ji] !== undefined ? notas[ci][ji] : null;
+      const btns = [1, 2, 3, 4, 5].map(n =>
+        `<button class="nota-btn ${nota === n ? 'sel' : ''}"
+          onclick="setNota(${ci},${ji},${n})">${n}</button>`).join('');
       return `<td><div class="nota-btns">${btns}</div></td>`;
     }).join('');
-    const prom = calcularPromedioCriterio(ci);
-    const promHtml = prom !== null
+
+    const prom    = calcularPromCriterio(ci);
+    const promTxt = prom !== null
       ? `<span class="prom-criterio">${prom.toFixed(2)}</span>`
       : `<span class="prom-criterio vacio">—</span>`;
+
     return `<tr>
-      <td><div class="criterio-nombre">${c.nombre}</div>${c.descripcion?`<div class="criterio-desc">${c.descripcion}</div>`:''}</td>
+      <td>
+        <div class="criterio-nombre">${c.nombre}</div>
+        ${c.descripcion ? `<div class="criterio-desc">${c.descripcion}</div>` : ''}
+      </td>
       ${celdas}
-      <td>${promHtml}</td>
+      <td>${promTxt}</td>
     </tr>`;
   }).join('');
 
-  const total = calcularTotalGeneral();
-  document.getElementById('tabla-calificacion-wrapper').innerHTML = `
+  const total    = calcularTotal();
+  const totalTxt = total !== null ? total.toFixed(2) : '—';
+
+  document.getElementById('tabla-cal-wrapper').innerHTML = `
     <table class="tabla-calificacion">
-      <thead><tr>
-        <th>CRITERIO</th>${thJueces}<th>PROMEDIO</th>
-      </tr></thead>
+      <thead>
+        <tr>
+          <th>CRITERIO</th>
+          ${thJueces}
+          <th>PROMEDIO</th>
+        </tr>
+      </thead>
       <tbody>
         ${filas}
         <tr class="total-row">
-          <td colspan="${nJueces+1}" style="text-align:right;letter-spacing:2px;">PUNTAJE TOTAL</td>
-          <td><span class="total-val">${total !== null ? total.toFixed(2) : '—'}</span></td>
+          <td colspan="${nJueces + 1}" style="text-align:right;letter-spacing:2px;">
+            PUNTAJE TOTAL
+          </td>
+          <td><span class="total-val">${totalTxt}</span></td>
         </tr>
       </tbody>
     </table>`;
 
+  // Habilitar guardar solo si todos los campos están llenos
   const completo = criterios.every((_, ci) =>
-    Array.from({length: nJueces}, (_, ji) => notas[ci] && notas[ci][ji] !== undefined).every(Boolean));
+    Array.from({ length: nJueces }, (_, ji) =>
+      notas[ci] && notas[ci][ji] !== undefined
+    ).every(Boolean)
+  );
   document.getElementById('btn-guardar-cal').disabled = !completo;
 }
 
 function setNota(ci, ji, nota) {
   if (!notas[ci]) notas[ci] = {};
-  notas[ci][ji] = nota;
+  // Toggle: si ya tiene ese valor, deseleccionar
+  notas[ci][ji] = notas[ci][ji] === nota ? undefined : nota;
   renderTablaCalificacion();
 }
 
-function calcularPromedioCriterio(ci) {
+function calcularPromCriterio(ci) {
   if (!notas[ci]) return null;
-  const vals = Array.from({length: nJueces}, (_, ji) => notas[ci][ji]).filter(v => v !== undefined);
-  if (vals.length === 0) return null;
-  return vals.reduce((a,b)=>a+b,0) / vals.length;
+  const vals = Array.from({ length: nJueces }, (_, ji) => notas[ci][ji])
+    .filter(v => v !== undefined && v !== null);
+  if (vals.length < nJueces) return null; // Solo promedia si todos los jueces calificaron
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
-function calcularTotalGeneral() {
-  const proms = criterios.map((_, ci) => calcularPromedioCriterio(ci));
+function calcularTotal() {
+  const proms = criterios.map((_, ci) => calcularPromCriterio(ci));
   if (proms.some(p => p === null)) return null;
-  return proms.reduce((a,b)=>a+b,0) / proms.length;
+  return proms.reduce((a, b) => a + b, 0) / proms.length;
 }
 
-// ── Guardar ─────────────────────────────
+// ═══════════════════════════════════════════════════
+//  GUARDAR CALIFICACIÓN
+// ═══════════════════════════════════════════════════
 async function guardarCalificacion() {
-  const total = calcularTotalGeneral();
+  const total = calcularTotal();
   if (total === null) return;
-  const btn = document.getElementById('btn-guardar-cal');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>GUARDANDO...';
 
+  const btn = document.getElementById('btn-guardar-cal');
+  btn.disabled  = true;
+  btn.textContent = 'GUARDANDO...';
+
+  // Construir notas_json
   const notas_json = {};
-  criterios.forEach((_, ci) => Array.from({length: nJueces}, (_, ji) => {
-    if (notas[ci] && notas[ci][ji] !== undefined) notas_json[`c${ci}_j${ji}`] = notas[ci][ji];
-  }));
+  criterios.forEach((_, ci) => {
+    Array.from({ length: nJueces }, (_, ji) => {
+      if (notas[ci] && notas[ci][ji] !== undefined) {
+        notas_json[`c${ci}_j${ji}`] = notas[ci][ji];
+      }
+    });
+  });
 
   try {
-    const r = await fetch(GAS, { method:'POST', body: JSON.stringify({
-      action: 'guardarPuntuacion',
-      id_participante: participanteActual.id,
-      nombre:          participanteActual.nombre,
-      robot:           participanteActual.robot,
-      institucion:     participanteActual.institucion || '',
-      categoria:       categoriaActual,
-      juez_email:      'operador@sucrebot2026',
-      juez_nombre:     'Operador',
-      ronda:           rondaActual,
-      n_jueces:        nJueces,
-      nombres_jueces:  nombresJueces,
-      criterios,
-      notas:           notas_json,
-      total:           parseFloat(total.toFixed(4)),
-      timestamp:       new Date().toISOString()
-    })});
+    const r = await fetch(GAS, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:           'guardarPuntuacion',
+        id_participante:  participante.id,
+        nombre:           participante.nombre,
+        robot:            participante.robot,
+        institucion:      participante.institucion || '',
+        categoria:        categoriaActual,
+        juez_email:       'operador@sucrebot2026',
+        juez_nombre:      'Operador Panel',
+        ronda:            rondaActual,
+        n_jueces:         nJueces,
+        nombres_jueces:   nombresJueces,
+        criterios,
+        notas:            notas_json,
+        total:            parseFloat(total.toFixed(4)),
+        timestamp:        new Date().toISOString()
+      })
+    });
     const d = await r.json();
+
     if (d.ok) {
-      if (!historialNotas[participanteActual.id]) historialNotas[participanteActual.id] = {};
-      historialNotas[participanteActual.id][rondaActual] = { total, notas_json };
-      const idx = todosPuntuados.findIndex(p => p.id_participante === participanteActual.id && (p.ronda||1) === rondaActual);
-      const reg = { id_participante: participanteActual.id, nombre: participanteActual.nombre, robot: participanteActual.robot, institucion: participanteActual.institucion, ronda: rondaActual, total, notas_json: JSON.stringify(notas_json) };
-      if (idx >= 0) todosPuntuados[idx] = reg; else todosPuntuados.push(reg);
-      showToast('Calificación guardada', 'success');
+      // Actualizar historial local
+      if (!historial[participante.id]) historial[participante.id] = {};
+      historial[participante.id][rondaActual] = { total, notas_json };
+
+      // Actualizar puntCache con la mejor puntuación
+      const todasRondas = Object.values(historial[participante.id]);
+      const mejor = todasRondas.reduce((a, b) => b.total > a.total ? b : a);
+      puntCache[participante.id] = { total: mejor.total, notas: mejor.notas_json };
+
+      // Actualizar todosPuntuados
+      const idx = todosPuntuados.findIndex(p =>
+        p.id_participante === participante.id && (p.ronda || 1) === rondaActual);
+      const reg = {
+        id_participante: participante.id,
+        nombre:          participante.nombre,
+        robot:           participante.robot,
+        institucion:     participante.institucion || '',
+        ronda:           rondaActual,
+        total,
+        notas_json:      JSON.stringify(notas_json),
+        timestamp:       new Date().toISOString()
+      };
+      if (idx >= 0) todosPuntuados[idx] = reg;
+      else todosPuntuados.push(reg);
+
+      showToast('✓ Calificación guardada', 'success');
       await cargarRanking();
       irAPaso('2b');
-    } else { showToast('Error: ' + (d.error||'No se pudo guardar'), 'error'); }
-  } catch(e) { showToast('Error de conexión', 'error'); }
-  finally {
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> GUARDAR CALIFICACIÓN';
+
+    } else {
+      showToast('Error: ' + (d.error || 'No se pudo guardar'), 'error');
+    }
+
+  } catch (e) {
+    showToast('Error de conexión: ' + e.message, 'error');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '✓ GUARDAR CALIFICACIÓN';
   }
 }
 
-// ── Ranking ─────────────────────────────
+// ═══════════════════════════════════════════════════
+//  HISTORIAL Y RANKING
+// ═══════════════════════════════════════════════════
+async function cargarHistorial() {
+  try {
+    const r = await fetch(`${GAS}?action=getPuntuaciones&categoria=${categoriaActual}`);
+    const d = await r.json();
+    historial    = {};
+    puntCache    = {};
+    todosPuntuados = [];
+
+    if (d.ok && Array.isArray(d.puntuaciones)) {
+      todosPuntuados = d.puntuaciones;
+
+      d.puntuaciones.forEach(p => {
+        const id   = p.id_participante;
+        const ronda = p.ronda || 1;
+        const nj   = safeParseJson(p.notas_json || p.notas, {});
+
+        if (!historial[id]) historial[id] = {};
+        historial[id][ronda] = { total: p.total, notas_json: nj };
+      });
+
+      // Calcular puntCache (mejor ronda por participante)
+      Object.entries(historial).forEach(([id, rondas]) => {
+        const mejor = Object.values(rondas).reduce((a, b) => b.total > a.total ? b : a);
+        puntCache[id] = { total: mejor.total, notas: mejor.notas_json };
+      });
+    }
+  } catch (e) {
+    historial = {}; puntCache = {};
+  }
+}
+
 async function cargarRanking() {
-  ['ranking-container-2','ranking-container-4'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = '<div class="loading-msg"><span class="spinner"></span>Calculando...</div>';
-  });
+  const el = document.getElementById('ranking-container');
+  if (el) el.innerHTML = `<div class="loading-msg"><span class="spinner"></span>Calculando...</div>`;
+  document.getElementById('ranking-cat-titulo').textContent = CAT_NOMBRES[categoriaActual] || '';
+
   try {
     const r = await fetch(`${GAS}?action=getRankingCalificacion&categoria=${categoriaActual}`);
     const d = await r.json();
-    const html = (!d.ok || !d.ranking || d.ranking.length === 0)
-      ? '<div class="loading-msg">Sin calificaciones registradas aún.</div>'
-      : renderRankingHTML(d.ranking);
-    ['ranking-container-2','ranking-container-4'].forEach(id => {
-      const el = document.getElementById(id); if (el) el.innerHTML = html;
-    });
-    document.getElementById('ranking-cat-title').textContent = CAT_NOMBRES[categoriaActual] || '';
-  } catch(e) {
-    ['ranking-container-2','ranking-container-4'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = '<div class="loading-msg" style="color:var(--danger)">Error al cargar</div>';
-    });
+
+    if (!d.ok || !d.ranking || d.ranking.length === 0) {
+      if (el) el.innerHTML = `<div class="loading-msg">Sin calificaciones registradas aún.</div>`;
+      return;
+    }
+    if (el) el.innerHTML = renderRankingHTML(d.ranking);
+
+  } catch (e) {
+    if (el) el.innerHTML = `<div class="loading-msg" style="color:#ef4444">Error al cargar ranking</div>`;
   }
 }
 
 function renderRankingHTML(ranking) {
-  return `<table class="ranking-table">
-    <thead><tr><th>#</th><th>Participante</th><th>Mejor puntaje</th><th>Registros</th></tr></thead>
-    <tbody>${ranking.map((item, i) => {
-      const pos = i+1, medal = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':pos+'.';
-      const cls = pos===1?'r1':pos===2?'r2':pos===3?'r3':'';
-      return `<tr>
-        <td><span class="rank-pos ${cls}">${medal}</span></td>
-        <td>
-          <div style="font-weight:600">${item.nombre}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted)">${item.robot}</div>
-        </td>
-        <td><span class="score-pill ${pos<=3?'top':''}">${Number(item.promedio_final).toFixed(2)}</span></td>
-        <td><span class="rondas-pill">${item.jueces} reg.</span></td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table>`;
+  return `
+    <table class="ranking-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Participante / Robot</th>
+          <th>Mejor puntaje</th>
+          <th>Registros</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${ranking.map((item, i) => {
+          const pos    = i + 1;
+          const medal  = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `${pos}.`;
+          const cls    = pos === 1 ? 'r1' : pos === 2 ? 'r2' : pos === 3 ? 'r3' : '';
+          return `
+            <tr>
+              <td><span class="rank-pos ${cls}">${medal}</span></td>
+              <td>
+                <div style="font-weight:700;">${item.nombre}</div>
+                <div style="font-family:'DM Mono',monospace;font-size:.7rem;
+                  color:rgba(255,255,255,0.5);">${item.robot}</div>
+              </td>
+              <td>
+                <span class="score-pill ${pos <= 3 ? 'top' : ''}">
+                  ${Number(item.promedio_final).toFixed(2)}
+                </span>
+              </td>
+              <td><span class="rondas-pill">${item.jueces || 0} reg.</span></td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
 }
 
-// ── Excel ────────────────────────────────
+// ═══════════════════════════════════════════════════
+//  EXPORTAR EXCEL
+// ═══════════════════════════════════════════════════
 function exportarExcel() {
-  if (todosPuntuados.length === 0) { showToast('No hay datos para exportar', 'error'); return; }
+  if (todosPuntuados.length === 0) {
+    showToast('No hay datos para exportar', 'error');
+    return;
+  }
+
   const rows = todosPuntuados.map(p => {
     const nObj = safeParseJson(p.notas_json || p.notas, {});
-    const row = {
-      'ID': p.id_participante, 'Nombre': p.nombre, 'Robot': p.robot,
-      'Institución': p.institucion,
-      'Categoría': CAT_NOMBRES[categoriaActual] || categoriaActual,
-      'Ronda': p.ronda || 1,
+    const row  = {
+      'ID':           p.id_participante,
+      'Nombre':       p.nombre,
+      'Robot':        p.robot,
+      'Institución':  p.institucion || '',
+      'Categoría':    CAT_NOMBRES[categoriaActual] || categoriaActual,
+      'Ronda':        p.ronda || 1,
       'Puntaje Total': Number(p.total).toFixed(2),
-      'Fecha': p.timestamp || ''
+      'Fecha':        p.timestamp || ''
     };
+
     criterios.forEach((c, ci) => {
-      Array.from({length: nJueces}, (_, ji) => {
-        row[`${c.nombre} (${nombresJueces[ji]||'Juez '+(ji+1)})`] = nObj[`c${ci}_j${ji}`] ?? '';
+      Array.from({ length: nJueces }, (_, ji) => {
+        row[`${c.nombre} (${nombresJueces[ji] || `Juez ${ji+1}`})`] =
+          nObj[`c${ci}_j${ji}`] ?? '';
       });
-      const vals = Array.from({length: nJueces}, (_, ji) => nObj[`c${ci}_j${ji}`]).filter(v => v !== undefined && v !== '');
-      row[`Promedio ${c.nombre}`] = vals.length > 0 ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : '';
+      const vals = Array.from({ length: nJueces }, (_, ji) => nObj[`c${ci}_j${ji}`])
+        .filter(v => v !== undefined && v !== '');
+      row[`Promedio ${c.nombre}`] = vals.length > 0
+        ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2)
+        : '';
     });
+
     return row;
   });
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Resultados');
-  XLSX.writeFile(wb, `SucreBot2026_${CAT_NOMBRES[categoriaActual]||categoriaActual}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  const nombre = `SucreBot2026_${CAT_NOMBRES[categoriaActual] || categoriaActual}_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, nombre);
   showToast('Excel exportado', 'success');
 }
 
-// ── Cerrar categoría ─────────────────────
-function confirmarCerrarCategoria() { document.getElementById('modal-cerrar').classList.add('show'); }
+// ═══════════════════════════════════════════════════
+//  CERRAR CATEGORÍA
+// ═══════════════════════════════════════════════════
 async function cerrarCategoria() {
   document.getElementById('modal-cerrar').classList.remove('show');
   try {
-    const catNombreD = CAT_NOMBRES[categoriaActual] || categoriaActual;
-    await fetch(GAS, { method:'POST', body: JSON.stringify({ action:'desbloquearCategoria', categoria: catNombreD }) });
-    categoriaActual = ''; participanteActual = null; historialNotas = {}; todosPuntuados = [];
+    await fetch(GAS, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:    'desbloquearCategoria',
+        categoria: CAT_NOMBRES[categoriaActual] || categoriaActual
+      })
+    });
+
+    // Limpiar todo
+    categoriaActual = '';
+    participante    = null;
+    historial       = {};
+    puntCache       = {};
+    todosPuntuados  = [];
+    robotsReg       = [];
+    notas           = {};
     localStorage.removeItem('panel_cal_sesion');
+
     document.getElementById('bloqueo-badge').style.display = 'none';
     document.getElementById('cfg-categoria').value = '';
+    validarConfig();
+
     showToast('Categoría cerrada y liberada', 'success');
     irAPaso(1);
-  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+
+  } catch (e) {
+    showToast('Error al cerrar: ' + e.message, 'error');
+  }
 }
 
-// ── Navegación ───────────────────────────
+// ═══════════════════════════════════════════════════
+//  NAVEGACIÓN ENTRE PASOS
+// ═══════════════════════════════════════════════════
 function irAPaso(n) {
-  // Ocultar todos los pasos incluyendo 2b
-  [1,2,'2b',3,4].forEach(i => {
-    const el = document.getElementById(`paso-${i}`);
+  const pasos = [1, 2, '2b', 3, 4];
+  pasos.forEach(p => {
+    const el = document.getElementById(`paso-${p}`);
     if (el) el.style.display = 'none';
   });
-  // Mostrar el correcto
+
   const el = document.getElementById(`paso-${n}`);
   if (el) el.style.display = '';
 
-  // Actualizar tabs (solo 1-4)
+  // Actualizar tabs
   const tabN = n === '2b' ? 2 : Number(n);
-  [1,2,3,4].forEach(i => {
+  [1, 2, 3, 4].forEach(i => {
     const tab = document.getElementById(`paso-${i}-tab`);
     if (!tab) return;
-    tab.classList.remove('activo','completo');
-    if (i < tabN) tab.classList.add('completo');
+    tab.classList.remove('activo', 'completo');
+    if (i < tabN)      tab.classList.add('completo');
     else if (i === tabN) tab.classList.add('activo');
   });
 
+  // FAB visible fuera del paso 1
   document.getElementById('fab-ranking').style.display = (n !== 1) ? '' : 'none';
-  if (n === 3) prepararCalificacion();
-  if (n === 4) cargarRanking();
+
+  // Acciones por paso
   if (n === '2b') renderListaParaCalificar();
-  window.scrollTo({top:0, behavior:'smooth'});
+  if (n === 3)    prepararCalificacion();
+  if (n === 4)    cargarRanking();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ── Helpers ──────────────────────────────
+// ═══════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════
 function extraerIdDelQR(raw) {
   if (!raw) return null;
-  const partes = raw.split('~');
+  const partes    = raw.split('~');
   const candidato = partes[0].trim();
-  const match = candidato.match(/(sb-\d{4}-[a-z_]+-\d{3})/i);
+  const match     = candidato.match(/(sb-\d{4}-[a-z_]+-\d{3})/i);
   if (match) return match[1].toLowerCase();
   if (/^sb-/i.test(candidato)) return candidato.toLowerCase();
   return null;
@@ -1325,12 +1610,13 @@ function extraerIdDelQR(raw) {
 
 function safeParseJson(str, fallback) {
   try { return typeof str === 'string' ? JSON.parse(str) : (str || fallback); }
-  catch(e) { return fallback; }
+  catch (e) { return fallback; }
 }
 
 function showToast(msg, type = 'success') {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
+  t.textContent = msg;
+  t.className   = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 </script>
