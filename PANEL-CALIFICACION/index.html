@@ -672,7 +672,60 @@ document.addEventListener('componentsLoaded', () => {
     renderJuecesConfig();
   });
   document.getElementById('cfg-categoria').addEventListener('change', validarConfig);
+
+  // Restaurar sesión si había una activa antes del F5
+  restaurarSesion();
 });
+
+async function restaurarSesion() {
+  const sesion = JSON.parse(localStorage.getItem('panel_cal_sesion') || 'null');
+  if (!sesion) return;
+
+  // Verificar que el bloqueo sigue siendo de este panel
+  try {
+    const r = await fetch(`${GAS}?action=getCategoriasActivas`);
+    const d = await r.json();
+    const cats = Array.isArray(d) ? d : (d.categorias || []);
+    const bloqueada = cats.find(c => c.categoria === sesion.categoria && c.usuario === 'panel-calificacion');
+    if (!bloqueada) {
+      localStorage.removeItem('panel_cal_sesion');
+      return;
+    }
+  } catch(e) { return; }
+
+  // Restaurar estado
+  categoriaActual = sesion.categoria;
+  nJueces        = sesion.nJueces || 3;
+  nombresJueces  = sesion.nombresJueces || [];
+  criterios      = sesion.criterios || [];
+
+  document.getElementById('cfg-categoria').value = categoriaActual;
+  document.getElementById('cfg-n-jueces').value  = nJueces;
+  renderJuecesConfig();
+  // Restaurar nombres de jueces
+  nombresJueces.forEach((nombre, i) => {
+    const inputs = document.querySelectorAll('#jueces-config .juez-row input');
+    if (inputs[i]) inputs[i].value = nombre;
+  });
+  renderCriteriosConfigDOM();
+
+  document.getElementById('bloqueo-badge').style.display = '';
+  document.getElementById('bloqueo-txt').textContent =
+    `${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
+
+  await cargarHistorial();
+  validarConfig();
+  showToast('Sesión restaurada', 'info');
+}
+
+function guardarSesionLocal() {
+  localStorage.setItem('panel_cal_sesion', JSON.stringify({
+    categoria:     categoriaActual,
+    nJueces,
+    nombresJueces,
+    criterios
+  }));
+}
 
 // ── Config ──────────────────────────────
 function renderJuecesConfig() {
@@ -726,9 +779,11 @@ async function onCategoriaSelected() {
       validarConfig();
       return;
     }
+    categoriaActual = cat;
     document.getElementById('bloqueo-badge').style.display = '';
     document.getElementById('bloqueo-txt').textContent =
-      `${cat === 'bai' ? 'Bailarín' : 'Impacto Tecnológico'} — bloqueada por este panel`;
+      `${CAT_NOMBRES[cat]} — bloqueada por este panel`;
+    guardarSesionLocal();
   } catch(e) {
     showToast('Error al bloquear categoría', 'error');
   }
@@ -770,6 +825,7 @@ async function iniciarSesion() {
       return;
     }
     await fetch(GAS, { method:'POST', body: JSON.stringify({ action:'guardarCriterios', categoria: categoriaActual, criterios }) });
+    guardarSesionLocal();
     await cargarHistorial();
     document.getElementById('bloqueo-badge').style.display = '';
     document.getElementById('bloqueo-txt').textContent = `${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
@@ -1073,6 +1129,7 @@ async function cerrarCategoria() {
   try {
     await fetch(GAS, { method:'POST', body: JSON.stringify({ action:'desbloquearCategoria', categoria: categoriaActual }) });
     categoriaActual = ''; participanteActual = null; historialNotas = {}; todosPuntuados = [];
+    localStorage.removeItem('panel_cal_sesion');
     document.getElementById('bloqueo-badge').style.display = 'none';
     document.getElementById('cfg-categoria').value = '';
     showToast('Categoría cerrada y liberada', 'success');
