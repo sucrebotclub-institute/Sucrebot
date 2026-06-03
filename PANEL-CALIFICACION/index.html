@@ -526,76 +526,104 @@
     </div>
   </div>
 
-  <!-- ════ PASO 2: ESCANEAR ════ -->
+  <!-- ════ PASO 2: REGISTRO DE ROBOTS ════ -->
   <div id="paso-2" style="display:none">
     <div class="panel-card">
-      <div class="panel-card-title">📷 ESCANEAR ROBOT</div>
-      <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Escanea el QR de la manilla o ingresa el ID manualmente.</p>
+      <div class="panel-card-title">📷 REGISTRO DE ROBOTS</div>
+      <p style="font-size:.82rem;color:rgba(255,255,255,0.6);margin-bottom:16px;">
+        Escanea el QR de cada robot. Cuando hayas registrado todos presiona <strong style="color:#90dcff;">Iniciar Calificación</strong>.
+      </p>
 
       <div class="qr-input-row">
         <input type="text" class="qr-input" id="qr-input"
           placeholder="Escanea QR o escribe ID (ej: sb-2026-bai-001)"
-          onkeydown="if(event.key==='Enter') procesarQR()" />
-        <button class="btn-prim" onclick="procesarQR()">Buscar</button>
+          onkeydown="if(event.key==='Enter') registrarRobot()" />
+        <button class="btn-prim" onclick="registrarRobot()">Agregar</button>
       </div>
 
-      <div id="robot-activo-container" style="display:none">
-        <div class="robot-activo-card">
-          <div class="ra-avatar" id="ra-avatar">?</div>
-          <div class="ra-info">
-            <h3 id="ra-nombre">—</h3>
-            <p id="ra-robot">—</p>
-          </div>
-          <div class="ra-ronda">
-            <div class="ra-ronda-num" id="ra-ronda">1</div>
-            <div class="ra-ronda-lbl">RONDA</div>
-          </div>
-        </div>
+      <div id="aviso-registro" class="aviso warning" style="display:none;margin-top:10px;"></div>
 
-        <div class="ronda-selector">
-          <label>Seleccionar ronda:</label>
-          <div id="btns-ronda" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      <div style="margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-family:'Orbitron',monospace;font-size:.62rem;letter-spacing:2px;color:#90dcff;">
+            ROBOTS REGISTRADOS
+            <span id="registro-count" style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;margin-left:6px;">0</span>
+          </span>
         </div>
-
-        <div id="aviso-ronda-prev" class="aviso warning" style="display:none">
-          ⚠ Este robot ya tiene puntuación en esta ronda. Al guardar se reemplazará.
+        <div id="lista-registro">
+          <div style="text-align:center;padding:24px;font-family:'DM Mono',monospace;font-size:.78rem;color:rgba(255,255,255,0.4);">
+            Escanea robots para agregarlos a la lista
+          </div>
         </div>
-        <div id="aviso-mejor-ronda" class="aviso success" style="display:none"></div>
       </div>
 
       <div class="acciones-bar">
         <button class="btn-sec" onclick="irAPaso(1)">← Volver</button>
-        <button class="btn-prim" id="btn-ir-calificar" onclick="irAPaso(3)" disabled>
-          Calificar este robot →
+        <button class="btn-prim" id="btn-iniciar-cal" onclick="iniciarCalificacion()" disabled>
+          ▶ INICIAR CALIFICACIÓN
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- Ranking compacto -->
+  <!-- ════ PASO 2B: LISTA PARA CALIFICAR ════ -->
+  <div id="paso-2b" style="display:none">
     <div class="panel-card">
-      <div class="panel-card-title">🏆 RANKING ACTUAL</div>
-      <div id="ranking-container-2"><div class="loading-msg">Cargando ranking...</div></div>
+      <div class="panel-card-title">
+        🤖 SELECCIONAR ROBOT A CALIFICAR
+        <span id="p2b-estado" style="margin-left:auto;background:rgba(255,255,255,0.15);color:#fff;font-size:.6rem;padding:2px 10px;border-radius:10px;"></span>
+      </div>
+      <div id="lista-para-calificar"></div>
+      <div class="acciones-bar" style="margin-top:16px;">
+        <button class="btn-sec" onclick="irAPaso(4)">🏆 Ver Ranking</button>
+        <button class="btn-sec" onclick="irAPaso(2)" style="font-size:.65rem;">+ Agregar robot</button>
+      </div>
     </div>
   </div>
 
   <!-- ════ PASO 3: CALIFICAR ════ -->
   <div id="paso-3" style="display:none">
-    <div class="panel-card">
-      <div class="panel-card-title">
-        ⭐ CALIFICACIÓN —
-        <span id="cal-robot-title" style="color:var(--cyan);margin-left:4px;">—</span>
-        <span id="cal-ronda-badge" style="margin-left:auto;background:rgba(91,200,240,.12);color:var(--cyan);font-size:.6rem;padding:3px 10px;border-radius:4px;">RONDA 1</span>
+
+    <!-- Layout: lista izquierda + calificación derecha -->
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+
+      <!-- Lista de robots -->
+      <div style="width:220px;flex-shrink:0;">
+        <div class="panel-card" style="padding:16px;">
+          <div class="panel-card-title" style="margin-bottom:12px;font-size:.6rem;">ROBOTS</div>
+          <div id="lista-robots-cal"></div>
+        </div>
       </div>
 
-      <div style="overflow-x:auto;" id="tabla-calificacion-wrapper"></div>
+      <!-- Panel calificación -->
+      <div style="flex:1;min-width:0;">
+        <div class="panel-card" id="panel-cal-vacio">
+          <div style="text-align:center;padding:40px 20px;">
+            <div style="font-size:2rem;margin-bottom:12px;opacity:.3;">📋</div>
+            <div style="font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:2px;color:rgba(255,255,255,.4);">SELECCIONA UN ROBOT</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.3);margin-top:6px;">Elige un robot de la lista para calificar</div>
+          </div>
+        </div>
 
-      <div class="acciones-bar">
-        <button class="btn-sec" onclick="irAPaso(2)">← Cambiar robot</button>
-        <button class="btn-prim" id="btn-guardar-cal" onclick="guardarCalificacion()" disabled>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          GUARDAR CALIFICACIÓN
-        </button>
+        <div id="panel-cal-activo" style="display:none;">
+          <div class="panel-card">
+            <div class="panel-card-title">
+              ⭐ CALIFICANDO —
+              <span id="cal-robot-title" style="color:#90dcff;margin-left:4px;">—</span>
+              <span id="cal-ronda-badge" style="margin-left:auto;background:rgba(255,255,255,.12);color:#90dcff;font-size:.6rem;padding:3px 10px;border-radius:4px;">RONDA 1</span>
+            </div>
+            <div style="overflow-x:auto;" id="tabla-calificacion-wrapper"></div>
+            <div class="acciones-bar">
+              <button class="btn-sec" onclick="irAPaso(4)">Ver ranking →</button>
+              <button class="btn-prim" id="btn-guardar-cal" onclick="guardarCalificacion()" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                GUARDAR CALIFICACIÓN
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -653,6 +681,7 @@
 // ═══════════════════════════════════════
 let GAS = null;
 let categoriaActual    = '';
+let robotsRegistrados  = [];  // [{id, nombre, robot, institucion}]
 let nJueces            = 3;
 let nombresJueces      = [];
 let criterios          = [];
@@ -830,8 +859,9 @@ async function iniciarSesion() {
     await cargarHistorial();
     document.getElementById('bloqueo-badge').style.display = '';
     document.getElementById('bloqueo-txt').textContent = `${CAT_NOMBRES[categoriaActual]} — bloqueada por este panel`;
+    robotsRegistrados = [];
     irAPaso(2);
-    showToast('Sesión iniciada', 'success');
+    showToast('Sesión iniciada — escanea los robots', 'success');
   } catch(e) {
     showToast('Error: ' + e.message, 'error');
     btn.disabled = false;
@@ -861,34 +891,147 @@ function abrirEscaner() {
   window.open(`../ESCANER/?ruta=panel_${categoriaActual}`, '_blank');
 }
 
-async function procesarQR() {
+// ── Registrar robot en la lista ──────────────────
+async function registrarRobot() {
   const raw = document.getElementById('qr-input').value.trim();
   if (!raw) return;
   const id = extraerIdDelQR(raw);
-  if (!id) { showToast('QR no válido', 'error'); return; }
+  document.getElementById('qr-input').value = '';
+
+  const avisoEl = document.getElementById('aviso-registro');
+
+  if (!id) {
+    avisoEl.textContent = '⚠ QR no válido';
+    avisoEl.style.display = '';
+    setTimeout(() => avisoEl.style.display = 'none', 2000);
+    return;
+  }
+
+  // Verificar duplicado
+  if (robotsRegistrados.find(r => r.id === id)) {
+    avisoEl.textContent = '⚠ Este robot ya está en la lista';
+    avisoEl.style.display = '';
+    setTimeout(() => avisoEl.style.display = 'none', 2000);
+    return;
+  }
+
   try {
     const r = await fetch(`${GAS}?action=getParticipantes`);
     const data = await r.json();
     const lista = Array.isArray(data) ? data : (data.participantes || data || []);
     const p = lista.find(x => x.id === id);
-    if (!p) { showToast('Participante no encontrado', 'error'); return; }
-    if (p.aprobado !== 'APROBADO') { showToast('Participante no aprobado', 'error'); return; }
-    if (p.categoria !== CAT_NOMBRES[categoriaActual]) { showToast(`Categoría incorrecta: ${p.categoria}`, 'error'); return; }
 
-    participanteActual = p;
-    document.getElementById('qr-input').value = '';
+    if (!p) {
+      avisoEl.textContent = '⚠ ID no encontrado: ' + id;
+      avisoEl.style.display = '';
+      setTimeout(() => avisoEl.style.display = 'none', 3000);
+      return;
+    }
+    if (p.aprobado !== 'APROBADO') {
+      avisoEl.textContent = '⚠ Participante no aprobado';
+      avisoEl.style.display = '';
+      setTimeout(() => avisoEl.style.display = 'none', 2000);
+      return;
+    }
+    if (p.categoria !== CAT_NOMBRES[categoriaActual]) {
+      avisoEl.textContent = `⚠ Categoría incorrecta: ${p.categoria}`;
+      avisoEl.style.display = '';
+      setTimeout(() => avisoEl.style.display = 'none', 2500);
+      return;
+    }
 
-    const rondasUsadas = Object.keys(historialNotas[p.id] || {}).map(Number);
-    const maxRonda = rondasUsadas.length > 0 ? Math.max(...rondasUsadas) : 0;
-    rondaActual = maxRonda + 1;
+    robotsRegistrados.push(p);
+    avisoEl.style.display = 'none';
+    renderListaRegistro();
+    document.getElementById('btn-iniciar-cal').disabled = robotsRegistrados.length === 0;
+    showToast('✓ ' + p.robot + ' agregado', 'success');
 
-    renderRobotActivo();
-    renderBotonesRonda(maxRonda);
-    document.getElementById('robot-activo-container').style.display = '';
-    document.getElementById('btn-ir-calificar').disabled = false;
-    showToast(`Robot cargado: ${p.robot}`, 'success');
-    cargarRanking();
   } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+function renderListaRegistro() {
+  const el = document.getElementById('lista-registro');
+  const count = document.getElementById('registro-count');
+  count.textContent = robotsRegistrados.length;
+
+  if (robotsRegistrados.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:24px;font-family:'DM Mono',monospace;font-size:.78rem;color:rgba(255,255,255,0.4);">Escanea robots para agregarlos</div>';
+    return;
+  }
+
+  el.innerHTML = robotsRegistrados.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.1);border-radius:7px;margin-bottom:6px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:700;font-size:.7rem;color:#90dcff;flex-shrink:0;">${i+1}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:.88rem;color:#fff;">${p.robot}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.68rem;color:rgba(255,255,255,0.5);">${p.nombre} · ${p.id}</div>
+      </div>
+      <button onclick="quitarRobot('${p.id}')" style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:.75rem;">✕</button>
+    </div>`).join('');
+}
+
+function quitarRobot(id) {
+  robotsRegistrados = robotsRegistrados.filter(r => r.id !== id);
+  renderListaRegistro();
+  document.getElementById('btn-iniciar-cal').disabled = robotsRegistrados.length === 0;
+}
+
+function iniciarCalificacion() {
+  if (robotsRegistrados.length === 0) return;
+  irAPaso('2b');
+}
+
+function renderListaParaCalificar() {
+  const el = document.getElementById('lista-para-calificar');
+  const estadoEl = document.getElementById('p2b-estado');
+
+  const calificados   = robotsRegistrados.filter(p => puntCache[p.id]);
+  const pendientes    = robotsRegistrados.filter(p => !puntCache[p.id]);
+  estadoEl.textContent = `${calificados.length}/${robotsRegistrados.length} calificados`;
+
+  if (robotsRegistrados.length === 0) {
+    el.innerHTML = '<div class="loading-msg">Sin robots registrados</div>';
+    return;
+  }
+
+  el.innerHTML = robotsRegistrados.map(p => {
+    const punt = puntCache[p.id];
+    const calificado = !!punt;
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;
+        background:${calificado ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.06)'};
+        border:1.5px solid ${calificado ? 'rgba(34,197,94,0.3)' : 'var(--panel-border)'};
+        border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .15s;"
+        onclick="seleccionarRobotCalificar('${p.id}')"
+        onmouseenter="this.style.borderColor='#90dcff'"
+        onmouseleave="this.style.borderColor='${calificado ? 'rgba(34,197,94,0.3)' : 'var(--panel-border)'}'">
+        <div style="width:10px;height:10px;border-radius:50%;background:${calificado ? '#22c55e' : 'rgba(255,255,255,0.2)'};flex-shrink:0;"></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:.92rem;color:#fff;">${p.robot}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.68rem;color:rgba(255,255,255,0.5);">${p.nombre}</div>
+        </div>
+        ${calificado
+          ? `<div style="font-family:'Orbitron',monospace;font-weight:700;font-size:.8rem;color:#22c55e;">${Number(punt.total).toFixed(2)}</div>`
+          : `<div style="font-family:'Orbitron',monospace;font-size:.65rem;color:rgba(255,255,255,0.35);">PENDIENTE</div>`}
+        <div style="font-family:'Orbitron',monospace;font-size:.65rem;color:#90dcff;flex-shrink:0;">
+          ${calificado ? '✏ EDITAR' : '▶ CALIFICAR'}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function seleccionarRobotCalificar(id) {
+  participanteActual = robotsRegistrados.find(p => p.id === id);
+  if (!participanteActual) return;
+  rondaActual = 1;
+
+  const prev = puntCache[id];
+  if (prev && prev.notas) {
+    Object.entries(prev.notas).forEach(([k, v]) => { notas[Number(k)] = v; });
+  } else {
+    notas = {};
+  }
+  irAPaso(3);
 }
 
 function renderRobotActivo() {
@@ -929,15 +1072,17 @@ function seleccionarRonda(n) {
 function prepararCalificacion() {
   const p = participanteActual;
   document.getElementById('cal-robot-title').textContent = `${p.nombre} · ${p.robot}`;
-  document.getElementById('cal-ronda-badge').textContent = `RONDA ${rondaActual}`;
+  document.getElementById('cal-ronda-badge').textContent = `CALIFICACIÓN`;
+
+  // Cargar notas previas si existen
   notas = {};
-  const prev = historialNotas[p.id] && historialNotas[p.id][rondaActual];
-  if (prev && prev.notas_json) {
+  const prev = puntCache[p.id];
+  if (prev && prev.notas) {
     criterios.forEach((_, ci) => {
       notas[ci] = {};
       Array.from({length: nJueces}, (_, ji) => {
         const k = `c${ci}_j${ji}`;
-        if (prev.notas_json[k] !== undefined) notas[ci][ji] = prev.notas_json[k];
+        if (prev.notas[k] !== undefined) notas[ci][ji] = prev.notas[k];
       });
     });
   }
@@ -1043,7 +1188,7 @@ async function guardarCalificacion() {
       if (idx >= 0) todosPuntuados[idx] = reg; else todosPuntuados.push(reg);
       showToast('Calificación guardada', 'success');
       await cargarRanking();
-      irAPaso(2);
+      irAPaso('2b');
     } else { showToast('Error: ' + (d.error||'No se pudo guardar'), 'error'); }
   } catch(e) { showToast('Error de conexión', 'error'); }
   finally {
@@ -1141,16 +1286,29 @@ async function cerrarCategoria() {
 
 // ── Navegación ───────────────────────────
 function irAPaso(n) {
-  [1,2,3,4].forEach(i => {
-    document.getElementById(`paso-${i}`).style.display = i===n ? '' : 'none';
-    const tab = document.getElementById(`paso-${i}-tab`);
-    tab.classList.remove('activo','completo');
-    if (i < n) tab.classList.add('completo');
-    else if (i === n) tab.classList.add('activo');
+  // Ocultar todos los pasos incluyendo 2b
+  [1,2,'2b',3,4].forEach(i => {
+    const el = document.getElementById(`paso-${i}`);
+    if (el) el.style.display = 'none';
   });
-  document.getElementById('fab-ranking').style.display = n >= 2 ? '' : 'none';
+  // Mostrar el correcto
+  const el = document.getElementById(`paso-${n}`);
+  if (el) el.style.display = '';
+
+  // Actualizar tabs (solo 1-4)
+  const tabN = n === '2b' ? 2 : Number(n);
+  [1,2,3,4].forEach(i => {
+    const tab = document.getElementById(`paso-${i}-tab`);
+    if (!tab) return;
+    tab.classList.remove('activo','completo');
+    if (i < tabN) tab.classList.add('completo');
+    else if (i === tabN) tab.classList.add('activo');
+  });
+
+  document.getElementById('fab-ranking').style.display = (n !== 1) ? '' : 'none';
   if (n === 3) prepararCalificacion();
   if (n === 4) cargarRanking();
+  if (n === '2b') renderListaParaCalificar();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
