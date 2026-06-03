@@ -1,50 +1,26 @@
 <!DOCTYPE html>
+<!-- PARTICIPANTES_REGISTRADOS - Fix p.miembro2.trim is not a function - JUN 2026 -->
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Registro de Participantes</title>
+  <title>SucreBot — Participantes</title> 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../shared/js/config.js"></script>
-  <link rel="stylesheet" href="../shared/css/styles.css">
-  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <link rel="stylesheet" href="../shared/css/styles.css?v=20260526">
+  <link rel="stylesheet" href="../shared/css/mobile-fix.css?v=20260526">
   <style>
     :root {
-      --r-cyan: #5bc8f0; --r-cyan-bright: #90dcff;
-      --r-blue: #1a5ca8; --r-blue-dark: #1a3a6b; --r-blue-deep: #0a193c;
-      --r-green: #3dd68c;
+      --p-cyan: #5bc8f0; --p-cyan-bright: #90dcff;
+      --p-blue: #1a5ca8; --p-blue-dark: #0e2a5a;
+      --p-surface: #0f3566; --p-surface-2: #1a4580; --p-surface-3: #2a5a9e;
+      --p-success: #00ff88; --p-warning: #c27803; --p-error: #c41e3a; --p-error-light: #ff3b3b;
     }
-    body { 
-      background: #ffffff !important; 
-      color: #1a1c28 !important;
-    }
+    body { background: #ffffff !important; color: #1a1a2e !important; }
+    main { min-height: calc(100vh - 174px); background: #ffffff; }
     
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; position: relative; overflow: visible; }
-    
-    /* ── HERO ── */
-    .page-hero { padding: 48px 0 24px; margin-bottom: 16px; }
-    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--r-blue); border: 1px solid var(--r-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
-    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
-    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
-    .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-    .page-hero-line { flex: 0 0 40px; height: 3px; background: var(--r-blue); border-radius: 2px; }
-    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: var(--r-blue-dark); line-height: 1; position: relative; padding-bottom: 8px; }
-    .page-hero h2::after {
-      content: "";
-      position: absolute;
-      bottom: 4px;
-      left: 0;
-      width: 120px;
-      height: 3px;
-      background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%);
-      border-radius: 2px;
-    }
-    .page-hero h2 span { color: var(--r-blue); }
-    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
-    
-    /* ── LAYOUT REORGANIZADO ── */
     .wrapper::before {
       content: '';
       position: absolute;
@@ -54,172 +30,177 @@
       width: 580px;
       background: 
         linear-gradient(135deg, rgba(26,92,168,0.85) 0%, rgba(18,20,26,0.90) 100%),
-        url('../shared/images/foto3.jpg') 5% center / cover no-repeat;
+        url('https://github.com/sucrebotclub-institute/Sucrebot/blob/main/shared/images/foto3.jpg?raw=true') 5% center / cover no-repeat;
       border-radius: 0 16px 16px 0;
       box-shadow: 0 8px 32px rgba(26,92,168,0.3);
       border-right: 2px solid rgba(91,200,240,0.3);
       z-index: 1;
     }
-    
-    .reg-layout { display: flex; align-items: flex-start; gap: 80px; position: relative; margin-bottom: 60px; }
-    
-    .reg-robot { flex: 0 0 420px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-    .reg-robot img { width: 100%; max-width: 400px; height: auto; filter: drop-shadow(0 8px 32px rgba(91,200,240,0.25)); animation: float-robot 4s ease-in-out infinite; }
-    @keyframes float-robot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-    
-    /* ── CARD FORMULARIO ── */
-    .form-card { 
-      background: linear-gradient(135deg, var(--r-blue) 0%, #14497e 100%); 
-      border: 1.5px solid var(--r-blue); 
-      border-radius: 16px; 
-      padding: 28px; 
-      box-shadow: 0 4px 24px rgba(26,92,168,0.25); 
-      flex: 1;
-      position: relative; 
-      z-index: 1;
-      margin-top: -108px;
-    }
-    .form-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--r-cyan-bright); margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
-    .form-section-title { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 0.14em; color: rgba(255,255,255,0.7); text-transform: uppercase; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.15); font-weight: 700; }
-    
-    /* ── GRID 3 COLUMNAS ── */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 4px; }
-    .field { position: relative; }
-    .field.full-width { grid-column: 1 / -1; }
-    .field label { 
-      display: block; 
-      font-family: 'DM Mono', monospace; 
-      font-size: 10px; 
-      color: rgba(255,255,255,0.7); 
-      margin-bottom: 6px; 
-      letter-spacing: 0.1em; 
-      font-weight: 700; 
-      text-transform: uppercase; 
-    }
-    .field-icon { 
-      position: absolute; 
-      left: 12px; 
-      bottom: 11px; 
-      width: 16px; 
-      height: 16px; 
-      color: var(--r-cyan); 
-      pointer-events: none; 
-    }
-    .field input, .field select { 
-      width: 100%; 
-      background: rgba(10,25,60,0.55); 
-      border: 1.5px solid rgba(255,255,255,0.12); 
-      color: #e8f0ff; 
-      font-family: 'Exo 2', sans-serif; 
-      font-size: 14px; 
-      padding: 10px 14px 10px 36px; 
-      border-radius: 8px; 
-      outline: none; 
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-      box-sizing: border-box;
-    }
-    .field input:focus, .field select:focus { 
-      border-color: var(--r-cyan); 
-      background: rgba(10,25,60,0.75); 
-      box-shadow: 0 0 0 3px rgba(91,200,240,0.15);
-    }
-    .field input::placeholder { color: rgba(255,255,255,0.3); }
-    .field input[type="file"] { border: 1.5px dashed rgba(255,255,255,0.25); cursor: pointer; padding-left: 36px; }
-    .field input[type="file"]:hover { border-color: var(--r-cyan); }
-    
-    .field select { background: rgba(10,25,60,0.55); cursor: pointer; appearance: auto; }
-    .field select option { background: var(--r-blue-deep); color: #e8f0ff; padding: 8px; }
-    .field select optgroup { 
-      background: var(--r-blue-deep); 
-      color: var(--r-cyan-bright); 
-      font-family: 'DM Mono', monospace; 
-      font-size: 12px; 
-      font-weight: 700; 
-      letter-spacing: 0.08em; 
-      padding: 4px 0; 
-    }
-    .field select option[value=""] { color: rgba(255,255,255,0.35); }
-    
-    /* ── BOTÓN REGISTRO ── */
-    .btn-register { 
-      width: 100%; 
-      margin-top: 16px; 
-      background: linear-gradient(135deg, var(--r-blue-dark) 0%, var(--r-blue) 100%); 
-      border: 2px solid rgba(255,255,255,0.2); 
-      color: #ffffff; 
-      font-family: 'Orbitron', monospace; 
-      font-size: 12px; 
-      font-weight: 700; 
-      padding: 16px; 
-      border-radius: 10px; 
-      cursor: pointer; 
-      transition: all 0.3s; 
-      letter-spacing: 0.15em; 
-      text-transform: uppercase;
-      box-shadow: 0 4px 16px rgba(26,92,168,0.4); 
-    }
-    .btn-register:hover:not(:disabled) { 
-      transform: translateY(-2px); 
-      box-shadow: 0 8px 24px rgba(26,92,168,0.6);
-      border-color: var(--r-cyan); 
-    }
-    .btn-register:active { transform: translateY(0); }
-    .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
-    
-    /* ── TOAST ── */
-    .toast { 
-      position: fixed; 
-      bottom: 30px; 
-      left: 30px; 
-      transform: translateY(100px); 
-      opacity: 0; 
-      background: #1e2438; 
-      border-radius: 10px; 
-      border: 1px solid rgba(255,255,255,0.08); 
-      border-left: 4px solid var(--r-green); 
-      color: #f0f4ff; 
-      font-family: 'Exo 2', sans-serif; 
-      font-size: 12px; 
-      font-weight: 600; 
-      padding: 12px 16px; 
-      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; 
-      z-index: 9999; 
-      max-width: 300px; 
-      display: flex; 
-      align-items: flex-start; 
-      gap: 8px; 
-      pointer-events: none; 
-      box-shadow: 0 3px 12px rgba(0,0,0,0.3);
-    }
-    .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    
-    @media (max-width: 1000px) { 
-      .reg-layout { flex-direction: column; align-items: center; } 
-      .reg-robot { flex: 0 0 auto; }
-      .form-card { width: 100%; max-width: 700px; }
+
+    .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 200px; overflow: visible; }
+
+    .stats-panel {
+      flex: 0 0 280px;
+      background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 100%);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(26,92,168,0.35);
+      position: sticky;
+      top: 120px;
+      align-self: flex-start;
+      margin-right: -200px;
     }
     
-    @media (max-width: 768px) { 
-      .reg-robot { display: none; }
-      .form-grid { grid-template-columns: 1fr; }
-      .grid-comprobante {
-        grid-template-columns: 1fr !important;
-      }
-      .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
-      .page-hero {
-        padding: 24px 0 16px;
-      }
-      .page-hero h2 {
-        font-size: 1.8rem;
-        letter-spacing: 1px;
-      }
-      .page-hero-badge {
-        font-size: 8px;
-        letter-spacing: 2px;
-      }
-      .form-card {
-        margin-top: 0 !important;
-      }
+    .page-hero { padding: 80px 0 32px; margin-bottom: 32px; text-align: left !important; }
+    .page-hero-badge { display: block; width: fit-content; align-items: center; gap: 8px; background: var(--p-blue); border: 1px solid var(--p-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+    .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .page-hero-line { display: none; }
+    
+    .page-hero h2 { 
+      font-family: 'Bebas Neue', sans-serif; 
+      font-size: 2.8rem; 
+      letter-spacing: 3px; 
+      color: #1a3a6e; 
+      line-height: 1; 
+      position: relative;
+      display: block;
+      margin-bottom: 20px;
+    }
+    .page-hero h2 span { white-space: nowrap; }
+    .page-hero h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%);
+      border-radius: 2px;
+    }
+    .page-hero h2 span { color: var(--p-blue); }
+    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
+
+    .robot-champion-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+    .glow-effect { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 220px; height: 220px; background: radial-gradient(circle, rgba(26,92,168,0.15) 0%, transparent 70%); border-radius: 50%; animation: glow-pulse 3s ease-in-out infinite; pointer-events: none; z-index: -1; }
+    @keyframes glow-pulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.5} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:0.8} }
+    .robot-champion { width: 180px; height: auto; filter: drop-shadow(0 8px 24px rgba(26,92,168,0.4)); animation: float-robot 4s ease-in-out infinite; z-index: 1; }
+    @keyframes float-robot { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-16px) rotate(2deg)} }
+    .crown-icon { position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-12deg); font-size: 48px; z-index: 2; animation: crown-bounce 2s ease-in-out infinite; filter: drop-shadow(0 4px 12px rgba(255,215,0,0.6)); }
+    @keyframes crown-bounce { 0%,100%{transform:translateX(-50%) rotate(-12deg) translateY(0)} 50%{transform:translateX(-50%) rotate(-12deg) translateY(-8px)} }
+
+    .main-layout { display: flex; gap: 32px; align-items: flex-start; padding-left: 100px; padding-right: 0; }
+    .content-wrapper { flex: 1; min-width: 0; }
+
+    .stat-section-label { font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.5); padding: 4px 0 2px; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 4px; }
+    .stats-panel-title { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--p-cyan-bright); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .stats-grid { display: flex; flex-direction: column; gap: 16px; }
+    .stat-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.15); transition: all 0.3s; }
+    .stat-card:hover { background: rgba(255,255,255,0.15); transform: translateX(4px); }
+    .stat-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #ffffff; line-height: 1; display: flex; align-items: center; gap: 8px; }
+    .stat-icon { font-size: 1.5rem; }
+    .stat-detail { font-family: 'Exo 2', sans-serif; font-size: 11px; color: var(--p-cyan-bright); margin-top: 6px; font-weight: 600; }
+    .stat-bar { height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+    .stat-bar-fill { height: 100%; background: linear-gradient(90deg, var(--p-cyan) 0%, var(--p-cyan-bright) 100%); border-radius: 3px; transition: width 0.6s ease; }
+
+    .participantes-container { background: linear-gradient(135deg, var(--p-surface-3) 0%, var(--p-surface-2) 50%, var(--p-surface) 100%); border-radius: 20px; padding: 36px 32px; box-shadow: 0 12px 40px rgba(26,92,168,0.35); position: relative; overflow: hidden; }
+    .participantes-container > * { position: relative; z-index: 1; }
+
+    .controles { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .controles-left { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .filtro-categoria, .busqueda-input { background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.25); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 8px; outline: none; transition: all 0.2s; }
+    .filtro-categoria { cursor: pointer; min-width: 200px; }
+    .filtro-categoria:focus, .busqueda-input:focus { border-color: var(--p-cyan); background: rgba(255,255,255,0.25); }
+    .filtro-categoria optgroup { background: var(--p-surface); color: var(--p-cyan-bright); font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+    .filtro-categoria option { background: var(--p-surface-2); color: #ffffff; font-weight: 500; }
+    .busqueda-input { width: 280px; }
+    .busqueda-input::placeholder { color: rgba(255,255,255,0.6); }
+    .btn-refrescar { background: var(--p-cyan); border: none; color: var(--p-surface); font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+    .btn-refrescar:hover { background: var(--p-cyan-bright); transform: translateY(-1px); }
+
+    .tabla-participantes { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+    .tabla-participantes thead { background: linear-gradient(135deg, #0a2545 0%, #051729 100%); color: #ffffff; }
+    .tabla-participantes th { padding: 16px; text-align: left; font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.1); }
+    .tabla-participantes th:first-child { border-radius: 12px 0 0 0; }
+    .tabla-participantes th:last-child { border-radius: 0 12px 0 0; }
+    .tabla-participantes tbody tr { background: rgba(255,255,255,0.95); transition: all 0.2s; cursor: pointer; }
+    .tabla-participantes tbody tr:nth-child(even) { background: rgba(232,240,255,0.6); }
+    .tabla-participantes tbody tr:hover { background: rgba(91,200,240,0.2); transform: scale(1.005); box-shadow: 0 4px 12px rgba(91,200,240,0.3); }
+    .tabla-participantes tbody tr:hover td { color: #ffffff; }
+    .tabla-participantes td { padding: 14px 16px; font-size: 13px; color: #1a3a6e; border-bottom: 1px solid rgba(255,255,255,0.2); font-family: 'Exo 2', sans-serif; font-weight: 600; }
+    .tabla-participantes tbody tr:last-child td { border-bottom: none; }
+    .tabla-participantes tbody tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+    .tabla-participantes tbody tr:last-child td:last-child { border-radius: 0 0 12px 0; }
+    
+    .categoria-badge { display: inline-block; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 12px; letter-spacing: 0.5px; border: 1px solid; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    .categoria-badge.amateur { background: #ffd966; color: #5a4500; border-color: #ffea88; }
+    .categoria-badge.pro { background: var(--p-cyan); color: var(--p-surface); border-color: var(--p-cyan-bright); }
+    .categoria-badge.extra { background: #c084fc; color: #3a0c5c; border-color: #d8a9ff; }
+    
+    .estado-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 12px; letter-spacing: 0.5px; }
+    .estado-badge.aprobado { background: var(--p-success); color: #0a3d1a; }
+    .estado-badge.pendiente { background: var(--p-warning); color: #2a1a00; }
+    .estado-badge.nocumple { background: var(--p-error); color: #ffffff; }
+    .estado-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .vacio-msg { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.7); font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.1em; }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-overlay.show { display: flex; }
+    .modal-card { background: #ffffff; border-radius: 16px; width: 90%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.4); }
+    .modal-header { background: linear-gradient(135deg, var(--p-blue) 0%, var(--p-blue-dark) 100%); color: #ffffff; padding: 20px 24px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+    .modal-close { background: none; border: none; color: #ffffff; font-size: 28px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+    .modal-close:hover { opacity: 1; }
+    .modal-body { padding: 28px 24px; }
+    .modal-section { margin-bottom: 24px; }
+    .modal-section-title { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--p-blue); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #e8f0ff; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-field { display: flex; flex-direction: column; gap: 4px; }
+    .modal-field-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #7a7a8c; }
+    .modal-field-value { font-family: 'Exo 2', sans-serif; font-size: 14px; color: #2a3f5f; font-weight: 600; }
+    .modal-field-value.codigo { font-family: 'DM Mono', monospace; background: #f0f4f8; padding: 4px 10px; border-radius: 6px; display: inline-block; color: var(--p-blue-dark); width: fit-content; }
+    .modal-comprobante { text-align: center; margin-top: 16px; }
+    .modal-comprobante img { max-width: 100%; height: auto; border-radius: 12px; border: 2px solid #e8f0ff; box-shadow: 0 4px 16px rgba(26,92,168,0.15); }
+    .modal-comprobante-link { display: inline-block; margin-top: 12px; color: var(--p-blue); font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .modal-comprobante-link:hover { color: var(--p-blue-dark); text-decoration: underline; }
+    
+    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
+    .modal-btn { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; padding: 16px 20px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); color: #ffffff; }
+    .modal-btn-eliminar { background: linear-gradient(135deg, var(--p-error-light) 0%, var(--p-error) 100%); }
+    .modal-btn-eliminar:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(196,30,58,0.4); }
+    .modal-btn-aprobar { background: linear-gradient(135deg, #00d95f 0%, #00a046 100%); }
+    .modal-btn-aprobar:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(0,160,70,0.4); }
+    .modal-btn-reenviar { background: linear-gradient(135deg, var(--p-cyan) 0%, var(--p-blue) 100%); }
+    .modal-btn-reenviar:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(26,92,168,0.4); }
+    .modal-btn-desaprobar { background: linear-gradient(135deg, #ffd966 0%, var(--p-warning) 100%); color: #2a1a00; }
+    .modal-btn-desaprobar:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 24px rgba(194,120,3,0.4); }
+    .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: var(--p-success); padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s; border: 2px solid rgba(0,255,136,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 768px) {
+      .wrapper { padding: 0 16px 60px 16px; }
+      .wrapper::before { display: none; }
+      .main-layout { padding-left: 0; padding-right: 0; }
+      .stats-panel { display: none; }
+      .page-hero { padding: 40px 0 24px; }
+      .main-layout { flex-direction: column; gap: 24px; }
+      .robot-champion-wrapper { width: 140px; height: 140px; margin: 0 auto; }
+      .robot-champion { width: 120px; }
+      .crown-icon { font-size: 36px; top: -8px; }
+      .glow-effect { width: 160px; height: 160px; }
+      .controles { flex-direction: column; align-items: stretch; }
+      .controles-left { flex-direction: column; width: 100%; }
+      .filtro-categoria, .busqueda-input, .btn-refrescar { width: 100%; box-sizing: border-box; }
+      .participantes-container { padding: 16px 12px; border-radius: 12px; }
+      .tabla-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tabla-participantes { min-width: 600px; font-size: 12px; }
+      .tabla-participantes th, .tabla-participantes td { padding: 10px 8px; }
+      .modal-grid { grid-template-columns: 1fr; }
+      .modal-actions { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -231,157 +212,189 @@
   <div data-include="../shared/components/nav.html"></div>
 </div>
 
-<div class="wrapper">
-  <div class="page-hero">
-    <div class="page-hero-badge">
-      <div class="page-hero-badge-dot"></div>
-      SUCREBOT 2026 · TORNEO DE ROBÓTICA
+<main>
+  <div class="wrapper">
+    <div class="page-hero">
+      <div class="page-hero-badge">
+        <div class="page-hero-badge-dot"></div>
+        SUCREBOT 2026 · TORNEO DE ROBÓTICA
+      </div>
+      <h2>PARTICIPANTES <span>REGISTRADOS</span></h2>
+      <div class="page-hero-sub">
+        <div class="page-hero-line"></div>
+        <p>LISTADO DE PARTICIPANTES DEL TORNEO SUCREBOT 2026</p>
+      </div>
     </div>
-    <h2>REGISTRO DE <span>PARTICIPANTES</span></h2>
-    <p>INSCRIPCIÓN AL TORNEO SUCREBOT 2026</p>
-  </div>
-  
-  <div class="reg-layout">
-    <div class="reg-robot"><img src="../shared/images/robot-inss.png" alt="Robot inscribiendo" /></div>
-    
-    <div class="form-card">
-      <div class="form-title">⚡ REGISTRO DE PARTICIPANTE</div>
 
-      <!-- DATOS PERSONALES -->
-      <div class="form-section-title">👤 Datos Personales</div>
-      <div class="form-grid">
-        <div class="field">
-          <label>Nombre Completo</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-nombre" placeholder="Juan Pérez">
-        </div>
-        <div class="field">
-          <label>Institución / Club</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <input type="text" id="f-institucion" placeholder="Universidad / Club">
-        </div>
-        <div class="field">
-          <label>Provincia</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <select id="f-ciudad">
-            <option value="">— Selecciona —</option>
-            <option value="Azuay">Azuay</option>
-            <option value="Bolívar">Bolívar</option>
-            <option value="Cañar">Cañar</option>
-            <option value="Carchi">Carchi</option>
-            <option value="Chimborazo">Chimborazo</option>
-            <option value="Cotopaxi">Cotopaxi</option>
-            <option value="El Oro">El Oro</option>
-            <option value="Esmeraldas">Esmeraldas</option>
-            <option value="Galápagos">Galápagos</option>
-            <option value="Guayas">Guayas</option>
-            <option value="Imbabura">Imbabura</option>
-            <option value="Loja">Loja</option>
-            <option value="Los Ríos">Los Ríos</option>
-            <option value="Manabí">Manabí</option>
-            <option value="Morona Santiago">Morona Santiago</option>
-            <option value="Napo">Napo</option>
-            <option value="Orellana">Orellana</option>
-            <option value="Pastaza">Pastaza</option>
-            <option value="Pichincha">Pichincha</option>
-            <option value="Santa Elena">Santa Elena</option>
-            <option value="Santo Domingo de los Tsáchilas">Santo Domingo de los Tsáchilas</option>
-            <option value="Sucumbíos">Sucumbíos</option>
-            <option value="Tungurahua">Tungurahua</option>
-            <option value="Zamora Chinchipe">Zamora Chinchipe</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Contacto / WhatsApp</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.4A2 2 0 0 1 3.55 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l1.3-1.3a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <input type="tel" id="f-contacto" placeholder="0991234567">
-        </div>
-        <div class="field" style="grid-column: 2 / -1;">
-          <label>Correo Electrónico</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
-          <input type="email" id="f-correo" placeholder="juan@gmail.com">
+    <div class="main-layout">
+      <div class="content-wrapper">
+        <div class="participantes-container">
+          <div class="controles">
+            <div class="controles-left">
+              <select class="filtro-categoria" id="filtro-categoria">
+                <option value="todos">🏆 Todas las categorías</option>
+                <optgroup label="🏅 AMATEUR">
+                  <option value="Insectos">Insectos</option>
+                  <option value="Trepador (Amateur)">Trepador (Amateur)</option>
+                  <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+                </optgroup>
+                <optgroup label="🏆 PRO">
+                  <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+                  <option value="Minisumo Autónomo">Minisumo Autónomo</option>
+                  <option value="Minisumo RC">Minisumo RC</option>
+                  <option value="Bailarín">Bailarín</option>
+                  <option value="Batalla">Batalla</option>
+                  <option value="Trepador (Pro)">Trepador (Pro)</option>
+                  <option value="Robot soccer">Robot soccer</option>
+                </optgroup>
+                <optgroup label="⭐ OPEN">
+                  <option value="Cubo Rubik">Cubo Rubik</option>
+                  <option value="Lego Kids">Lego Kids</option>
+                  <option value="Impacto Tecnológico">Impacto Tecnológico</option>
+                </optgroup>
+              </select>
+              <input type="text" class="busqueda-input" id="busqueda-input" placeholder="🔍 Buscar por nombre, robot, ID o institución...">
+            </div>
+            <button class="btn-refrescar" onclick="refrescarDatos()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+              </svg>
+              Refrescar
+            </button>
+          </div>
+
+          <div class="tabla-wrapper">
+            <table class="tabla-participantes">
+              <thead>
+                <tr>
+                  <th>ROBOT</th>
+                  <th>CATEGORÍA</th>
+                  <th>NOMBRES</th>
+                  <th>INSTITUCIÓN</th>
+                  <th>ESTADO</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-body">
+                <tr><td colspan="5" class="vacio-msg">⏳ CARGANDO PARTICIPANTES...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-
-      <!-- DATOS DEL ROBOT -->
-      <div class="form-section-title">🤖 Datos del Robot</div>
-      <div class="form-grid">
-        <div class="field">
-          <label>Nombre del Robot</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
-          <input type="text" id="f-robot" placeholder="RoboX-1">
-        </div>
-        <div class="field" style="grid-column: 2 / -1;">
-          <label>Categoría de Competencia</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-          <select id="f-categoria">
-            <option value="">— Selecciona —</option>
-            <optgroup label="🏅 AMATEUR">
-              <option value="Insectos">Insectos</option>
-              <option value="Trepador (Amateur)">Trepador (Amateur)</option>
-              <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
-            </optgroup>
-            <optgroup label="🏆 PRO">
-              <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
-              <option value="Minisumo Autónomo">Minisumo Autónomo</option>
-              <option value="Minisumo RC">Minisumo RC</option>
-              <option value="Bailarín">Bailarín</option>
-              <option value="Batalla">Batalla</option>
-              <option value="Trepador (Pro)">Trepador (Pro)</option>
-              <option value="Robot soccer">Robot soccer</option>
-            </optgroup>
-            <optgroup label="⭐ EXTRA">
-              <option value="Cubo Rubik">Cubo Rubik</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-
-      <!-- COMPROBANTE -->
-      <div class="form-section-title">📎 Comprobante de Pago</div>
-      <div class="form-grid grid-comprobante">
-        <div class="field">
-          <label>Número de Comprobante</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          <input type="text" id="f-comprobante" placeholder="Ej: 0012345678" style="font-family:'DM Mono',monospace;letter-spacing:1px;">
-        </div>
-        <div class="field">
-          <label>Imagen o PDF</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <input type="file" id="f-archivo" accept="image/*,.pdf" />
+      
+      <div class="stats-panel">
+        <div class="stats-panel-title">📊 LIVE STATS</div>
+        <div class="stats-grid">
+          <div class="stat-section-label">👥 PÚBLICO</div>
+          <div class="stat-card">
+            <div class="stat-label">Personas Inscritas</div>
+            <div class="stat-value"><span class="stat-icon">👤</span><span id="stat-personas">0</span></div>
+            <div class="stat-detail" id="stat-personas-detalle">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Robots</div>
+            <div class="stat-value"><span class="stat-icon">🤖</span><span id="stat-robots">0</span></div>
+          </div>
+          <div class="stat-section-label staff-only" style="display:none;">🔐 JUECES</div>
+          <div class="stat-card staff-only" style="display:none;">
+            <div class="stat-label">Aprobados</div>
+            <div class="stat-value"><span class="stat-icon">✅</span><span id="stat-aprobados">0</span></div>
+            <div class="stat-bar"><div class="stat-bar-fill" id="bar-aprobados" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card staff-only" style="display:none;">
+            <div class="stat-label">En Revisión</div>
+            <div class="stat-value"><span class="stat-icon">⏳</span><span id="stat-pendientes">0</span></div>
+            <div class="stat-bar"><div class="stat-bar-fill" id="bar-pendientes" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card staff-only" style="display:none;">
+            <div class="stat-label">No Cumple</div>
+            <div class="stat-value"><span class="stat-icon">✖</span><span id="stat-nocumple">0</span></div>
+          </div>
+          <div class="stat-card staff-only" style="display:none;">
+            <div class="stat-label">Provincias</div>
+            <div class="stat-value"><span class="stat-icon">🗺️</span><span id="stat-ciudades">0</span></div>
+            <div class="stat-detail" id="stat-ciudades-lista">—</div>
+          </div>
+          <div class="stat-card staff-only" style="display:none;">
+            <div class="stat-label">Instituciones / Clubes</div>
+            <div class="stat-value"><span class="stat-icon">🎓</span><span id="stat-instituciones">0</span></div>
+          </div>
+          <div class="stat-card staff-only" style="display:none;">
+            <div class="stat-label">Categorías</div>
+            <div id="stat-categorias-lista" style="margin-top:8px;display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
         </div>
       </div>
-
-      <!-- ACOMPAÑANTES -->
-      <div class="form-section-title">👥 Integrantes del Equipo <span style="font-size:9px;opacity:0.6;font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;">(opcional)</span></div>
-      <div style="font-family:'Exo 2',sans-serif;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;">
-        Sus nombres aparecerán en los diplomas. El QR se envía únicamente al capitán.
-      </div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
-        <div class="field">
-          <label>Nombre — Miembro 2</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-miembro2" placeholder="Nombre completo">
-        </div>
-        <div class="field">
-          <label>Nombre — Miembro 3</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-miembro3" placeholder="Nombre completo">
-        </div>
-      </div>
-
-      <button class="btn-register" onclick="registrarParticipante()">⚡ Registrar Participante</button>
-
     </div>
   </div>
-</div>
-
-<div class="toast" id="toast">
-  <span id="toast-icon">✓</span>
-  <span id="toast-msg"></span>
-</div>
+</main>
 
 <div data-include="../shared/components/footer.html"></div>
+
+<div class="modal-overlay" id="modal-revisar">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>📋 REVISAR PARTICIPANTE</h3>
+      <button class="modal-close" onclick="cerrarModalRevisar()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section" id="rev-seccion-equipo" style="display:none;">
+        <div class="modal-section-title">👥 Integrantes del Equipo</div>
+        <div class="modal-grid">
+          <div class="modal-field" id="rev-campo-miembro2" style="display:none;">
+            <div class="modal-field-label">Miembro 2</div>
+            <div class="modal-field-value" id="rev-miembro2">—</div>
+          </div>
+          <div class="modal-field" id="rev-campo-miembro3" style="display:none;">
+            <div class="modal-field-label">Miembro 3</div>
+            <div class="modal-field-value" id="rev-miembro3">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">💳 Comprobante de Pago</div>
+        <div class="modal-grid">
+          <div class="modal-field" style="grid-column: 1 / -1;">
+            <div class="modal-field-label">ID del Sistema</div>
+            <div class="modal-field-value codigo" id="rev-id">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">📝 Datos Personales</div>
+        <div class="modal-grid">
+          <div class="modal-field"><div class="modal-field-label">Nombre Completo</div><div class="modal-field-value" id="rev-nombre">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Institución / Club</div><div class="modal-field-value" id="rev-institucion">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Provincia</div><div class="modal-field-value" id="rev-ciudad">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Correo Electrónico</div><div class="modal-field-value" id="rev-correo">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Número de Contacto</div><div class="modal-field-value" id="rev-contacto">—</div></div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">🤖 Datos del Robot</div>
+        <div class="modal-grid">
+          <div class="modal-field"><div class="modal-field-label">Nombre del Robot</div><div class="modal-field-value" id="rev-robot">—</div></div>
+          <div class="modal-field"><div class="modal-field-label">Categoría</div><div class="modal-field-value" id="rev-categoria">—</div></div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">💳 Comprobante de Pago</div>
+        <div class="modal-comprobante">
+          <img id="rev-comprobante" src="" alt="Comprobante" style="display:none;">
+          <a id="rev-comprobante-link" href="" target="_blank" style="display:none;">🔗 Ver en tamaño completo</a>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-eliminar" id="btn-eliminar" onclick="noCumpleRequisitos()">✖ No cumple</button>
+        <button class="modal-btn modal-btn-aprobar" id="btn-aprobar" onclick="aprobarParticipante()">✔ Aprobar y enviar QR</button>
+        <button class="modal-btn modal-btn-reenviar" id="btn-reenviar" onclick="reenviarQR()" style="display:none;">📧 Reenviar QR</button>
+        <button class="modal-btn modal-btn-desaprobar" id="btn-desaprobar" onclick="desaprobarParticipante()" style="display:none;">↩ Marcar pendiente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
@@ -389,122 +402,366 @@
 <script>
   const GAS_URL = CONFIG.GAS_URL();
 
+  const CATEGORIAS_NIVEL = {
+    'Insectos': 'amateur',
+    'Trepador (Amateur)': 'amateur',
+    'Seguidor de línea ST (Amateur)': 'amateur',
+    'Seguidor de línea ST (Pro)': 'pro',
+    'Minisumo Autónomo': 'pro',
+    'Minisumo RC': 'pro',
+    'Bailarín': 'pro',
+    'Batalla': 'pro',
+    'Trepador (Pro)': 'pro',
+    'Robot soccer': 'pro',
+    'Cubo Rubik': 'extra',
+    'Lego Kids': 'extra',
+    'Impacto Tecnológico': 'extra'
+  };
+
+  const TODAS_CATEGORIAS = [
+    'Insectos','Trepador (Amateur)','Seguidor de línea ST (Amateur)',
+    'Seguidor de línea ST (Pro)','Minisumo Autónomo','Minisumo RC',
+    'Bailarín','Batalla','Trepador (Pro)','Robot soccer',
+    'Cubo Rubik','Lego Kids','Impacto Tecnológico'
+  ];
+
+  // ── Helper: convierte cualquier valor a string limpio ──────────────────
+  // Esto evita el error "p.miembro2.trim is not a function" cuando GAS
+  // devuelve null, undefined, número u otro tipo no-string en esos campos.
+  function sv(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).trim();
+  }
+
+  function gasGet(params) {
+    const qs = new URLSearchParams(params).toString();
+    return fetch(GAS_URL + '?' + qs).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+
   async function gasPost(data) {
-    const r = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(data), redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'} });
+    const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(data), redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
     return r.json();
   }
 
-  async function subirComprobanteDrive(archivo, participanteId) {
-    const base64 = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result.split(',')[1]);
-      r.onerror = rej;
-      r.readAsDataURL(archivo);
-    });
-    const resp = await gasPost({
-      action: 'uploadComprobante',
-      base64: base64,
-      mimeType: archivo.type,
-      fileName: 'TRANSFERENCIA-' + participanteId
-    });
-    if (resp.ok && resp.url) return resp.url;
-    throw new Error(resp.error || 'Error al subir comprobante a Drive');
+  function construirTextoQR(p) {
+    const partes = [p.id];
+    if (sv(p.nombre))   partes.push(sv(p.nombre));
+    if (sv(p.miembro2)) partes.push(sv(p.miembro2));
+    if (sv(p.miembro3)) partes.push(sv(p.miembro3));
+    return partes.join('~');
   }
 
-  async function registrarParticipante() {
-    const nombre=document.getElementById('f-nombre').value.trim();
-    const institucion=document.getElementById('f-institucion').value.trim();
-    const ciudad=document.getElementById('f-ciudad').value.trim();
-    const robot=document.getElementById('f-robot').value.trim();
-    const contacto=document.getElementById('f-contacto').value.trim();
-    const correo=document.getElementById('f-correo').value.trim();
-    const categoria=document.getElementById('f-categoria').value;
-    const comprobante=document.getElementById('f-comprobante').value.trim();
-    const archivoInput=document.getElementById('f-archivo');
-    const archivo=archivoInput.files[0]||null;
-    const miembro2=document.getElementById('f-miembro2').value.trim();
-    const miembro3=document.getElementById('f-miembro3').value.trim();
-    
-    if (!nombre) { showToast('El nombre completo es obligatorio',true); return; }
-    if (!institucion) { showToast('La institución es obligatoria',true); return; }
-    if (!ciudad) { showToast('Selecciona una provincia',true); return; }
-    if (!robot) { showToast('El nombre del robot es obligatorio',true); return; }
-    if (!contacto) { showToast('El número de contacto es obligatorio',true); return; }
-    if (contacto.length < 10) { showToast('El número debe tener al menos 10 dígitos',true); return; }
-    if (!correo) { showToast('El correo electrónico es obligatorio',true); return; }
-    if (!categoria) { showToast('Selecciona una categoría',true); return; }
-    if (!comprobante) { showToast('El número de comprobante es obligatorio',true); return; }
-    if (!archivo) { showToast('Debes adjuntar el comprobante de pago',true); return; }
-    
-    const btn=document.querySelector('.btn-register');
-    btn.disabled=true; 
-    btn.textContent='⏳ Registrando participante...';
-    
+  function generarUrlQR(p) {
+    const textoQR = construirTextoQR(p);
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data=' + encodeURIComponent(textoQR);
+  }
+
+  function cargarListaLocal() {
+    const lista    = JSON.parse(localStorage.getItem('participantes') || '[]');
+    actualizarEstadisticas(lista);
+    const filtro   = document.getElementById('filtro-categoria').value;
+    const busqueda = document.getElementById('busqueda-input').value.toLowerCase();
+    let filtrados  = lista;
+    if (filtro !== 'todos') filtrados = filtrados.filter(p => p.categoria === filtro);
+    if (busqueda) {
+      filtrados = filtrados.filter(p =>
+        sv(p.nombre).toLowerCase().includes(busqueda) ||
+        sv(p.robot).toLowerCase().includes(busqueda) ||
+        sv(p.institucion).toLowerCase().includes(busqueda) ||
+        sv(p.id).toLowerCase().includes(busqueda)
+      );
+    }
+    const tbody = document.getElementById('tabla-body');
+    if (filtrados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="vacio-msg">No se encontraron participantes</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtrados.map(p => {
+      let estadoClass = 'pendiente', estadoTexto = 'EN REVISIÓN';
+      if (p.aprobado === 'APROBADO')   { estadoClass = 'aprobado';  estadoTexto = 'APROBADO'; }
+      else if (p.aprobado === 'NO CUMPLE') { estadoClass = 'nocumple'; estadoTexto = 'NO CUMPLE'; }
+      const nivel = CATEGORIAS_NIVEL[p.categoria] || 'pro';
+
+      // Construir lista de nombres con sv() para evitar TypeError
+      const nombres = [sv(p.nombre), sv(p.miembro2), sv(p.miembro3)].filter(Boolean);
+      const nombresHtml = nombres.map((n, i) =>
+        i === 0
+          ? '<div style="font-weight:700;">' + n + '</div>'
+          : '<div style="font-size:0.8em;opacity:0.75;margin-top:2px;">+ ' + n + '</div>'
+      ).join('');
+
+      return '<tr onclick=\'abrirModalRevisar(' + JSON.stringify(p).replace(/'/g, '&#39;') + ')\'>' +
+        '<td>' + (sv(p.robot) || '—') + '</td>' +
+        '<td><span class="categoria-badge ' + nivel + '">' + (sv(p.categoria) || '—') + '</span></td>' +
+        '<td>' + nombresHtml + '</td>' +
+        '<td>' + (sv(p.institucion) || '—') + '</td>' +
+        '<td><span class="estado-badge ' + estadoClass + '">' + estadoTexto + '</span></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function actualizarEstadisticas(lista) {
+    // Contar personas: 1 por robot + miembros adicionales con sv()
+    let totalPersonas = 0;
+    lista.forEach(p => {
+      totalPersonas += 1;
+      if (sv(p.miembro2)) totalPersonas++;
+      if (sv(p.miembro3)) totalPersonas++;
+    });
+    const totalRobots = lista.length;
+    document.getElementById('stat-personas').textContent = totalPersonas;
+    document.getElementById('stat-robots').textContent   = totalRobots;
+
+    const equipos = lista.filter(p => sv(p.miembro2) || sv(p.miembro3)).length;
+    const solos   = totalRobots - equipos;
+    const detalle = [];
+    if (solos   > 0) detalle.push(solos   + ' individual' + (solos   > 1 ? 'es' : ''));
+    if (equipos > 0) detalle.push(equipos + ' equipo'     + (equipos > 1 ? 's'  : ''));
+    document.getElementById('stat-personas-detalle').textContent = detalle.join(' · ') || '—';
+
+    // Sección staff
+    const savedUser = localStorage.getItem('sucrebot_user');
+    let esStaff = false;
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        esStaff = window.STAFF_EMAILS && window.STAFF_EMAILS.includes(userData.email);
+      } catch(e) {}
+    }
+    document.querySelectorAll('.staff-only').forEach(el => { el.style.display = esStaff ? '' : 'none'; });
+    if (!esStaff) return;
+
+    const aprobados  = lista.filter(p => p.aprobado === 'APROBADO').length;
+    const pendientes = lista.filter(p => p.aprobado !== 'APROBADO' && p.aprobado !== 'NO CUMPLE').length;
+    const nocumple   = lista.filter(p => p.aprobado === 'NO CUMPLE').length;
+    document.getElementById('stat-aprobados').textContent  = aprobados;
+    document.getElementById('stat-pendientes').textContent = pendientes;
+    document.getElementById('stat-nocumple').textContent   = nocumple;
+    const porcAprobados  = totalRobots > 0 ? (aprobados  / totalRobots * 100).toFixed(0) : 0;
+    const porcPendientes = totalRobots > 0 ? (pendientes / totalRobots * 100).toFixed(0) : 0;
+    document.getElementById('bar-aprobados').style.width  = porcAprobados  + '%';
+    document.getElementById('bar-pendientes').style.width = porcPendientes + '%';
+
+    const ciudades     = [...new Set(lista.map(p => sv(p.ciudad)).filter(Boolean))];
+    const instituciones = [...new Set(lista.map(p => sv(p.institucion)).filter(Boolean))];
+    document.getElementById('stat-ciudades').textContent      = ciudades.length;
+    document.getElementById('stat-ciudades-lista').textContent =
+      ciudades.slice(0, 3).join(', ') + (ciudades.length > 3 ? '...' : '') || '—';
+    document.getElementById('stat-instituciones').textContent = instituciones.length;
+
+    const catConteo = {};
+    lista.forEach(p => { if (p.categoria) catConteo[p.categoria] = (catConteo[p.categoria] || 0) + 1; });
+    const catLista = document.getElementById('stat-categorias-lista');
+    catLista.innerHTML = TODAS_CATEGORIAS.map(cat => {
+      const n     = catConteo[cat] || 0;
+      const color = n > 0 ? '#00ff88' : 'rgba(255,255,255,0.3)';
+      const icono = n > 0 ? '🟢' : '🔴';
+      const texto = n > 0 ? n + ' inscrito' + (n > 1 ? 's' : '') : 'Sin participantes';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;' +
+        'font-family:DM Mono,monospace;font-size:9px;padding:4px 6px;' +
+        'background:rgba(0,0,0,0.15);border-radius:6px;border-left:3px solid ' + color + ';">' +
+        '<span style="color:#fff;opacity:0.9;">' + icono + ' ' + cat + '</span>' +
+        '<span style="color:' + color + ';font-weight:700;">' + texto + '</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  function refrescarDatos() {
+    const btn = document.querySelector('.btn-refrescar');
+    btn.disabled = true;
+    const iconoOriginal = btn.innerHTML;
+    btn.innerHTML = '⏳ Actualizando...';
+    gasGet({ action: 'getParticipantes' })
+      .then(arr => {
+        if (Array.isArray(arr)) {
+          localStorage.setItem('participantes', JSON.stringify(arr));
+          cargarListaLocal();
+          showToast('✅ Datos actualizados');
+        }
+      })
+      .catch(e => showToast('❌ Error: ' + (e.message || 'Desconocido'), true))
+      .finally(() => { btn.disabled = false; btn.innerHTML = iconoOriginal; });
+  }
+
+  let participanteEnRevision = null;
+
+  function abrirModalRevisar(p) {
+    const savedUser = localStorage.getItem('sucrebot_user');
+    if (!savedUser) { showToast('⚠️ Debes iniciar sesión', true); return; }
+    let userData;
+    try { userData = JSON.parse(savedUser); } catch (e) { showToast('⚠️ Error de sesión', true); return; }
+    if (!window.STAFF_EMAILS || !window.STAFF_EMAILS.includes(userData.email)) {
+      showToast('⚠️ Solo personal autorizado', true); return;
+    }
+    participanteEnRevision = p;
+    const estado = (p.aprobado === 'APROBADO') ? 'aprobado' : 'pendiente';
+    document.getElementById('rev-id').textContent          = sv(p.id)          || '—';
+    document.getElementById('rev-nombre').textContent      = sv(p.nombre)      || '—';
+    document.getElementById('rev-robot').textContent       = sv(p.robot)       || '—';
+    document.getElementById('rev-categoria').textContent   = sv(p.categoria)   || '—';
+    document.getElementById('rev-institucion').textContent = sv(p.institucion) || '—';
+    document.getElementById('rev-ciudad').textContent      = sv(p.ciudad)      || '—';
+    document.getElementById('rev-correo').textContent      = sv(p.correo)      || '—';
+    document.getElementById('rev-contacto').textContent    = sv(p.contacto)    || '—';
+
+    const m2 = sv(p.miembro2);
+    const m3 = sv(p.miembro3);
+    const tieneEquipo = m2 || m3;
+    document.getElementById('rev-seccion-equipo').style.display = tieneEquipo ? 'block' : 'none';
+    if (m2) { document.getElementById('rev-miembro2').textContent = m2; document.getElementById('rev-campo-miembro2').style.display = 'flex'; }
+    else     { document.getElementById('rev-campo-miembro2').style.display = 'none'; }
+    if (m3) { document.getElementById('rev-miembro3').textContent = m3; document.getElementById('rev-campo-miembro3').style.display = 'flex'; }
+    else     { document.getElementById('rev-campo-miembro3').style.display = 'none'; }
+
+    const imgEl  = document.getElementById('rev-comprobante');
+    const linkEl = document.getElementById('rev-comprobante-link');
+    if (p.archivoUrl) {
+      const fileIdMatch = p.archivoUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+      const imgSrc = fileIdMatch
+        ? 'https://drive.google.com/thumbnail?id=' + fileIdMatch[1] + '&sz=w800'
+        : p.archivoUrl;
+      imgEl.src = imgSrc; imgEl.style.display = 'block';
+      linkEl.href = p.archivoUrl; linkEl.style.display = 'inline-block';
+    } else { imgEl.style.display = 'none'; linkEl.style.display = 'none'; }
+
+    const btnEliminar   = document.getElementById('btn-eliminar');
+    const btnAprobar    = document.getElementById('btn-aprobar');
+    const btnReenviar   = document.getElementById('btn-reenviar');
+    const btnDesaprobar = document.getElementById('btn-desaprobar');
+    if (estado === 'aprobado') {
+      btnEliminar.style.display  = 'none';  btnAprobar.style.display   = 'none';
+      btnReenviar.style.display  = 'flex';  btnReenviar.disabled  = false;  btnReenviar.innerHTML  = '📧 Reenviar QR';
+      btnDesaprobar.style.display = 'flex'; btnDesaprobar.disabled = false; btnDesaprobar.innerHTML = '↩ Marcar pendiente';
+    } else {
+      btnEliminar.style.display  = 'flex';  btnEliminar.disabled  = false;  btnEliminar.innerHTML  = '✖ No cumple';
+      btnAprobar.style.display   = 'flex';  btnAprobar.disabled   = false;  btnAprobar.innerHTML   = '✔ Aprobar y enviar QR';
+      btnReenviar.style.display  = 'none';  btnDesaprobar.style.display = 'none';
+    }
+    document.getElementById('modal-revisar').classList.add('show');
+  }
+
+  function cerrarModalRevisar() {
+    participanteEnRevision = null;
+    document.getElementById('modal-revisar').classList.remove('show');
+  }
+
+  async function noCumpleRequisitos() {
+    if (!participanteEnRevision) return;
+    const razon = prompt('Razón por la que no cumple con los requisitos:\n\n(Se mostrará al participante)');
+    if (!razon || razon.trim() === '') { showToast('⚠️ Debes especificar una razón', true); return; }
+    const btn = document.getElementById('btn-eliminar');
+    btn.disabled = true; btn.innerHTML = '⏳ Procesando...';
     try {
-      const respuestaRegistro = await gasPost({
-        action:'setParticipante',
-        id: '',
-        nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, miembro3, comprobante,
-        archivoUrl: ''
-      });
-      
-      if (!respuestaRegistro.ok || !respuestaRegistro.id) {
-        throw new Error('No se pudo generar el ID del participante');
-      }
-      
-      const idGenerado = respuestaRegistro.id;
-      console.log('ID generado por GAS:', idGenerado);
-      
-      btn.textContent='⏳ Subiendo comprobante...';
-      let archivoUrl = '';
-      try { 
-        archivoUrl = await subirComprobanteDrive(archivo, idGenerado); 
-      } catch(e) { 
-        showToast('Error al subir comprobante: '+e.message, true); 
-        btn.disabled=false; 
-        btn.textContent='⚡ Registrar Participante'; 
-        return; 
-      }
-      
-      btn.textContent='⏳ Finalizando registro...';
-      await gasPost({
-        action:'setParticipante',
-        id: idGenerado,
-        nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, miembro3, comprobante,
-        archivoUrl
-      });
-      
-      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
-      const idx=lista.findIndex(p=>p.id===idGenerado);
-      const datosLocal={id:idGenerado,nombre,institucion,ciudad,robot,contacto,correo,categoria};
-      if(idx>=0) lista[idx]=datosLocal; else lista.push(datosLocal);
-      localStorage.setItem('participantes',JSON.stringify(lista));
-      
-      showToast('✅ Registrado con ID: ' + idGenerado, false);
-      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3'].forEach(id=>document.getElementById(id).value='');
-      document.getElementById('f-ciudad').value='';
-      document.getElementById('f-categoria').value=''; archivoInput.value='';
-      
-    } catch(e) { 
-      showToast('Error al registrar: '+e.message, true); 
-    } finally { 
-      btn.disabled=false; 
-      btn.textContent='⚡ Registrar Participante'; 
+      await gasGet({ action: 'noCumpleRequisitos', id: participanteEnRevision.id, razon: razon.trim() });
+      const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
+      const idx = lista.findIndex(x => x.id === participanteEnRevision.id);
+      if (idx >= 0) { lista[idx].aprobado = 'NO CUMPLE'; lista[idx].razonRechazo = razon.trim(); }
+      localStorage.setItem('participantes', JSON.stringify(lista));
+      cerrarModalRevisar(); cargarListaLocal();
+      showToast('✖ Marcado como no cumple requisitos');
+    } catch (e) {
+      btn.disabled = false; btn.innerHTML = '✖ No cumple';
+      showToast('Error: ' + (e.message || JSON.stringify(e)), true);
     }
   }
 
-  let toastTimer=null;
-  function showToast(msg,error=false) {
-    const t=document.getElementById('toast'), icon=document.getElementById('toast-icon'), text=document.getElementById('toast-msg');
-    text.textContent=msg;
-    if(error){ icon.textContent='⚠'; t.style.borderLeftColor='#e05555'; t.style.color='#ffb3b3'; t.style.background='#2a1a1a'; } 
-    else { icon.textContent='✓'; t.style.borderLeftColor='#3dd68c'; t.style.color='#d0f5e8'; t.style.background='#1e2438'; }
-    if(toastTimer){ clearTimeout(toastTimer); t.classList.remove('show'); }
-    requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
-    toastTimer=setTimeout(()=>{ t.classList.remove('show'); toastTimer=null; },3500);
+  async function aprobarParticipante() {
+    if (!participanteEnRevision) return;
+    const p = participanteEnRevision;
+    const btn = document.getElementById('btn-aprobar');
+    btn.disabled = true; btn.innerHTML = '⏳ Aprobando...';
+    try {
+      await gasGet({ action: 'aprobarParticipante', id: p.id });
+      btn.innerHTML = '⏳ Enviando QR...';
+      const qrUrl = generarUrlQR(p);
+      const respEmail = await gasPost({
+        action: 'enviarQR',
+        correo: p.correo, nombre: p.nombre, robot: p.robot,
+        categoria: p.categoria, institucion: p.institucion,
+        ciudad: p.ciudad, qrUrl: qrUrl, id: p.id
+      });
+      if (!respEmail.ok) throw new Error(respEmail.error || 'Error al enviar correo');
+      const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
+      const idx = lista.findIndex(x => x.id === p.id);
+      if (idx >= 0) lista[idx].aprobado = 'APROBADO';
+      localStorage.setItem('participantes', JSON.stringify(lista));
+      cerrarModalRevisar(); cargarListaLocal();
+      showToast('✔ Aprobado — QR enviado a ' + p.correo);
+    } catch (e) {
+      btn.disabled = false; btn.innerHTML = '✔ Aprobar y enviar QR';
+      showToast('Error: ' + (e.message || JSON.stringify(e)), true);
+    }
   }
+
+  async function reenviarQR() {
+    if (!participanteEnRevision) return;
+    const p = participanteEnRevision;
+    const btn = document.getElementById('btn-reenviar');
+    btn.disabled = true; btn.innerHTML = '⏳ Enviando...';
+    try {
+      const qrUrl = generarUrlQR(p);
+      const respEmail = await gasPost({
+        action: 'enviarQR',
+        correo: p.correo, nombre: p.nombre, robot: p.robot,
+        categoria: p.categoria, institucion: p.institucion,
+        ciudad: p.ciudad, qrUrl: qrUrl, id: p.id
+      });
+      if (!respEmail.ok) throw new Error(respEmail.error || 'Error al enviar correo');
+      cerrarModalRevisar();
+      showToast('📧 QR reenviado a ' + p.correo);
+    } catch (e) {
+      btn.disabled = false; btn.innerHTML = '📧 Reenviar QR';
+      showToast('Error al reenviar: ' + (e.message || JSON.stringify(e)), true);
+    }
+  }
+
+  async function desaprobarParticipante() {
+    if (!participanteEnRevision) return;
+    const btn = document.getElementById('btn-desaprobar');
+    btn.disabled = true; btn.innerHTML = '⏳ Procesando...';
+    try {
+      await gasGet({ action: 'desaprobarParticipante', id: participanteEnRevision.id });
+      const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
+      const idx = lista.findIndex(x => x.id === participanteEnRevision.id);
+      if (idx >= 0) lista[idx].aprobado = 'EN REVISION';
+      localStorage.setItem('participantes', JSON.stringify(lista));
+      cerrarModalRevisar(); cargarListaLocal();
+      showToast('↩ Participante marcado como pendiente');
+    } catch (e) {
+      btn.disabled = false; btn.innerHTML = '↩ Marcar pendiente';
+      showToast('Error: ' + (e.message || JSON.stringify(e)), true);
+    }
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-revisar')) cerrarModalRevisar();
+  });
+
+  function showToast(msg, error = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.borderColor = error ? 'rgba(255,59,59,0.4)' : 'rgba(0,255,136,0.4)';
+    t.style.color = error ? '#ff3b3b' : '#00ff88';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  document.getElementById('filtro-categoria').addEventListener('change', cargarListaLocal);
+  document.getElementById('busqueda-input').addEventListener('input', cargarListaLocal);
+
+  gasGet({ action: 'getParticipantes' }).then(arr => {
+    if (Array.isArray(arr)) {
+      localStorage.setItem('participantes', JSON.stringify(arr));
+      cargarListaLocal();
+    } else {
+      localStorage.setItem('participantes', JSON.stringify([]));
+      cargarListaLocal();
+    }
+  }).catch(e => {
+    console.error('Error al cargar:', e);
+    cargarListaLocal();
+    showToast('⚠️ Error al cargar datos', true);
+  });
 </script>
 
 </body>
