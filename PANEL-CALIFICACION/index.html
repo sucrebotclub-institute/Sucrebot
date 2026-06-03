@@ -708,11 +708,32 @@ function validarConfig() {
   document.getElementById('btn-iniciar-sesion').disabled = !cat || validos === 0;
 }
 
-function onCategoriaSelected() {
+async function onCategoriaSelected() {
   const cat = document.getElementById('cfg-categoria').value;
   if (!cat) return;
   validarConfig();
-  // Intentar cargar criterios guardados
+
+  // Bloquear categoría apenas se selecciona
+  try {
+    const r = await fetch(GAS || CONFIG.GAS_URL(), {
+      method: 'POST',
+      body: JSON.stringify({ action:'bloquearCategoria', categoria: cat, usuario:'panel-calificacion' })
+    });
+    const d = await r.json();
+    if (!d.ok && d.bloqueadaPor) {
+      showToast('Categoría bloqueada por otro dispositivo', 'error');
+      document.getElementById('cfg-categoria').value = '';
+      validarConfig();
+      return;
+    }
+    document.getElementById('bloqueo-badge').style.display = '';
+    document.getElementById('bloqueo-txt').textContent =
+      `${cat === 'bai' ? 'Bailarín' : 'Impacto Tecnológico'} — bloqueada por este panel`;
+  } catch(e) {
+    showToast('Error al bloquear categoría', 'error');
+  }
+
+  // Cargar criterios guardados
   fetch(`${GAS || CONFIG.GAS_URL()}?action=getCriterios&categoria=${cat}`)
     .then(r => r.json())
     .then(d => {
