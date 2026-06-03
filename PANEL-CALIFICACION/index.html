@@ -768,9 +768,10 @@ async function onCategoriaSelected() {
 
   // Bloquear categoría apenas se selecciona
   try {
+    const catNombre = CAT_NOMBRES[cat] || cat;
     const r = await fetch(GAS || CONFIG.GAS_URL(), {
       method: 'POST',
-      body: JSON.stringify({ action:'bloquearCategoria', categoria: cat, usuario:'panel-calificacion' })
+      body: JSON.stringify({ action:'bloquearCategoria', categoria: catNombre, usuario:'panel-calificacion' })
     });
     const d = await r.json();
     if (!d.ok && d.bloqueadaPor) {
@@ -815,7 +816,7 @@ async function iniciarSesion() {
   try {
     const r = await fetch(GAS, {
       method: 'POST',
-      body: JSON.stringify({ action:'bloquearCategoria', categoria: categoriaActual, usuario:'panel-calificacion' })
+      body: JSON.stringify({ action:'bloquearCategoria', categoria: CAT_NOMBRES[categoriaActual] || categoriaActual, usuario:'panel-calificacion' })
     });
     const d = await r.json();
     if (!d.ok && d.bloqueadaPor) {
@@ -1127,7 +1128,8 @@ function confirmarCerrarCategoria() { document.getElementById('modal-cerrar').cl
 async function cerrarCategoria() {
   document.getElementById('modal-cerrar').classList.remove('show');
   try {
-    await fetch(GAS, { method:'POST', body: JSON.stringify({ action:'desbloquearCategoria', categoria: categoriaActual }) });
+    const catNombreD = CAT_NOMBRES[categoriaActual] || categoriaActual;
+    await fetch(GAS, { method:'POST', body: JSON.stringify({ action:'desbloquearCategoria', categoria: catNombreD }) });
     categoriaActual = ''; participanteActual = null; historialNotas = {}; todosPuntuados = [];
     localStorage.removeItem('panel_cal_sesion');
     document.getElementById('bloqueo-badge').style.display = 'none';
