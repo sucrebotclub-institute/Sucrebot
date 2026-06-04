@@ -1104,10 +1104,18 @@ async function guardarCalificacion() {
 }
 
 function siguienteRobot() {
-  const idx      = state.participantes.findIndex(p => p.id === state.selectedId);
-  const siguiente = state.participantes.find((p, i) => i > idx && !state.calificaciones[p.id]?.guardado);
-  if (siguiente) seleccionarRobot(siguiente.id);
-  else toast('Todos los robots han sido calificados ✅', 'success');
+  const idx = state.participantes.findIndex(p => p.id === state.selectedId);
+  // Buscar primero hacia adelante
+  let siguiente = state.participantes.find((p, i) => i > idx && !state.calificaciones[p.id]?.guardado);
+  // Si no hay, volver desde el principio
+  if (!siguiente) {
+    siguiente = state.participantes.find(p => !state.calificaciones[p.id]?.guardado);
+  }
+  if (siguiente) {
+    seleccionarRobot(siguiente.id);
+  } else {
+    toast('Todos los robots han sido calificados ✅', 'success');
+  }
 }
 
 function irARanking()  { cargarRanking(); setStep(3); }
