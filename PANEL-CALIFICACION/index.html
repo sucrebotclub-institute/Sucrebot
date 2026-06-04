@@ -1342,8 +1342,8 @@ async function restaurarSesion() {
   const raw = localStorage.getItem('panel_cal_sesion');
   if (!raw) return;
   let sesion;
-  try { sesion = JSON.parse(raw); } catch(e) { return; }
-  if (!sesion.categoria) return;
+  try { sesion = JSON.parse(raw); } catch(e) { loading(false); return; }
+  if (!sesion.categoria) { loading(false); return; }
 
   // Verificar que la categoría sigue bloqueada en GAS
   try {
@@ -1354,9 +1354,10 @@ async function restaurarSesion() {
     if (!activa) {
       // Categoría ya no está bloqueada — limpiar sesión
       localStorage.removeItem('panel_cal_sesion');
+      loading(false);
       return;
     }
-  } catch(e) { return; }
+  } catch(e) { loading(false); return; }
 
   // Restaurar state mínimo
   state.categoria = sesion.categoria;
@@ -1425,6 +1426,16 @@ async function restaurarSesion() {
 document.addEventListener('componentsLoaded', () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
+
+  // Si hay sesión guardada, mostrar loading inmediatamente mientras restaura
+  const raw = localStorage.getItem('panel_cal_sesion');
+  if (raw) {
+    try {
+      const s = JSON.parse(raw);
+      if (s.categoria) loading(true, 'RESTAURANDO SESIÓN...');
+    } catch(e) {}
+  }
+
   restaurarSesion();
 });
 </script>
