@@ -548,7 +548,10 @@
 
       <div class="lista-robots">
         <div class="lista-header">
-          <div class="lista-header-title" id="listaCatLabel">—</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div class="lista-header-title" id="listaCatLabel">—</div>
+            <button class="btn btn-outline btn-sm" onclick="volverAConfigurar()" style="padding:4px 10px;font-size:.55rem">← Config</button>
+          </div>
           <div class="lista-progress">
             <span id="progCal">0</span> / <span id="progTotal">0</span> calificados
           </div>
@@ -1115,6 +1118,26 @@ function siguienteRobot() {
 
 function irARanking()  { cargarRanking(); setStep(3); }
 function irACalificar() { setStep(2); }
+
+function volverAConfigurar() {
+  confirmar('↩️', 'VOLVER A CONFIGURAR',
+    'Se liberará el bloqueo de la categoría y volverás al paso 1. ¿Continuar?',
+    'Volver', 'danger',
+    async () => {
+      loading(true, 'LIBERANDO CATEGORÍA...');
+      try {
+        await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
+      } catch(e) {}
+      localStorage.removeItem('panel_cal_sesion');
+      state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[] };
+      loading(false);
+      document.getElementById('selectCategoria').value = '';
+      document.getElementById('participantesInfo').style.display = 'none';
+      document.getElementById('btnIniciarCal').disabled = true;
+      setStep(1);
+    }
+  );
+}
 
 async function cerrarCategoria() {
   confirmar('🔒', 'CERRAR CATEGORÍA',
