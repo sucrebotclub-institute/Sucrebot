@@ -78,29 +78,31 @@
     .step-item:not(:last-child)::after {
       content:''; position:absolute; top: 18px; left: calc(50% + 20px);
       width: calc(100% - 40px); height: 2px;
-      background: var(--panel-border2); transition: background .4s;
+      background: #c8d4e8; transition: background .4s;
       z-index: 0;
     }
-    .step-item.done:not(:last-child)::after { background: var(--cyan); }
+    .step-item.done:not(:last-child)::after { background: #1a5ca8; }
     .step-dot {
-      width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--panel-border2);
-      background: #fff; display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid #c8d4e8;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
       font-family: 'Orbitron'; font-size: .7rem; font-weight: 700;
-      color: var(--text-dim); transition: all .3s; z-index: 1;
+      color: #8a9ab8; transition: all .3s; z-index: 1;
     }
     .step-item.active .step-dot {
-      border-color: var(--cyan); background: var(--blue); color: #fff;
+      border-color: #5bc8f0; background: #1a5ca8; color: #fff;
       box-shadow: 0 0 12px rgba(91,200,240,0.4);
     }
     .step-item.done .step-dot {
-      border-color: var(--green); background: var(--green); color: #fff;
+      border-color: #2ecc71; background: #2ecc71; color: #fff;
     }
     .step-label {
       font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1px;
-      color: var(--text-dim); margin-top: 6px; text-align: center;
+      color: #8a9ab8; margin-top: 6px; text-align: center;
     }
-    .step-item.active .step-label { color: var(--blue); }
-    .step-item.done .step-label { color: var(--green); }
+    .step-item.active .step-label { color: #1a5ca8; font-weight: 700; }
+    .step-item.done .step-label { color: #2ecc71; }
 
     /* ── MAIN WRAPPER ── */
     .panel-wrap {
@@ -590,7 +592,7 @@
     SUCREBOT 2026 · STAFF
   </div>
   <h2 class="pc-hero-title">PANEL DE <span>CALIFICACIÓN</span></h2>
-  <p class="pc-hero-sub">Evaluación por criterios · Bailarín · Batalla · Impacto Tecnológico</p>
+  <p class="pc-hero-sub">Evaluación por criterios · Bailarín · Impacto Tecnológico</p>
 </div>
 
 <!-- STEPPER -->
@@ -618,7 +620,7 @@
   <div class="step-panel active" id="panel-1">
 
     <div class="no-login-notice">
-      ℹ️ Este panel no requiere inicio de sesión. Un solo operador ingresa todas las calificaciones.
+      🔒 Acceso exclusivo para Jueces · Inicia sesión con tu cuenta staff
     </div>
 
     <div class="config-grid">
@@ -632,7 +634,6 @@
           <select class="form-control" id="selectCategoria" onchange="onCategoriaChange()">
             <option value="">— Seleccionar —</option>
             <option value="bai">Bailarín</option>
-            <option value="bat">Batalla</option>
             <option value="dev">Impacto Tecnológico</option>
           </select>
         </div>
@@ -836,24 +837,16 @@ const GAS = CONFIG.GAS_URL();
 
 const CAT_NOMBRES = {
   bai: 'Bailarín',
-  bat: 'Batalla',
   dev: 'Impacto Tecnológico'
 };
 
 const DEFAULTS_CRITERIOS = {
   bai: [
-    { nombre: 'Coreografía',       descripcion: 'Calidad y fluidez del movimiento',     peso: 10 },
-    { nombre: 'Sincronía Musical', descripcion: 'Coordinación con la música',            peso: 10 },
-    { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño y presentación',peso: 10 },
-    { nombre: 'Construcción',      descripcion: 'Calidad técnica del robot',             peso: 10 },
-    { nombre: 'Desempeño',         descripcion: 'Ejecución sin errores en escena',       peso: 10 },
-  ],
-  bat: [
-    { nombre: 'Estrategia',        descripcion: 'Táctica de ataque y defensa',           peso: 10 },
-    { nombre: 'Construcción',      descripcion: 'Solidez y diseño mecánico',             peso: 10 },
-    { nombre: 'Autonomía',         descripcion: 'Nivel de automatización del robot',     peso: 10 },
-    { nombre: 'Presentación',      descripcion: 'Presentación técnica oral',             peso: 10 },
-    { nombre: 'Innovación',        descripcion: 'Soluciones creativas aplicadas',        peso: 10 },
+    { nombre: 'Coreografía',       descripcion: 'Calidad y fluidez del movimiento',      peso: 10 },
+    { nombre: 'Sincronía Musical', descripcion: 'Coordinación con la música',             peso: 10 },
+    { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño y presentación', peso: 10 },
+    { nombre: 'Construcción',      descripcion: 'Calidad técnica del robot',              peso: 10 },
+    { nombre: 'Desempeño',         descripcion: 'Ejecución sin errores en escena',        peso: 10 },
   ],
   dev: [
     { nombre: 'Innovación',        descripcion: 'Originalidad de la propuesta tecnológica', peso: 10 },
@@ -1445,6 +1438,12 @@ async function restaurarSesion() {
 }
 
 document.addEventListener('componentsLoaded', () => {
+  // Verificar sesión staff
+  const savedUser = localStorage.getItem('sucrebot_user');
+  if (!savedUser) {
+    window.location.href = '../INICIO/';
+    return;
+  }
   restaurarSesion();
 });
 // fallback si no hay shared components
