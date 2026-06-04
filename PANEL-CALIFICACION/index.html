@@ -1229,19 +1229,58 @@ async function guardarPodio() {
   );
 }
 
-function exportarExcel() {
+async function exportarExcel() {
   if (!state.rankingData.length) { toast('No hay datos', 'error'); return; }
-  const rows = [['#','Robot','Nombre','Institución','Categoría','Total','Rondas']];
-  state.rankingData.forEach((r, i) => {
-    rows.push([i+1, r.robot||r.nombre, r.nombre, r.institucion||'',
-               CAT_NOMBRES[state.categoria], r.total, r.rondas||0]);
+
+  loading(true, 'GENERANDO EXCEL...');
+
+  // Obtener puntuaciones detalladas del GAS
+  let puntuaciones = [];
+  try {
+    const res = await gasGet({ action: 'getPuntuaciones', categoria: state.categoria });
+    puntuaciones = res.puntuaciones || [];
+  } catch(e) {}
+
+  // Mapear por id_participante → notas detalladas
+  const mapaNotas = {};
+  puntuaciones.forEach(p => {
+    if (!mapaNotas[p.id_participante]) {
+      mapaNotas[p.id_participante] = p.notas || {};
+    }
   });
-  const csv  = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+  // Nombres de criterios en orden
+  const nomCriterios = state.criterios.map(c => c.nombre);
+
+  // Cabecera: #, Robot, Nombre, Institución, [criterio1, criterio2...], TOTAL
+  const header = ['#', 'Robot', 'Nombre', 'Institución', ...nomCriterios, 'TOTAL'];
+  const rows = [header];
+
+  state.rankingData.forEach((r, i) => {
+    const notas = mapaNotas[r.id] || {};
+    const valCriterios = state.criterios.map((_, idx) => {
+      const v = notas[`c${idx}`];
+      return v !== undefined ? v : '';
+    });
+    rows.push([
+      i + 1,
+      r.robot || r.nombre,
+      r.nombre,
+      r.institucion || '',
+      ...valCriterios,
+      r.total
+    ]);
+  });
+
+  const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url; a.download = `ranking_${state.categoria}_${Date.now()}.csv`;
-  a.click(); URL.revokeObjectURL(url);
+  a.href = url;
+  a.download = `ranking_${CAT_NOMBRES[state.categoria]}_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  loading(false);
 }
 
 // ═══════════════════════════════════════════════
