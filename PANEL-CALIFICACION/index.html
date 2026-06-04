@@ -128,6 +128,20 @@
     .form-control:focus { border-color: var(--cyan); }
     select.form-control option { background: var(--panel-bg2); }
 
+    /* Categoría bloqueada badge */
+    .cat-bloqueada-badge {
+      display: none; align-items: center; gap: 8px;
+      background: rgba(91,200,240,0.1); border: 1px solid rgba(91,200,240,0.3);
+      border-radius: 8px; padding: 8px 14px; margin-top: 10px;
+      font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; color: var(--cyan);
+    }
+    .cat-bloqueada-badge.show { display: flex; }
+    .cat-lock-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--cyan);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
     /* Criterios table */
     .criterios-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     .criterios-table th {
@@ -374,15 +388,6 @@
     .modal-msg { font-size: .9rem; color: var(--text-dim); margin-bottom: 24px; line-height: 1.6; }
     .modal-btns { display: flex; gap: 12px; justify-content: center; }
 
-    /* Aviso sin participantes */
-    .aviso-sin-participantes {
-      display: none;
-      background: rgba(243,156,18,0.1); border: 1px solid rgba(243,156,18,0.35);
-      border-radius: 8px; padding: 10px 16px; margin-top: 12px;
-      font-size: .82rem; color: #f39c12;
-      display: none; align-items: center; gap: 8px;
-    }
-
     @media(max-width:600px) {
       .criterio-row { grid-template-columns: 1fr; gap: 8px; }
       .criterio-input-wrap { justify-content: flex-start; }
@@ -398,7 +403,6 @@
       padding: 6px 16px; border-radius: 20px; margin-bottom: 16px;
     }
     .pc-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .pc-hero-title {
       display: block; font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem;
       letter-spacing: 3px; color: #1a3a6e; position: relative; margin-bottom: 8px;
@@ -490,6 +494,11 @@
             <option value="bai">Bailarín</option>
             <option value="dev">Impacto Tecnológico</option>
           </select>
+          <!-- FIX: badge visible al seleccionar, indica que la categoría quedó bloqueada -->
+          <div class="cat-bloqueada-badge" id="catBloqueadaBadge">
+            <div class="cat-lock-dot"></div>
+            <span id="catBloqueadaTxt">CATEGORÍA BLOQUEADA EN ESTE PC</span>
+          </div>
         </div>
 
         <div id="participantesInfo" style="display:none">
@@ -503,7 +512,6 @@
               <div style="font-family:'Orbitron';font-size:.55rem;letter-spacing:1px;color:var(--text-dim);margin-top:4px">CALIFICADOS</div>
             </div>
           </div>
-          <!-- FIX: aviso visible cuando no hay aprobados aún -->
           <div id="avisoSinParticipantes" style="display:none;background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.35);border-radius:8px;padding:10px 16px;margin-bottom:10px;font-size:.82rem;color:#f39c12;">
             ⚠️ Sin participantes aprobados aún — podrás calificar cuando se aprueben registros.
           </div>
@@ -532,8 +540,12 @@
       </div>
     </div><!-- /config-grid -->
 
-    <div class="btn-row" style="margin-top:24px;justify-content:flex-end">
-      <!-- FIX: botón habilitado siempre que haya categoría seleccionada -->
+    <!-- FIX: botón Cerrar Categoría en paso 1, visible solo cuando hay categoría activa -->
+    <div class="btn-row" style="margin-top:24px;justify-content:space-between">
+      <button class="btn btn-danger" id="btnCerrarCat1" onclick="cerrarCategoriaPaso1()"
+        style="display:none">
+        🔒 Cerrar Categoría
+      </button>
       <button class="btn btn-green" id="btnIniciarCal" onclick="iniciarCalificacion()" disabled>
         Iniciar Calificación →
       </button>
@@ -753,7 +765,7 @@ function cerrarModal() {
   _modalCb = null;
 }
 document.getElementById('modalConfirmBtn').onclick = () => {
-  const cb = _modalCb;   // guardar antes de que cerrarModal lo nullifique
+  const cb = _modalCb;
   cerrarModal();
   if (cb) cb();
 };
@@ -763,15 +775,27 @@ document.getElementById('modalConfirmBtn').onclick = () => {
 // ═══════════════════════════════════════════════
 async function onCategoriaChange() {
   const cat = document.getElementById('selectCategoria').value;
+
+  // Si había una categoría anterior seleccionada, desbloquearla primero
+  if (state.categoria && state.categoria !== cat) {
+    const catAnterior = CAT_NOMBRES[state.categoria];
+    gasPost({ action: 'desbloquearCategoria', categoria: catAnterior }).catch(() => {});
+    localStorage.removeItem('panel_cal_sesion');
+  }
+
   state.categoria = cat;
   document.getElementById('participantesInfo').style.display = cat ? 'block' : 'none';
-  // FIX: deshabilitar hasta que termine de cargar
   document.getElementById('btnIniciarCal').disabled = true;
+  document.getElementById('btnCerrarCat1').style.display = 'none';
+  document.getElementById('catBloqueadaBadge').classList.remove('show');
   document.getElementById('avisoSinParticipantes').style.display = 'none';
 
-  if (!cat) return;
+  if (!cat) {
+    document.getElementById('criteriosTbody').innerHTML = '';
+    return;
+  }
 
-  loading(true, 'CARGANDO CRITERIOS...');
+  loading(true, 'CARGANDO...');
 
   // Cargar criterios
   try {
@@ -788,7 +812,6 @@ async function onCategoriaChange() {
   // Cargar participantes aprobados
   try {
     const res2 = await gasGet({ action: 'getParticipantes' });
-    // FIX: GAS devuelve el array directo, no { participantes: [] }
     const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
     const catNombre = CAT_NOMBRES[cat];
     const filtrados = todos.filter(p =>
@@ -800,7 +823,6 @@ async function onCategoriaChange() {
     document.getElementById('countCalificados').textContent = 0;
 
     if (filtrados.length === 0) {
-      // FIX: mostrar aviso pero NO deshabilitar el botón
       document.getElementById('avisoSinParticipantes').style.display = 'block';
       document.getElementById('listPreview').innerHTML = '';
     } else {
@@ -815,14 +837,32 @@ async function onCategoriaChange() {
     toast('Error cargando participantes', 'error');
   }
 
-  loading(false);
-  // FIX: habilitar siempre que haya categoría seleccionada
-  document.getElementById('btnIniciarCal').disabled = false;
-}
+  // FIX PRINCIPAL: bloquear categoría al seleccionar (no al iniciar)
+  try {
+    await gasPost({
+      action: 'bloquearCategoria',
+      categoria: CAT_NOMBRES[cat],
+      usuario: 'panel-calificacion'
+    });
+  } catch(e) {
+    console.warn('bloquearCategoria falló:', e);
+  }
 
-function sanitizarPeso(val) {
-  const n = parseFloat(val);
-  return (!isNaN(n) && n > 0 && n <= 100) ? n : 5;
+  // Guardar sesión mínima (solo categoría, sin criterios aún)
+  localStorage.setItem('panel_cal_sesion', JSON.stringify({
+    categoria: cat,
+    criterios: null,  // se completan al iniciar calificación
+    paso: 1
+  }));
+
+  loading(false);
+
+  // Mostrar badge de bloqueado y botón cerrar
+  document.getElementById('catBloqueadaTxt').textContent =
+    `${CAT_NOMBRES[cat].toUpperCase()} — BLOQUEADA EN ESTE PC`;
+  document.getElementById('catBloqueadaBadge').classList.add('show');
+  document.getElementById('btnCerrarCat1').style.display = 'flex';
+  document.getElementById('btnIniciarCal').disabled = false;
 }
 
 function renderCriteriosConfig(criterios) {
@@ -875,7 +915,26 @@ function leerCriteriosConfig() {
   return criterios;
 }
 
-// FIX PRINCIPAL: iniciarCalificacion robusta — loading(false) siempre se ejecuta
+// Cerrar categoría desde paso 1 (antes de iniciar calificación)
+function cerrarCategoriaPaso1() {
+  const catNombre = CAT_NOMBRES[state.categoria] || 'esta categoría';
+  confirmar('🔒', 'CERRAR CATEGORÍA',
+    `¿Confirmas cerrar ${catNombre}? Se liberará el bloqueo y volverás al inicio.`,
+    'Cerrar', 'danger',
+    async () => {
+      loading(true, 'CERRANDO...');
+      try {
+        await gasPost({ action: 'finalizarCategoria',   categoria: CAT_NOMBRES[state.categoria] });
+        await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
+      } catch(e) {}
+      localStorage.removeItem('panel_cal_sesion');
+      resetearUI();
+      loading(false);
+      toast('Categoría cerrada', 'success');
+    }
+  );
+}
+
 async function iniciarCalificacion() {
   const cat = state.categoria;
   if (!cat) { toast('Selecciona una categoría', 'error'); return; }
@@ -883,28 +942,23 @@ async function iniciarCalificacion() {
   state.criterios = leerCriteriosConfig();
   if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
 
-  // Aviso si no hay participantes (pero NO bloquear)
   if (!state.participantes.length) {
-    toast('⚠️ Sin participantes aprobados aún — puedes configurar y calificar luego', 'info');
+    toast('⚠️ Sin participantes aprobados aún — puedes calificar luego cuando se aprueben', 'info');
   }
 
-  // Guardar criterios en GAS automáticamente (background, no crítico)
+  // Guardar criterios en GAS (background)
   gasPost({ action: 'guardarCriterios', categoria: state.categoria, criterios: state.criterios })
     .catch(e => console.warn('guardarCriterios background:', e));
 
-  // Bloquear categoría (no crítico)
-  loading(true, 'INICIANDO CALIFICACIÓN...');
-  try {
-    await gasPost({
-      action: 'bloquearCategoria',
-      categoria: CAT_NOMBRES[cat],
-      usuario: 'panel-calificacion'
-    });
-  } catch(e) {
-    console.warn('bloquearCategoria falló (no crítico):', e);
-  }
+  // Actualizar sesión con criterios y paso
+  localStorage.setItem('panel_cal_sesion', JSON.stringify({
+    categoria: cat,
+    criterios: state.criterios,
+    paso: 2
+  }));
 
-  // 2. Cargar puntuaciones existentes (no crítico)
+  // Cargar puntuaciones existentes
+  loading(true, 'INICIANDO CALIFICACIÓN...');
   try {
     const res = await gasGet({ action: 'getPuntuaciones', categoria: cat });
     const puns = res.puntuaciones || [];
@@ -925,13 +979,6 @@ async function iniciarCalificacion() {
     console.warn('getPuntuaciones falló (continuando sin historial):', e);
   }
 
-  // 3. Guardar sesión
-  localStorage.setItem('panel_cal_sesion', JSON.stringify({
-    categoria: cat,
-    criterios: state.criterios
-  }));
-
-  // FIX: loading(false) siempre antes de avanzar
   loading(false);
   buildPaso2();
   setStep(2);
@@ -1105,9 +1152,7 @@ async function guardarCalificacion() {
 
 function siguienteRobot() {
   const idx = state.participantes.findIndex(p => p.id === state.selectedId);
-  // Buscar primero hacia adelante
   let siguiente = state.participantes.find((p, i) => i > idx && !state.calificaciones[p.id]?.guardado);
-  // Si no hay, volver desde el principio
   if (!siguiente) {
     siguiente = state.participantes.find(p => !state.calificaciones[p.id]?.guardado);
   }
@@ -1123,21 +1168,23 @@ function irACalificar() { setStep(2); }
 
 function volverAConfigurar() {
   confirmar('⚙️', 'VOLVER A CONFIGURAR',
-    'Se liberará el bloqueo de la categoría y volverás al paso 1. ¿Continuar?',
+    'Volverás al paso 1. El bloqueo de categoría se mantiene activo.',
     'Volver', 'danger',
     () => {
-      // Resetear UI de forma síncrona — no esperar al GAS
-      const catAnterior = CAT_NOMBRES[state.categoria] || '';
-      localStorage.removeItem('panel_cal_sesion');
-      state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[] };
-      document.getElementById('selectCategoria').value = '';
-      document.getElementById('participantesInfo').style.display = 'none';
-      document.getElementById('btnIniciarCal').disabled = true;
+      // Actualizar sesión a paso 1 (mantener bloqueo)
+      const sesion = JSON.parse(localStorage.getItem('panel_cal_sesion') || '{}');
+      sesion.paso = 1;
+      localStorage.setItem('panel_cal_sesion', JSON.stringify(sesion));
+
+      // Restaurar UI de paso 1 con la categoría todavía seleccionada
+      document.getElementById('selectCategoria').value = state.categoria;
+      document.getElementById('catBloqueadaTxt').textContent =
+        `${CAT_NOMBRES[state.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
+      document.getElementById('catBloqueadaBadge').classList.add('show');
+      document.getElementById('btnCerrarCat1').style.display = 'flex';
+      document.getElementById('btnIniciarCal').disabled = false;
+      document.getElementById('participantesInfo').style.display = 'block';
       setStep(1);
-      // Desbloquear en GAS en background (no crítico)
-      if (catAnterior) {
-        gasPost({ action: 'desbloquearCategoria', categoria: catAnterior }).catch(() => {});
-      }
     }
   );
 }
@@ -1153,15 +1200,22 @@ async function cerrarCategoria() {
         await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
       } catch(e) {}
       localStorage.removeItem('panel_cal_sesion');
-      state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[] };
+      resetearUI();
       loading(false);
-      document.getElementById('selectCategoria').value = '';
-      document.getElementById('participantesInfo').style.display = 'none';
-      document.getElementById('btnIniciarCal').disabled = true;
-      setStep(1);
       toast('Categoría cerrada', 'success');
     }
   );
+}
+
+function resetearUI() {
+  state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[] };
+  document.getElementById('selectCategoria').value = '';
+  document.getElementById('participantesInfo').style.display = 'none';
+  document.getElementById('btnIniciarCal').disabled = true;
+  document.getElementById('btnCerrarCat1').style.display = 'none';
+  document.getElementById('catBloqueadaBadge').classList.remove('show');
+  document.getElementById('criteriosTbody').innerHTML = '';
+  setStep(1);
 }
 
 // ═══════════════════════════════════════════════
@@ -1240,16 +1294,14 @@ async function guardarPodio() {
 async function exportarExcel() {
   if (!state.rankingData.length) { toast('No hay datos', 'error'); return; }
 
-  loading(true, 'GENERANDO EXCEL...');
+  loading(true, 'GENERANDO CSV...');
 
-  // Obtener puntuaciones detalladas del GAS
   let puntuaciones = [];
   try {
     const res = await gasGet({ action: 'getPuntuaciones', categoria: state.categoria });
     puntuaciones = res.puntuaciones || [];
   } catch(e) {}
 
-  // Mapear por id_participante → notas detalladas
   const mapaNotas = {};
   puntuaciones.forEach(p => {
     if (!mapaNotas[p.id_participante]) {
@@ -1257,10 +1309,7 @@ async function exportarExcel() {
     }
   });
 
-  // Nombres de criterios en orden
   const nomCriterios = state.criterios.map(c => c.nombre);
-
-  // Cabecera: #, Robot, Nombre, Institución, [criterio1, criterio2...], TOTAL
   const header = ['#', 'Robot', 'Nombre', 'Institución', ...nomCriterios, 'TOTAL'];
   const rows = [header];
 
@@ -1270,14 +1319,7 @@ async function exportarExcel() {
       const v = notas[`c${idx}`];
       return v !== undefined ? v : '';
     });
-    rows.push([
-      i + 1,
-      r.robot || r.nombre,
-      r.nombre,
-      r.institucion || '',
-      ...valCriterios,
-      r.total
-    ]);
+    rows.push([i + 1, r.robot || r.nombre, r.nombre, r.institucion || '', ...valCriterios, r.total]);
   });
 
   const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
@@ -1292,9 +1334,9 @@ async function exportarExcel() {
 }
 
 // ═══════════════════════════════════════════════
-// RESTAURAR SESIÓN ANTE F5
-// FIX: getCategoriasActivas retorna { categoria, usuario, timestamp }
-//      NO tiene campo "estado" — se verifica solo que exista la fila
+// RESTAURAR SESIÓN AL HACER F5
+// FIX: bloqueo ocurre al seleccionar → al restaurar, la categoría YA está bloqueada
+//      → restaurar paso 1 o paso 2 según sesion.paso
 // ═══════════════════════════════════════════════
 async function restaurarSesion() {
   const raw = localStorage.getItem('panel_cal_sesion');
@@ -1303,25 +1345,81 @@ async function restaurarSesion() {
   try { sesion = JSON.parse(raw); } catch(e) { return; }
   if (!sesion.categoria) return;
 
+  // Verificar que la categoría sigue bloqueada en GAS
   try {
     const res     = await gasGet({ action: 'getCategoriasActivas' });
     const activas = res.activas || res.categorias || (Array.isArray(res) ? res : []);
     const nombre  = CAT_NOMBRES[sesion.categoria];
-    // FIX: verificar solo por nombre de categoría (sin .estado)
     const activa  = activas.find(a => a.categoria === nombre);
-    if (!activa) { localStorage.removeItem('panel_cal_sesion'); return; }
+    if (!activa) {
+      // Categoría ya no está bloqueada — limpiar sesión
+      localStorage.removeItem('panel_cal_sesion');
+      return;
+    }
   } catch(e) { return; }
 
-  document.getElementById('selectCategoria').value = sesion.categoria;
-  state.categoria  = sesion.categoria;
-  state.criterios  = sesion.criterios;
-  await onCategoriaChange();
-  renderCriteriosConfig(sesion.criterios);
-  state.criterios  = sesion.criterios;
+  // Restaurar state mínimo
+  state.categoria = sesion.categoria;
 
-  toast('Sesión restaurada ✅', 'success');
-  buildPaso2();
-  setStep(2);
+  // Cargar participantes
+  try {
+    const res2 = await gasGet({ action: 'getParticipantes' });
+    const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
+    const catNombre = CAT_NOMBRES[sesion.categoria];
+    state.participantes = todos.filter(p => p.categoria === catNombre && p.aprobado === 'APROBADO');
+  } catch(e) {}
+
+  // Restaurar criterios
+  if (sesion.criterios?.length) {
+    state.criterios = sesion.criterios;
+  } else {
+    try {
+      const resCrit = await gasGet({ action: 'getCriterios', categoria: sesion.categoria });
+      state.criterios = (resCrit.ok && resCrit.criterios?.length)
+        ? resCrit.criterios
+        : DEFAULTS_CRITERIOS[sesion.categoria];
+    } catch(e) {
+      state.criterios = DEFAULTS_CRITERIOS[sesion.categoria];
+    }
+  }
+
+  // Actualizar UI paso 1
+  document.getElementById('selectCategoria').value = sesion.categoria;
+  document.getElementById('participantesInfo').style.display = 'block';
+  document.getElementById('countAprobados').textContent = state.participantes.length;
+  document.getElementById('catBloqueadaTxt').textContent =
+    `${CAT_NOMBRES[sesion.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
+  document.getElementById('catBloqueadaBadge').classList.add('show');
+  document.getElementById('btnCerrarCat1').style.display = 'flex';
+  document.getElementById('btnIniciarCal').disabled = false;
+  renderCriteriosConfig(state.criterios);
+
+  if (sesion.paso === 2 && sesion.criterios?.length) {
+    // Estaba en paso 2 → restaurar calificaciones y volver ahí
+    try {
+      const res = await gasGet({ action: 'getPuntuaciones', categoria: sesion.categoria });
+      const puns = res.puntuaciones || [];
+      puns.forEach(p => {
+        const ronda = parseInt(p.ronda) || 1;
+        if (!state.calificaciones[p.id_participante] ||
+            ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
+          state.calificaciones[p.id_participante] = {
+            total: parseFloat(p.total) || 0, ronda,
+            notas_json: p.notas_json ? JSON.stringify(p.notas_json) : '{}', guardado: true
+          };
+          state.rondaActual[p.id_participante] = ronda + 1;
+        }
+      });
+    } catch(e) {}
+
+    buildPaso2();
+    setStep(2);
+    toast('Sesión restaurada — Calificando ' + CAT_NOMBRES[sesion.categoria] + ' ✅', 'success');
+  } else {
+    // Estaba en paso 1 → quedarse ahí con la categoría ya seleccionada
+    setStep(1);
+    toast('Sesión restaurada — ' + CAT_NOMBRES[sesion.categoria] + ' bloqueada ✅', 'success');
+  }
 }
 
 document.addEventListener('componentsLoaded', () => {
