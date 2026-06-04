@@ -754,8 +754,9 @@ function cerrarModal() {
   _modalCb = null;
 }
 document.getElementById('modalConfirmBtn').onclick = () => {
+  const cb = _modalCb;   // guardar antes de que cerrarModal lo nullifique
   cerrarModal();
-  if (_modalCb) _modalCb();
+  if (cb) cb();
 };
 
 // ═══════════════════════════════════════════════
@@ -1120,21 +1121,22 @@ function irARanking()  { cargarRanking(); setStep(3); }
 function irACalificar() { setStep(2); }
 
 function volverAConfigurar() {
-  confirmar('↩️', 'VOLVER A CONFIGURAR',
+  confirmar('⚙️', 'VOLVER A CONFIGURAR',
     'Se liberará el bloqueo de la categoría y volverás al paso 1. ¿Continuar?',
     'Volver', 'danger',
-    async () => {
-      loading(true, 'LIBERANDO CATEGORÍA...');
-      try {
-        await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
-      } catch(e) {}
+    () => {
+      // Resetear UI de forma síncrona — no esperar al GAS
+      const catAnterior = CAT_NOMBRES[state.categoria] || '';
       localStorage.removeItem('panel_cal_sesion');
       state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[] };
-      loading(false);
       document.getElementById('selectCategoria').value = '';
       document.getElementById('participantesInfo').style.display = 'none';
       document.getElementById('btnIniciarCal').disabled = true;
       setStep(1);
+      // Desbloquear en GAS en background (no crítico)
+      if (catAnterior) {
+        gasPost({ action: 'desbloquearCategoria', categoria: catAnterior }).catch(() => {});
+      }
     }
   );
 }
