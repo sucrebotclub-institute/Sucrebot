@@ -7,6 +7,7 @@
 
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <script src="../shared/js/config.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
@@ -39,7 +40,7 @@
     /* ── HERO ── */
     .page-hero {
       text-align: center;
-      padding: 80px 20px 32px;
+      padding: 40px 20px 32px;
       margin-bottom: 0;
     }
     .page-hero-badge {
@@ -500,6 +501,11 @@
       font-size: .82rem; color: #7aa8d8;
       display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
     }
+
+    /* Fix sticky header offset */
+    body { background: #f0f4fa !important; }
+    main { min-height: calc(100vh - 174px); background: #f0f4fa; }
+    .wrapper { padding-top: 40px; }
   </style>
 </head>
 <body>
@@ -527,9 +533,14 @@
 </div>
 
 <!-- Topbar / Header / Nav (shared components) -->
-<div data-include="../shared/components/topbar.html"></div>
-<div data-include="../shared/components/header.html"></div>
-<div data-include="../shared/components/nav.html"></div>
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<main>
+<div class="wrapper" style="max-width:1200px;margin:0 auto;padding:0 20px 60px">
 
 <!-- HERO -->
 <div class="page-hero">
@@ -773,11 +784,14 @@
 
 </div><!-- /panel-wrap -->
 
+</div><!-- /wrapper -->
+</main>
+
 <script>
 // ═══════════════════════════════════════════════
 // CONFIG Y ESTADO GLOBAL
 // ═══════════════════════════════════════════════
-const GAS = window.CONFIG?.GAS_URL || '';
+const GAS = CONFIG.GAS_URL();
 
 const CAT_NOMBRES = {
   bai: 'Bailarín',
@@ -1400,8 +1414,9 @@ window.addEventListener('load', () => {
 
 <!-- Footer -->
 <div data-include="../shared/components/footer.html"></div>
+<div class="toast" id="toast-bottom"></div>
 
-<script src="../shared/js/config.js"></script>
 <script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
 </body>
 </html>
