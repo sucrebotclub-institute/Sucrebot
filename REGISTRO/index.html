@@ -167,6 +167,25 @@
     }
     .field select option[value=""] { color: rgba(255,255,255,0.35); }
 
+    /* ── CAMPO EQUIPO SOCCER ── */
+    .soccer-equipo-wrap {
+      display: none;
+      margin-top: 4px;
+      animation: fadeIn .25s ease;
+    }
+    .soccer-equipo-wrap.show { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+    .soccer-equipo-badge {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(91,200,240,0.08);
+      border: 1px solid rgba(91,200,240,0.25);
+      border-radius: 8px; padding: 8px 14px; margin-bottom: 10px;
+      font-family: 'Exo 2', sans-serif; font-size: 11.5px; color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+    }
+    .soccer-equipo-badge strong { color: var(--r-cyan); }
+
     /* ── LOGO UPLOADER ── */
     .logo-uploader { display: flex; flex-direction: column; align-items: center; gap: 0; }
     .logo-uploader label.logo-label { font-family: 'Orbitron', monospace; font-size: 10px; color: rgba(255,255,255,0.95); margin-bottom: 6px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; display: block; width: 100%; text-align: left; }
@@ -239,7 +258,6 @@
     <div class="reg-robot">
       <img src="../shared/images/robot-inss.png" alt="Robot inscribiendo" />
 
-      <!-- ── AVISO IMPORTANTE ── -->
       <div class="reg-aviso">
         <div class="reg-aviso-title">📋 Información importante</div>
         <p>
@@ -353,7 +371,7 @@
         <div class="field" style="grid-column: 2 / -1;">
           <label>Categoría de Competencia</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-          <select id="f-categoria">
+          <select id="f-categoria" onchange="onCategoriaChange()">
             <option value="">— Selecciona —</option>
             <optgroup label="🏅 AMATEUR">
               <option value="Insectos">Insectos</option>
@@ -375,6 +393,20 @@
               <option value="Impacto Tecnológico">Impacto Tecnológico</option>
             </optgroup>
           </select>
+        </div>
+      </div>
+
+      <!-- NOMBRE DE EQUIPO — solo visible para Robot soccer -->
+      <div class="soccer-equipo-wrap" id="soccerEquipoWrap">
+        <div class="soccer-equipo-badge">
+          ⚽ <span>En <strong>Robot soccer</strong> compites por equipo. El bracket se generará agrupando todos los robots del mismo equipo.</span>
+        </div>
+        <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:4px;">
+          <div class="field">
+            <label>Nombre del Equipo <span style="color:#e74c3c;font-family:'Exo 2',sans-serif;font-size:10px;letter-spacing:0;text-transform:none;font-weight:400;">(obligatorio)</span></label>
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <input type="text" id="f-equipo" placeholder="Ej: Los Titanes">
+          </div>
         </div>
       </div>
 
@@ -463,6 +495,18 @@
     dropZone.classList.remove('has-logo'); logoUploader.classList.remove('has-logo');
   }
 
+  // Mostrar/ocultar campo equipo según categoría
+  function onCategoriaChange() {
+    const cat = document.getElementById('f-categoria').value;
+    const wrap = document.getElementById('soccerEquipoWrap');
+    if (cat === 'Robot soccer') {
+      wrap.classList.add('show');
+    } else {
+      wrap.classList.remove('show');
+      document.getElementById('f-equipo').value = '';
+    }
+  }
+
   async function gasPost(data) {
     const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(data), redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
     return r.json();
@@ -506,6 +550,7 @@
     const miembro2     = document.getElementById('f-miembro2').value.trim();
     const miembro3     = document.getElementById('f-miembro3').value.trim();
     const logoArchivo  = logoInput.files[0] || null;
+    const equipo       = document.getElementById('f-equipo').value.trim();
 
     if (!nombre)              { showToast('El nombre completo es obligatorio', true); return; }
     if (!institucion)         { showToast('La institución es obligatoria', true); return; }
@@ -515,6 +560,10 @@
     if (contacto.length < 10) { showToast('El número debe tener al menos 10 dígitos', true); return; }
     if (!correo)              { showToast('El correo electrónico es obligatorio', true); return; }
     if (!categoria)           { showToast('Selecciona una categoría', true); return; }
+    // Validación equipo solo para soccer
+    if (categoria === 'Robot soccer' && !equipo) {
+      showToast('El nombre del equipo es obligatorio para Robot soccer', true); return;
+    }
     if (!comprobante)         { showToast('El número de comprobante es obligatorio', true); return; }
     if (!archivo)             { showToast('Debes adjuntar el comprobante de pago', true); return; }
 
@@ -522,7 +571,11 @@
     btn.disabled = true; btn.textContent = '⏳ Registrando participante...';
 
     try {
-      const respuestaRegistro = await gasPost({ action: 'setParticipante', id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria, miembro2, miembro3, comprobante, archivoUrl: '', logoUrl: '' });
+      const respuestaRegistro = await gasPost({
+        action: 'setParticipante',
+        id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
+        miembro2, miembro3, comprobante, archivoUrl: '', logoUrl: '', equipo
+      });
       if (!respuestaRegistro.ok || !respuestaRegistro.id) throw new Error('No se pudo generar el ID del participante');
 
       const idGenerado = respuestaRegistro.id;
@@ -540,20 +593,25 @@
       }
 
       btn.textContent = '⏳ Finalizando registro...';
-      await gasPost({ action: 'setParticipante', id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria, miembro2, miembro3, comprobante, archivoUrl, logoUrl });
+      await gasPost({
+        action: 'setParticipante',
+        id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria,
+        miembro2, miembro3, comprobante, archivoUrl, logoUrl, equipo
+      });
 
       const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
       const idx   = lista.findIndex(p => p.id === idGenerado);
-      const datosLocal = { id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria };
+      const datosLocal = { id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria, equipo };
       if (idx >= 0) lista[idx] = datosLocal; else lista.push(datosLocal);
       localStorage.setItem('participantes', JSON.stringify(lista));
 
       showToast('✅ Registrado con ID: ' + idGenerado, false);
 
-      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3']
+      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3','f-equipo']
         .forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-ciudad').value = '';
       document.getElementById('f-categoria').value = '';
+      document.getElementById('soccerEquipoWrap').classList.remove('show');
       archivoInput.value = '';
       quitarLogo();
 
