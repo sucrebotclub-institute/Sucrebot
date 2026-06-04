@@ -527,7 +527,6 @@
           </table>
           <div class="btn-row" style="margin-top:14px">
             <button class="btn btn-outline btn-sm" onclick="agregarCriterio()">＋ Agregar</button>
-            <button class="btn btn-primary btn-sm" onclick="guardarCriterios()">💾 Guardar criterios</button>
           </div>
         </div>
       </div>
@@ -875,18 +874,6 @@ function leerCriteriosConfig() {
   return criterios;
 }
 
-async function guardarCriterios() {
-  const criterios = leerCriteriosConfig();
-  if (!criterios.length || !state.categoria) { toast('Agrega al menos un criterio', 'error'); return; }
-  loading(true, 'GUARDANDO CRITERIOS...');
-  try {
-    const res = await gasPost({ action: 'guardarCriterios', categoria: state.categoria, criterios });
-    if (res.ok) toast('✅ Criterios guardados', 'success');
-    else toast('Error al guardar: ' + res.error, 'error');
-  } catch(e) { toast('Error de red', 'error'); }
-  loading(false);
-}
-
 // FIX PRINCIPAL: iniciarCalificacion robusta — loading(false) siempre se ejecuta
 async function iniciarCalificacion() {
   const cat = state.categoria;
@@ -900,7 +887,11 @@ async function iniciarCalificacion() {
     toast('⚠️ Sin participantes aprobados aún — puedes configurar y calificar luego', 'info');
   }
 
-  // 1. Bloquear categoría (no crítico)
+  // Guardar criterios en GAS automáticamente (background, no crítico)
+  gasPost({ action: 'guardarCriterios', categoria: state.categoria, criterios: state.criterios })
+    .catch(e => console.warn('guardarCriterios background:', e));
+
+  // Bloquear categoría (no crítico)
   loading(true, 'INICIANDO CALIFICACIÓN...');
   try {
     await gasPost({
