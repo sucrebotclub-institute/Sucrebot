@@ -520,7 +520,6 @@
               <tr>
                 <th>CRITERIO</th>
                 <th>DESCRIPCIÓN</th>
-                <th>PESO MÁX</th>
                 <th></th>
               </tr>
             </thead>
@@ -821,6 +820,11 @@ async function onCategoriaChange() {
   document.getElementById('btnIniciarCal').disabled = false;
 }
 
+function sanitizarPeso(val) {
+  const n = parseFloat(val);
+  return (!isNaN(n) && n > 0 && n <= 100) ? n : 20;
+}
+
 function renderCriteriosConfig(criterios) {
   const tbody = document.getElementById('criteriosTbody');
   tbody.innerHTML = '';
@@ -830,7 +834,6 @@ function renderCriteriosConfig(criterios) {
     tr.innerHTML = `
       <td><input class="crit-input" data-field="nombre" value="${c.nombre || ''}" placeholder="Nombre"></td>
       <td><input class="crit-input" data-field="descripcion" value="${c.descripcion || ''}" placeholder="Descripción"></td>
-      <td><input class="crit-input crit-peso" type="number" min="1" max="100" data-field="peso" value="${c.peso || 10}"></td>
       <td><button class="btn-icon" onclick="quitarCriterio(${i})">✕</button></td>
     `;
     tbody.appendChild(tr);
@@ -845,7 +848,6 @@ function agregarCriterio() {
   tr.innerHTML = `
     <td><input class="crit-input" data-field="nombre" placeholder="Nuevo criterio"></td>
     <td><input class="crit-input" data-field="descripcion" placeholder="Descripción"></td>
-    <td><input class="crit-input crit-peso" type="number" min="1" max="100" data-field="peso" value="10"></td>
     <td><button class="btn-icon" onclick="quitarCriterio(${idx})">✕</button></td>
   `;
   tbody.appendChild(tr);
@@ -868,8 +870,7 @@ function leerCriteriosConfig() {
   rows.forEach(r => {
     const nombre      = r.querySelector('[data-field="nombre"]').value.trim();
     const descripcion = r.querySelector('[data-field="descripcion"]').value.trim();
-    const peso        = parseInt(r.querySelector('[data-field="peso"]').value) || 10;
-    if (nombre) criterios.push({ nombre, descripcion, peso });
+    if (nombre) criterios.push({ nombre, descripcion, peso: 20 });
   });
   return criterios;
 }
