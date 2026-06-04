@@ -28,8 +28,6 @@
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--r-blue); border: 1px solid var(--r-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
-    .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-    .page-hero-line { flex: 0 0 40px; height: 3px; background: var(--r-blue); border-radius: 2px; }
     .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: var(--r-blue-dark); line-height: 1; position: relative; padding-bottom: 8px; }
     .page-hero h2::after {
       content: "";
@@ -63,9 +61,43 @@
     
     .reg-layout { display: flex; align-items: flex-start; gap: 80px; position: relative; margin-bottom: 60px; }
     
-    .reg-robot { flex: 0 0 420px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .reg-robot { flex: 0 0 420px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
     .reg-robot img { width: 100%; max-width: 400px; height: auto; filter: drop-shadow(0 8px 32px rgba(91,200,240,0.25)); animation: float-robot 4s ease-in-out infinite; }
     @keyframes float-robot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+    /* ── AVISO ── */
+    .reg-aviso {
+      margin-top: 20px;
+      background: rgba(10,25,60,0.72);
+      border: 1.5px solid rgba(91,200,240,0.3);
+      border-left: 4px solid #5bc8f0;
+      border-radius: 10px;
+      padding: 16px 18px;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.75;
+      pointer-events: auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .reg-aviso-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: #5bc8f0;
+      margin-bottom: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .reg-aviso p { margin: 0 0 8px 0; }
+    .reg-aviso p:last-child { margin-bottom: 0; }
+    .reg-aviso strong { color: #5bc8f0; }
+    .reg-aviso .aviso-email {
+      color: #90dcff;
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+    }
     
     /* ── CARD FORMULARIO ── */
     .form-card { 
@@ -88,11 +120,11 @@
     .field.full-width { grid-column: 1 / -1; }
     .field label { 
       display: block; 
-      font-family: 'DM Mono', monospace; 
+      font-family: 'Orbitron', monospace; 
       font-size: 10px; 
-      color: rgba(255,255,255,0.7); 
+      color: rgba(255,255,255,0.95); 
       margin-bottom: 6px; 
-      letter-spacing: 0.1em; 
+      letter-spacing: 0.12em; 
       font-weight: 700; 
       text-transform: uppercase; 
     }
@@ -140,171 +172,32 @@
     }
     .field select option[value=""] { color: rgba(255,255,255,0.35); }
 
-    /* ── GRID INSTITUCIÓN + LOGO ── */
-    .grid-inst-logo {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      align-items: start;
-    }
-
     /* ── LOGO UPLOADER ── */
-    .logo-uploader {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0;
-    }
-    .logo-uploader label.logo-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: rgba(255,255,255,0.7);
-      margin-bottom: 6px;
-      letter-spacing: 0.1em;
-      font-weight: 700;
-      text-transform: uppercase;
-      display: block;
-      width: 100%;
-      text-align: left;
-    }
-    .logo-drop-zone {
-      width: 200px;
-      height: 38px;
-      border: 1.5px dashed rgba(91,200,240,0.4);
-      border-radius: 8px;
-      background: rgba(10,25,60,0.55);
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-      position: relative;
-      overflow: hidden;
-      flex-shrink: 0;
-      padding: 0 10px;
-      box-sizing: border-box;
-    }
-    .logo-drop-zone:hover {
-      border-color: var(--r-cyan);
-      background: rgba(10,25,60,0.75);
-      box-shadow: 0 0 0 3px rgba(91,200,240,0.15);
-    }
-    .logo-drop-zone.drag-over {
-      border-color: var(--r-cyan);
-      background: rgba(91,200,240,0.08);
-      box-shadow: 0 0 0 3px rgba(91,200,240,0.2);
-    }
-    .logo-drop-zone.has-logo {
-      border-color: rgba(61,214,140,0.6);
-      border-style: solid;
-    }
-    .logo-placeholder {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
-      pointer-events: none;
-    }
-    .logo-placeholder svg {
-      width: 15px;
-      height: 15px;
-      color: rgba(91,200,240,0.5);
-      flex-shrink: 0;
-    }
-    .logo-placeholder span {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.05em;
-      white-space: nowrap;
-    }
-    .logo-preview-img {
-      height: 100%;
-      width: auto;
-      max-width: 100%;
-      object-fit: contain;
-      padding: 4px;
-      box-sizing: border-box;
-      display: none;
-    }
+    .logo-uploader { display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .logo-uploader label.logo-label { font-family: 'Orbitron', monospace; font-size: 10px; color: rgba(255,255,255,0.95); margin-bottom: 6px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; display: block; width: 100%; text-align: left; }
+    .logo-drop-zone { width: 200px; height: 38px; border: 1.5px dashed rgba(91,200,240,0.4); border-radius: 8px; background: rgba(10,25,60,0.55); display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 7px; cursor: pointer; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; flex-shrink: 0; padding: 0 10px; box-sizing: border-box; }
+    .logo-drop-zone:hover { border-color: var(--r-cyan); background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .logo-drop-zone.drag-over { border-color: var(--r-cyan); background: rgba(91,200,240,0.08); box-shadow: 0 0 0 3px rgba(91,200,240,0.2); }
+    .logo-drop-zone.has-logo { border-color: rgba(61,214,140,0.6); border-style: solid; }
+    .logo-placeholder { display: flex; flex-direction: row; align-items: center; gap: 6px; pointer-events: none; }
+    .logo-placeholder svg { width: 15px; height: 15px; color: rgba(91,200,240,0.5); flex-shrink: 0; }
+    .logo-placeholder span { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 0.05em; white-space: nowrap; }
+    .logo-preview-img { height: 100%; width: auto; max-width: 100%; object-fit: contain; padding: 4px; box-sizing: border-box; display: none; }
     .logo-drop-zone.has-logo .logo-preview-img { display: block; }
     .logo-drop-zone.has-logo .logo-placeholder { display: none; }
-
-    /* botón quitar logo */
-    .logo-remove-btn {
-      display: none;
-      margin-top: 3px;
-      background: none;
-      border: none;
-      color: rgba(255,120,120,0.7);
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      cursor: pointer;
-      letter-spacing: 0.05em;
-      padding: 2px 4px;
-      transition: color 0.2s;
-    }
+    .logo-remove-btn { display: none; margin-top: 3px; background: none; border: none; color: rgba(255,120,120,0.7); font-family: 'DM Mono', monospace; font-size: 9px; cursor: pointer; letter-spacing: 0.05em; padding: 2px 4px; transition: color 0.2s; }
     .logo-remove-btn:hover { color: #ff6b6b; }
     .logo-uploader.has-logo .logo-remove-btn { display: block; }
-
-    /* input file oculto */
     #f-logo { display: none; }
 
     /* ── BOTÓN ── */
-    .btn-register { 
-      width: 100%; 
-      margin-top: 16px; 
-      background: #1a3a6b;
-      border: 1.5px solid rgba(255,255,255,0.15); 
-      color: #ffffff; 
-      font-family: 'Orbitron', monospace; 
-      font-size: 12px; 
-      font-weight: 700; 
-      padding: 16px; 
-      border-radius: 10px; 
-      cursor: pointer; 
-      transition: background 0.2s, border-color 0.2s; 
-      letter-spacing: 0.15em; 
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    .btn-register:hover:not(:disabled) { 
-      background: #1e4a8a;
-      border-color: rgba(255,255,255,0.3);
-    }
+    .btn-register { width: 100%; margin-top: 16px; background: #1a3a6b; border: 1.5px solid rgba(255,255,255,0.15); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; letter-spacing: 0.15em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-register:hover:not(:disabled) { background: #1e4a8a; border-color: rgba(255,255,255,0.3); }
     .btn-register:active { background: #152e5a; }
     .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
     
     /* ── TOAST ── */
-    .toast { 
-      position: fixed; 
-      bottom: 30px; 
-      left: 30px; 
-      transform: translateY(100px); 
-      opacity: 0; 
-      background: #1e2438; 
-      border-radius: 10px; 
-      border: 1px solid rgba(255,255,255,0.08); 
-      border-left: 4px solid var(--r-green); 
-      color: #f0f4ff; 
-      font-family: 'Exo 2', sans-serif; 
-      font-size: 12px; 
-      font-weight: 600; 
-      padding: 12px 16px; 
-      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; 
-      z-index: 9999; 
-      max-width: 300px; 
-      display: flex; 
-      align-items: flex-start; 
-      gap: 8px; 
-      pointer-events: none; 
-      box-shadow: 0 3px 12px rgba(0,0,0,0.3);
-    }
+    .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid var(--r-green); color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 600; padding: 12px 16px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 300px; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; box-shadow: 0 3px 12px rgba(0,0,0,0.3); }
     .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
     
     @media (max-width: 1000px) { 
@@ -312,40 +205,18 @@
       .reg-robot { flex: 0 0 auto; }
       .form-card { width: 100%; max-width: 700px; }
     }
-    
     @media (max-width: 768px) { 
       .reg-robot { display: none; }
       .form-grid { grid-template-columns: 1fr !important; }
-      .grid-comprobante {
-        grid-template-columns: 1fr !important;
-      }
+      .grid-comprobante { grid-template-columns: 1fr !important; }
       .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
-      .page-hero {
-        padding: 24px 0 16px;
-      }
-      .page-hero h2 {
-        font-size: 1.8rem;
-        letter-spacing: 1px;
-      }
-      .page-hero-badge {
-        font-size: 8px;
-        letter-spacing: 2px;
-      }
-      .form-card {
-        margin-top: 0 !important;
-      }
-      .grid-inst-logo {
-        grid-template-columns: 1fr;
-      }
-      .logo-uploader {
-        flex-direction: row;
-        align-items: center;
-        gap: 12px;
-      }
-      .logo-drop-zone {
-        width: 56px;
-        height: 56px;
-      }
+      .page-hero { padding: 24px 0 16px; }
+      .page-hero h2 { font-size: 1.8rem; letter-spacing: 1px; }
+      .page-hero-badge { font-size: 8px; letter-spacing: 2px; }
+      .form-card { margin-top: 0 !important; }
+      .grid-inst-logo { grid-template-columns: 1fr; }
+      .logo-uploader { flex-direction: row; align-items: center; gap: 12px; }
+      .logo-drop-zone { width: 56px; height: 56px; }
     }
   </style>
 </head>
@@ -368,7 +239,29 @@
   </div>
   
   <div class="reg-layout">
-    <div class="reg-robot"><img src="../shared/images/robot-inss.png" alt="Robot inscribiendo" /></div>
+
+    <!-- Columna izquierda: robot + aviso -->
+    <div class="reg-robot">
+      <img src="../shared/images/robot-inss.png" alt="Robot inscribiendo" />
+
+      <!-- ── AVISO IMPORTANTE ── -->
+      <div class="reg-aviso">
+        <div class="reg-aviso-title">📋 Información importante</div>
+        <p>
+          <strong>📛 Nombre completo:</strong>
+          Escríbelo tal como aparecerá en tu diploma de participación.
+        </p>
+        <p>
+          <strong>📧 Correo electrónico:</strong>
+          Verifica que esté bien escrito — a esa dirección se enviará tu <strong style="color:#90dcff;">código QR</strong> de acceso al evento.
+        </p>
+        <p>
+          <strong style="color:#3dd68c;">✅ ¿No recibiste el correo?</strong>
+          Revisa tu carpeta de <em>spam</em> o escríbenos a<br>
+          <span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span>
+        </p>
+      </div>
+    </div>
     
     <div class="form-card">
       <div class="form-title"><svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:var(--r-cyan-bright);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>REGISTRO DE PARTICIPANTE</div>
@@ -376,7 +269,6 @@
       <!-- DATOS PERSONALES -->
       <div class="form-section-title">👤 Datos Personales</div>
 
-      <!-- Fila 1: Nombre completo (full) -->
       <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px;">
         <div class="field">
           <label>Nombre Completo</label>
@@ -385,7 +277,6 @@
         </div>
       </div>
 
-      <!-- Fila 2: Institución + Logo (línea completa) -->
       <div class="form-grid" style="grid-template-columns: 1fr auto; margin-bottom:14px; align-items:end;">
         <div class="field" style="margin:0;">
           <label>Institución / Club</label>
@@ -409,7 +300,6 @@
         </div>
       </div>
 
-      <!-- Fila 3: Provincia + Contacto -->
       <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
         <div class="field">
           <label>Provincia</label>
@@ -449,7 +339,6 @@
         </div>
       </div>
 
-      <!-- Fila 3: Correo (full) -->
       <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:4px;">
         <div class="field">
           <label>Correo Electrónico</label>
@@ -522,7 +411,7 @@
         </div>
         <div class="field">
           <label>Nombre — Miembro 3</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           <input type="text" id="f-miembro3" placeholder="Nombre completo">
         </div>
       </div>
@@ -546,37 +435,20 @@
 <script>
   const GAS_URL = CONFIG.GAS_URL();
 
-  /* ══════════════════════════════════════════
-     LOGO — drag & drop + click + preview
-  ══════════════════════════════════════════ */
-  const dropZone    = document.getElementById('logo-drop-zone');
-  const logoInput   = document.getElementById('f-logo');
-  const logoPreview = document.getElementById('logo-preview');
+  const dropZone     = document.getElementById('logo-drop-zone');
+  const logoInput    = document.getElementById('f-logo');
+  const logoPreview  = document.getElementById('logo-preview');
   const logoUploader = document.getElementById('logo-uploader');
 
-  // Abrir selector al hacer clic en la zona
   dropZone.addEventListener('click', () => logoInput.click());
-
-  // Cambio desde el input file
-  logoInput.addEventListener('change', () => {
-    if (logoInput.files[0]) mostrarPreviewLogo(logoInput.files[0]);
-  });
-
-  // Drag & drop
-  dropZone.addEventListener('dragover', e => {
-    e.preventDefault();
-    dropZone.classList.add('drag-over');
-  });
+  logoInput.addEventListener('change', () => { if (logoInput.files[0]) mostrarPreviewLogo(logoInput.files[0]); });
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
+    e.preventDefault(); dropZone.classList.remove('drag-over');
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
-      // Asignar al input (para poder leerlo después)
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      logoInput.files = dt.files;
+      const dt = new DataTransfer(); dt.items.add(file); logoInput.files = dt.files;
       mostrarPreviewLogo(file);
     }
   });
@@ -592,52 +464,26 @@
   }
 
   function quitarLogo() {
-    logoInput.value = '';
-    logoPreview.src = '';
-    dropZone.classList.remove('has-logo');
-    logoUploader.classList.remove('has-logo');
+    logoInput.value = ''; logoPreview.src = '';
+    dropZone.classList.remove('has-logo'); logoUploader.classList.remove('has-logo');
   }
 
-  /* ══════════════════════════════════════════
-     GAS helper
-  ══════════════════════════════════════════ */
   async function gasPost(data) {
-    const r = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-    });
+    const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(data), redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
     return r.json();
   }
 
-  /* ══════════════════════════════════════════
-     Subir comprobante a Drive
-  ══════════════════════════════════════════ */
   async function subirComprobanteDrive(archivo, participanteId) {
     const base64 = await toBase64(archivo);
-    const resp = await gasPost({
-      action:   'uploadComprobante',
-      base64:   base64,
-      mimeType: archivo.type,
-      fileName: 'TRANSFERENCIA-' + participanteId
-    });
+    const resp = await gasPost({ action: 'uploadComprobante', base64, mimeType: archivo.type, fileName: 'TRANSFERENCIA-' + participanteId });
     if (resp.ok && resp.url) return resp.url;
     throw new Error(resp.error || 'Error al subir comprobante a Drive');
   }
 
-  /* ══════════════════════════════════════════
-     Subir logo a Drive (carpeta SucreBot-Logos)
-  ══════════════════════════════════════════ */
   async function subirLogoDrive(archivo, participanteId) {
     const base64 = await toBase64(archivo);
     const ext    = archivo.name.split('.').pop() || 'png';
-    const resp   = await gasPost({
-      action:   'uploadLogo',
-      base64:   base64,
-      mimeType: archivo.type,
-      fileName: 'LOGO-' + participanteId + '.' + ext
-    });
+    const resp   = await gasPost({ action: 'uploadLogo', base64, mimeType: archivo.type, fileName: 'LOGO-' + participanteId + '.' + ext });
     if (resp.ok && resp.url) return resp.url;
     throw new Error(resp.error || 'Error al subir logo a Drive');
   }
@@ -651,9 +497,6 @@
     });
   }
 
-  /* ══════════════════════════════════════════
-     Registro principal (3 + 1 pasos)
-  ══════════════════════════════════════════ */
   async function registrarParticipante() {
     const nombre       = document.getElementById('f-nombre').value.trim();
     const institucion  = document.getElementById('f-institucion').value.trim();
@@ -669,7 +512,6 @@
     const miembro3     = document.getElementById('f-miembro3').value.trim();
     const logoArchivo  = logoInput.files[0] || null;
 
-    // Validaciones
     if (!nombre)              { showToast('El nombre completo es obligatorio', true); return; }
     if (!institucion)         { showToast('La institución es obligatoria', true); return; }
     if (!ciudad)              { showToast('Selecciona una provincia', true); return; }
@@ -682,61 +524,29 @@
     if (!archivo)             { showToast('Debes adjuntar el comprobante de pago', true); return; }
 
     const btn = document.querySelector('.btn-register');
-    btn.disabled    = true;
-    btn.textContent = '⏳ Registrando participante...';
+    btn.disabled = true; btn.textContent = '⏳ Registrando participante...';
 
     try {
-      // ── Paso 1: crear participante y obtener ID ──
-      const respuestaRegistro = await gasPost({
-        action: 'setParticipante',
-        id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, miembro3, comprobante,
-        archivoUrl: '', logoUrl: ''
-      });
-
-      if (!respuestaRegistro.ok || !respuestaRegistro.id) {
-        throw new Error('No se pudo generar el ID del participante');
-      }
+      const respuestaRegistro = await gasPost({ action: 'setParticipante', id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria, miembro2, miembro3, comprobante, archivoUrl: '', logoUrl: '' });
+      if (!respuestaRegistro.ok || !respuestaRegistro.id) throw new Error('No se pudo generar el ID del participante');
 
       const idGenerado = respuestaRegistro.id;
-      console.log('ID generado por GAS:', idGenerado);
 
-      // ── Paso 2a: subir comprobante ──
       btn.textContent = '⏳ Subiendo comprobante...';
       let archivoUrl = '';
-      try {
-        archivoUrl = await subirComprobanteDrive(archivo, idGenerado);
-      } catch(e) {
-        showToast('Error al subir comprobante: ' + e.message, true);
-        btn.disabled    = false;
-        btn.textContent = '⚡ Registrar Participante';
-        return;
-      }
+      try { archivoUrl = await subirComprobanteDrive(archivo, idGenerado); }
+      catch(e) { showToast('Error al subir comprobante: ' + e.message, true); btn.disabled = false; btn.textContent = '⚡ Registrar Participante'; return; }
 
-      // ── Paso 2b: subir logo (si hay) ──
       let logoUrl = '';
       if (logoArchivo) {
         btn.textContent = '⏳ Subiendo logo del club...';
-        try {
-          logoUrl = await subirLogoDrive(logoArchivo, idGenerado);
-        } catch(e) {
-          // El logo es opcional — advertir pero no abortar
-          console.warn('Logo no subido:', e.message);
-          showToast('Logo no subido (registro continúa)', true);
-          await new Promise(r => setTimeout(r, 1200));
-        }
+        try { logoUrl = await subirLogoDrive(logoArchivo, idGenerado); }
+        catch(e) { console.warn('Logo no subido:', e.message); showToast('Logo no subido (registro continúa)', true); await new Promise(r => setTimeout(r, 1200)); }
       }
 
-      // ── Paso 3: actualizar participante con ambas URLs ──
       btn.textContent = '⏳ Finalizando registro...';
-      await gasPost({
-        action: 'setParticipante',
-        id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, miembro3, comprobante,
-        archivoUrl, logoUrl
-      });
+      await gasPost({ action: 'setParticipante', id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria, miembro2, miembro3, comprobante, archivoUrl, logoUrl });
 
-      // Guardar en localStorage
       const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
       const idx   = lista.findIndex(p => p.id === idGenerado);
       const datosLocal = { id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria };
@@ -745,10 +555,9 @@
 
       showToast('✅ Registrado con ID: ' + idGenerado, false);
 
-      // Limpiar formulario
       ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3']
         .forEach(id => document.getElementById(id).value = '');
-      document.getElementById('f-ciudad').value    = '';
+      document.getElementById('f-ciudad').value = '';
       document.getElementById('f-categoria').value = '';
       archivoInput.value = '';
       quitarLogo();
@@ -756,31 +565,18 @@
     } catch(e) {
       showToast('Error al registrar: ' + e.message, true);
     } finally {
-      btn.disabled    = false;
-      btn.textContent = '⚡ Registrar Participante';
+      btn.disabled = false; btn.textContent = '⚡ Registrar Participante';
     }
   }
 
-  /* ══════════════════════════════════════════
-     Toast
-  ══════════════════════════════════════════ */
   let toastTimer = null;
   function showToast(msg, error = false) {
-    const t    = document.getElementById('toast');
+    const t = document.getElementById('toast');
     const icon = document.getElementById('toast-icon');
     const text = document.getElementById('toast-msg');
     text.textContent = msg;
-    if (error) {
-      icon.textContent        = '⚠';
-      t.style.borderLeftColor = '#e05555';
-      t.style.color           = '#ffb3b3';
-      t.style.background      = '#2a1a1a';
-    } else {
-      icon.textContent        = '✓';
-      t.style.borderLeftColor = '#3dd68c';
-      t.style.color           = '#d0f5e8';
-      t.style.background      = '#1e2438';
-    }
+    if (error) { icon.textContent = '⚠'; t.style.borderLeftColor = '#e05555'; t.style.color = '#ffb3b3'; t.style.background = '#2a1a1a'; }
+    else       { icon.textContent = '✓'; t.style.borderLeftColor = '#3dd68c'; t.style.color = '#d0f5e8'; t.style.background = '#1e2438'; }
     if (toastTimer) { clearTimeout(toastTimer); t.classList.remove('show'); }
     requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
     toastTimer = setTimeout(() => { t.classList.remove('show'); toastTimer = null; }, 3500);
