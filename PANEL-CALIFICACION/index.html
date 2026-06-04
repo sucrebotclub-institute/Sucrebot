@@ -668,18 +668,18 @@ const CAT_NOMBRES = {
 
 const DEFAULTS_CRITERIOS = {
   bai: [
-    { nombre: 'Coreografía',       descripcion: 'Coordinación y secuencia de movimientos', peso: 20 },
-    { nombre: 'Sincronía Musical', descripcion: 'Sincronización con la música',             peso: 20 },
-    { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño y presentación',   peso: 20 },
-    { nombre: 'Construcción',      descripcion: 'Calidad del hardware y acabados',           peso: 20 },
-    { nombre: 'Desempeño',         descripcion: 'Ejecución sin errores durante la rutina',  peso: 20 },
+    { nombre: 'Coreografía',       descripcion: 'Coordinación y secuencia de movimientos', peso: 5 },
+    { nombre: 'Sincronía Musical', descripcion: 'Sincronización con la música',             peso: 5 },
+    { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño y presentación',   peso: 5 },
+    { nombre: 'Construcción',      descripcion: 'Calidad del hardware y acabados',           peso: 5 },
+    { nombre: 'Desempeño',         descripcion: 'Ejecución sin errores durante la rutina',  peso: 5 },
   ],
   dev: [
-    { nombre: 'Innovación',        descripcion: 'Originalidad de la propuesta tecnológica', peso: 20 },
-    { nombre: 'Funcionalidad',     descripcion: 'El sistema funciona correctamente',         peso: 20 },
-    { nombre: 'Diseño Técnico',    descripcion: 'Calidad de ingeniería y construcción',      peso: 20 },
-    { nombre: 'Presentación',      descripcion: 'Claridad al exponer el proyecto',           peso: 20 },
-    { nombre: 'Impacto Social',    descripcion: 'Beneficio potencial para la sociedad',      peso: 20 },
+    { nombre: 'Innovación',        descripcion: 'Originalidad de la propuesta tecnológica', peso: 5 },
+    { nombre: 'Funcionalidad',     descripcion: 'El sistema funciona correctamente',         peso: 5 },
+    { nombre: 'Diseño Técnico',    descripcion: 'Calidad de ingeniería y construcción',      peso: 5 },
+    { nombre: 'Presentación',      descripcion: 'Claridad al exponer el proyecto',           peso: 5 },
+    { nombre: 'Impacto Social',    descripcion: 'Beneficio potencial para la sociedad',      peso: 5 },
   ]
 };
 
@@ -821,7 +821,7 @@ async function onCategoriaChange() {
 
 function sanitizarPeso(val) {
   const n = parseFloat(val);
-  return (!isNaN(n) && n > 0 && n <= 100) ? n : 20;
+  return (!isNaN(n) && n > 0 && n <= 100) ? n : 5;
 }
 
 function renderCriteriosConfig(criterios) {
@@ -869,7 +869,7 @@ function leerCriteriosConfig() {
   rows.forEach(r => {
     const nombre      = r.querySelector('[data-field="nombre"]').value.trim();
     const descripcion = r.querySelector('[data-field="descripcion"]').value.trim();
-    if (nombre) criterios.push({ nombre, descripcion, peso: 20 });
+    if (nombre) criterios.push({ nombre, descripcion, peso: 5 });
   });
   return criterios;
 }
