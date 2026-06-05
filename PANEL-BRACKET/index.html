@@ -31,259 +31,122 @@
     body { background: #f0f4fa !important; font-family: 'Exo 2', sans-serif; padding-top: 0 !important; }
     main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
 
-    /* ── HERO ── */
     .pb-hero { text-align: center; padding: 48px 20px 32px; }
-    .pb-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--blue); color: #fff;
-      font-family: 'Orbitron'; font-size: 9px; letter-spacing: 3px;
-      padding: 6px 16px; border-radius: 20px; margin-bottom: 16px;
-    }
+    .pb-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--blue); color: #fff; font-family: 'Orbitron'; font-size: 9px; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 16px; }
     .pb-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-    .pb-title {
-      font-family: 'Bebas Neue'; font-size: 2.8rem; letter-spacing: 3px;
-      color: #1a3a6e; position: relative; padding-bottom: 8px; margin-bottom: 8px;
-    }
+    .pb-title { font-family: 'Bebas Neue'; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; position: relative; padding-bottom: 8px; margin-bottom: 8px; }
     .pb-title span { color: var(--blue); }
-    .pb-title::after {
-      content:''; position:absolute; bottom:0; left:0; width:100%; height:3px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-    }
+    .pb-title::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:3px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
     .pb-sub { color: #5a7a9a; font-size: .95rem; margin-top: 10px; }
 
-    /* ── STEPPER ── */
-    .stepper-wrap {
-      display: flex; justify-content: center; align-items: center;
-      gap: 0; padding: 0 20px 28px; max-width: 700px; margin: 0 auto;
-    }
+    .stepper-wrap { display: flex; justify-content: center; align-items: center; gap: 0; padding: 0 20px 28px; max-width: 700px; margin: 0 auto; }
     .step-item { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
-    .step-item:not(:last-child)::after {
-      content:''; position:absolute; top:18px; left:calc(50% + 20px);
-      width:calc(100% - 40px); height:2px; background:#c8d4e8; z-index:0;
-    }
+    .step-item:not(:last-child)::after { content:''; position:absolute; top:18px; left:calc(50% + 20px); width:calc(100% - 40px); height:2px; background:#c8d4e8; z-index:0; }
     .step-item.done:not(:last-child)::after { background: var(--blue); }
-    .step-dot {
-      width:36px; height:36px; border-radius:50%; border:2px solid #c8d4e8;
-      background:#fff; display:flex; align-items:center; justify-content:center;
-      font-family:'Orbitron'; font-size:.7rem; font-weight:700; color:#8a9ab8;
-      transition:all .3s; z-index:1;
-    }
+    .step-dot { width:36px; height:36px; border-radius:50%; border:2px solid #c8d4e8; background:#fff; display:flex; align-items:center; justify-content:center; font-family:'Orbitron'; font-size:.7rem; font-weight:700; color:#8a9ab8; transition:all .3s; z-index:1; }
     .step-item.active .step-dot { border-color:var(--cyan); background:var(--blue); color:#fff; box-shadow:0 0 12px rgba(91,200,240,.4); }
     .step-item.done .step-dot { border-color:var(--green); background:var(--green); color:#fff; }
     .step-label { font-family:'Orbitron'; font-size:.6rem; letter-spacing:1px; color:#8a9ab8; margin-top:6px; text-align:center; }
     .step-item.active .step-label { color:var(--blue); font-weight:700; }
     .step-item.done .step-label { color:var(--green); }
 
-    /* ── WRAPPER ── */
     .pb-wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; }
-
-    /* ── STEP PANELS ── */
     .step-panel { display:none; animation: fadeUp .3s ease; }
     .step-panel.active { display:block; }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-    /* ── CARDS ── */
-    .pb-card {
-      background: var(--panel); border:1px solid var(--border);
-      border-radius:14px; padding:24px; color:var(--text); max-width:none !important;
-    }
-    .pb-card-title {
-      font-family:'Orbitron'; font-size:.75rem; letter-spacing:2px;
-      color:var(--cyan); text-transform:uppercase; margin-bottom:20px;
-      display:flex; align-items:center; gap:8px;
-    }
+    .pb-card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:24px; color:var(--text); max-width:none !important; }
+    .pb-card-title { font-family:'Orbitron'; font-size:.75rem; letter-spacing:2px; color:var(--cyan); text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
     .pb-card-title::before { content:''; width:3px; height:16px; background:var(--cyan); border-radius:2px; }
 
-    /* ── STEP 1 — CATEGORÍA ── */
     .cat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
     @media(max-width:700px){ .cat-grid { grid-template-columns:1fr; } }
-
-    .cat-btn {
-      background:var(--panel2); border:2px solid var(--border2);
-      border-radius:12px; padding:24px 16px; text-align:center;
-      cursor:pointer; transition:all .2s; color:var(--text);
-    }
+    .cat-btn { background:var(--panel2); border:2px solid var(--border2); border-radius:12px; padding:24px 16px; text-align:center; cursor:pointer; transition:all .2s; color:var(--text); }
     .cat-btn:hover { border-color:var(--cyan); background:rgba(91,200,240,.06); transform:translateY(-2px); }
     .cat-btn.selected { border-color:var(--cyan); background:rgba(26,92,168,.25); box-shadow:0 0 20px rgba(91,200,240,.2); }
     .cat-btn-icon { font-size:2rem; margin-bottom:10px; }
     .cat-btn-nombre { font-family:'Bebas Neue'; font-size:1.2rem; letter-spacing:1px; color:var(--cyan); }
     .cat-btn-desc { font-size:.75rem; color:var(--muted); margin-top:4px; }
-    .cat-btn-tipo {
-      display:inline-block; margin-top:8px; font-family:'Orbitron'; font-size:.55rem;
-      letter-spacing:1px; padding:3px 10px; border-radius:10px;
-    }
+    .cat-btn-tipo { display:inline-block; margin-top:8px; font-family:'Orbitron'; font-size:.55rem; letter-spacing:1px; padding:3px 10px; border-radius:10px; }
     .tipo-bracket { background:rgba(91,200,240,.15); color:var(--cyan); border:1px solid var(--border2); }
     .tipo-soccer  { background:rgba(46,204,113,.15); color:var(--green); border:1px solid rgba(46,204,113,.3); }
 
-    /* ── STEP 2 — SELECCIÓN ── */
     .sel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
     .sel-counts { font-family:'DM Mono'; font-size:.8rem; color:var(--muted); }
     .sel-counts span { color:var(--cyan); font-weight:700; }
-
     .sel-acciones { display:flex; gap:8px; }
-
     .participantes-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
-    .part-item {
-      background:var(--panel2); border:1.5px solid var(--border);
-      border-radius:10px; padding:12px 14px;
-      display:flex; align-items:center; gap:12px;
-      cursor:pointer; transition:all .2s;
-    }
+    .part-item { background:var(--panel2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:all .2s; }
     .part-item:hover { border-color:var(--border2); }
     .part-item.checked { border-color:var(--green); background:rgba(46,204,113,.08); }
-
-    .part-check {
-      width:22px; height:22px; border-radius:6px; border:2px solid var(--border2);
-      background:var(--panel); display:flex; align-items:center; justify-content:center;
-      font-size:.75rem; flex-shrink:0; transition:all .2s;
-    }
+    .part-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border2); background:var(--panel); display:flex; align-items:center; justify-content:center; font-size:.75rem; flex-shrink:0; transition:all .2s; }
     .part-item.checked .part-check { background:var(--green); border-color:var(--green); color:#fff; }
-
     .part-info { flex:1; min-width:0; }
     .part-nombre { font-weight:700; font-size:.9rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .part-sub { font-size:.72rem; color:var(--muted); margin-top:2px; }
-    .part-badge {
-      font-family:'Orbitron'; font-size:.5rem; letter-spacing:1px;
-      padding:2px 8px; border-radius:8px; flex-shrink:0;
-      background:rgba(91,200,240,.12); color:var(--cyan); border:1px solid var(--border2);
-    }
+    .part-badge { font-family:'Orbitron'; font-size:.5rem; letter-spacing:1px; padding:2px 8px; border-radius:8px; flex-shrink:0; background:rgba(91,200,240,.12); color:var(--cyan); border:1px solid var(--border2); }
+    .aviso-empty { background:rgba(243,156,18,.1); border:1px solid rgba(243,156,18,.35); border-radius:8px; padding:12px 16px; font-size:.85rem; color:var(--orange); text-align:center; grid-column:1/-1; }
 
-    .aviso-empty {
-      background:rgba(243,156,18,.1); border:1px solid rgba(243,156,18,.35);
-      border-radius:8px; padding:12px 16px; font-size:.85rem; color:var(--orange);
-      text-align:center; grid-column:1/-1;
-    }
-
-    /* ── STEP 3 — BRACKET ── */
     .bracket-wrap { overflow-x:auto; }
     .bracket-fases { display:flex; gap:40px; min-width:max-content; padding:8px 0 16px; }
     .bracket-fase { display:flex; flex-direction:column; min-width:260px; }
-    .fase-label {
-      font-family:'Orbitron'; font-size:.65rem; letter-spacing:2px;
-      color:var(--cyan); text-align:center; margin-bottom:16px;
-      text-transform:uppercase;
-    }
+    .fase-label { font-family:'Orbitron'; font-size:.65rem; letter-spacing:2px; color:var(--cyan); text-align:center; margin-bottom:16px; text-transform:uppercase; }
     .fase-partidos { display:flex; flex-direction:column; gap:12px; justify-content:space-around; flex:1; }
 
-    .partido-card {
-      background:var(--panel2); border:1.5px solid var(--border);
-      border-radius:10px; padding:14px; transition:all .2s;
-    }
+    .partido-card { background:var(--panel2); border:1.5px solid var(--border); border-radius:10px; padding:14px; transition:all .2s; }
     .partido-card:hover { border-color:var(--border2); }
     .partido-card.finalizado { border-color:rgba(46,204,113,.4); background:rgba(46,204,113,.05); }
     .partido-card.pendiente-bloqueado { opacity:.55; }
     .partido-card.bye { border:1.5px dashed var(--orange); background:rgba(243,156,18,.06); text-align:center; padding:12px; }
-
     .bye-nombre { font-family:'Bebas Neue'; font-size:1.1rem; color:var(--text); }
     .bye-tag { font-family:'Orbitron'; font-size:.55rem; color:var(--orange); letter-spacing:1px; margin-top:4px; }
 
     .partido-equipos { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-    .partido-eq {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:7px 10px; background:var(--panel); border-radius:7px;
-      border:1px solid var(--border); font-size:.85rem;
-    }
+    .partido-eq { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; background:var(--panel); border-radius:7px; border:1px solid var(--border); font-size:.85rem; }
     .partido-eq.ganador { background:rgba(46,204,113,.12); border-color:rgba(46,204,113,.4); font-weight:700; }
     .partido-eq.perdedor { opacity:.5; }
     .partido-eq-nombre { color:var(--text); }
     .partido-eq-score { font-family:'DM Mono'; font-size:.8rem; color:var(--cyan); }
 
-    .partido-estado {
-      font-family:'Orbitron'; font-size:.55rem; letter-spacing:1px;
-      text-align:center; padding:3px 8px; border-radius:8px; margin-bottom:8px;
-    }
+    .partido-estado { font-family:'Orbitron'; font-size:.55rem; letter-spacing:1px; text-align:center; padding:3px 8px; border-radius:8px; margin-bottom:8px; }
     .estado-finalizado { background:rgba(46,204,113,.15); color:var(--green); }
     .estado-pendiente  { background:rgba(91,200,240,.1); color:var(--cyan); }
     .estado-bloqueado  { background:rgba(139,139,139,.1); color:var(--muted); }
 
-    /* Botones de partido */
     .partido-btns { display:flex; gap:6px; }
-    .btn-ganador {
-      flex:1; font-family:'Orbitron'; font-size:.55rem; letter-spacing:1px;
-      padding:7px 6px; border-radius:7px; border:none; cursor:pointer;
-      background:var(--blue); color:#fff; transition:all .2s; text-align:center;
-    }
+    .btn-ganador { flex:1; font-family:'Orbitron'; font-size:.55rem; letter-spacing:1px; padding:7px 6px; border-radius:7px; border:none; cursor:pointer; background:var(--blue); color:#fff; transition:all .2s; text-align:center; }
     .btn-ganador:hover { background:#1e6bc4; }
-    .btn-jugar-soccer {
-      width:100%; font-family:'Orbitron'; font-size:.6rem; letter-spacing:1px;
-      padding:8px; border-radius:7px; border:none; cursor:pointer;
-      background:var(--green); color:#fff; transition:all .2s;
-    }
+    .btn-jugar-soccer { width:100%; font-family:'Orbitron'; font-size:.6rem; letter-spacing:1px; padding:8px; border-radius:7px; border:none; cursor:pointer; background:var(--green); color:#fff; transition:all .2s; }
     .btn-jugar-soccer:hover { background:#27ae60; }
 
-    /* ── CRONÓMETRO SOCCER ── */
-    .cronometro-overlay {
-      display:none; position:fixed; inset:0;
-      background:rgba(7,14,30,.95); backdrop-filter:blur(8px);
-      z-index:8000; align-items:center; justify-content:center;
-      padding:20px;
-    }
+    /* Cronómetro Soccer */
+    .cronometro-overlay { display:none; position:fixed; inset:0; background:rgba(7,14,30,.95); backdrop-filter:blur(8px); z-index:8000; align-items:center; justify-content:center; padding:20px; }
     .cronometro-overlay.show { display:flex; }
-    .cron-box {
-      background:var(--panel); border:1px solid var(--border2);
-      border-radius:20px; padding:32px; width:100%; max-width:700px;
-      color:var(--text);
-    }
-    .cron-header {
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border);
-      flex-wrap:wrap; gap:10px;
-    }
+    .cron-box { background:var(--panel); border:1px solid var(--border2); border-radius:20px; padding:32px; width:100%; max-width:700px; color:var(--text); }
+    .cron-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:10px; }
     .cron-titulo { font-family:'Bebas Neue'; font-size:1.6rem; letter-spacing:2px; color:var(--cyan); }
-    .cron-fase-badge {
-      font-family:'Orbitron'; font-size:.65rem; letter-spacing:1.5px;
-      background:rgba(26,92,168,.3); color:var(--cyan);
-      border:1px solid var(--border2); border-radius:20px; padding:4px 14px;
-    }
-
-    .cron-marcador {
-      display:grid; grid-template-columns:1fr auto 1fr;
-      gap:16px; align-items:center; margin-bottom:24px;
-      background:var(--panel2); border-radius:14px; padding:20px;
-      border:1px solid var(--border);
-    }
+    .cron-fase-badge { font-family:'Orbitron'; font-size:.65rem; letter-spacing:1.5px; background:rgba(26,92,168,.3); color:var(--cyan); border:1px solid var(--border2); border-radius:20px; padding:4px 14px; }
+    .cron-marcador { display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:center; margin-bottom:24px; background:var(--panel2); border-radius:14px; padding:20px; border:1px solid var(--border); }
     .cron-equipo { text-align:center; }
-    .cron-eq-nombre { font-family:'Exo 2'; font-size:.8rem; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; }
+    .cron-eq-nombre { font-family:'Exo 2'; font-size:.8rem; color:var(--muted); margin-bottom:6px; text-transform:uppercase; }
     .cron-eq-robot { font-family:'Bebas Neue'; font-size:1.4rem; color:var(--text); letter-spacing:1px; margin-bottom:10px; }
     .cron-goles { font-family:'Orbitron'; font-size:3.5rem; font-weight:900; color:var(--cyan); line-height:1; text-shadow:0 0 20px rgba(91,200,240,.5); }
     .cron-vs { font-family:'Bebas Neue'; font-size:1.8rem; color:var(--muted); opacity:.5; }
-
-    .cron-tiempo-display {
-      text-align:center; margin-bottom:20px;
-      background:var(--panel2); border-radius:14px; padding:24px;
-      border:2px solid var(--border2);
-    }
-    .cron-tiempo-num {
-      font-family:'Orbitron'; font-size:5rem; font-weight:900;
-      color:var(--cyan); line-height:1; letter-spacing:.05em;
-      text-shadow:0 0 30px rgba(91,200,240,.6);
-    }
+    .cron-tiempo-display { text-align:center; margin-bottom:20px; background:var(--panel2); border-radius:14px; padding:24px; border:2px solid var(--border2); }
+    .cron-tiempo-num { font-family:'Orbitron'; font-size:5rem; font-weight:900; color:var(--cyan); line-height:1; letter-spacing:.05em; text-shadow:0 0 30px rgba(91,200,240,.6); }
     .cron-tiempo-num.alerta { color:var(--red); animation:parpadeo 1s infinite; }
     @keyframes parpadeo { 0%,100%{opacity:1} 50%{opacity:.7} }
     .cron-tiempo-label { font-family:'DM Mono'; font-size:.8rem; color:var(--muted); margin-top:6px; letter-spacing:.1em; }
-
-    /* Penales */
-    .cron-penales {
-      display:none; background:rgba(243,156,18,.08);
-      border:1.5px solid rgba(243,156,18,.35);
-      border-radius:12px; padding:20px; margin-bottom:16px;
-    }
+    .cron-penales { display:none; background:rgba(243,156,18,.08); border:1.5px solid rgba(243,156,18,.35); border-radius:12px; padding:20px; margin-bottom:16px; }
     .cron-penales.show { display:block; }
     .cron-pen-title { font-family:'Orbitron'; font-size:.7rem; color:var(--orange); letter-spacing:2px; text-align:center; margin-bottom:14px; }
     .cron-pen-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
     .cron-pen-eq { text-align:center; }
     .cron-pen-nombre { font-size:.75rem; color:var(--muted); margin-bottom:6px; }
     .cron-pen-count { font-family:'Orbitron'; font-size:2.5rem; font-weight:900; color:var(--orange); }
-
-    /* Controles */
     .cron-controles { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
-    .btn-cron {
-      font-family:'Exo 2'; font-size:.85rem; font-weight:700;
-      padding:14px; border-radius:10px; border:none; cursor:pointer;
-      transition:all .2s; text-transform:uppercase; letter-spacing:.05em;
-      display:flex; align-items:center; justify-content:center; gap:6px;
-    }
+    .btn-cron { font-family:'Exo 2'; font-size:.85rem; font-weight:700; padding:14px; border-radius:10px; border:none; cursor:pointer; transition:all .2s; text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; justify-content:center; gap:6px; }
     .btn-cron:disabled { opacity:.4; cursor:not-allowed; }
     .btn-cron.iniciar  { background:var(--green); color:#fff; }
     .btn-cron.pausar   { background:var(--orange); color:#fff; }
@@ -295,34 +158,27 @@
     .btn-cron.definir  { background:var(--red); color:#fff; grid-column:span 2; }
     .btn-cron.cerrar   { background:rgba(139,139,139,.2); color:var(--muted); border:1px solid rgba(139,139,139,.2); grid-column:span 2; }
     .btn-cron:hover:not(:disabled) { filter:brightness(1.1); transform:translateY(-1px); }
-
     .cron-config { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
     .cron-config label { font-family:'Orbitron'; font-size:.6rem; letter-spacing:1px; color:var(--muted); }
-    .cron-config input {
-      width:70px; background:var(--panel2); border:1px solid var(--border2);
-      border-radius:6px; padding:6px 10px; color:var(--text);
-      font-family:'DM Mono'; font-size:.9rem; outline:none; text-align:center;
-    }
+    .cron-config input { width:70px; background:var(--panel2); border:1px solid var(--border2); border-radius:6px; padding:6px 10px; color:var(--text); font-family:'DM Mono'; font-size:.9rem; outline:none; text-align:center; }
     .cron-config input:focus { border-color:var(--cyan); }
 
-    /* ── PODIO ── */
-    .podio-wrap { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px; }
-    @media(max-width:600px){ .podio-wrap { grid-template-columns:1fr; } }
-    .podio-item {
-      background:var(--panel2); border:1px solid var(--border);
-      border-radius:12px; padding:20px; text-align:center;
-    }
-    .podio-pos { font-size:2rem; margin-bottom:8px; }
-    .podio-nombre { font-family:'Bebas Neue'; font-size:1.2rem; color:var(--cyan); letter-spacing:1px; }
-    .podio-inst { font-size:.75rem; color:var(--muted); margin-top:4px; }
+    /* Podio display */
+    .podio-display { background:var(--panel2); border:1px solid var(--border); border-radius:12px; padding:20px; margin-top:20px; }
+    .podio-display-title { font-family:'Orbitron'; font-size:.7rem; letter-spacing:2px; color:var(--cyan); margin-bottom:16px; text-transform:uppercase; }
+    .podio-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+    .podio-item { background:var(--panel); border-radius:10px; padding:16px; text-align:center; }
+    .podio-item.oro    { border:1px solid rgba(249,212,35,.4); }
+    .podio-item.plata  { border:1px solid rgba(189,195,199,.3); }
+    .podio-item.bronce { border:1px solid rgba(205,127,50,.3); }
+    .podio-item-icon { font-size:1.8rem; margin-bottom:6px; }
+    .podio-item-nombre { font-family:'Bebas Neue'; font-size:1.1rem; letter-spacing:1px; }
+    .podio-item.oro    .podio-item-nombre { color:#f9d423; }
+    .podio-item.plata  .podio-item-nombre { color:#bdc3c7; }
+    .podio-item.bronce .podio-item-nombre { color:#cd7f32; }
+    .podio-item-label { font-family:'Orbitron'; font-size:.55rem; color:var(--muted); margin-top:4px; }
 
-    /* ── BTNS GENERALES ── */
-    .btn {
-      display:inline-flex; align-items:center; gap:8px;
-      font-family:'Orbitron'; font-size:.7rem; letter-spacing:1.5px;
-      padding:10px 22px; border-radius:8px; border:none; cursor:pointer;
-      transition:all .2s; text-transform:uppercase;
-    }
+    .btn { display:inline-flex; align-items:center; gap:8px; font-family:'Orbitron'; font-size:.7rem; letter-spacing:1.5px; padding:10px 22px; border-radius:8px; border:none; cursor:pointer; transition:all .2s; text-transform:uppercase; }
     .btn-primary { background:var(--blue); color:#fff; }
     .btn-primary:hover { background:#1e6bc4; box-shadow:0 4px 16px rgba(26,92,168,.4); }
     .btn-primary:disabled { background:#2a2e42; color:var(--muted); cursor:not-allowed; }
@@ -336,62 +192,37 @@
     .btn-sm { padding:7px 14px; font-size:.62rem; }
     .btn-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; align-items:center; }
 
-    /* ── LOADING ── */
-    .loading-overlay {
-      display:none; position:fixed; inset:0;
-      background:rgba(14,18,30,.7); backdrop-filter:blur(4px);
-      align-items:center; justify-content:center;
-      z-index:9000; flex-direction:column; gap:16px;
-    }
+    .loading-overlay { display:none; position:fixed; inset:0; background:rgba(14,18,30,.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; z-index:9000; flex-direction:column; gap:16px; }
     .loading-overlay.show { display:flex; }
     .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--cyan); border-radius:50%; animation:spin .8s linear infinite; }
     @keyframes spin { to{transform:rotate(360deg)} }
     .loading-txt { font-family:'Orbitron'; font-size:.7rem; color:var(--cyan); letter-spacing:2px; }
 
-    /* ── TOAST ── */
-    #toast {
-      position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px);
-      background:var(--panel); border:1px solid var(--border2); color:var(--text);
-      padding:12px 24px; border-radius:10px; font-family:'Exo 2'; font-size:.9rem;
-      box-shadow:0 8px 32px rgba(0,0,0,.4); transition:transform .3s;
-      z-index:9999; white-space:nowrap;
-    }
+    #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--panel); border:1px solid var(--border2); color:var(--text); padding:12px 24px; border-radius:10px; font-family:'Exo 2'; font-size:.9rem; box-shadow:0 8px 32px rgba(0,0,0,.4); transition:transform .3s; z-index:9999; white-space:nowrap; }
     #toast.show { transform:translateX(-50%) translateY(0); }
     #toast.success { border-color:rgba(46,204,113,.5); }
     #toast.error   { border-color:rgba(231,76,60,.5); }
 
-    /* ── MODAL ── */
-    .modal-overlay {
-      display:none; position:fixed; inset:0;
-      background:rgba(10,12,20,.85); backdrop-filter:blur(6px);
-      align-items:center; justify-content:center; z-index:9500;
-    }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(10,12,20,.85); backdrop-filter:blur(6px); align-items:center; justify-content:center; z-index:9500; }
     .modal-overlay.show { display:flex; }
-    .modal-box {
-      background:var(--panel); border:1px solid var(--border2);
-      border-radius:14px; padding:32px; max-width:420px; width:90%; text-align:center;
-    }
+    .modal-box { background:var(--panel); border:1px solid var(--border2); border-radius:14px; padding:32px; max-width:420px; width:90%; text-align:center; }
     .modal-icon { font-size:2rem; margin-bottom:12px; }
     .modal-title { font-family:'Orbitron'; font-size:.85rem; color:var(--cyan); letter-spacing:2px; margin-bottom:10px; }
     .modal-msg { font-size:.9rem; color:var(--muted); margin-bottom:24px; line-height:1.6; }
     .modal-btns { display:flex; gap:12px; justify-content:center; }
-
     .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
     .empty-state-icon { font-size:2.5rem; margin-bottom:12px; opacity:.5; }
   </style>
 </head>
 <body>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
   <div class="loading-txt" id="loadingTxt">CARGANDO...</div>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
-<!-- Modal confirm -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal-box">
     <div class="modal-icon" id="modalIcon">⚠️</div>
@@ -404,20 +235,17 @@
   </div>
 </div>
 
-<!-- Cronómetro Soccer overlay -->
 <div class="cronometro-overlay" id="cronOverlay">
   <div class="cron-box">
     <div class="cron-header">
       <div class="cron-titulo" id="cronTitulo">PARTIDO</div>
       <div class="cron-fase-badge" id="cronFaseBadge">CONFIGURACIÓN</div>
     </div>
-
     <div class="cron-config">
       <label>DURACIÓN (MIN)</label>
       <input type="number" id="cronDuracion" value="3" min="1" max="15">
       <button class="btn btn-outline btn-sm" onclick="aplicarDuracion()">Aplicar</button>
     </div>
-
     <div class="cron-marcador">
       <div class="cron-equipo">
         <div class="cron-eq-nombre">Equipo A</div>
@@ -431,13 +259,10 @@
         <div class="cron-goles" id="cronGolesB">0</div>
       </div>
     </div>
-
     <div class="cron-tiempo-display">
       <div class="cron-tiempo-num" id="cronTiempoNum">03:00</div>
       <div class="cron-tiempo-label" id="cronTiempoLabel">LISTO PARA INICIAR</div>
     </div>
-
-    <!-- Penales -->
     <div class="cron-penales" id="cronPenales">
       <div class="cron-pen-title">⚽ DEFINICIÓN POR PENALES</div>
       <div class="cron-pen-grid">
@@ -454,22 +279,18 @@
       </div>
       <button class="btn-cron definir" onclick="definirPorPenales()">🏁 Definir ganador por penales</button>
     </div>
-
-    <!-- Controles -->
     <div class="cron-controles" id="cronControles">
-      <button class="btn-cron iniciar"   id="btnCronIniciar"  onclick="cronIniciar()">▶ Iniciar</button>
-      <button class="btn-cron pausar"    id="btnCronPausar"   onclick="cronPausar()" disabled>⏸ Pausar</button>
-      <button class="btn-cron gol-a"     id="btnGolA"         onclick="anotarGol('A')">⚽ Gol A</button>
-      <button class="btn-cron gol-b"     id="btnGolB"         onclick="anotarGol('B')">⚽ Gol B</button>
-      <button class="btn-cron reiniciar" id="btnCronReiniciar" onclick="cronReiniciar()" style="grid-column:span 2;">🔄 Reiniciar tiempo</button>
-      <button class="btn-cron terminar"  id="btnCronTerminar" onclick="terminarPartidoSoccer()">🏁 Terminar partido</button>
+      <button class="btn-cron iniciar"    id="btnCronIniciar"   onclick="cronIniciar()">▶ Iniciar</button>
+      <button class="btn-cron pausar"     id="btnCronPausar"    onclick="cronPausar()" disabled>⏸ Pausar</button>
+      <button class="btn-cron gol-a"      id="btnGolA"          onclick="anotarGol('A')">⚽ Gol A</button>
+      <button class="btn-cron gol-b"      id="btnGolB"          onclick="anotarGol('B')">⚽ Gol B</button>
+      <button class="btn-cron reiniciar"  id="btnCronReiniciar" onclick="cronReiniciar()" style="grid-column:span 2;">🔄 Reiniciar tiempo</button>
+      <button class="btn-cron terminar"   id="btnCronTerminar"  onclick="terminarPartidoSoccer()">🏁 Terminar partido</button>
     </div>
-
     <button class="btn-cron cerrar" onclick="cerrarCronometro()" style="margin-top:8px;">✕ Cerrar sin guardar</button>
   </div>
 </div>
 
-<!-- Header -->
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
   <div data-include="../shared/components/header.html"></div>
@@ -479,14 +300,12 @@
 <main>
 <div class="wrapper" style="max-width:1200px;margin:0 auto;padding:0 20px 60px">
 
-<!-- HERO -->
 <div class="pb-hero">
   <div class="pb-badge"><div class="pb-badge-dot"></div>SUCREBOT 2026 · STAFF</div>
   <h2 class="pb-title">PANEL DE <span>BRACKET</span></h2>
   <p class="pb-sub">Minisumo Autónomo · Minisumo RC · Robot Soccer</p>
 </div>
 
-<!-- STEPPER -->
 <div class="stepper-wrap">
   <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
   <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Presentes</div></div>
@@ -495,7 +314,7 @@
 
 <div class="pb-wrap">
 
-  <!-- ══ PASO 1 — CATEGORÍA ══ -->
+  <!-- PASO 1 -->
   <div class="step-panel active" id="panel-1">
     <div class="pb-card">
       <div class="pb-card-title">Seleccionar Categoría</div>
@@ -522,11 +341,10 @@
     </div>
   </div>
 
-  <!-- ══ PASO 2 — SELECCIÓN DE PRESENTES ══ -->
+  <!-- PASO 2 -->
   <div class="step-panel" id="panel-2">
     <div class="pb-card">
       <div class="pb-card-title" id="paso2Titulo">Participantes Presentes</div>
-
       <div class="sel-header">
         <div class="sel-counts"><span id="selCount">0</span> seleccionados de <span id="selTotal">0</span></div>
         <div class="sel-acciones">
@@ -534,19 +352,15 @@
           <button class="btn btn-outline btn-sm" onclick="deseleccionarTodos()">✗ Ninguno</button>
         </div>
       </div>
-
       <div class="participantes-list" id="participantesList"></div>
-
       <div class="btn-row" style="justify-content:space-between;margin-top:24px;">
         <button class="btn btn-outline" onclick="volverPaso1()">← Volver</button>
-        <button class="btn btn-green" id="btnGenerarBracket" onclick="generarBracket()" disabled>
-          Generar Bracket →
-        </button>
+        <button class="btn btn-green" id="btnGenerarBracket" onclick="generarBracket()" disabled>Generar Bracket →</button>
       </div>
     </div>
   </div>
 
-  <!-- ══ PASO 3 — BRACKET ══ -->
+  <!-- PASO 3 — BRACKET -->
   <div class="step-panel" id="panel-3">
     <div class="pb-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
@@ -554,17 +368,21 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-outline btn-sm" onclick="volverPaso1()">← Nueva categoría</button>
           <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
+          <!-- NUEVO: Ver Podio (visible cuando hay ganador final) -->
+          <button class="btn btn-outline btn-sm" id="btnVerPodio" onclick="verPodioEnBracket()" style="display:none;">📊 Ver Podio</button>
           <button class="btn btn-green btn-sm" id="btnPodio" onclick="guardarPodio()" style="display:none;">🏆 Guardar Podio</button>
         </div>
       </div>
       <div class="bracket-wrap">
         <div class="bracket-fases" id="bracketFases"></div>
       </div>
+      <!-- Podio se inyecta aquí -->
+      <div id="podio-display"></div>
     </div>
   </div>
 
-</div><!-- /pb-wrap -->
-</div><!-- /wrapper -->
+</div>
+</div>
 </main>
 
 <div data-include="../shared/components/footer.html"></div>
@@ -572,9 +390,6 @@
 <script src="../shared/js/auth.js"></script>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════════════════
 const GAS = CONFIG.GAS_URL();
 
 const CAT_INFO = {
@@ -583,36 +398,23 @@ const CAT_INFO = {
   soc:   { nombre: 'Robot Soccer',      tipo: 'soccer',   gasNombre: 'Robot soccer' }
 };
 
-// ═══════════════════════════════════════════════════════════════
-// ESTADO GLOBAL
-// ═══════════════════════════════════════════════════════════════
 let state = {
-  categoria:     '',
-  tipo:          '',          // 'minisumo' | 'soccer'
-  participantes: [],          // todos los aprobados de la categoría
-  seleccionados: new Set(),   // IDs marcados como presentes
-  bracket:       null,        // bracket generado
+  categoria:        '',
+  tipo:             '',
+  participantes:    [],
+  seleccionados:    new Set(),
+  bracket:          null,
   bracketBloqueado: false,
-  podio:         []
+  podio:            []
 };
 
-// Cronómetro
 let cron = {
-  partido:   null,
-  duracion:  3,
-  segundos:  0,
-  fase:      'idle',  // idle | t1 | t2 | penales | fin
-  corriendo: false,
-  interval:  null,
-  golesA:    0,
-  golesB:    0,
-  penalesA:  0,
-  penalesB:  0
+  partido: null, duracion: 3, segundos: 0,
+  fase: 'idle', corriendo: false, interval: null,
+  golesA: 0, golesB: 0, penalesA: 0, penalesB: 0
 };
 
-// ═══════════════════════════════════════════════════════════════
-// UTILIDADES
-// ═══════════════════════════════════════════════════════════════
+// ── UTILIDADES ──────────────────────────────────────────────
 function loading(show, txt = 'CARGANDO...') {
   document.getElementById('loadingOverlay').classList.toggle('show', show);
   document.getElementById('loadingTxt').textContent = txt;
@@ -668,14 +470,10 @@ document.getElementById('modalConfirmBtn').onclick = () => {
   const cb = _modalCb; cerrarModal(); if (cb) cb();
 };
 
-// ═══════════════════════════════════════════════════════════════
-// PASO 1 — SELECCIONAR CATEGORÍA
-// ═══════════════════════════════════════════════════════════════
+// ── PASO 1 ───────────────────────────────────────────────────
 async function seleccionarCategoria(cat) {
   state.categoria = cat;
   state.tipo      = CAT_INFO[cat].tipo;
-
-  // Resaltar botón seleccionado
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
   event.currentTarget.classList.add('selected');
 
@@ -686,29 +484,24 @@ async function seleccionarCategoria(cat) {
     const gasNombre = CAT_INFO[cat].gasNombre;
 
     if (cat === 'soc') {
-      // Soccer: agrupar por equipo
       const porEquipo = {};
       todos.filter(p => p.categoria === gasNombre && p.aprobado === 'APROBADO').forEach(p => {
         const eq = (p.equipo || '').trim();
         if (!eq) return;
-        if (!porEquipo[eq]) porEquipo[eq] = { id: 'eq-' + eq, nombre: eq, robots: [], institucion: p.institucion };
+        if (!porEquipo[eq]) porEquipo[eq] = { id: 'eq-' + eq, nombre: eq, robots: [], institucion: p.institucion, correo: p.correo };
         porEquipo[eq].robots.push({ id: p.id, nombre: p.nombre, robot: p.robot });
       });
       state.participantes = Object.values(porEquipo);
     } else {
-      // Minisumo: cada robot individual
       state.participantes = todos
         .filter(p => p.categoria === gasNombre && p.aprobado === 'APROBADO')
-        .map(p => ({ id: p.id, nombre: p.robot || p.nombre, sub: p.nombre, institucion: p.institucion }));
+        .map(p => ({ id: p.id, nombre: p.robot || p.nombre, sub: p.nombre, institucion: p.institucion, correo: p.correo }));
     }
 
     state.seleccionados = new Set();
     state.bracket = null;
     state.bracketBloqueado = false;
-
-    // Intentar cargar bracket existente
     await intentarCargarBracket(cat);
-
   } catch(e) {
     toast('Error cargando participantes', 'error');
     console.error(e);
@@ -718,49 +511,39 @@ async function seleccionarCategoria(cat) {
 
 async function intentarCargarBracket(cat) {
   try {
-    const accion = cat === 'soc' ? 'getBracketSoccer' : 'getBracketGeneral';
-    const res = await gasGet({ action: accion, categoria: cat });
+    const res = await gasGet({ action: 'getBracketGeneral', categoria: cat });
     if (res.ok && res.bracket) {
       state.bracket = res.bracket;
       state.bracketBloqueado = true;
-      // Si hay bracket, ir directo al paso 3
       renderBracket();
       actualizarTitulos();
       setStep(3);
       return;
     }
   } catch(e) {}
-
-  // No hay bracket — ir a paso 2
   actualizarTitulos();
   renderSeleccion();
   setStep(2);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// PASO 2 — SELECCIÓN DE PRESENTES
-// ═══════════════════════════════════════════════════════════════
+// ── PASO 2 ───────────────────────────────────────────────────
 function actualizarTitulos() {
   const nombre = CAT_INFO[state.categoria]?.nombre || '';
   document.getElementById('paso2Titulo').textContent =
     state.tipo === 'soccer' ? `Equipos Presentes — ${nombre}` : `Robots Presentes — ${nombre}`;
   document.getElementById('paso3Titulo').textContent = `BRACKET — ${nombre}`;
-  document.getElementById('pb-sub') && (document.querySelector('.pb-sub').textContent = nombre);
 }
 
 function renderSeleccion() {
   const lista = document.getElementById('participantesList');
   const total = state.participantes.length;
-
   document.getElementById('selTotal').textContent = total;
   actualizarContadorSel();
-
   if (!total) {
     lista.innerHTML = `<div class="aviso-empty">⚠️ No hay participantes aprobados para ${CAT_INFO[state.categoria]?.nombre}</div>`;
     document.getElementById('btnGenerarBracket').disabled = true;
     return;
   }
-
   lista.innerHTML = state.participantes.map(p => {
     const seleccionado = state.seleccionados.has(p.id);
     const sub = state.tipo === 'soccer'
@@ -779,11 +562,8 @@ function renderSeleccion() {
 }
 
 function toggleSeleccion(id) {
-  if (state.seleccionados.has(id)) {
-    state.seleccionados.delete(id);
-  } else {
-    state.seleccionados.add(id);
-  }
+  if (state.seleccionados.has(id)) state.seleccionados.delete(id);
+  else state.seleccionados.add(id);
   const safeId = id.replace(/[^a-z0-9]/gi,'_');
   const el = document.getElementById(`pitem-${safeId}`);
   if (el) {
@@ -800,191 +580,135 @@ function actualizarContadorSel() {
   document.getElementById('btnGenerarBracket').disabled = n < 2;
 }
 
-function seleccionarTodos() {
-  state.participantes.forEach(p => state.seleccionados.add(p.id));
-  renderSeleccion();
-}
-function deseleccionarTodos() {
-  state.seleccionados.clear();
-  renderSeleccion();
-}
-
+function seleccionarTodos()    { state.participantes.forEach(p => state.seleccionados.add(p.id)); renderSeleccion(); }
+function deseleccionarTodos()  { state.seleccionados.clear(); renderSeleccion(); }
 function volverPaso1() {
   state.categoria = ''; state.tipo = '';
   state.participantes = []; state.seleccionados = new Set();
   state.bracket = null; state.bracketBloqueado = false;
+  document.getElementById('podio-display').innerHTML = '';
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
   setStep(1);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// GENERAR BRACKET
-// ═══════════════════════════════════════════════════════════════
+// ── GENERAR BRACKET ──────────────────────────────────────────
 async function generarBracket() {
   if (state.seleccionados.size < 2) { toast('Selecciona al menos 2', 'error'); return; }
   if (state.bracketBloqueado) { toast('Ya hay un bracket generado', 'error'); return; }
-
   const presentes = state.participantes.filter(p => state.seleccionados.has(p.id));
-
   confirmar('🏆', 'GENERAR BRACKET',
     `¿Generar bracket con ${presentes.length} ${state.tipo === 'soccer' ? 'equipos' : 'robots'}? Los emparejamientos serán aleatorios e inmutables.`,
     'Generar', 'success',
     async () => {
       loading(true, 'GENERANDO BRACKET...');
       try {
-        let res;
-        if (state.tipo === 'soccer') {
-          // Soccer: usa bracket_soccer con equipos como objetos {id, nombre}
-          res = await gasPost({
-            action: 'generarBracketGeneral',
-            categoria: state.categoria,
-            participantes: presentes.map(p => ({ id: p.id, nombre: p.nombre }))
-          });
-        } else {
-          // Minisumo: participantes individuales
-          res = await gasPost({
-            action: 'generarBracketGeneral',
-            categoria: state.categoria,
-            participantes: presentes.map(p => ({ id: p.id, nombre: p.nombre }))
-          });
-        }
+        const res = await gasPost({
+          action: 'generarBracketGeneral',
+          categoria: state.categoria,
+          participantes: presentes.map(p => ({ id: p.id, nombre: p.nombre }))
+        });
         if (!res.ok) throw new Error(res.error || 'Error generando bracket');
         state.bracket = res.bracket;
         state.bracketBloqueado = true;
         toast('✅ Bracket generado', 'success');
         renderBracket();
         setStep(3);
-      } catch(e) {
-        toast('Error: ' + e.message, 'error');
-        console.error(e);
-      }
+      } catch(e) { toast('Error: ' + e.message, 'error'); console.error(e); }
       loading(false);
     }
   );
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RENDERIZAR BRACKET
-// ═══════════════════════════════════════════════════════════════
+// ── RENDERIZAR BRACKET ───────────────────────────────────────
 function renderBracket() {
   const container = document.getElementById('bracketFases');
   if (!state.bracket?.fases?.length) {
     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>No hay bracket disponible.</p></div>';
     return;
   }
-
-  // Detectar si el torneo finalizó (hay ganador en la final)
   const fases = state.bracket.fases;
   const final = fases[fases.length - 1];
   const finalizado = final?.partidos?.some(p => p.estado === 'FINALIZADO' && p.ganador_id);
-  document.getElementById('btnPodio').style.display = finalizado ? 'inline-flex' : 'none';
 
-  container.innerHTML = fases.map(fase => {
-    const partidosHTML = fase.partidos.map(p => renderPartido(p)).join('');
-    return `
-      <div class="bracket-fase">
-        <div class="fase-label">${fase.nombre}</div>
-        <div class="fase-partidos">${partidosHTML}</div>
-      </div>`;
-  }).join('');
+  // FIX: mostrar ambos botones cuando hay ganador final
+  document.getElementById('btnPodio').style.display    = finalizado ? 'inline-flex' : 'none';
+  document.getElementById('btnVerPodio').style.display = finalizado ? 'inline-flex' : 'none';
+
+  container.innerHTML = fases.map(fase => `
+    <div class="bracket-fase">
+      <div class="fase-label">${fase.nombre}</div>
+      <div class="fase-partidos">${fase.partidos.map(p => renderPartido(p)).join('')}</div>
+    </div>`).join('');
 }
 
 function renderPartido(p) {
-  // BYE
   if (p.tipo === 'BYE') {
-    return `
-      <div class="partido-card bye">
-        <div class="bye-nombre">${p.equipo_a_nombre || p.equipoNombre || '—'}</div>
-        <div class="bye-tag">BYE · Pasa directo</div>
-      </div>`;
+    return `<div class="partido-card bye">
+      <div class="bye-nombre">${p.equipo_a_nombre || p.equipoNombre || '—'}</div>
+      <div class="bye-tag">BYE · Pasa directo</div>
+    </div>`;
   }
-
   const esFinalizado = p.estado === 'FINALIZADO';
   const puedeJugar   = p.estado === 'PENDIENTE' && p.equipo_a_id && p.equipo_b_id;
   const bloqueado    = !p.equipo_a_id || !p.equipo_b_id;
-
-  const claseCard = esFinalizado ? 'finalizado' : bloqueado ? 'pendiente-bloqueado' : '';
-
+  const claseCard    = esFinalizado ? 'finalizado' : bloqueado ? 'pendiente-bloqueado' : '';
   const nombreA = p.equipo_a_nombre || p.equipoA_nombre || '— Por definir —';
   const nombreB = p.equipo_b_nombre || p.equipoB_nombre || '— Por definir —';
-
-  const claseA = esFinalizado ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
-  const claseB = esFinalizado ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
-
-  // Score display
+  const claseA  = esFinalizado ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
+  const claseB  = esFinalizado ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
   let scoreA = '', scoreB = '';
   if (esFinalizado && p.marcador) {
     const partes = String(p.marcador).split('-');
     scoreA = partes[0] || '';
     scoreB = partes[1]?.split(' ')[0] || '';
   }
-
   let botonesHTML = '';
   if (puedeJugar) {
     if (state.tipo === 'soccer') {
       botonesHTML = `<button class="btn-jugar-soccer" onclick='abrirCronometro(${JSON.stringify(p)})'>▶ Jugar partido</button>`;
     } else {
-      // Minisumo: solo botones de ganador
-      botonesHTML = `
-        <div class="partido-btns">
-          <button class="btn-ganador" onclick='registrarGanadorMinisumo("${p.partido_id}","${p.equipo_a_id}","${nombreA}")'>🏆 ${nombreA}</button>
-          <button class="btn-ganador" onclick='registrarGanadorMinisumo("${p.partido_id}","${p.equipo_b_id}","${nombreB}")'>🏆 ${nombreB}</button>
-        </div>`;
+      botonesHTML = `<div class="partido-btns">
+        <button class="btn-ganador" onclick='registrarGanadorMinisumo("${p.partido_id}","${p.equipo_a_id}","${nombreA}")'>🏆 ${nombreA}</button>
+        <button class="btn-ganador" onclick='registrarGanadorMinisumo("${p.partido_id}","${p.equipo_b_id}","${nombreB}")'>🏆 ${nombreB}</button>
+      </div>`;
     }
   }
-
   const estadoLabel = esFinalizado ? 'FINALIZADO' : bloqueado ? 'EN ESPERA' : 'PENDIENTE';
   const estadoClase = esFinalizado ? 'estado-finalizado' : bloqueado ? 'estado-bloqueado' : 'estado-pendiente';
-
-  return `
-    <div class="partido-card ${claseCard}">
-      <div class="partido-estado ${estadoClase}">${estadoLabel}</div>
-      <div class="partido-equipos">
-        <div class="partido-eq ${claseA}">
-          <span class="partido-eq-nombre">${nombreA}</span>
-          ${scoreA ? `<span class="partido-eq-score">${scoreA}</span>` : ''}
-        </div>
-        <div class="partido-eq ${claseB}">
-          <span class="partido-eq-nombre">${nombreB}</span>
-          ${scoreB ? `<span class="partido-eq-score">${scoreB}</span>` : ''}
-        </div>
+  return `<div class="partido-card ${claseCard}">
+    <div class="partido-estado ${estadoClase}">${estadoLabel}</div>
+    <div class="partido-equipos">
+      <div class="partido-eq ${claseA}">
+        <span class="partido-eq-nombre">${nombreA}</span>
+        ${scoreA ? `<span class="partido-eq-score">${scoreA}</span>` : ''}
       </div>
-      ${botonesHTML}
-    </div>`;
+      <div class="partido-eq ${claseB}">
+        <span class="partido-eq-nombre">${nombreB}</span>
+        ${scoreB ? `<span class="partido-eq-score">${scoreB}</span>` : ''}
+      </div>
+    </div>
+    ${botonesHTML}
+  </div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// MINISUMO — REGISTRAR GANADOR
-// ═══════════════════════════════════════════════════════════════
+// ── MINISUMO — REGISTRAR GANADOR ─────────────────────────────
 async function registrarGanadorMinisumo(partidoId, ganadorId, ganadorNombre) {
-  confirmar('🏆', 'CONFIRMAR GANADOR',
-    `¿Ganó ${ganadorNombre}?`,
-    'Confirmar', 'success',
+  confirmar('🏆', 'CONFIRMAR GANADOR', `¿Ganó ${ganadorNombre}?`, 'Confirmar', 'success',
     async () => {
       loading(true, 'GUARDANDO...');
       try {
-        const res = await gasPost({
-          action:     'registrarResultadoGeneral',
-          partido_id: partidoId,
-          ganador_id: ganadorId,
-          marcador:   '—',
-          categoria:  state.categoria
-        });
+        const res = await gasPost({ action: 'registrarResultadoGeneral', partido_id: partidoId, ganador_id: ganadorId, marcador: '—', categoria: state.categoria });
         if (!res.ok) throw new Error(res.error || 'Error');
         state.bracket = res.bracket;
         toast(`🏆 Ganó ${ganadorNombre}`, 'success');
         renderBracket();
-      } catch(e) {
-        toast('Error: ' + e.message, 'error');
-      }
+      } catch(e) { toast('Error: ' + e.message, 'error'); }
       loading(false);
     }
   );
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RESETEAR BRACKET
-// ═══════════════════════════════════════════════════════════════
+// ── RESETEAR BRACKET ─────────────────────────────────────────
 function resetearBracket() {
   confirmar('🗑', 'RESETEAR BRACKET',
     `¿Eliminar el bracket de ${CAT_INFO[state.categoria]?.nombre}? Esta acción no se puede deshacer.`,
@@ -992,31 +716,73 @@ function resetearBracket() {
     async () => {
       loading(true, 'RESETEANDO...');
       try {
-        const res = await gasPost({
-          action:    'resetearBracketGeneral',
-          categoria: state.categoria
-        });
+        const res = await gasPost({ action: 'resetearBracketGeneral', categoria: state.categoria });
         if (!res.ok) throw new Error(res.error || 'Error');
         state.bracket = null;
         state.bracketBloqueado = false;
         state.seleccionados = new Set();
+        document.getElementById('podio-display').innerHTML = '';
         toast('Bracket reseteado', 'success');
         renderSeleccion();
         setStep(2);
-      } catch(e) {
-        toast('Error: ' + e.message, 'error');
-      }
+      } catch(e) { toast('Error: ' + e.message, 'error'); }
       loading(false);
     }
   );
 }
 
-// ═══════════════════════════════════════════════════════════════
-// PODIO
-// ═══════════════════════════════════════════════════════════════
+// ── VER PODIO (display visual inline) ────────────────────────
+function verPodioEnBracket() {
+  if (!state.bracket?.fases?.length) return;
+  const fases = state.bracket.fases;
+  const final = fases[fases.length - 1];
+  const finalizado = final?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
+  if (!finalizado) { toast('La final aún no ha terminado', 'error'); return; }
+
+  const ganadorId  = finalizado.ganador_id;
+  const perdedorId = ganadorId === finalizado.equipo_a_id ? finalizado.equipo_b_id : finalizado.equipo_a_id;
+  const ganadorNombre  = ganadorId  === finalizado.equipo_a_id ? finalizado.equipo_a_nombre : finalizado.equipo_b_nombre;
+  const perdedorNombre = perdedorId === finalizado.equipo_a_id ? finalizado.equipo_a_nombre : finalizado.equipo_b_nombre;
+
+  let terceros = [];
+  if (fases.length >= 2) {
+    const semi = fases[fases.length - 2];
+    terceros = semi?.partidos
+      ?.filter(p => p.estado === 'FINALIZADO' && p.ganador_id)
+      ?.map(p => p.ganador_id === p.equipo_a_id ? (p.equipo_b_nombre || '—') : (p.equipo_a_nombre || '—')) || [];
+  }
+
+  const tercerosHTML = terceros.map(n => `
+    <div class="podio-item bronce">
+      <div class="podio-item-icon">🥉</div>
+      <div class="podio-item-nombre">${n}</div>
+      <div class="podio-item-label">TERCER LUGAR</div>
+    </div>`).join('');
+
+  document.getElementById('podio-display').innerHTML = `
+    <div class="podio-display">
+      <div class="podio-display-title">🏆 Podio — ${CAT_INFO[state.categoria]?.nombre}</div>
+      <div class="podio-grid">
+        <div class="podio-item oro">
+          <div class="podio-item-icon">🥇</div>
+          <div class="podio-item-nombre">${ganadorNombre || '—'}</div>
+          <div class="podio-item-label">GANADOR</div>
+        </div>
+        <div class="podio-item plata">
+          <div class="podio-item-icon">🥈</div>
+          <div class="podio-item-nombre">${perdedorNombre || '—'}</div>
+          <div class="podio-item-label">SUBCAMPEÓN</div>
+        </div>
+        ${tercerosHTML}
+      </div>
+    </div>`;
+
+  document.getElementById('podio-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── GUARDAR PODIO (FIX: payload completo) ────────────────────
 async function guardarPodio() {
   if (!state.bracket?.fases?.length) return;
-  // Sacar ganador y finalistas de la última fase
   const fases = state.bracket.fases;
   const final = fases[fases.length - 1];
   const partidoFinal = final?.partidos?.find(p => p.estado === 'FINALIZADO');
@@ -1027,23 +793,58 @@ async function guardarPodio() {
     'Guardar', 'success',
     async () => {
       loading(true, 'GUARDANDO PODIO...');
+      const catNombre = CAT_INFO[state.categoria]?.gasNombre || CAT_INFO[state.categoria]?.nombre || '';
+
+      // Helper: buscar datos del participante en state.participantes
+      function datosP(id) {
+        const p = state.participantes.find(x => x.id === id) || {};
+        return { correo: p.correo || '', nombre: p.nombre || p.sub || '', institucion: p.institucion || '' };
+      }
+
       try {
-        const ganadorId = partidoFinal.ganador_id;
-        const perdedorId = ganadorId === partidoFinal.equipo_a_id
-          ? partidoFinal.equipo_b_id : partidoFinal.equipo_a_id;
+        const ganadorId  = partidoFinal.ganador_id;
+        const perdedorId = ganadorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_b_id : partidoFinal.equipo_a_id;
+        const ganadorNombre  = ganadorId  === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
+        const perdedorNombre = perdedorId === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
 
-        await gasPost({ action: 'guardarCertificado', id_participante: ganadorId, tipo_certificado: 'GANADOR', evento: 'SucreBot 2026' });
-        await gasPost({ action: 'guardarCertificado', id_participante: perdedorId, tipo_certificado: 'FINALISTA', evento: 'SucreBot 2026' });
+        const dGan = datosP(ganadorId);
+        const dPer = datosP(perdedorId);
 
-        // 3er lugar — perdedor de semifinal si existe
+        await gasPost({
+          action: 'guardarCertificado', id_participante: ganadorId,
+          correo: dGan.correo, nombre: dGan.nombre || ganadorNombre,
+          nombre_completo: dGan.nombre || ganadorNombre,
+          categoria: catNombre, institucion: dGan.institucion,
+          tipo_certificado: 'GANADOR', evento: 'SucreBot 2026'
+        });
+
+        await gasPost({
+          action: 'guardarCertificado', id_participante: perdedorId,
+          correo: dPer.correo, nombre: dPer.nombre || perdedorNombre,
+          nombre_completo: dPer.nombre || perdedorNombre,
+          categoria: catNombre, institucion: dPer.institucion,
+          tipo_certificado: 'SUBCAMPEÓN', evento: 'SucreBot 2026'
+        });
+
+        // 3er lugar — perdedores de semifinal
         if (fases.length >= 2) {
           const semi = fases[fases.length - 2];
           const perdedoresSemi = semi?.partidos
             ?.filter(p => p.estado === 'FINALIZADO' && p.ganador_id)
-            ?.map(p => p.ganador_id === p.equipo_a_id ? p.equipo_b_id : p.equipo_a_id);
+            ?.map(p => ({
+              id:     p.ganador_id === p.equipo_a_id ? p.equipo_b_id : p.equipo_a_id,
+              nombre: p.ganador_id === p.equipo_a_id ? (p.equipo_b_nombre || '') : (p.equipo_a_nombre || '')
+            }));
           if (perdedoresSemi?.length) {
-            for (const id of perdedoresSemi) {
-              await gasPost({ action: 'guardarCertificado', id_participante: id, tipo_certificado: 'TERCER_LUGAR', evento: 'SucreBot 2026' });
+            for (const entry of perdedoresSemi) {
+              const d = datosP(entry.id);
+              await gasPost({
+                action: 'guardarCertificado', id_participante: entry.id,
+                correo: d.correo, nombre: d.nombre || entry.nombre,
+                nombre_completo: d.nombre || entry.nombre,
+                categoria: catNombre, institucion: d.institucion,
+                tipo_certificado: 'TERCER LUGAR', evento: 'SucreBot 2026'
+              });
             }
           }
         }
@@ -1056,22 +857,14 @@ async function guardarPodio() {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CRONÓMETRO SOCCER
-// ═══════════════════════════════════════════════════════════════
+// ── CRONÓMETRO SOCCER ────────────────────────────────────────
 function abrirCronometro(partido) {
-  cron.partido   = partido;
-  cron.duracion  = parseInt(document.getElementById('cronDuracion').value) || 3;
-  cron.segundos  = cron.duracion * 60;
-  cron.fase      = 'idle';
-  cron.corriendo = false;
-  cron.golesA    = 0; cron.golesB = 0;
-  cron.penalesA  = 0; cron.penalesB = 0;
+  cron.partido = partido; cron.duracion = parseInt(document.getElementById('cronDuracion').value) || 3;
+  cron.segundos = cron.duracion * 60; cron.fase = 'idle'; cron.corriendo = false;
+  cron.golesA = 0; cron.golesB = 0; cron.penalesA = 0; cron.penalesB = 0;
   if (cron.interval) clearInterval(cron.interval);
-
   const nombreA = partido.equipo_a_nombre || partido.equipoA_nombre || '?';
   const nombreB = partido.equipo_b_nombre || partido.equipoB_nombre || '?';
-
   document.getElementById('cronTitulo').textContent   = `${nombreA} vs ${nombreB}`;
   document.getElementById('cronNombreA').textContent  = nombreA;
   document.getElementById('cronNombreB').textContent  = nombreB;
@@ -1080,15 +873,11 @@ function abrirCronometro(partido) {
   document.getElementById('penNombreA').textContent   = nombreA;
   document.getElementById('penNombreB').textContent   = nombreB;
   document.getElementById('cronFaseBadge').textContent = 'TIEMPO 1';
-
-  actualizarDisplayCron();
-  actualizarMarcadorCron();
+  actualizarDisplayCron(); actualizarMarcadorCron();
   document.getElementById('cronPenales').classList.remove('show');
-
   document.getElementById('btnCronIniciar').disabled  = false;
   document.getElementById('btnCronIniciar').textContent = '▶ Iniciar T1';
   document.getElementById('btnCronPausar').disabled   = true;
-
   document.getElementById('cronOverlay').classList.add('show');
 }
 
@@ -1101,10 +890,8 @@ function cerrarCronometro() {
 
 function aplicarDuracion() {
   const val = parseInt(document.getElementById('cronDuracion').value) || 3;
-  cron.duracion = val;
-  cron.segundos = val * 60;
-  actualizarDisplayCron();
-  toast('Duración actualizada', 'success');
+  cron.duracion = val; cron.segundos = val * 60;
+  actualizarDisplayCron(); toast('Duración actualizada', 'success');
 }
 
 function cronIniciar() {
@@ -1118,10 +905,7 @@ function cronIniciar() {
       cron.segundos--;
       actualizarDisplayCron();
       if (cron.segundos === 30) toast('⚠️ 30 segundos restantes', 'error');
-    } else {
-      cronPausar();
-      finDeTiempo();
-    }
+    } else { cronPausar(); finDeTiempo(); }
   }, 1000);
 }
 
@@ -1135,18 +919,14 @@ function cronPausar() {
 
 function cronReiniciar() {
   if (!confirm('¿Reiniciar el tiempo actual?')) return;
-  cronPausar();
-  cron.segundos = cron.duracion * 60;
-  actualizarDisplayCron();
+  cronPausar(); cron.segundos = cron.duracion * 60; actualizarDisplayCron();
   document.getElementById('btnCronIniciar').textContent = '▶ Iniciar';
 }
 
 function finDeTiempo() {
   toast('⏱ ¡Tiempo terminado!');
   if (cron.fase === 't1') {
-    cron.fase = 't2';
-    cron.segundos = cron.duracion * 60;
-    actualizarDisplayCron();
+    cron.fase = 't2'; cron.segundos = cron.duracion * 60; actualizarDisplayCron();
     document.getElementById('cronFaseBadge').textContent = 'TIEMPO 2';
     document.getElementById('btnCronIniciar').textContent = '▶ Iniciar T2';
     document.getElementById('btnCronIniciar').disabled = false;
@@ -1160,10 +940,7 @@ function finDeTiempo() {
       document.getElementById('penCountA').textContent = 0;
       document.getElementById('penCountB').textContent = 0;
       toast('¡Empate! Definición por penales');
-    } else {
-      cron.fase = 'fin';
-      terminarPartidoSoccer();
-    }
+    } else { cron.fase = 'fin'; terminarPartidoSoccer(); }
   }
 }
 
@@ -1184,64 +961,42 @@ function anotarPenal(equipo) {
 
 function definirPorPenales() {
   if (cron.penalesA === cron.penalesB) { toast('Sigue el empate en penales', 'error'); return; }
-  cron.fase = 'fin';
-  terminarPartidoSoccer();
+  cron.fase = 'fin'; terminarPartidoSoccer();
 }
 
 async function terminarPartidoSoccer() {
   if (cron.fase !== 'fin') {
-    // Verificar que hay ganador
-    if (cron.golesA === cron.golesB && cron.fase !== 'penales') {
-      toast('Hay empate — espera fin del T2', 'error'); return;
-    }
-    if (cron.fase === 'penales' && cron.penalesA === cron.penalesB) {
-      toast('Debes definir el ganador por penales', 'error'); return;
-    }
+    if (cron.golesA === cron.golesB && cron.fase !== 'penales') { toast('Hay empate — espera fin del T2', 'error'); return; }
+    if (cron.fase === 'penales' && cron.penalesA === cron.penalesB) { toast('Debes definir el ganador por penales', 'error'); return; }
   }
-
   const esPenales = cron.penalesA > 0 || cron.penalesB > 0;
   let ganadorId, marcador;
-
   if (esPenales) {
-    ganadorId = cron.penalesA > cron.penalesB
-      ? cron.partido.equipo_a_id : cron.partido.equipo_b_id;
-    marcador = `${cron.golesA}-${cron.golesB} (pen ${cron.penalesA}-${cron.penalesB})`;
+    ganadorId = cron.penalesA > cron.penalesB ? cron.partido.equipo_a_id : cron.partido.equipo_b_id;
+    marcador  = `${cron.golesA}-${cron.golesB} (pen ${cron.penalesA}-${cron.penalesB})`;
   } else {
-    ganadorId = cron.golesA > cron.golesB
-      ? cron.partido.equipo_a_id : cron.partido.equipo_b_id;
-    marcador = `${cron.golesA}-${cron.golesB}`;
+    ganadorId = cron.golesA > cron.golesB ? cron.partido.equipo_a_id : cron.partido.equipo_b_id;
+    marcador  = `${cron.golesA}-${cron.golesB}`;
   }
-
   const ganadorNombre = ganadorId === cron.partido.equipo_a_id
     ? (cron.partido.equipo_a_nombre || cron.partido.equipoA_nombre)
     : (cron.partido.equipo_b_nombre || cron.partido.equipoB_nombre);
-
   if (cron.interval) clearInterval(cron.interval);
   cron.corriendo = false;
-
   loading(true, 'GUARDANDO RESULTADO...');
   try {
-    const res = await gasPost({
-      action:     'registrarResultadoGeneral',
-      partido_id: cron.partido.partido_id || cron.partido.id,
-      ganador_id: ganadorId,
-      marcador,
-      categoria:  state.categoria
-    });
+    const res = await gasPost({ action: 'registrarResultadoGeneral', partido_id: cron.partido.partido_id || cron.partido.id, ganador_id: ganadorId, marcador, categoria: state.categoria });
     if (!res.ok) throw new Error(res.error || 'Error');
     state.bracket = res.bracket;
     document.getElementById('cronOverlay').classList.remove('show');
     toast(`🏆 Ganó ${ganadorNombre}`, 'success');
     renderBracket();
-  } catch(e) {
-    toast('Error: ' + e.message, 'error');
-  }
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
   loading(false);
 }
 
 function actualizarDisplayCron() {
-  const m = Math.floor(cron.segundos / 60);
-  const s = cron.segundos % 60;
+  const m = Math.floor(cron.segundos / 60), s = cron.segundos % 60;
   const el = document.getElementById('cronTiempoNum');
   el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   el.classList.toggle('alerta', cron.segundos <= 30 && cron.segundos > 0);
@@ -1254,9 +1009,7 @@ function actualizarMarcadorCron() {
   document.getElementById('cronGolesB').textContent = cron.golesB;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════
+// ── INIT ─────────────────────────────────────────────────────
 document.addEventListener('componentsLoaded', () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
