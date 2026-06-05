@@ -10,12 +10,18 @@
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
-    body { background: #ffffff !important; color: #1a1c28 !important; }
+    body {
+      background: #f0f4fa !important;
+      font-family: 'Exo 2', sans-serif;
+      color: #1a2a4a;
+      padding-top: 0 !important;
+    }
+    main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
     .wrapper { max-width: 1300px; margin: 0 auto; padding: 0 20px 60px; position: relative; }
 
     .page-hero { padding: 48px 0 24px; margin-bottom: 24px; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #fff; font-family: 'Orbitron'; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
-    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1.6s infinite; }
+    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #5bc8f0; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
     .page-hero h2 { font-family: 'Bebas Neue'; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6b; line-height: 1; position: relative; padding-bottom: 8px; }
     .page-hero h2::after { content:""; position:absolute; bottom:4px; left:0; width:120px; height:3px; background:linear-gradient(90deg,transparent,#5bc8f0,transparent); border-radius:2px; }
@@ -36,27 +42,130 @@
     .resultados-contador { font-family:'Orbitron'; font-size:11px; color:#7a7a8c; margin-bottom:20px; letter-spacing:1px; }
     .resultados-contador span { color:#1a5ca8; font-weight:700; }
 
-    .certs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
+    .certs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
 
-    .cert-card { background:#fff; border:2px solid #e0e4ea; border-radius:16px; padding:22px; transition:all .3s; box-shadow:0 2px 8px rgba(0,0,0,.05); display:flex; flex-direction:column; gap:14px; }
-    .cert-card:hover { transform:translateY(-4px); box-shadow:0 8px 32px rgba(26,92,168,.15); border-color:#1a5ca8; }
+    /* ── TARJETA REDISEÑADA ── */
+    .cert-card {
+      background: linear-gradient(145deg, #0e2a5a 0%, #1a5ca8 100%);
+      border: 1px solid rgba(91,200,240,0.25);
+      border-radius: 16px;
+      padding: 0;
+      transition: all .3s;
+      box-shadow: 0 4px 16px rgba(14,42,90,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .cert-card::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(91,200,240,0.08);
+      pointer-events: none;
+    }
+    .cert-card::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; left: -30px;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: rgba(91,200,240,0.06);
+      pointer-events: none;
+    }
+    .cert-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 36px rgba(14,42,90,0.4);
+      border-color: rgba(91,200,240,0.5);
+    }
 
-    .cert-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-    .cert-tipo { font-family:'Orbitron'; font-size:11px; font-weight:700; letter-spacing:1px; padding:5px 12px; border-radius:8px; white-space:nowrap; }
-    .cert-tipo.participacion { background:#e8f4ff; color:#1a5ca8; }
-    .cert-tipo.primer  { background:#ffd700; color:#8b6914; }
-    .cert-tipo.segundo { background:#d8d8d8; color:#4a4a4a; }
-    .cert-tipo.tercer  { background:#cd7f32; color:#fff; }
-    .cert-codigo { font-family:'DM Mono'; font-size:10px; color:#aab0be; background:#f4f7fb; padding:4px 10px; border-radius:6px; white-space:nowrap; }
+    /* Franja superior con tipo */
+    .cert-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(91,200,240,0.15);
+      background: rgba(0,0,0,0.15);
+    }
+    .cert-tipo {
+      font-family: 'Orbitron';
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .cert-tipo.participacion { background: rgba(91,200,240,0.2); color: #5bc8f0; border: 1px solid rgba(91,200,240,0.4); }
+    .cert-tipo.primer  { background: rgba(253,212,0,0.2);  color: #ffd700; border: 1px solid rgba(253,212,0,0.5); }
+    .cert-tipo.segundo { background: rgba(192,192,192,0.2); color: #d0d8e4; border: 1px solid rgba(192,192,192,0.4); }
+    .cert-tipo.tercer  { background: rgba(205,127,50,0.2);  color: #f4a460; border: 1px solid rgba(205,127,50,0.4); }
+    .cert-codigo {
+      font-family: 'DM Mono';
+      font-size: 9px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 1px;
+    }
 
-    .cert-nombre { font-family:'Exo 2'; font-size:19px; font-weight:900; color:#1a3a6b; }
-    .cert-categoria { font-size:13px; color:#1a5ca8; font-weight:700; margin-top:2px; }
-    .cert-institucion { font-size:12px; color:#7a7a8c; margin-top:2px; }
-    .cert-evento { font-size:10px; color:#aab0be; font-family:'Orbitron'; letter-spacing:1px; margin-top:4px; }
-    .cert-fecha { font-size:11px; color:#aab0be; font-family:'Exo 2'; }
+    /* Cuerpo de la tarjeta */
+    .cert-card-body { padding: 18px 18px 14px; flex: 1; position: relative; z-index: 1; }
+    .cert-nombre {
+      font-family: 'Exo 2';
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+    .cert-meta { display: flex; flex-direction: column; gap: 5px; }
+    .cert-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+    .cert-meta-item span { color: #5bc8f0; font-size: 13px; }
+    .cert-fecha {
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      font-family: 'DM Mono';
+      margin-top: 12px;
+      letter-spacing: 0.5px;
+    }
 
-    .btn-ver-diploma { display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,#1a5ca8,#0f3d75); color:#fff; border:none; padding:12px 20px; border-radius:10px; font-family:'Exo 2'; font-size:13px; font-weight:700; cursor:pointer; transition:all .2s; text-decoration:none; box-shadow:0 4px 12px rgba(26,92,168,.3); }
-    .btn-ver-diploma:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,92,168,.5); }
+    /* Botón descargar */
+    .cert-card-footer { padding: 0 18px 18px; position: relative; z-index: 1; }
+    .btn-ver-diploma {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(91,200,240,0.15);
+      color: #5bc8f0;
+      border: 1.5px solid rgba(91,200,240,0.4);
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-family: 'Exo 2';
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      text-decoration: none;
+      width: 100%;
+      letter-spacing: 0.5px;
+    }
+    .btn-ver-diploma:hover {
+      background: #5bc8f0;
+      color: #0e2a5a;
+      border-color: #5bc8f0;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(91,200,240,0.35);
+    }
 
     .vacio-msg { text-align:center; padding:80px 20px; color:#7a7a8c; font-size:14px; grid-column:1/-1; }
     .vacio-icon { font-size:64px; margin-bottom:16px; opacity:.3; display:block; }
@@ -77,13 +186,13 @@
   </style>
 </head>
 <body>
-
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
   <div data-include="../shared/components/header.html"></div>
   <div data-include="../shared/components/nav.html"></div>
 </div>
 
+<main>
 <div class="wrapper">
   <div class="page-hero">
     <div class="page-hero-badge">
@@ -147,6 +256,7 @@
     </div>
   </div>
 </div>
+</main>
 
 <div class="toast" id="toast"></div>
 <div data-include="../shared/components/footer.html"></div>
@@ -158,13 +268,11 @@
 const GAS_URL = CONFIG.GAS_URL();
 let todosCerts = [];
 
-// Mapeo de tipos del podio → clase visual
 const TIPO_INFO = {
   'participacion': { clase: 'participacion', texto: '🏅 PARTICIPACIÓN' },
   '1er':           { clase: 'primer',        texto: '🥇 PRIMER LUGAR' },
   '2do':           { clase: 'segundo',       texto: '🥈 SEGUNDO LUGAR' },
   '3er':           { clase: 'tercer',        texto: '🥉 TERCER LUGAR' },
-  // Tipos del podio (bracket/calificación)
   'GANADOR':       { clase: 'primer',        texto: '🥇 PRIMER LUGAR' },
   'SUBCAMPEÓN':    { clase: 'segundo',       texto: '🥈 SEGUNDO LUGAR' },
   'FINALISTA':     { clase: 'segundo',       texto: '🥈 SEGUNDO LUGAR' },
@@ -176,15 +284,11 @@ async function cargarTodosCertificados() {
   try {
     const resCerts = await fetch(GAS_URL + '?action=obtenerTodosCertificados');
     const certs = await resCerts.json();
-
-    // FIX: solo mostrar certs que tienen archivoUrl (PDF generado)
-    // NO usar fallback de participantes — si no hay certs, mostrar vacío
     if (Array.isArray(certs)) {
       todosCerts = certs.filter(c => c.archivoUrl && c.archivoUrl.trim());
     } else {
       todosCerts = [];
     }
-
     filtrar();
   } catch(e) {
     console.error('Error cargando certificados:', e);
@@ -224,25 +328,29 @@ function renderCerts(lista) {
 
     return `
       <div class="cert-card">
-        <div class="cert-card-top">
+        <div class="cert-card-header">
           <span class="cert-tipo ${info.clase}">${info.texto}</span>
           ${cert.codigo_verificacion ? '<span class="cert-codigo">' + cert.codigo_verificacion + '</span>' : ''}
         </div>
-        <div>
+        <div class="cert-card-body">
           <div class="cert-nombre">${cert.nombre_completo || '—'}</div>
-          <div class="cert-categoria">📂 ${cert.categoria || '—'}</div>
-          <div class="cert-institucion">🎓 ${cert.institucion || '—'}</div>
-          ${cert.evento ? '<div class="cert-evento">🏆 ' + cert.evento + '</div>' : ''}
+          <div class="cert-meta">
+            <div class="cert-meta-item"><span>📂</span> ${cert.categoria || '—'}</div>
+            <div class="cert-meta-item"><span>🎓</span> ${cert.institucion || '—'}</div>
+            ${cert.evento ? '<div class="cert-meta-item"><span>🏆</span> ' + cert.evento + '</div>' : ''}
+          </div>
+          ${cert.fecha_generacion ? '<div class="cert-fecha">Generado: ' + cert.fecha_generacion + '</div>' : ''}
         </div>
-        ${cert.fecha_generacion ? '<div class="cert-fecha">Generado: ' + cert.fecha_generacion + '</div>' : ''}
-        <a class="btn-ver-diploma" href="${cert.archivoUrl}" target="_blank" rel="noopener">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Descargar Diploma
-        </a>
+        <div class="cert-card-footer">
+          <a class="btn-ver-diploma" href="${cert.archivoUrl}" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Descargar Diploma
+          </a>
+        </div>
       </div>`;
   }).join('');
 }
@@ -275,6 +383,5 @@ document.getElementById('filtro-evento').addEventListener('change', filtrar);
 
 document.addEventListener('componentsLoaded', cargarTodosCertificados);
 </script>
-
 </body>
 </html>
