@@ -1323,41 +1323,42 @@ async function verRankingDesdePaso1() {
 }
 
 async function guardarPodio() {
-  const top3 = state.rankingData.slice(0, 3);
-  if (!top3.length) { toast('No hay datos para guardar', 'error'); return; }
+  if (!state.rankingData.length) { toast('No hay datos para guardar', 'error'); return; }
 
-  confirmar('🏆', 'GUARDAR PODIO',
-    `¿Guardar el TOP 3 de ${CAT_NOMBRES[state.categoria]} en los certificados?`,
-    'Guardar Podio', 'success',
+  const total = state.rankingData.length;
+  const catNombre = CAT_NOMBRES[state.categoria];
+
+  confirmar('🏆', 'GUARDAR TODOS LOS COMPETIDORES',
+    `¿Guardar los ${total} competidores de ${catNombre}? TOP 3 con su posición, el resto como Participación.`,
+    'Guardar todos', 'success',
     async () => {
-      loading(true, 'GUARDANDO PODIO...');
-      const tipos = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
+      loading(true, 'GUARDANDO COMPETIDORES...');
+      const TIPOS_PODIO = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
 
-      for (let i = 0; i < top3.length; i++) {
-        const r = top3[i];
+      for (let i = 0; i < state.rankingData.length; i++) {
+        const r = state.rankingData[i];
         const p = state.participantes.find(x => x.id === r.id) || {};
+        const tipo = i < 3 ? TIPOS_PODIO[i] : 'participacion';
         try {
           const res = await gasPost({
             action:           'guardarCertificado',
             id_participante:  r.id,
-            correo:           p.correo       || r.correo       || '',
-            nombre:           p.nombre       || r.nombre       || '',
-            nombre_completo:  p.nombre       || r.nombre       || '',
-            categoria:        CAT_NOMBRES[state.categoria],
-            institucion:      p.institucion  || r.institucion  || '',
-            tipo_certificado: tipos[i],
+            correo:           p.correo      || r.correo      || '',
+            nombre:           p.nombre      || r.nombre      || '',
+            nombre_completo:  p.nombre      || r.nombre      || '',
+            categoria:        catNombre,
+            institucion:      p.institucion || r.institucion || '',
+            tipo_certificado: tipo,
             evento:           'SucreBot 2026'
           });
-          if (!res.ok) {
-            console.warn(`guardarCertificado pos ${i+1} falló:`, res.error);
-          }
+          if (!res.ok) console.warn(`guardarCertificado pos ${i+1} falló:`, res.error);
         } catch(e) {
           console.warn('guardarCertificado error pos', i+1, e);
         }
       }
 
       loading(false);
-      toast('🏆 Podio guardado en certificados', 'success');
+      toast(`✅ ${total} competidores guardados en certificados`, 'success');
     }
   );
 }
