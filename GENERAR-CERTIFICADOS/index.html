@@ -10,9 +10,14 @@
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
-    body { background: #f0f4fa !important; color: #1a1c28 !important; padding-top: 0 !important; }
+    /* ── igual que PANEL-CALIFICACION para evitar gap ── */
+    body {
+      background: #f0f4fa !important;
+      font-family: 'Exo 2', sans-serif;
+      color: #1a2a4a;
+      padding-top: 0 !important;
+    }
     main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
-    .top-bar { background: linear-gradient(135deg, #0d1f42 0%, #1a3a6b 100%) !important; border-bottom: 1px solid rgba(91,200,240,0.3) !important; }
     .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
 
     .page-hero { padding: 40px 0 28px; }
@@ -27,7 +32,8 @@
     .acceso-denegado { background: linear-gradient(135deg,#ff3b3b,#c41e3a); border-radius: 16px; padding: 60px 40px; text-align: center; max-width: 600px; margin: 60px auto; color: #fff; }
     .acceso-denegado h3 { font-family: 'Orbitron'; font-size: 1.8rem; margin-bottom: 12px; }
 
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding: 16px 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(26,92,168,0.08); gap: 16px; flex-wrap: wrap; border: 1px solid #e0e8f4; }
+    /* ── barra de fecha/stats — nombre distinto para no chocar con .top-bar del sticky ── */
+    .fecha-stats-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding: 16px 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(26,92,168,0.08); gap: 16px; flex-wrap: wrap; border: 1px solid #e0e8f4; }
     .fecha-wrap { display: flex; align-items: center; gap: 10px; }
     .fecha-wrap label { font-family: 'Orbitron'; font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; text-transform: uppercase; }
     .fecha-wrap input { padding: 8px 12px; border: 2px solid #e0e4ea; border-radius: 8px; font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #1a3a6b; outline: none; }
@@ -92,7 +98,6 @@
   </style>
 </head>
 <body>
-<div class="loading-overlay" id="loadingOverlay" style="display:none"></div>
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
   <div data-include="../shared/components/header.html"></div>
@@ -117,15 +122,15 @@
 
   <div id="contenido-staff" style="display:none;">
 
-    <div class="top-bar">
+    <div class="fecha-stats-bar">
       <div class="fecha-wrap">
         <label>📅 Fecha del evento:</label>
         <input type="text" id="fecha-evento" value="16 de julio de 2026" />
       </div>
       <div class="stats-bar">
-        <span class="stat-chip total"    id="stat-total">— total</span>
+        <span class="stat-chip total"     id="stat-total">— total</span>
         <span class="stat-chip pendiente" id="stat-pend">— pendientes</span>
-        <span class="stat-chip generado" id="stat-ok">— generados</span>
+        <span class="stat-chip generado"  id="stat-ok">— generados</span>
       </div>
     </div>
 
@@ -161,8 +166,6 @@ const STAFF_EMAILS_CERT = [
   'vandrade@tecnologicosucre.edu.ec'
 ];
 
-// ── ESTADO ────────────────────────────────────────────────────
-// estado[catNombre] = [ { nombre, tipo, esPodio, codigo, archivoUrl }, ... ]
 let estado = {};
 
 const TIPO_PODIO = new Set(['GANADOR','SUBCAMPEÓN','TERCER LUGAR','FINALISTA','TERCER_LUGAR']);
@@ -181,7 +184,6 @@ const TIPO_INTERNO = {
 
 function strVal(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
 
-// ── AUTH ──────────────────────────────────────────────────────
 document.addEventListener('componentsLoaded', () => {
   const raw = localStorage.getItem('sucrebot_user');
   if (!raw) { show('acceso-denegado'); return; }
@@ -194,7 +196,6 @@ document.addEventListener('componentsLoaded', () => {
 });
 function show(id) { document.getElementById(id).style.display = 'block'; }
 
-// ── CARGAR — solo lee sheet certificados ─────────────────────
 async function cargarDatos() {
   document.getElementById('cats-container').innerHTML = '<div class="vacio">⏳ Cargando...</div>';
   try {
@@ -206,15 +207,14 @@ async function cargarDatos() {
       const cat = strVal(c.categoria) || 'Sin categoría';
       if (!estado[cat]) estado[cat] = [];
       estado[cat].push({
-        nombre:     strVal(c.nombre_completo),
-        correo:     strVal(c.correo),
+        nombre:      strVal(c.nombre_completo),
+        correo:      strVal(c.correo),
         institucion: strVal(c.institucion),
-        tipo:       strVal(c.tipo_certificado) || 'participacion',
-        esPodio:    TIPO_PODIO.has(strVal(c.tipo_certificado)),
-        codigo:     strVal(c.codigo_verificacion),
-        archivoUrl: strVal(c.archivoUrl),
-        // guardamos datos extra para generarYSubirPDF
-        evento:     strVal(c.evento) || 'SucreBot 2026',
+        tipo:        strVal(c.tipo_certificado) || 'participacion',
+        esPodio:     TIPO_PODIO.has(strVal(c.tipo_certificado)),
+        codigo:      strVal(c.codigo_verificacion),
+        archivoUrl:  strVal(c.archivoUrl),
+        evento:      strVal(c.evento) || 'SucreBot 2026',
         fechaEvento: strVal(c.fecha_evento)
       });
     });
@@ -235,7 +235,6 @@ async function cargarDatos() {
   }
 }
 
-// ── STATS ─────────────────────────────────────────────────────
 function actualizarStats() {
   const todos = Object.values(estado).flat();
   const total = todos.length;
@@ -245,7 +244,6 @@ function actualizarStats() {
   document.getElementById('stat-ok').textContent    = ok + ' generados';
 }
 
-// ── RENDER ────────────────────────────────────────────────────
 function renderTodo() {
   const container = document.getElementById('cats-container');
   const cats = Object.keys(estado).sort();
@@ -310,7 +308,6 @@ function renderFila(item, catKey, i) {
   </tr>`;
 }
 
-// ── GENERAR UNO ───────────────────────────────────────────────
 async function generarUno(catKey, i) {
   const cat  = Object.keys(estado).find(k => k.replace(/\W/g,'_') === catKey);
   const item = estado[cat]?.[i];
@@ -331,9 +328,8 @@ async function generarUno(catKey, i) {
   }
 }
 
-// ── GENERAR TODOS DE UNA CATEGORÍA ────────────────────────────
 async function generarTodos(catKey) {
-  const cat      = Object.keys(estado).find(k => k.replace(/\W/g,'_') === catKey);
+  const cat        = Object.keys(estado).find(k => k.replace(/\W/g,'_') === catKey);
   const pendientes = estado[cat]?.filter(i => !i.archivoUrl) || [];
   if (!pendientes.length) { showToast('✅ No hay pendientes', 'ok'); return; }
   if (!confirm(`¿Generar ${pendientes.length} diplomas para ${cat}?\nEsto puede tomar unos minutos.`)) return;
@@ -354,7 +350,6 @@ async function generarTodos(catKey) {
   setTimeout(() => mostrarProgreso(false), 3000);
 }
 
-// ── PROCESAR ITEM: generar PDF y subir a Drive ────────────────
 async function procesarItem(item, catNombre) {
   const fechaEvento = document.getElementById('fecha-evento').value;
   const tipoInterno = TIPO_INTERNO[item.tipo] || 'participacion';
@@ -373,7 +368,6 @@ async function procesarItem(item, catNombre) {
   item.archivoUrl = driveUrl;
 }
 
-// ── PREVIEW ───────────────────────────────────────────────────
 function previewItem(catKey, i) {
   const cat  = Object.keys(estado).find(k => k.replace(/\W/g,'_') === catKey);
   const item = estado[cat]?.[i];
@@ -384,7 +378,6 @@ function previewItem(catKey, i) {
   previewCertificado(null, item.nombre, pFake, 0, tipoInterno, fechaEvento);
 }
 
-// ── PROGRESO ──────────────────────────────────────────────────
 function mostrarProgreso(show) {
   document.getElementById('progreso-wrap').classList.toggle('visible', show);
   if (!show) { document.getElementById('progreso-bar').style.width = '0%'; }
@@ -395,7 +388,6 @@ function actualizarProgreso(label, done, total) {
   document.getElementById('progreso-texto').textContent  = done + ' / ' + total;
 }
 
-// ── TOAST ─────────────────────────────────────────────────────
 let _tt;
 function showToast(msg, type='ok') {
   const t = document.getElementById('toast');
