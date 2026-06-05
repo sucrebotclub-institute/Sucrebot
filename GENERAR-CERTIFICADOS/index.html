@@ -12,93 +12,123 @@
   <style>
     body { background: #ffffff !important; color: #1a1c28 !important; }
     .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; min-height: 70vh; }
+
     .page-hero { padding: 80px 0 32px; margin-bottom: 32px; }
-    .page-hero-badge { display: block; width: fit-content; background: #1a5ca8; color: #fff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge { display: block; width: fit-content; background: #1a5ca8; color: #fff; font-family: 'Orbitron'; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1.6s infinite; margin-right: 8px; vertical-align: middle; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
     .page-hero h2 { font-family: 'Bebas Neue'; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; line-height: 1; position: relative; margin-bottom: 20px; }
     .page-hero h2::after { content:''; position:absolute; bottom:-10px; left:0; width:100%; height:3px; background:linear-gradient(90deg,transparent,#5bc8f0,transparent); border-radius:2px; }
     .page-hero h2 span { color: #1a5ca8; }
     .page-hero p { font-size: 13px; color: #7a7a8c; }
+
     .acceso-denegado { background: linear-gradient(135deg,#ff3b3b,#c41e3a); border-radius: 16px; padding: 60px 40px; text-align: center; max-width: 600px; margin: 60px auto; }
     .acceso-denegado h3 { font-family: 'Orbitron'; font-size: 1.8rem; color: #fff; margin-bottom: 12px; }
     .acceso-denegado p { color: rgba(255,255,255,.9); font-size: 14px; line-height: 1.6; }
+
     .controles-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; padding:20px; background:#f8f9fb; border-radius:12px; gap:16px; flex-wrap:wrap; }
     .fecha-evento { display:flex; align-items:center; gap:12px; }
     .fecha-evento label { font-family:'Orbitron'; font-size:11px; font-weight:700; color:#4a5568; letter-spacing:1px; }
     .fecha-evento input { padding:10px 14px; border:2px solid #e0e4ea; border-radius:8px; font-family:'Exo 2'; font-size:14px; font-weight:600; color:#1a3a6b; outline:none; }
-    .btn-generar-todos { background:linear-gradient(135deg,#1a5ca8,#0f3d75); color:#fff; border:none; padding:12px 24px; border-radius:10px; font-family:'Exo 2'; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; box-shadow:0 4px 16px rgba(26,92,168,.3); }
+    .btn-generar-todos { background:linear-gradient(135deg,#1a5ca8,#0f3d75); color:#fff; border:none; padding:12px 24px; border-radius:10px; font-family:'Exo 2'; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; }
     .btn-generar-todos:hover:not(:disabled) { transform:translateY(-2px); }
     .btn-generar-todos:disabled { opacity:.5; cursor:not-allowed; }
+
     .progreso-wrap { display:none; background:#f8f9fb; border-radius:12px; padding:16px 20px; margin-bottom:20px; border:1px solid #e0e4ea; }
     .progreso-wrap.visible { display:block; }
     .progreso-label { font-family:'Orbitron'; font-size:11px; color:#1a5ca8; margin-bottom:8px; font-weight:700; letter-spacing:1px; }
     .progreso-bar-bg { background:#e0e4ea; border-radius:8px; height:10px; overflow:hidden; }
     .progreso-bar-fill { height:100%; background:linear-gradient(90deg,#1a5ca8,#5bc8f0); border-radius:8px; transition:width .3s; width:0%; }
     .progreso-texto { font-family:'DM Mono'; font-size:11px; color:#7a7a8c; margin-top:6px; }
-    .seccion { margin-bottom:40px; }
-    .seccion-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #e0e4ea; }
-    .seccion-titulo { font-family:'Orbitron'; font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
-    .seccion-titulo.pendientes { color:#c27803; }
-    .seccion-titulo.generados  { color:#0e9f6e; }
-    .seccion-titulo.podio      { color:#7c3aed; }
-    .seccion-count { font-family:'DM Mono'; font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px; }
-    .seccion-count.pendientes { background:#fff8e6; color:#c27803; border:1px solid #fcd34d; }
-    .seccion-count.generados  { background:#ecfdf5; color:#0e9f6e; border:1px solid #6ee7b7; }
-    .seccion-count.podio      { background:#f5f3ff; color:#7c3aed; border:1px solid #c4b5fd; }
-    /* Grupo de categoría dentro de podio */
-    .podio-grupo { margin-bottom:20px; }
-    .podio-grupo-header {
-      display:flex; align-items:center; gap:10px; margin-bottom:10px;
-      padding:8px 14px; background:#f5f3ff; border-radius:8px;
-      border-left:3px solid #7c3aed;
+
+    /* ── BLOQUE POR CATEGORÍA ── */
+    .cat-block { margin-bottom: 48px; }
+    .cat-block-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 20px; padding: 14px 20px;
+      background: #1a5ca8; border-radius: 12px;
     }
-    .podio-grupo-cat { font-family:'Orbitron'; font-size:.7rem; font-weight:700; color:#7c3aed; letter-spacing:1.5px; text-transform:uppercase; }
-    .tabla { width:100%; border-collapse:separate; border-spacing:0; border:2px solid #e0e4ea; border-radius:12px; overflow:hidden; }
+    .cat-block-nombre {
+      font-family: 'Bebas Neue'; font-size: 1.4rem; letter-spacing: 2px;
+      color: #fff; flex: 1;
+    }
+    .cat-block-counts { display:flex; gap:10px; flex-wrap:wrap; }
+    .cat-pill {
+      font-family: 'DM Mono'; font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px;
+    }
+    .cat-pill.podio       { background: rgba(196,165,255,.25); color: #e9d5ff; border: 1px solid rgba(196,165,255,.4); }
+    .cat-pill.pendientes  { background: rgba(253,212,76,.2);   color: #fef3c7; border: 1px solid rgba(253,212,76,.4); }
+    .cat-pill.generados   { background: rgba(110,231,183,.2);  color: #d1fae5; border: 1px solid rgba(110,231,183,.4); }
+
+    /* ── SUB-SECCIONES ── */
+    .subseccion { margin-bottom: 20px; }
+    .subseccion-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px; padding-bottom: 8px;
+      border-bottom: 2px solid #e0e4ea;
+    }
+    .subseccion-titulo { font-family:'Orbitron'; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+    .subseccion-titulo.podio      { color:#7c3aed; }
+    .subseccion-titulo.pendientes { color:#c27803; }
+    .subseccion-titulo.generados  { color:#0e9f6e; }
+    .subseccion-count { font-family:'DM Mono'; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
+    .subseccion-count.podio      { background:#f5f3ff; color:#7c3aed; border:1px solid #c4b5fd; }
+    .subseccion-count.pendientes { background:#fff8e6; color:#c27803; border:1px solid #fcd34d; }
+    .subseccion-count.generados  { background:#ecfdf5; color:#0e9f6e; border:1px solid #6ee7b7; }
+
+    /* ── TABLAS ── */
+    .tabla { width:100%; border-collapse:separate; border-spacing:0; border:2px solid #e0e4ea; border-radius:12px; overflow:hidden; margin-bottom:8px; }
     .tabla thead { background:linear-gradient(135deg,#1a5ca8,#0f3d75); }
-    .tabla th { padding:14px; text-align:left; font-family:'Orbitron'; font-size:11px; font-weight:700; color:#fff; letter-spacing:1px; text-transform:uppercase; }
+    .tabla.podio thead      { background:linear-gradient(135deg,#7c3aed,#4c1d95); }
+    .tabla.generados thead  { background:linear-gradient(135deg,#0e9f6e,#057a55); }
+    .tabla th { padding:12px 14px; text-align:left; font-family:'Orbitron'; font-size:10px; font-weight:700; color:#fff; letter-spacing:1px; text-transform:uppercase; }
     .tabla tbody tr { background:#fff; transition:all .2s; }
     .tabla tbody tr:nth-child(even) { background:#f8f9fb; }
     .tabla tbody tr:hover { background:#e8f4ff; }
-    .tabla td { padding:13px 14px; font-size:13px; color:#2a3f5f; border-bottom:1px solid #e0e4ea; font-family:'Exo 2'; font-weight:600; vertical-align:middle; }
+    .tabla.podio tbody tr:nth-child(even) { background:#faf5ff; }
+    .tabla.podio tbody tr:hover { background:#ede9fe; }
+    .tabla.generados tbody tr:nth-child(even) { background:#f0fdf4; }
+    .tabla.generados tbody tr:hover { background:#dcfce7; }
+    .tabla td { padding:12px 14px; font-size:13px; color:#2a3f5f; border-bottom:1px solid #e0e4ea; font-family:'Exo 2'; font-weight:600; vertical-align:middle; }
     .tabla tbody tr:last-child td { border-bottom:none; }
     .tabla tbody tr.fila-miembro { background:#f0f7ff; }
     .tabla tbody tr.fila-miembro:hover { background:#d8ecff; }
-    .tabla.generados thead { background:linear-gradient(135deg,#0e9f6e,#057a55); }
-    .tabla.generados tbody tr:nth-child(even) { background:#f0fdf4; }
-    .tabla.generados tbody tr:hover { background:#dcfce7; }
-    .tabla.generados tbody tr.fila-miembro { background:#f0fdf4; }
-    .tabla.podio thead { background:linear-gradient(135deg,#7c3aed,#4c1d95); }
-    .tabla.podio tbody tr:nth-child(even) { background:#faf5ff; }
-    .tabla.podio tbody tr:hover { background:#ede9fe; }
     .tabla.podio tbody tr.fila-miembro { background:#faf5ff; }
+    .tabla.generados tbody tr.fila-miembro { background:#f0fdf4; }
+
+    /* ── BADGES ── */
     .badge-capitan { display:inline-block; background:#1a5ca8; color:#fff; font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle; text-transform:uppercase; }
     .badge-miembro { display:inline-block; background:#5bc8f0; color:#0f3566; font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle; text-transform:uppercase; }
     .badge-podio   { display:inline-block; font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:10px; vertical-align:middle; text-transform:uppercase; }
     .badge-ganador { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
     .badge-sub     { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
     .badge-tercero { background:#fff7ed; color:#9a3412; border:1px solid #fdba74; }
+
     .tipo-select { padding:7px 10px; border:2px solid #e0e4ea; border-radius:8px; font-family:'Exo 2'; font-size:12px; font-weight:600; color:#1a3a6b; cursor:pointer; }
     .btn-preview { background:#e8f4ff; color:#1a5ca8; border:1.5px solid #5bc8f0; padding:7px 12px; border-radius:8px; font-family:'Exo 2'; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
     .btn-preview:hover { background:#5bc8f0; color:#0f3566; }
-    .btn-generar-uno { background:linear-gradient(135deg,#1a5ca8,#0f3d75); color:#fff; border:none; padding:7px 12px; border-radius:8px; font-family:'Exo 2'; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; box-shadow:0 2px 8px rgba(26,92,168,.3); white-space:nowrap; }
+    .btn-generar-uno { background:linear-gradient(135deg,#1a5ca8,#0f3d75); color:#fff; border:none; padding:7px 12px; border-radius:8px; font-family:'Exo 2'; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; white-space:nowrap; }
     .btn-generar-uno:hover:not(:disabled) { transform:translateY(-1px); }
     .btn-generar-uno:disabled { opacity:.5; cursor:not-allowed; }
-    .btn-generar-podio { background:linear-gradient(135deg,#7c3aed,#4c1d95); color:#fff; border:none; padding:7px 12px; border-radius:8px; font-family:'Exo 2'; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; box-shadow:0 2px 8px rgba(124,58,237,.3); white-space:nowrap; }
+    .btn-generar-podio { background:linear-gradient(135deg,#7c3aed,#4c1d95); color:#fff; border:none; padding:7px 12px; border-radius:8px; font-family:'Exo 2'; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; white-space:nowrap; }
     .btn-generar-podio:hover:not(:disabled) { transform:translateY(-1px); }
     .btn-generar-podio:disabled { opacity:.5; cursor:not-allowed; }
     .acciones-cell { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
     .cert-codigo-tag { font-family:'DM Mono'; font-size:11px; background:#f0f4f8; color:#1a5ca8; padding:3px 8px; border-radius:6px; }
     .cert-link { display:inline-flex; align-items:center; gap:6px; background:#0e9f6e; color:#fff; text-decoration:none; padding:6px 12px; border-radius:8px; font-family:'Exo 2'; font-size:12px; font-weight:700; transition:all .2s; }
     .cert-link:hover { background:#057a55; }
-    .vacio-msg { text-align:center; padding:40px 20px; color:#7a7a8c; font-size:14px; }
+    .vacio-msg { text-align:center; padding:24px 20px; color:#7a7a8c; font-size:13px; }
+
     .toast { position:fixed; bottom:30px; left:30px; transform:translateY(100px); opacity:0; background:#1e2438; border-radius:12px; border-left:5px solid #3dd68c; color:#f0f4ff; font-family:'Exo 2'; font-size:.84rem; font-weight:600; padding:14px 18px; transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s; z-index:9999; max-width:320px; }
     .toast.show { transform:translateY(0); opacity:1; }
+
     @media(max-width:768px) {
       .page-hero { padding:40px 0 24px; }
       .page-hero h2 { font-size:1.8rem; }
       .controles-top { flex-direction:column; align-items:stretch; }
       .acciones-cell { flex-direction:column; }
+      .cat-block-header { flex-direction:column; align-items:flex-start; }
     }
   </style>
 </head>
@@ -130,7 +160,9 @@
         <label>📅 FECHA DEL EVENTO:</label>
         <input type="text" id="fecha-evento" value="16 de julio de 2026" />
       </div>
-      <button class="btn-generar-todos" id="btn-generar-todos" onclick="generarTodos()">⚡ Generar todos los pendientes</button>
+      <button class="btn-generar-todos" id="btn-generar-todos" onclick="generarTodos()">
+        ⚡ Generar todos los pendientes
+      </button>
     </div>
 
     <div class="progreso-wrap" id="progreso-wrap">
@@ -139,36 +171,18 @@
       <div class="progreso-texto" id="progreso-texto">0 / 0</div>
     </div>
 
-    <!-- PODIO SIN PDF — agrupado por categoría -->
-    <div class="seccion" id="seccion-podio" style="display:none;">
-      <div class="seccion-header">
-        <span class="seccion-titulo podio">🏆 Podio pendiente de diploma</span>
-        <span class="seccion-count podio" id="count-podio">0</span>
-      </div>
-      <div id="podio-grupos"></div>
-    </div>
+    <!-- Bloques por categoría se renderizan aquí -->
+    <div id="categorias-container"></div>
 
-    <!-- PENDIENTES -->
-    <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-titulo pendientes">⏳ Pendientes de certificado</span>
-        <span class="seccion-count pendientes" id="count-pendientes">0</span>
-      </div>
-      <table class="tabla">
-        <thead><tr><th>ROBOT</th><th>INTEGRANTE</th><th>CATEGORÍA</th><th>INSTITUCIÓN</th><th>TIPO</th><th>ACCIONES</th></tr></thead>
-        <tbody id="tabla-pendientes"><tr><td colspan="6" class="vacio-msg">Cargando...</td></tr></tbody>
-      </table>
-    </div>
-
-    <!-- GENERADOS -->
-    <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-titulo generados">✅ Certificados generados</span>
-        <span class="seccion-count generados" id="count-generados">0</span>
+    <!-- Generados (global, abajo de todo) -->
+    <div id="seccion-generados" style="display:none; margin-top:40px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e0e4ea;">
+        <span style="font-family:'Orbitron';font-size:13px;font-weight:700;letter-spacing:2px;color:#0e9f6e;text-transform:uppercase;">✅ Certificados generados</span>
+        <span id="count-generados-global" style="font-family:'DM Mono';font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:#ecfdf5;color:#0e9f6e;border:1px solid #6ee7b7;">0</span>
       </div>
       <table class="tabla generados">
         <thead><tr><th>ROBOT</th><th>INTEGRANTE</th><th>CATEGORÍA</th><th>TIPO</th><th>CÓDIGO</th><th>DIPLOMA</th></tr></thead>
-        <tbody id="tabla-generados"><tr><td colspan="6" class="vacio-msg">Cargando...</td></tr></tbody>
+        <tbody id="tabla-generados-global"></tbody>
       </table>
     </div>
   </div>
@@ -188,18 +202,22 @@ const STAFF_EMAILS_CERTIFICADOS = [
   'vandrade@tecnologicosucre.edu.ec'
 ];
 
+// Estado global
 let participantesAprobados = [];
-let integrantesPendientes  = [];
-let integrantesGenerados   = [];
-// podioGrupos: array de { categoria, tipo_certificado, tipo_interno, integrantes:[{nombre,esCapitan,p,cert,codigo}], todoGenerado }
-let podioGrupos = [];
-let generandoEnMasa = false;
+let generandoEnMasa        = false;
 
-// Mapeo tipos podio → tipos internos de certificados.js (obtenerTextoLogro)
-const TIPO_PODIO_MAP = { 'GANADOR': '1er', 'SUBCAMPEÓN': '2do', 'TERCER LUGAR': '3er', 'FINALISTA': '2do', 'TERCER_LUGAR': '3er' };
+// Estructura por categoría:
+// { nombre, podioGrupos: [{tipo_cert, tipo_interno, integrantes:[]}], pendientes: [], generados: [] }
+let categorias = {};
+
+const TIPO_PODIO_MAP = {
+  'GANADOR': '1er', 'SUBCAMPEÓN': '2do', 'TERCER LUGAR': '3er',
+  'FINALISTA': '2do', 'TERCER_LUGAR': '3er'
+};
 const TIPO_LABEL = {
   'participacion':'🏅 Participación','1er':'🥇 Primer Lugar','2do':'🥈 Segundo Lugar','3er':'🥉 Tercer Lugar',
-  'GANADOR':'🥇 Ganador','SUBCAMPEÓN':'🥈 Subcampeón','TERCER LUGAR':'🥉 3er Lugar','FINALISTA':'🥈 Finalista','TERCER_LUGAR':'🥉 3er Lugar'
+  'GANADOR':'🥇 Ganador','SUBCAMPEÓN':'🥈 Subcampeón','TERCER LUGAR':'🥉 3er Lugar',
+  'FINALISTA':'🥈 Finalista','TERCER_LUGAR':'🥉 3er Lugar'
 };
 const BADGE_PODIO = {
   'GANADOR':      '<span class="badge-podio badge-ganador">🥇 Ganador</span>',
@@ -222,227 +240,217 @@ document.addEventListener('componentsLoaded', function() {
   } catch(e) { document.getElementById('acceso-denegado').style.display = 'block'; }
 });
 
+// ── CARGAR Y CLASIFICAR ──────────────────────────────────────
 async function cargarDatos() {
-  document.getElementById('tabla-pendientes').innerHTML = '<tr><td colspan="6" class="vacio-msg">Cargando...</td></tr>';
-  document.getElementById('tabla-generados').innerHTML  = '<tr><td colspan="6" class="vacio-msg">Cargando...</td></tr>';
+  document.getElementById('categorias-container').innerHTML =
+    '<div style="text-align:center;padding:40px;color:#7a7a8c;">Cargando...</div>';
   try {
     const [resParts, resCerts] = await Promise.all([
       fetch(GAS_URL + '?action=getParticipantes'),
       fetch(GAS_URL + '?action=obtenerTodosCertificados')
     ]);
     participantesAprobados = (await resParts.json()).filter(p => p.aprobado === 'APROBADO');
-    const certsRaw = await resCerts.json();
-    const todos = Array.isArray(certsRaw) ? certsRaw : [];
+    const certsJson = await resCerts.json();
+    const todos = Array.isArray(certsJson) ? certsJson : [];
 
     const certsConPDF = todos.filter(c => c.archivoUrl && c.archivoUrl.trim());
-    const certsSinPDF = todos.filter(c => (!c.archivoUrl || !c.archivoUrl.trim()) && c.nombre_completo && c.nombre_completo.trim());
+    const certsSinPDF = todos.filter(c =>
+      (!c.archivoUrl || !c.archivoUrl.trim()) && c.nombre_completo && c.nombre_completo.trim()
+    );
 
-    // ── Construir grupos de podio agrupados por (categoria + tipo_certificado) ──
-    // Primero agrupar certs sin PDF por categoria+tipo
-    const gruposMap = {};
+    // Inicializar estructura por categoría
+    categorias = {};
+
+    // ── Procesar certs sin PDF (podio) ──
     certsSinPDF.forEach(c => {
-      const key = `${c.categoria}||${c.tipo_certificado}`;
-      if (!gruposMap[key]) gruposMap[key] = { categoria: c.categoria, tipo_certificado: c.tipo_certificado, tipo_interno: TIPO_PODIO_MAP[c.tipo_certificado] || '1er', certs: [] };
-      gruposMap[key].certs.push(c);
+      const cat = c.categoria || 'Sin categoría';
+      if (!categorias[cat]) categorias[cat] = { nombre: cat, podioGrupos: [], pendientes: [], generados: [] };
+
+      // ¿Ya existe un grupo para este tipo en esta categoría?
+      let grupo = categorias[cat].podioGrupos.find(g => g.tipo_certificado === c.tipo_certificado);
+      if (!grupo) {
+        grupo = { tipo_certificado: c.tipo_certificado, tipo_interno: TIPO_PODIO_MAP[c.tipo_certificado] || '1er', integrantes: [] };
+        categorias[cat].podioGrupos.push(grupo);
+      }
+
+      const p = participantesAprobados.find(x =>
+        (x.nombre || '').toLowerCase().trim() === (c.nombre_completo || '').toLowerCase().trim()
+      ) || null;
+
+      // Capitán
+      grupo.integrantes.push({ nombre: c.nombre_completo, esCapitan: true, p, cert: c });
+      // Miembros
+      if (p) {
+        if (p.miembro2 && p.miembro2.trim())
+          grupo.integrantes.push({ nombre: p.miembro2.trim(), esCapitan: false, p, cert: c });
+        if (p.miembro3 && p.miembro3.trim())
+          grupo.integrantes.push({ nombre: p.miembro3.trim(), esCapitan: false, p, cert: c });
+      }
     });
 
-    podioGrupos = Object.values(gruposMap).map(grupo => {
-      // Para cada cert en el grupo, buscar el participante y sus miembros
-      const integrantes = [];
-      grupo.certs.forEach(c => {
-        const p = participantesAprobados.find(x => (x.nombre||'').toLowerCase().trim() === (c.nombre_completo||'').toLowerCase().trim()) || null;
-        // Capitán
-        integrantes.push({ nombre: c.nombre_completo, esCapitan: true, p, cert: c, generado: false });
-        // Miembros
-        if (p) {
-          if (p.miembro2 && p.miembro2.trim()) integrantes.push({ nombre: p.miembro2.trim(), esCapitan: false, p, cert: c, generado: false });
-          if (p.miembro3 && p.miembro3.trim()) integrantes.push({ nombre: p.miembro3.trim(), esCapitan: false, p, cert: c, generado: false });
-        }
-      });
-      return { ...grupo, integrantes };
+    // Ordenar grupos dentro de cada categoría: GANADOR → SUBCAMPEÓN → TERCER LUGAR
+    const ordenPodio = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR', 'FINALISTA', 'TERCER_LUGAR'];
+    Object.values(categorias).forEach(cat => {
+      cat.podioGrupos.sort((a, b) =>
+        (ordenPodio.indexOf(a.tipo_certificado) ?? 99) - (ordenPodio.indexOf(b.tipo_certificado) ?? 99)
+      );
     });
 
-    // ── Clasificar participantes normales ──
-    integrantesPendientes = [];
-    integrantesGenerados  = [];
+    // ── Procesar participantes aprobados (pendientes/generados por participación) ──
     participantesAprobados.forEach((p, idx) => {
+      const cat = p.categoria || 'Sin categoría';
+      if (!categorias[cat]) categorias[cat] = { nombre: cat, podioGrupos: [], pendientes: [], generados: [] };
+
       const miembros = [{ nombre: p.nombre, esCapitan: true }];
       if (p.miembro2 && p.miembro2.trim()) miembros.push({ nombre: p.miembro2.trim(), esCapitan: false });
       if (p.miembro3 && p.miembro3.trim()) miembros.push({ nombre: p.miembro3.trim(), esCapitan: false });
+
       miembros.forEach((m, mIdx) => {
-        const cert = certsConPDF.find(c => (c.nombre_completo||'').toLowerCase().trim() === m.nombre.toLowerCase().trim());
-        const entrada = { nombre: m.nombre, esCapitan: m.esCapitan, robot: p.robot, categoria: p.categoria, institucion: p.institucion, correo: p.correo, idx, mIdx, cert: cert || null };
-        if (cert) integrantesGenerados.push(entrada);
-        else integrantesPendientes.push(entrada);
+        const cert = certsConPDF.find(c =>
+          (c.nombre_completo || '').toLowerCase().trim() === m.nombre.toLowerCase().trim()
+        );
+        const entrada = { nombre: m.nombre, esCapitan: m.esCapitan, robot: p.robot, categoria: cat, institucion: p.institucion, correo: p.correo, idx, mIdx, cert: cert || null };
+        if (cert) categorias[cat].generados.push(entrada);
+        else       categorias[cat].pendientes.push(entrada);
       });
     });
 
-    renderPodio();
-    renderPendientes();
-    renderGenerados();
+    renderTodo();
   } catch(e) {
     console.error(e);
     showToast('❌ Error al cargar datos: ' + e.message);
   }
 }
 
-// ── RENDER PODIO ─────────────────────────────────────────────
-function renderPodio() {
-  const seccion  = document.getElementById('seccion-podio');
-  const gruposEl = document.getElementById('podio-grupos');
-  const total    = podioGrupos.reduce((a, g) => a + g.integrantes.length, 0);
-  document.getElementById('count-podio').textContent = total;
+// ── RENDER COMPLETO ──────────────────────────────────────────
+function renderTodo() {
+  const container = document.getElementById('categorias-container');
 
-  if (podioGrupos.length === 0) { seccion.style.display = 'none'; return; }
-  seccion.style.display = 'block';
+  // Contar pendientes globales para el botón
+  const totalPendientes = Object.values(categorias).reduce((a, c) => a + c.pendientes.length, 0);
+  document.getElementById('btn-generar-todos').disabled = totalPendientes === 0 || generandoEnMasa;
 
-  gruposEl.innerHTML = podioGrupos.map((grupo, gi) => {
-    const badge = BADGE_PODIO[grupo.tipo_certificado] || `<span class="badge-podio">${grupo.tipo_certificado}</span>`;
-    const filas = grupo.integrantes.map((integrante, ii) => {
-      const memberBadge = integrante.esCapitan ? '<span class="badge-capitan">Capitán</span>' : '<span class="badge-miembro">Miembro</span>';
-      const robot = integrante.p?.robot || '—';
-      const accion = integrante.esCapitan
-        ? `<button class="btn-generar-podio" id="btn-podio-${gi}" onclick="generarDiplomaPodio(${gi})">🏆 Generar diplomas (${grupo.integrantes.length})</button>`
-        : '<span style="color:#aab0be;font-size:11px;">↑ mismo botón</span>';
-      return `<tr${integrante.esCapitan ? '' : ' class="fila-miembro"'}>
-        <td>${robot}</td>
-        <td>${integrante.nombre}${memberBadge}</td>
-        <td>${grupo.categoria || '—'}</td>
-        <td>${badge}</td>
-        <td><span class="cert-codigo-tag">${integrante.cert?.codigo_verificacion || '—'}</span></td>
-        <td><div class="acciones-cell">${accion}</div></td>
-      </tr>`;
+  // Ordenar categorías alfabéticamente
+  const cats = Object.values(categorias).sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+  if (!cats.length) {
+    container.innerHTML = '<div class="vacio-msg">No hay participantes aprobados aún.</div>';
+    return;
+  }
+
+  container.innerHTML = cats.map(cat => renderCatBlock(cat)).join('');
+  renderGeneradosGlobal();
+}
+
+function renderCatBlock(cat) {
+  const totalPodio     = cat.podioGrupos.reduce((a, g) => a + g.integrantes.length, 0);
+  const totalPendientes = cat.pendientes.length;
+  const totalGenerados  = cat.generados.length;
+
+  // No mostrar el bloque si no hay nada
+  if (!totalPodio && !totalPendientes && !totalGenerados) return '';
+
+  const pillsPodio     = totalPodio     ? `<span class="cat-pill podio">🏆 ${totalPodio} podio</span>` : '';
+  const pillsPend      = totalPendientes ? `<span class="cat-pill pendientes">⏳ ${totalPendientes} pendientes</span>` : '';
+  const pillsGen       = totalGenerados  ? `<span class="cat-pill generados">✅ ${totalGenerados} generados</span>` : '';
+
+  // Subsección podio
+  let podioHTML = '';
+  if (cat.podioGrupos.length) {
+    const filas = cat.podioGrupos.map((grupo, gi) => {
+      const badge = BADGE_PODIO[grupo.tipo_certificado] || `<span class="badge-podio">${grupo.tipo_certificado}</span>`;
+      return grupo.integrantes.map((integrante, ii) => {
+        const memberBadge = integrante.esCapitan
+          ? '<span class="badge-capitan">Capitán</span>'
+          : '<span class="badge-miembro">Miembro</span>';
+        const robot  = integrante.p?.robot || '—';
+        const accion = integrante.esCapitan
+          ? `<button class="btn-generar-podio" id="btn-podio-${cat.nombre.replace(/\s/g,'_')}-${gi}" onclick="generarDiplomaPodio('${cat.nombre}',${gi})">🏆 Generar diplomas (${grupo.integrantes.length})</button>`
+          : '<span style="color:#aab0be;font-size:11px;">↑ mismo botón</span>';
+        return `<tr${integrante.esCapitan ? '' : ' class="fila-miembro"'}>
+          <td>${robot}</td>
+          <td>${integrante.nombre}${memberBadge}</td>
+          <td>${badge}</td>
+          <td><span class="cert-codigo-tag">${integrante.cert?.codigo_verificacion || '—'}</span></td>
+          <td><div class="acciones-cell">${accion}</div></td>
+        </tr>`;
+      }).join('');
     }).join('');
 
-    return `
-      <div class="podio-grupo">
-        <div class="podio-grupo-header">
-          <span class="podio-grupo-cat">${grupo.categoria} — ${TIPO_LABEL[grupo.tipo_certificado] || grupo.tipo_certificado}</span>
+    podioHTML = `
+      <div class="subseccion">
+        <div class="subseccion-header">
+          <span class="subseccion-titulo podio">🏆 Podio pendiente de diploma</span>
+          <span class="subseccion-count podio">${totalPodio}</span>
         </div>
         <table class="tabla podio">
-          <thead><tr><th>ROBOT</th><th>INTEGRANTE</th><th>CATEGORÍA</th><th>TIPO</th><th>CÓDIGO</th><th>ACCIONES</th></tr></thead>
+          <thead><tr><th>ROBOT</th><th>INTEGRANTE</th><th>TIPO</th><th>CÓDIGO</th><th>ACCIONES</th></tr></thead>
           <tbody>${filas}</tbody>
         </table>
       </div>`;
-  }).join('');
-}
-
-// ── GENERAR DIPLOMAS PODIO ─────────────────────────────────────
-async function generarDiplomaPodio(gi) {
-  const grupo = podioGrupos[gi];
-  if (!grupo) return;
-  const btn = document.getElementById('btn-podio-' + gi);
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generando...'; }
-
-  const fechaEvento = document.getElementById('fecha-evento').value;
-  const tipoInterno = grupo.tipo_interno;
-  let todosOk = true;
-
-  for (const integrante of grupo.integrantes) {
-    try {
-      let codigo = integrante.cert?.codigo_verificacion;
-      const correo = integrante.p?.correo || '';
-
-      if (!integrante.esCapitan) {
-        // Miembro — crear nuevo registro en sheet
-        const resp = await fetch(GAS_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'guardarCertificado',
-            correo,
-            nombre_completo: integrante.nombre,
-            categoria: grupo.categoria,
-            institucion: integrante.p?.institucion || '',
-            evento: 'SucreBot 2026',
-            fecha_evento: fechaEvento,
-            tipo_certificado: grupo.tipo_certificado
-          }),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        });
-        const result = await resp.json();
-        if (!result.ok) throw new Error('Error Sheets para ' + integrante.nombre);
-        codigo = result.codigo;
-      }
-
-      if (btn) btn.textContent = `⏳ PDF ${integrante.nombre}...`;
-
-      const pFake = {
-        nombre: integrante.nombre, correo,
-        categoria: grupo.categoria,
-        institucion: integrante.p?.institucion || '',
-        robot: integrante.p?.robot || ''
-      };
-      const driveUrl = await generarYSubirPDF(pFake, tipoInterno, fechaEvento, codigo, integrante.nombre);
-
-      // Agregar a generados
-      integrantesGenerados.unshift({
-        nombre: integrante.nombre, esCapitan: integrante.esCapitan,
-        robot: integrante.p?.robot || '—', categoria: grupo.categoria,
-        institucion: integrante.p?.institucion || '—', correo,
-        idx: -1, mIdx: -1,
-        cert: { tipo_certificado: grupo.tipo_certificado, codigo_verificacion: codigo, archivoUrl: driveUrl, nombre_completo: integrante.nombre }
-      });
-      showToast('✅ Diploma de ' + integrante.nombre + ' listo');
-    } catch(e) {
-      console.error('Error con ' + integrante.nombre + ':', e);
-      showToast('❌ Error con ' + integrante.nombre + ': ' + e.message);
-      todosOk = false;
-    }
   }
 
-  // Si todos se generaron correctamente, quitar el grupo de la sección morada
-  if (todosOk) {
-    podioGrupos.splice(gi, 1);
-  } else {
-    if (btn) { btn.disabled = false; btn.textContent = `🏆 Generar diplomas (${grupo.integrantes.length})`; }
-  }
-  renderPodio();
-  renderGenerados();
-}
+  // Subsección pendientes (participación)
+  let pendientesHTML = '';
+  if (cat.pendientes.length) {
+    const filas = cat.pendientes.map((item, i) => {
+      const badge = item.esCapitan ? '<span class="badge-capitan">Capitán</span>' : '<span class="badge-miembro">Miembro</span>';
+      const itemKey = `${cat.nombre.replace(/\s/g,'_')}_${i}`;
+      return `<tr${item.esCapitan ? '' : ' class="fila-miembro"'} id="fila-pend-${itemKey}">
+        <td>${item.robot || '—'}</td>
+        <td>${item.nombre}${badge}</td>
+        <td>${item.institucion || '—'}</td>
+        <td>
+          <select class="tipo-select" id="tipo-${item.idx}-${item.mIdx}">
+            <option value="participacion">🏅 Participación</option>
+            <option value="1er">🥇 Primer Lugar</option>
+            <option value="2do">🥈 Segundo Lugar</option>
+            <option value="3er">🥉 Tercer Lugar</option>
+          </select>
+        </td>
+        <td>
+          <div class="acciones-cell">
+            <button class="btn-preview" onclick="previewCertificado(${item.idx},'${item.nombre.replace(/'/g,"\\'")}',null,${item.mIdx})">👁️ Preview</button>
+            <button class="btn-generar-uno" id="btn-uno-${itemKey}" onclick="generarUno('${cat.nombre}',${i})">📄 Generar diploma</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
 
-// ── RENDER PENDIENTES ─────────────────────────────────────────
-function renderPendientes() {
-  const tbody = document.getElementById('tabla-pendientes');
-  document.getElementById('count-pendientes').textContent = integrantesPendientes.length;
-  document.getElementById('btn-generar-todos').disabled = integrantesPendientes.length === 0 || generandoEnMasa;
-  if (!integrantesPendientes.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="vacio-msg">🎉 Todos los integrantes tienen certificado</td></tr>';
-    return;
-  }
-  tbody.innerHTML = integrantesPendientes.map((item, i) => {
-    const badge = item.esCapitan ? '<span class="badge-capitan">Capitán</span>' : '<span class="badge-miembro">Miembro</span>';
-    return `<tr${item.esCapitan ? '' : ' class="fila-miembro"'} id="fila-pendiente-${i}">
-      <td>${item.robot || '—'}</td>
-      <td>${item.nombre}${badge}</td>
-      <td>${item.categoria || '—'}</td>
-      <td>${item.institucion || '—'}</td>
-      <td>
-        <select class="tipo-select" id="tipo-${item.idx}-${item.mIdx}">
-          <option value="participacion">🏅 Participación</option>
-          <option value="1er">🥇 Primer Lugar</option>
-          <option value="2do">🥈 Segundo Lugar</option>
-          <option value="3er">🥉 Tercer Lugar</option>
-        </select>
-      </td>
-      <td>
-        <div class="acciones-cell">
-          <button class="btn-preview" onclick="previewCertificado(${item.idx},'${item.nombre.replace(/'/g,"\\'")}',null,${item.mIdx})">👁️ Preview</button>
-          <button class="btn-generar-uno" id="btn-uno-${i}" onclick="generarUno(${i})">📄 Generar diploma</button>
+    pendientesHTML = `
+      <div class="subseccion">
+        <div class="subseccion-header">
+          <span class="subseccion-titulo pendientes">⏳ Pendientes de diploma</span>
+          <span class="subseccion-count pendientes">${cat.pendientes.length}</span>
         </div>
-      </td>
-    </tr>`;
-  }).join('');
+        <table class="tabla">
+          <thead><tr><th>ROBOT</th><th>INTEGRANTE</th><th>INSTITUCIÓN</th><th>TIPO</th><th>ACCIONES</th></tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>`;
+  }
+
+  return `
+    <div class="cat-block" id="cat-block-${cat.nombre.replace(/\s/g,'_')}">
+      <div class="cat-block-header">
+        <div class="cat-block-nombre">${cat.nombre}</div>
+        <div class="cat-block-counts">${pillsPodio}${pillsPend}${pillsGen}</div>
+      </div>
+      ${podioHTML}
+      ${pendientesHTML}
+    </div>`;
 }
 
-// ── RENDER GENERADOS ──────────────────────────────────────────
-function renderGenerados() {
-  const tbody = document.getElementById('tabla-generados');
-  document.getElementById('count-generados').textContent = integrantesGenerados.length;
-  if (!integrantesGenerados.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="vacio-msg">Aún no hay certificados generados</td></tr>';
-    return;
-  }
-  tbody.innerHTML = integrantesGenerados.map(item => {
+function renderGeneradosGlobal() {
+  const todos = Object.values(categorias).flatMap(c => c.generados);
+  const seccion = document.getElementById('seccion-generados');
+  const tbody   = document.getElementById('tabla-generados-global');
+  document.getElementById('count-generados-global').textContent = todos.length;
+
+  if (!todos.length) { seccion.style.display = 'none'; return; }
+  seccion.style.display = 'block';
+
+  tbody.innerHTML = todos.map(item => {
     const cert = item.cert;
     const badge = item.esCapitan ? '<span class="badge-capitan">Capitán</span>' : '<span class="badge-miembro">Miembro</span>';
     const link = cert.archivoUrl
@@ -462,31 +470,112 @@ function renderGenerados() {
   }).join('');
 }
 
-// ── GENERAR UNO ───────────────────────────────────────────────
-async function generarUno(i) {
-  const item = integrantesPendientes[i];
-  if (!item) return;
-  const btn = document.getElementById('btn-uno-' + i);
+// ── GENERAR DIPLOMA PODIO ────────────────────────────────────
+async function generarDiplomaPodio(catNombre, gi) {
+  const cat   = categorias[catNombre];
+  const grupo = cat?.podioGrupos[gi];
+  if (!grupo) return;
+
+  const btnId = `btn-podio-${catNombre.replace(/\s/g,'_')}-${gi}`;
+  const btn   = document.getElementById(btnId);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Generando...'; }
+
+  const fechaEvento = document.getElementById('fecha-evento').value;
+  const tipoInterno = grupo.tipo_interno;
+  let todosOk = true;
+
+  for (const integrante of grupo.integrantes) {
+    try {
+      let codigo = integrante.cert?.codigo_verificacion;
+      const correo = integrante.p?.correo || '';
+
+      if (!integrante.esCapitan) {
+        const resp = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'guardarCertificado', correo,
+            nombre_completo: integrante.nombre,
+            categoria: catNombre,
+            institucion: integrante.p?.institucion || '',
+            evento: 'SucreBot 2026', fecha_evento: fechaEvento,
+            tipo_certificado: grupo.tipo_certificado
+          }),
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        const result = await resp.json();
+        if (!result.ok) throw new Error('Error Sheets para ' + integrante.nombre);
+        codigo = result.codigo;
+      }
+
+      if (btn) btn.textContent = `⏳ PDF ${integrante.nombre}...`;
+      const pFake = {
+        nombre: integrante.nombre, correo,
+        categoria: catNombre,
+        institucion: integrante.p?.institucion || '',
+        robot: integrante.p?.robot || ''
+      };
+      const driveUrl = await generarYSubirPDF(pFake, tipoInterno, fechaEvento, codigo, integrante.nombre);
+
+      // Mover a generados de esta categoría
+      cat.generados.unshift({
+        nombre: integrante.nombre, esCapitan: integrante.esCapitan,
+        robot: integrante.p?.robot || '—', categoria: catNombre,
+        institucion: integrante.p?.institucion || '—', correo,
+        idx: -1, mIdx: -1,
+        cert: { tipo_certificado: grupo.tipo_certificado, codigo_verificacion: codigo, archivoUrl: driveUrl }
+      });
+      showToast('✅ Diploma de ' + integrante.nombre + ' listo');
+    } catch(e) {
+      console.error(e);
+      showToast('❌ Error con ' + integrante.nombre + ': ' + e.message);
+      todosOk = false;
+    }
+  }
+
+  if (todosOk) {
+    cat.podioGrupos.splice(gi, 1);
+  } else {
+    if (btn) { btn.disabled = false; btn.textContent = `🏆 Generar diplomas (${grupo.integrantes.length})`; }
+  }
+  renderTodo();
+}
+
+// ── GENERAR UNO (participación) ──────────────────────────────
+async function generarUno(catNombre, i) {
+  const cat  = categorias[catNombre];
+  const item = cat?.pendientes[i];
+  if (!item) return;
+
+  const itemKey = `${catNombre.replace(/\s/g,'_')}_${i}`;
+  const btn = document.getElementById('btn-uno-' + itemKey);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generando...'; }
+
   const p = participantesAprobados[item.idx];
   const tipo = document.getElementById('tipo-' + item.idx + '-' + item.mIdx)?.value || 'participacion';
   const fechaEvento = document.getElementById('fecha-evento').value;
+
   try {
     const resp = await fetch(GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'guardarCertificado', correo: p.correo, nombre_completo: item.nombre, categoria: item.categoria, institucion: item.institucion, evento: 'SucreBot 2026', fecha_evento: fechaEvento, tipo_certificado: tipo }),
+      body: JSON.stringify({
+        action: 'guardarCertificado', correo: p.correo,
+        nombre_completo: item.nombre, categoria: item.categoria,
+        institucion: item.institucion, evento: 'SucreBot 2026',
+        fecha_evento: fechaEvento, tipo_certificado: tipo
+      }),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
     const result = await resp.json();
     if (!result.ok) throw new Error('Error al guardar en Sheets');
+
     if (btn) btn.textContent = '⏳ Subiendo PDF...';
     const driveUrl = await generarYSubirPDF(p, tipo, fechaEvento, result.codigo, item.nombre);
     showToast('✅ Diploma de ' + item.nombre + ' generado');
-    const entrada = { ...item, cert: { tipo_certificado: tipo, codigo_verificacion: result.codigo, archivoUrl: driveUrl, nombre_completo: item.nombre } };
-    integrantesPendientes.splice(i, 1);
-    integrantesGenerados.unshift(entrada);
-    renderPendientes();
-    renderGenerados();
+
+    // Quitar de pendientes y agregar a generados
+    cat.pendientes.splice(i, 1);
+    cat.generados.unshift({ ...item, cert: { tipo_certificado: tipo, codigo_verificacion: result.codigo, archivoUrl: driveUrl } });
+    renderTodo();
   } catch(e) {
     console.error(e);
     showToast('❌ Error con ' + item.nombre + ': ' + e.message);
@@ -494,39 +583,60 @@ async function generarUno(i) {
   }
 }
 
-// ── GENERAR TODOS ─────────────────────────────────────────────
+// ── GENERAR TODOS ────────────────────────────────────────────
 async function generarTodos() {
-  if (!integrantesPendientes.length) { showToast('✅ No hay pendientes'); return; }
-  if (!confirm(`¿Generar diplomas para ${integrantesPendientes.length} integrantes pendientes?\n\nEsto puede tomar varios minutos.`)) return;
+  const todosPendientes = Object.entries(categorias).flatMap(([cat, data]) =>
+    data.pendientes.map((item, i) => ({ cat, i, item }))
+  );
+  if (!todosPendientes.length) { showToast('✅ No hay pendientes'); return; }
+  if (!confirm(`¿Generar diplomas para ${todosPendientes.length} integrantes pendientes?\n\nEsto puede tomar varios minutos.`)) return;
+
   generandoEnMasa = true;
   document.getElementById('btn-generar-todos').disabled = true;
   document.getElementById('progreso-wrap').classList.add('visible');
-  const total = integrantesPendientes.length;
+
+  const total = todosPendientes.length;
   let completados = 0, errores = 0;
-  const copia = [...integrantesPendientes];
-  for (let i = 0; i < copia.length; i++) {
-    const item = copia[i];
+
+  for (let idx = 0; idx < todosPendientes.length; idx++) {
+    const { cat: catNombre, item } = todosPendientes[idx];
     const p = participantesAprobados[item.idx];
-    const tipo = document.getElementById('tipo-' + item.idx + '-' + item.mIdx)?.value || 'participacion';
+    const tipo = 'participacion'; // En masa siempre participación
     const fechaEvento = document.getElementById('fecha-evento').value;
-    document.getElementById('progreso-bar').style.width = Math.round((i/total)*100) + '%';
+
+    document.getElementById('progreso-bar').style.width = Math.round((idx/total)*100) + '%';
     document.getElementById('progreso-label').textContent = 'Generando: ' + item.nombre;
-    document.getElementById('progreso-texto').textContent = i + ' / ' + total;
+    document.getElementById('progreso-texto').textContent = idx + ' / ' + total;
+
     try {
-      const resp = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'guardarCertificado', correo:p.correo, nombre_completo:item.nombre, categoria:item.categoria, institucion:item.institucion, evento:'SucreBot 2026', fecha_evento:fechaEvento, tipo_certificado:tipo }), headers:{'Content-Type':'text/plain;charset=utf-8'} });
+      const resp = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'guardarCertificado', correo: p.correo,
+          nombre_completo: item.nombre, categoria: item.categoria,
+          institucion: item.institucion, evento: 'SucreBot 2026',
+          fecha_evento: fechaEvento, tipo_certificado: tipo
+        }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
       const result = await resp.json();
       if (!result.ok) throw new Error('Error Sheets');
       const driveUrl = await generarYSubirPDF(p, tipo, fechaEvento, result.codigo, item.nombre);
-      integrantesGenerados.unshift({ ...item, cert: { tipo_certificado: tipo, codigo_verificacion: result.codigo, archivoUrl: driveUrl, nombre_completo: item.nombre } });
+      categorias[catNombre].generados.unshift({ ...item, cert: { tipo_certificado: tipo, codigo_verificacion: result.codigo, archivoUrl: driveUrl } });
       completados++;
-    } catch(e) { console.error(e); errores++; }
+    } catch(e) {
+      console.error(e); errores++;
+    }
   }
-  integrantesPendientes = integrantesPendientes.filter(x => !copia.includes(x));
+
+  // Limpiar todos los pendientes procesados
+  Object.values(categorias).forEach(c => { c.pendientes = []; });
+
   document.getElementById('progreso-bar').style.width = '100%';
   document.getElementById('progreso-label').textContent = '¡Completado!';
   document.getElementById('progreso-texto').textContent = completados + ' generados' + (errores ? ' · ' + errores + ' errores' : '');
   generandoEnMasa = false;
-  renderPendientes(); renderGenerados();
+  renderTodo();
   showToast(`✅ ${completados} diplomas generados${errores ? ' · ⚠️ ' + errores + ' errores' : ''}`);
   setTimeout(() => document.getElementById('progreso-wrap').classList.remove('visible'), 4000);
 }
