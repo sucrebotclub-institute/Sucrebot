@@ -41,33 +41,17 @@
     .progreso-bar-fill { height:100%; background:linear-gradient(90deg,#1a5ca8,#5bc8f0); border-radius:8px; transition:width .3s; width:0%; }
     .progreso-texto { font-family:'DM Mono'; font-size:11px; color:#7a7a8c; margin-top:6px; }
 
-    /* ── BLOQUE POR CATEGORÍA ── */
     .cat-block { margin-bottom: 48px; }
-    .cat-block-header {
-      display: flex; align-items: center; gap: 14px;
-      margin-bottom: 20px; padding: 14px 20px;
-      background: #1a5ca8; border-radius: 12px;
-    }
-    .cat-block-nombre {
-      font-family: 'Bebas Neue'; font-size: 1.4rem; letter-spacing: 2px;
-      color: #fff; flex: 1;
-    }
+    .cat-block-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding: 14px 20px; background: #1a5ca8; border-radius: 12px; }
+    .cat-block-nombre { font-family: 'Bebas Neue'; font-size: 1.4rem; letter-spacing: 2px; color: #fff; flex: 1; }
     .cat-block-counts { display:flex; gap:10px; flex-wrap:wrap; }
-    .cat-pill {
-      font-family: 'DM Mono'; font-size: 11px; font-weight: 700;
-      padding: 4px 12px; border-radius: 20px;
-    }
+    .cat-pill { font-family: 'DM Mono'; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
     .cat-pill.podio       { background: rgba(196,165,255,.25); color: #e9d5ff; border: 1px solid rgba(196,165,255,.4); }
     .cat-pill.pendientes  { background: rgba(253,212,76,.2);   color: #fef3c7; border: 1px solid rgba(253,212,76,.4); }
     .cat-pill.generados   { background: rgba(110,231,183,.2);  color: #d1fae5; border: 1px solid rgba(110,231,183,.4); }
 
-    /* ── SUB-SECCIONES ── */
     .subseccion { margin-bottom: 20px; }
-    .subseccion-header {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 10px; padding-bottom: 8px;
-      border-bottom: 2px solid #e0e4ea;
-    }
+    .subseccion-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #e0e4ea; }
     .subseccion-titulo { font-family:'Orbitron'; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
     .subseccion-titulo.podio      { color:#7c3aed; }
     .subseccion-titulo.pendientes { color:#c27803; }
@@ -77,7 +61,6 @@
     .subseccion-count.pendientes { background:#fff8e6; color:#c27803; border:1px solid #fcd34d; }
     .subseccion-count.generados  { background:#ecfdf5; color:#0e9f6e; border:1px solid #6ee7b7; }
 
-    /* ── TABLAS ── */
     .tabla { width:100%; border-collapse:separate; border-spacing:0; border:2px solid #e0e4ea; border-radius:12px; overflow:hidden; margin-bottom:8px; }
     .tabla thead { background:linear-gradient(135deg,#1a5ca8,#0f3d75); }
     .tabla.podio thead      { background:linear-gradient(135deg,#7c3aed,#4c1d95); }
@@ -97,7 +80,6 @@
     .tabla.podio tbody tr.fila-miembro { background:#faf5ff; }
     .tabla.generados tbody tr.fila-miembro { background:#f0fdf4; }
 
-    /* ── BADGES ── */
     .badge-capitan { display:inline-block; background:#1a5ca8; color:#fff; font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle; text-transform:uppercase; }
     .badge-miembro { display:inline-block; background:#5bc8f0; color:#0f3566; font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle; text-transform:uppercase; }
     .badge-podio   { display:inline-block; font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:10px; vertical-align:middle; text-transform:uppercase; }
@@ -171,10 +153,7 @@
       <div class="progreso-texto" id="progreso-texto">0 / 0</div>
     </div>
 
-    <!-- Bloques por categoría se renderizan aquí -->
     <div id="categorias-container"></div>
-
-
   </div>
 </div>
 
@@ -192,12 +171,8 @@ const STAFF_EMAILS_CERTIFICADOS = [
   'vandrade@tecnologicosucre.edu.ec'
 ];
 
-// Estado global
 let participantesAprobados = [];
 let generandoEnMasa        = false;
-
-// Estructura por categoría:
-// { nombre, podioGrupos: [{tipo_cert, tipo_interno, integrantes:[]}], pendientes: [], generados: [] }
 let categorias = {};
 
 const TIPO_PODIO_MAP = {
@@ -217,6 +192,14 @@ const BADGE_PODIO = {
   'TERCER_LUGAR': '<span class="badge-podio badge-tercero">🥉 3er Lugar</span>',
 };
 
+// ── FIX: normaliza cualquier valor a string limpio o vacío ──
+// Evita TypeError: p.miembro2.trim is not a function
+// cuando el GAS devuelve null, número u otro tipo no-string
+function strVal(v) {
+  if (v === null || v === undefined) return '';
+  return String(v).trim();
+}
+
 document.addEventListener('componentsLoaded', function() {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { document.getElementById('acceso-denegado').style.display = 'block'; return; }
@@ -230,7 +213,6 @@ document.addEventListener('componentsLoaded', function() {
   } catch(e) { document.getElementById('acceso-denegado').style.display = 'block'; }
 });
 
-// ── CARGAR Y CLASIFICAR ──────────────────────────────────────
 async function cargarDatos() {
   document.getElementById('categorias-container').innerHTML =
     '<div style="text-align:center;padding:40px;color:#7a7a8c;">Cargando...</div>';
@@ -248,7 +230,6 @@ async function cargarDatos() {
       (!c.archivoUrl || !c.archivoUrl.trim()) && c.nombre_completo && c.nombre_completo.trim()
     );
 
-    // Inicializar estructura por categoría
     categorias = {};
 
     // ── Procesar certs sin PDF (podio) ──
@@ -256,7 +237,6 @@ async function cargarDatos() {
       const cat = c.categoria || 'Sin categoría';
       if (!categorias[cat]) categorias[cat] = { nombre: cat, podioGrupos: [], pendientes: [], generados: [] };
 
-      // ¿Ya existe un grupo para este tipo en esta categoría?
       let grupo = categorias[cat].podioGrupos.find(g => g.tipo_certificado === c.tipo_certificado);
       if (!grupo) {
         grupo = { tipo_certificado: c.tipo_certificado, tipo_interno: TIPO_PODIO_MAP[c.tipo_certificado] || '1er', integrantes: [] };
@@ -267,18 +247,16 @@ async function cargarDatos() {
         (x.nombre || '').toLowerCase().trim() === (c.nombre_completo || '').toLowerCase().trim()
       ) || null;
 
-      // Capitán
       grupo.integrantes.push({ nombre: c.nombre_completo, esCapitan: true, p, cert: c });
-      // Miembros
+      // FIX: usar strVal() para evitar .trim() sobre null/number
       if (p) {
-        if (p.miembro2 && p.miembro2.trim())
-          grupo.integrantes.push({ nombre: p.miembro2.trim(), esCapitan: false, p, cert: c });
-        if (p.miembro3 && p.miembro3.trim())
-          grupo.integrantes.push({ nombre: p.miembro3.trim(), esCapitan: false, p, cert: c });
+        if (strVal(p.miembro2))
+          grupo.integrantes.push({ nombre: strVal(p.miembro2), esCapitan: false, p, cert: c });
+        if (strVal(p.miembro3))
+          grupo.integrantes.push({ nombre: strVal(p.miembro3), esCapitan: false, p, cert: c });
       }
     });
 
-    // Ordenar grupos dentro de cada categoría: GANADOR → SUBCAMPEÓN → TERCER LUGAR
     const ordenPodio = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR', 'FINALISTA', 'TERCER_LUGAR'];
     Object.values(categorias).forEach(cat => {
       cat.podioGrupos.sort((a, b) =>
@@ -286,21 +264,21 @@ async function cargarDatos() {
       );
     });
 
-    // ── Procesar participantes aprobados (pendientes/generados por participación) ──
+    // ── Procesar participantes aprobados (pendientes) ──
     participantesAprobados.forEach((p, idx) => {
       const cat = p.categoria || 'Sin categoría';
       if (!categorias[cat]) categorias[cat] = { nombre: cat, podioGrupos: [], pendientes: [], generados: [] };
 
       const miembros = [{ nombre: p.nombre, esCapitan: true }];
-      if (p.miembro2 && p.miembro2.trim()) miembros.push({ nombre: p.miembro2.trim(), esCapitan: false });
-      if (p.miembro3 && p.miembro3.trim()) miembros.push({ nombre: p.miembro3.trim(), esCapitan: false });
+      // FIX: usar strVal() para evitar .trim() sobre null/number
+      if (strVal(p.miembro2)) miembros.push({ nombre: strVal(p.miembro2), esCapitan: false });
+      if (strVal(p.miembro3)) miembros.push({ nombre: strVal(p.miembro3), esCapitan: false });
 
       miembros.forEach((m, mIdx) => {
         const cert = certsConPDF.find(c =>
           (c.nombre_completo || '').toLowerCase().trim() === m.nombre.toLowerCase().trim()
         );
         const entrada = { nombre: m.nombre, esCapitan: m.esCapitan, robot: p.robot, categoria: cat, institucion: p.institucion, correo: p.correo, idx, mIdx, cert: cert || null };
-        // Solo trackear pendientes — los generados ya aparecen en CERTIFICADOS
         if (!cert) categorias[cat].pendientes.push(entrada);
       });
     });
@@ -312,15 +290,11 @@ async function cargarDatos() {
   }
 }
 
-// ── RENDER COMPLETO ──────────────────────────────────────────
 function renderTodo() {
   const container = document.getElementById('categorias-container');
-
-  // Contar pendientes globales para el botón
   const totalPendientes = Object.values(categorias).reduce((a, c) => a + c.pendientes.length, 0);
   document.getElementById('btn-generar-todos').disabled = totalPendientes === 0 || generandoEnMasa;
 
-  // Ordenar categorías alfabéticamente
   const cats = Object.values(categorias).sort((a, b) => a.nombre.localeCompare(b.nombre));
 
   if (!cats.length) {
@@ -332,16 +306,13 @@ function renderTodo() {
 }
 
 function renderCatBlock(cat) {
-  const totalPodio     = cat.podioGrupos.reduce((a, g) => a + g.integrantes.length, 0);
+  const totalPodio      = cat.podioGrupos.reduce((a, g) => a + g.integrantes.length, 0);
   const totalPendientes = cat.pendientes.length;
-  // No mostrar el bloque si solo tiene generados (ya aparecen en CERTIFICADOS)
   if (!totalPodio && !totalPendientes) return '';
 
-  const pillsPodio     = totalPodio     ? `<span class="cat-pill podio">🏆 ${totalPodio} podio</span>` : '';
-  const pillsPend      = totalPendientes ? `<span class="cat-pill pendientes">⏳ ${totalPendientes} pendientes</span>` : '';
-  const pillsGen = '';
+  const pillsPodio = totalPodio     ? `<span class="cat-pill podio">🏆 ${totalPodio} podio</span>` : '';
+  const pillsPend  = totalPendientes ? `<span class="cat-pill pendientes">⏳ ${totalPendientes} pendientes</span>` : '';
 
-  // Subsección podio
   let podioHTML = '';
   if (cat.podioGrupos.length) {
     const filas = cat.podioGrupos.map((grupo, gi) => {
@@ -377,7 +348,6 @@ function renderCatBlock(cat) {
       </div>`;
   }
 
-  // Subsección pendientes (participación)
   let pendientesHTML = '';
   if (cat.pendientes.length) {
     const filas = cat.pendientes.map((item, i) => {
@@ -421,16 +391,13 @@ function renderCatBlock(cat) {
     <div class="cat-block" id="cat-block-${cat.nombre.replace(/\s/g,'_')}">
       <div class="cat-block-header">
         <div class="cat-block-nombre">${cat.nombre}</div>
-        <div class="cat-block-counts">${pillsPodio}${pillsPend}${pillsGen}</div>
+        <div class="cat-block-counts">${pillsPodio}${pillsPend}</div>
       </div>
       ${podioHTML}
       ${pendientesHTML}
     </div>`;
 }
 
-
-
-// ── GENERAR DIPLOMA PODIO ────────────────────────────────────
 async function generarDiplomaPodio(catNombre, gi) {
   const cat   = categorias[catNombre];
   const grupo = cat?.podioGrupos[gi];
@@ -476,7 +443,6 @@ async function generarDiplomaPodio(catNombre, gi) {
       };
       const driveUrl = await generarYSubirPDF(pFake, tipoInterno, fechaEvento, codigo, integrante.nombre);
 
-      // Mover a generados de esta categoría
       cat.generados.unshift({
         nombre: integrante.nombre, esCapitan: integrante.esCapitan,
         robot: integrante.p?.robot || '—', categoria: catNombre,
@@ -500,7 +466,6 @@ async function generarDiplomaPodio(catNombre, gi) {
   renderTodo();
 }
 
-// ── GENERAR UNO (participación) ──────────────────────────────
 async function generarUno(catNombre, i) {
   const cat  = categorias[catNombre];
   const item = cat?.pendientes[i];
@@ -532,7 +497,6 @@ async function generarUno(catNombre, i) {
     const driveUrl = await generarYSubirPDF(p, tipo, fechaEvento, result.codigo, item.nombre);
     showToast('✅ Diploma de ' + item.nombre + ' generado');
 
-    // Quitar de pendientes y agregar a generados
     cat.pendientes.splice(i, 1);
     cat.generados.unshift({ ...item, cert: { tipo_certificado: tipo, codigo_verificacion: result.codigo, archivoUrl: driveUrl } });
     renderTodo();
@@ -543,7 +507,6 @@ async function generarUno(catNombre, i) {
   }
 }
 
-// ── GENERAR TODOS ────────────────────────────────────────────
 async function generarTodos() {
   const todosPendientes = Object.entries(categorias).flatMap(([cat, data]) =>
     data.pendientes.map((item, i) => ({ cat, i, item }))
@@ -561,7 +524,7 @@ async function generarTodos() {
   for (let idx = 0; idx < todosPendientes.length; idx++) {
     const { cat: catNombre, item } = todosPendientes[idx];
     const p = participantesAprobados[item.idx];
-    const tipo = 'participacion'; // En masa siempre participación
+    const tipo = 'participacion';
     const fechaEvento = document.getElementById('fecha-evento').value;
 
     document.getElementById('progreso-bar').style.width = Math.round((idx/total)*100) + '%';
@@ -589,7 +552,6 @@ async function generarTodos() {
     }
   }
 
-  // Limpiar todos los pendientes procesados
   Object.values(categorias).forEach(c => { c.pendientes = []; });
 
   document.getElementById('progreso-bar').style.width = '100%';
