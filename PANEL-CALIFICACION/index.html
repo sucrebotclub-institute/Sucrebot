@@ -525,9 +525,14 @@
       <button class="btn btn-danger" id="btnCerrarCat1" onclick="cerrarCategoriaPaso1()" style="display:none">
         🔒 Cerrar Categoría
       </button>
-      <button class="btn btn-green" id="btnIniciarCal" onclick="iniciarCalificacion()" disabled>
-        Iniciar Calificación →
-      </button>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-outline" id="btnVerRankingP1" onclick="verRankingDesdePaso1()" style="display:none">
+          📊 Ver Ranking
+        </button>
+        <button class="btn btn-green" id="btnIniciarCal" onclick="iniciarCalificacion()" disabled>
+          Iniciar Calificación →
+        </button>
+      </div>
     </div>
   </div>
 
@@ -825,6 +830,7 @@ async function onCategoriaChange() {
     `${CAT_NOMBRES[cat].toUpperCase()} — BLOQUEADA EN ESTE PC`;
   document.getElementById('catBloqueadaBadge').classList.add('show');
   document.getElementById('btnCerrarCat1').style.display = 'flex';
+  document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
   document.getElementById('btnIniciarCal').disabled = false;
 }
 
@@ -1168,6 +1174,7 @@ function resetearUI() {
   document.getElementById('participantesInfo').style.display = 'none';
   document.getElementById('btnIniciarCal').disabled = true;
   document.getElementById('btnCerrarCat1').style.display = 'none';
+  document.getElementById('btnVerRankingP1').style.display = 'none';
   document.getElementById('catBloqueadaBadge').classList.remove('show');
   document.getElementById('criteriosTbody').innerHTML = '';
   setStep(1);
@@ -1222,6 +1229,23 @@ async function cargarRanking() {
     tbody.appendChild(tr);
   });
   loading(false);
+}
+
+// Ver ranking directo desde paso 1 (sin pasar por calificación)
+async function verRankingDesdePaso1() {
+  if (!state.categoria) { toast('Selecciona una categoría primero', 'error'); return; }
+  if (!state.criterios.length) {
+    try {
+      const resCrit = await gasGet({ action: 'getCriterios', categoria: state.categoria });
+      state.criterios = (resCrit.ok && resCrit.criterios?.length)
+        ? resCrit.criterios
+        : DEFAULTS_CRITERIOS[state.categoria];
+    } catch(e) {
+      state.criterios = DEFAULTS_CRITERIOS[state.categoria];
+    }
+  }
+  await cargarRanking();
+  setStep(3);
 }
 
 // ══════════════════════════════════════════
@@ -1360,6 +1384,7 @@ async function restaurarSesion() {
     `${CAT_NOMBRES[sesion.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
   document.getElementById('catBloqueadaBadge').classList.add('show');
   document.getElementById('btnCerrarCat1').style.display = 'flex';
+  document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
   document.getElementById('btnIniciarCal').disabled = false;
   renderCriteriosConfig(state.criterios);
 
