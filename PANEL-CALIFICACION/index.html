@@ -27,6 +27,8 @@
       --green-dim:   rgba(46,204,113,0.15);
       --orange:      #f39c12;
       --red:         #e74c3c;
+      --gold:        #f0a500;
+      --gold-dark:   #c98a00;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -181,6 +183,23 @@
     .btn-danger { background: var(--red); color: #fff; }
     .btn-danger:hover { background: #c0392b; }
     .btn-sm { padding: 7px 14px; font-size: .62rem; }
+
+    /* ── BOTÓN VER RANKING — amarillo/dorado ── */
+    .btn-ranking {
+      background: var(--gold);
+      border: 2px solid var(--gold-dark);
+      color: #1a1a1a;
+      font-weight: 700;
+    }
+    .btn-ranking:hover {
+      background: #f5b420;
+      border-color: var(--gold);
+      box-shadow: 0 4px 16px rgba(240,165,0,0.45);
+      transform: translateY(-1px);
+    }
+    .btn-ranking:active {
+      transform: translateY(0);
+    }
 
     .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
 
@@ -526,7 +545,7 @@
         🔒 Cerrar Categoría
       </button>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <button class="btn btn-outline" id="btnVerRankingP1" onclick="verRankingDesdePaso1()" style="display:none">
+        <button class="btn btn-ranking" id="btnVerRankingP1" onclick="verRankingDesdePaso1()" style="display:none">
           📊 Ver Ranking
         </button>
         <button class="btn btn-green" id="btnIniciarCal" onclick="iniciarCalificacion()" disabled>
@@ -594,7 +613,7 @@
 
           <div class="btn-row" style="justify-content:space-between">
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-outline btn-sm" onclick="irARanking()">📊 Ver Ranking</button>
+              <button class="btn btn-ranking btn-sm" onclick="irARanking()">📊 Ver Ranking</button>
               <button class="btn btn-danger btn-sm" onclick="cerrarCategoria()">🔒 Cerrar Categoría</button>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1231,13 +1250,11 @@ async function cargarRanking() {
   loading(false);
 }
 
-// Ver ranking directo desde paso 1 (sin pasar por calificación)
 async function verRankingDesdePaso1() {
   if (!state.categoria) { toast('Selecciona una categoría primero', 'error'); return; }
 
   loading(true, 'CARGANDO RANKING...');
 
-  // Cargar participantes si no están (necesarios para guardarPodio)
   if (!state.participantes.length) {
     try {
       const res2 = await gasGet({ action: 'getParticipantes' });
@@ -1249,7 +1266,6 @@ async function verRankingDesdePaso1() {
     }
   }
 
-  // Cargar criterios si no están (necesarios para exportar CSV)
   if (!state.criterios.length) {
     try {
       const resCrit = await gasGet({ action: 'getCriterios', categoria: state.categoria });
@@ -1261,15 +1277,10 @@ async function verRankingDesdePaso1() {
     }
   }
 
-  await cargarRanking(); // cargarRanking ya hace loading(false)
+  await cargarRanking();
   setStep(3);
 }
 
-// ══════════════════════════════════════════
-// FIX: guardarPodio — payload completo con
-//      correo, nombre, categoria, institucion
-//      y tipo distinto por posición
-// ══════════════════════════════════════════
 async function guardarPodio() {
   const top3 = state.rankingData.slice(0, 3);
   if (!top3.length) { toast('No hay datos para guardar', 'error'); return; }
@@ -1283,7 +1294,6 @@ async function guardarPodio() {
 
       for (let i = 0; i < top3.length; i++) {
         const r = top3[i];
-        // Buscar datos completos en state.participantes (tiene correo, institucion, etc.)
         const p = state.participantes.find(x => x.id === r.id) || {};
         try {
           const res = await gasPost({
@@ -1355,7 +1365,6 @@ async function exportarExcel() {
 
 // ── RESTAURAR SESIÓN (F5) ──
 async function restaurarSesion() {
-  // Timeout de seguridad: si en 10s no termina, limpiar y salir
   const safetyTimer = setTimeout(() => {
     console.warn('restaurarSesion timeout — limpiando sesión');
     localStorage.removeItem('panel_cal_sesion');
@@ -1369,7 +1378,6 @@ async function restaurarSesion() {
     try { sesion = JSON.parse(raw); } catch(e) { clearTimeout(safetyTimer); loading(false); return; }
     if (!sesion.categoria) { clearTimeout(safetyTimer); loading(false); return; }
 
-    // Verificar que la categoría sigue bloqueada en GAS
     try {
       const res     = await gasGet({ action: 'getCategoriasActivas' });
       const activas = res.activas || res.categorias || (Array.isArray(res) ? res : []);
@@ -1382,7 +1390,6 @@ async function restaurarSesion() {
         return;
       }
     } catch(e) {
-      // Si GAS falla, limpiar sesión y salir — no bloquear la UI
       console.warn('getCategoriasActivas falló al restaurar:', e);
       localStorage.removeItem('panel_cal_sesion');
       clearTimeout(safetyTimer);
