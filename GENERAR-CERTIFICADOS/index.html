@@ -174,17 +174,7 @@
     <!-- Bloques por categoría se renderizan aquí -->
     <div id="categorias-container"></div>
 
-    <!-- Generados (global, abajo de todo) -->
-    <div id="seccion-generados" style="display:none; margin-top:40px;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e0e4ea;">
-        <span style="font-family:'Orbitron';font-size:13px;font-weight:700;letter-spacing:2px;color:#0e9f6e;text-transform:uppercase;">✅ Certificados generados</span>
-        <span id="count-generados-global" style="font-family:'DM Mono';font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:#ecfdf5;color:#0e9f6e;border:1px solid #6ee7b7;">0</span>
-      </div>
-      <table class="tabla generados">
-        <thead><tr><th>ROBOT</th><th>INTEGRANTE</th><th>CATEGORÍA</th><th>TIPO</th><th>CÓDIGO</th><th>DIPLOMA</th></tr></thead>
-        <tbody id="tabla-generados-global"></tbody>
-      </table>
-    </div>
+
   </div>
 </div>
 
@@ -310,8 +300,8 @@ async function cargarDatos() {
           (c.nombre_completo || '').toLowerCase().trim() === m.nombre.toLowerCase().trim()
         );
         const entrada = { nombre: m.nombre, esCapitan: m.esCapitan, robot: p.robot, categoria: cat, institucion: p.institucion, correo: p.correo, idx, mIdx, cert: cert || null };
-        if (cert) categorias[cat].generados.push(entrada);
-        else       categorias[cat].pendientes.push(entrada);
+        // Solo trackear pendientes — los generados ya aparecen en CERTIFICADOS
+        if (!cert) categorias[cat].pendientes.push(entrada);
       });
     });
 
@@ -339,20 +329,17 @@ function renderTodo() {
   }
 
   container.innerHTML = cats.map(cat => renderCatBlock(cat)).join('');
-  renderGeneradosGlobal();
 }
 
 function renderCatBlock(cat) {
   const totalPodio     = cat.podioGrupos.reduce((a, g) => a + g.integrantes.length, 0);
   const totalPendientes = cat.pendientes.length;
-  const totalGenerados  = cat.generados.length;
-
-  // No mostrar el bloque si no hay nada
-  if (!totalPodio && !totalPendientes && !totalGenerados) return '';
+  // No mostrar el bloque si solo tiene generados (ya aparecen en CERTIFICADOS)
+  if (!totalPodio && !totalPendientes) return '';
 
   const pillsPodio     = totalPodio     ? `<span class="cat-pill podio">🏆 ${totalPodio} podio</span>` : '';
   const pillsPend      = totalPendientes ? `<span class="cat-pill pendientes">⏳ ${totalPendientes} pendientes</span>` : '';
-  const pillsGen       = totalGenerados  ? `<span class="cat-pill generados">✅ ${totalGenerados} generados</span>` : '';
+  const pillsGen = '';
 
   // Subsección podio
   let podioHTML = '';
@@ -441,34 +428,7 @@ function renderCatBlock(cat) {
     </div>`;
 }
 
-function renderGeneradosGlobal() {
-  const todos = Object.values(categorias).flatMap(c => c.generados);
-  const seccion = document.getElementById('seccion-generados');
-  const tbody   = document.getElementById('tabla-generados-global');
-  document.getElementById('count-generados-global').textContent = todos.length;
 
-  if (!todos.length) { seccion.style.display = 'none'; return; }
-  seccion.style.display = 'block';
-
-  tbody.innerHTML = todos.map(item => {
-    const cert = item.cert;
-    const badge = item.esCapitan ? '<span class="badge-capitan">Capitán</span>' : '<span class="badge-miembro">Miembro</span>';
-    const link = cert.archivoUrl
-      ? `<a class="cert-link" href="${cert.archivoUrl}" target="_blank" rel="noopener">
-           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-           Ver Diploma
-         </a>`
-      : '<span style="color:#aab0be;font-size:12px;">⏳ Sin PDF</span>';
-    return `<tr${item.esCapitan ? '' : ' class="fila-miembro"'}>
-      <td>${item.robot || '—'}</td>
-      <td>${item.nombre}${badge}</td>
-      <td>${item.categoria || '—'}</td>
-      <td>${TIPO_LABEL[cert.tipo_certificado] || cert.tipo_certificado || '—'}</td>
-      <td><span class="cert-codigo-tag">${cert.codigo_verificacion || '—'}</span></td>
-      <td>${link}</td>
-    </tr>`;
-  }).join('');
-}
 
 // ── GENERAR DIPLOMA PODIO ────────────────────────────────────
 async function generarDiplomaPodio(catNombre, gi) {
