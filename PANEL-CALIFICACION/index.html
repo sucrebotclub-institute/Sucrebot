@@ -1234,6 +1234,22 @@ async function cargarRanking() {
 // Ver ranking directo desde paso 1 (sin pasar por calificación)
 async function verRankingDesdePaso1() {
   if (!state.categoria) { toast('Selecciona una categoría primero', 'error'); return; }
+
+  loading(true, 'CARGANDO RANKING...');
+
+  // Cargar participantes si no están (necesarios para guardarPodio)
+  if (!state.participantes.length) {
+    try {
+      const res2 = await gasGet({ action: 'getParticipantes' });
+      const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
+      const catNombre = CAT_NOMBRES[state.categoria];
+      state.participantes = todos.filter(p => p.categoria === catNombre && p.aprobado === 'APROBADO');
+    } catch(e) {
+      console.warn('getParticipantes falló en verRankingDesdePaso1:', e);
+    }
+  }
+
+  // Cargar criterios si no están (necesarios para exportar CSV)
   if (!state.criterios.length) {
     try {
       const resCrit = await gasGet({ action: 'getCriterios', categoria: state.categoria });
@@ -1244,7 +1260,8 @@ async function verRankingDesdePaso1() {
       state.criterios = DEFAULTS_CRITERIOS[state.categoria];
     }
   }
-  await cargarRanking();
+
+  await cargarRanking(); // cargarRanking ya hace loading(false)
   setStep(3);
 }
 
