@@ -217,10 +217,14 @@
   <div data-include="../shared/components/footer.html"></div>
 
   <script>
+    // ── SOLO UNA FUENTE DE DATOS: el JSON de GitHub ──────────────
+    // bai, bat, dev ya están incluidos en el JSON por publicarJSON()
+    // No se llama al GAS directamente desde esta página.
+
     const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
     const GAS_URL  = CONFIG.GAS_URL();
 
-    // Categorías que usan puntuación por jueces (no cronómetro)
+    // Categorías que usan puntuación por jueces (formato calificación)
     const CATS_CALIFICACION = new Set(['bai', 'bat', 'dev']);
 
     const GRUPOS = [
@@ -277,20 +281,23 @@
 
     let datosJSON      = null;
     let bracketSoccer  = null;
-    // rankingCache guarda el array directo de getRankingCalificacion: [{id,nombre,robot,institucion,total,rondas}]
-    let rankingCache   = {};
     let categoriaActiva = null;
     let rutasConDatos   = [];
 
-    // ── TABS ─────────────────────────────────────────────────────
+    // ── DETECCIÓN DE DATOS ───────────────────────────────────────
 
     function categoriaTieneDatos(ruta) {
       if (ruta === 'soc') return bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
-      if (CATS_CALIFICACION.has(ruta)) return rankingCache[ruta] && rankingCache[ruta].length > 0;
       const datos = datosJSON && datosJSON.resultados && datosJSON.resultados[ruta];
       if (!datos || datos.length === 0) return false;
+      if (CATS_CALIFICACION.has(ruta)) {
+        // Para calificación: tiene datos si hay al menos un entry con total > 0
+        return datos.some(d => (parseFloat(d.total) || 0) > 0);
+      }
       return datos.some(d => tiempoValido(d.tiempo) || d.tiempo === 'DNF');
     }
+
+    // ── TABS ─────────────────────────────────────────────────────
 
     function renderTabs() {
       const container = document.getElementById('cat-tabs');
@@ -332,9 +339,9 @@
         </div>`;
     }
 
-    // ── RANKING CALIFICACIÓN ─────────────────────────────────────
-    // GAS devuelve: { id, nombre, robot, institucion, total, rondas }
-    // total = mejor puntuación sobre 25 puntos
+    // ── RANKING CALIFICACIÓN — leído desde el JSON ───────────────
+    // El JSON contiene: resultados.bai = [{id, nombre, robot, institucion, total, rondas}, ...]
+    // Esto lo exporta publicarJSON() en el GAS llamando calcularRankingCalificacion()
 
     function renderizarCalificacion(ruta) {
       const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
@@ -342,7 +349,8 @@
       document.getElementById('tv-ronda').textContent = 'CALIFICACIÓN';
       document.getElementById('tv-cat').textContent   = nombreCat;
 
-      const ranking = rankingCache[ruta] || [];
+      // Leer directamente del JSON — mismo objeto que devuelve calcularRankingCalificacion()
+      const ranking = (datosJSON && datosJSON.resultados && datosJSON.resultados[ruta]) || [];
       const wrap    = document.getElementById('tv-tabla-wrap');
 
       if (ranking.length === 0) {
@@ -363,9 +371,7 @@
         return;
       }
 
-      // El máximo teórico es 25 (5 criterios × 5 puntos)
       const MAX_TOTAL = 25;
-      const maxReal   = Math.max(...ranking.map(p => parseFloat(p.total) || 0), 1);
 
       const filas = ranking.map((p, i) => {
         const pos       = i + 1;
@@ -523,6 +529,7 @@
     }
 
     // ── POLLING ──────────────────────────────────────────────────
+    // Solo 2 fuentes: JSON (todo excepto soccer) + GAS para bracket soccer
 
     async function pollJSON() {
       try {
@@ -545,24 +552,6 @@
       } catch(e) { console.error('Error al cargar bracket soccer:', e); }
     }
 
-    async function pollRankingCalificacion() {
-      // FIX: usar la clave correcta del GAS (categoria abreviada: bai, bat, dev)
-      await Promise.all([...CATS_CALIFICACION].map(async cat => {
-        try {
-          const r    = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getRankingCalificacion', categoria: cat }), { cache: 'no-store' });
-          const data = await r.json();
-          // GAS devuelve { ok: true, ranking: [{id, nombre, robot, institucion, total, rondas}] }
-          if (data.ok && Array.isArray(data.ranking)) {
-            rankingCache[cat] = data.ranking;
-          }
-        } catch(e) { console.error('Error ranking ' + cat + ':', e); }
-      }));
-      renderTabs();
-      if (categoriaActiva && CATS_CALIFICACION.has(categoriaActiva)) {
-        renderizarCalificacion(categoriaActiva);
-      }
-    }
-
     function actualizarVista() {
       if (!categoriaActiva) {
         const primera = rutasConDatos[0] || null;
@@ -574,13 +563,12 @@
       }
     }
 
-    setInterval(pollJSON,                 5000);
-    setInterval(pollBracketSoccer,        8000);
-    setInterval(pollRankingCalificacion, 10000);
+    // JSON cada 5s (incluye bai/bat/dev), Soccer cada 8s
+    setInterval(pollJSON,          5000);
+    setInterval(pollBracketSoccer, 8000);
 
     pollJSON();
     pollBracketSoccer();
-    pollRankingCalificacion();
   </script>
 </body>
 </html>
