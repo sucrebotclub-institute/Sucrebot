@@ -210,7 +210,6 @@
     .btn-danger:hover { background: #c0392b; }
     .btn-sm { padding: 7px 14px; font-size: .62rem; }
 
-    /* ── BOTÓN SIGUIENTE — morado/violeta ── */
     .btn-violet {
       background: #7c3aed;
       border: 2px solid #6d28d9;
@@ -225,7 +224,6 @@
     }
     .btn-violet:active { transform: translateY(0); }
 
-    /* ── BOTÓN VER RANKING — amarillo/dorado ── */
     .btn-ranking {
       background: var(--gold);
       border: 2px solid var(--gold-dark);
@@ -238,9 +236,7 @@
       box-shadow: 0 4px 16px rgba(240,165,0,0.45);
       transform: translateY(-1px);
     }
-    .btn-ranking:active {
-      transform: translateY(0);
-    }
+    .btn-ranking:active { transform: translateY(0); }
 
     .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
 
@@ -438,7 +434,7 @@
     }
     .modal-icon { font-size: 2rem; margin-bottom: 12px; }
     .modal-title { font-family: 'Orbitron'; font-size: .85rem; color: var(--cyan); letter-spacing: 2px; margin-bottom: 10px; }
-    .modal-msg { font-size: .9rem; color: var(--text-dim); margin-bottom: 24px; line-height: 1.6; }
+    .modal-msg { font-size: .9rem; color: var(--text-dim); margin-bottom: 24px; line-height: 1.6; white-space: pre-line; }
     .modal-btns { display: flex; gap: 12px; justify-content: center; }
 
     @media(max-width:600px) {
@@ -1322,43 +1318,70 @@ async function verRankingDesdePaso1() {
   setStep(3);
 }
 
+// ── GUARDAR PODIO — una fila por cada miembro del equipo ──────────────────────
 async function guardarPodio() {
   if (!state.rankingData.length) { toast('No hay datos para guardar', 'error'); return; }
 
-  const total = state.rankingData.length;
+  const total     = state.rankingData.length;
   const catNombre = CAT_NOMBRES[state.categoria];
 
+  // Contar cuántos diplomas se generarán (capitán + miembros por equipo)
+  let totalDiplomas = 0;
+  state.rankingData.forEach(r => {
+    const p = state.participantes.find(x => x.id === r.id) || {};
+    totalDiplomas++; // capitán siempre
+    if ((p.miembro2 || '').trim()) totalDiplomas++;
+    if ((p.miembro3 || '').trim()) totalDiplomas++;
+  });
+
   confirmar('🏆', 'GUARDAR TODOS LOS COMPETIDORES',
-    `¿Guardar los ${total} competidores de ${catNombre}? TOP 3 con su posición, el resto como Participación.`,
+    `¿Guardar los ${total} equipos de ${catNombre}?\n${totalDiplomas} diplomas en total (capitán + miembros).\nTOP 3 con su posición, el resto como Participación.`,
     'Guardar todos', 'success',
     async () => {
       loading(true, 'GUARDANDO COMPETIDORES...');
       const TIPOS_PODIO = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
 
       for (let i = 0; i < state.rankingData.length; i++) {
-        const r = state.rankingData[i];
-        const p = state.participantes.find(x => x.id === r.id) || {};
+        const r    = state.rankingData[i];
+        const p    = state.participantes.find(x => x.id === r.id) || {};
         const tipo = i < 3 ? TIPOS_PODIO[i] : 'participacion';
-        try {
-          const res = await gasPost({
-            action:           'guardarCertificado',
-            id_participante:  r.id,
-            correo:           p.correo      || r.correo      || '',
-            nombre:           p.nombre      || r.nombre      || '',
-            nombre_completo:  p.nombre      || r.nombre      || '',
-            categoria:        catNombre,
-            institucion:      p.institucion || r.institucion || '',
-            tipo_certificado: tipo,
-            evento:           'SucreBot 2026'
-          });
-          if (!res.ok) console.warn(`guardarCertificado pos ${i+1} falló:`, res.error);
-        } catch(e) {
-          console.warn('guardarCertificado error pos', i+1, e);
+
+        // Nombre humano del capitán — NUNCA p.robot
+        const capitan = (p.nombre || r.nombre || '').trim();
+        const m2      = (p.miembro2 || '').trim();
+        const m3      = (p.miembro3 || '').trim();
+
+        const miembros = [];
+        if (capitan) miembros.push({ nombre: capitan, correo: p.correo || r.correo || '' });
+        if (m2)      miembros.push({ nombre: m2,      correo: '' });
+        if (m3)      miembros.push({ nombre: m3,      correo: '' });
+
+        // Fallback si no hay ningún nombre
+        if (!miembros.length) miembros.push({ nombre: r.nombre || '', correo: '' });
+
+        // Una fila en sheet certificados por cada miembro
+        for (const miembro of miembros) {
+          try {
+            const res = await gasPost({
+              action:           'guardarCertificado',
+              id_participante:  r.id,
+              correo:           miembro.correo,
+              nombre:           miembro.nombre,
+              nombre_completo:  miembro.nombre,
+              categoria:        catNombre,
+              institucion:      p.institucion || r.institucion || '',
+              tipo_certificado: tipo,
+              evento:           'SucreBot 2026'
+            });
+            if (!res.ok) console.warn(`guardarCertificado ${miembro.nombre} pos ${i+1}:`, res.error);
+          } catch(e) {
+            console.warn('guardarCertificado error:', miembro.nombre, e);
+          }
         }
       }
 
       loading(false);
-      toast(`✅ ${total} competidores guardados en certificados`, 'success');
+      toast(`✅ ${totalDiplomas} diplomas guardados en certificados`, 'success');
     }
   );
 }
