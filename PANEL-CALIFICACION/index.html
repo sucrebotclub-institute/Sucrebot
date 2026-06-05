@@ -1337,23 +1337,40 @@ async function exportarExcel() {
 
 // ── RESTAURAR SESIÓN (F5) ──
 async function restaurarSesion() {
-  const raw = localStorage.getItem('panel_cal_sesion');
-  if (!raw) return;
-  let sesion;
-  try { sesion = JSON.parse(raw); } catch(e) { loading(false); return; }
-  if (!sesion.categoria) { loading(false); return; }
+  // Timeout de seguridad: si en 10s no termina, limpiar y salir
+  const safetyTimer = setTimeout(() => {
+    console.warn('restaurarSesion timeout — limpiando sesión');
+    localStorage.removeItem('panel_cal_sesion');
+    loading(false);
+  }, 10000);
 
   try {
-    const res     = await gasGet({ action: 'getCategoriasActivas' });
-    const activas = res.activas || res.categorias || (Array.isArray(res) ? res : []);
-    const nombre  = CAT_NOMBRES[sesion.categoria];
-    const activa  = activas.find(a => a.categoria === nombre);
-    if (!activa) {
+    const raw = localStorage.getItem('panel_cal_sesion');
+    if (!raw) { clearTimeout(safetyTimer); loading(false); return; }
+    let sesion;
+    try { sesion = JSON.parse(raw); } catch(e) { clearTimeout(safetyTimer); loading(false); return; }
+    if (!sesion.categoria) { clearTimeout(safetyTimer); loading(false); return; }
+
+    // Verificar que la categoría sigue bloqueada en GAS
+    try {
+      const res     = await gasGet({ action: 'getCategoriasActivas' });
+      const activas = res.activas || res.categorias || (Array.isArray(res) ? res : []);
+      const nombre  = CAT_NOMBRES[sesion.categoria];
+      const activa  = activas.find(a => a.categoria === nombre);
+      if (!activa) {
+        localStorage.removeItem('panel_cal_sesion');
+        clearTimeout(safetyTimer);
+        loading(false);
+        return;
+      }
+    } catch(e) {
+      // Si GAS falla, limpiar sesión y salir — no bloquear la UI
+      console.warn('getCategoriasActivas falló al restaurar:', e);
       localStorage.removeItem('panel_cal_sesion');
+      clearTimeout(safetyTimer);
       loading(false);
       return;
     }
-  } catch(e) { loading(false); return; }
 
   state.categoria = sesion.categoria;
 
@@ -1407,10 +1424,19 @@ async function restaurarSesion() {
 
     buildPaso2();
     setStep(2);
+    loading(false);
     toast('Sesión restaurada — Calificando ' + CAT_NOMBRES[sesion.categoria] + ' ✅', 'success');
   } else {
     setStep(1);
+    loading(false);
     toast('Sesión restaurada — ' + CAT_NOMBRES[sesion.categoria] + ' bloqueada ✅', 'success');
+  }
+  } catch(e) {
+    console.warn('restaurarSesion error inesperado:', e);
+    localStorage.removeItem('panel_cal_sesion');
+    loading(false);
+  } finally {
+    clearTimeout(safetyTimer);
   }
 }
 
