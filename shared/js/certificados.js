@@ -1,6 +1,7 @@
 // ════════════════════════════════════════════════════════════════════════
 // CERTIFICADOS.JS - Sistema de generación y subida de certificados a Drive
 // Ubicación: /shared/js/certificados.js
+// Versión: June 2026 — fix firma previewCertificado + generarYSubirPDF
 // ════════════════════════════════════════════════════════════════════════
 
 const LOGO_SUCRE = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/logosucre.png';
@@ -104,31 +105,13 @@ const CERTIFICADO_CSS = `
   border-right: 1px solid rgba(26,92,168,0.15);
 }
 
-/* Fecha y código — esquina superior izquierda */
-.cert-top-info {
-  width: 100%;
-  text-align: left;
-  margin-bottom: 8px;
-}
-.cert-fecha {
-  font-size: 13px;
-  color: #555;
-  margin: 0;
-  font-style: italic;
-}
-.cert-codigo {
-  font-size: 9px;
-  color: #aaa;
-  font-family: monospace;
-  margin: 2px 0 0 0;
-  letter-spacing: 1px;
-}
+.cert-top-info { width: 100%; text-align: left; margin-bottom: 8px; }
+.cert-fecha { font-size: 13px; color: #555; margin: 0; font-style: italic; }
+.cert-codigo { font-size: 9px; color: #aaa; font-family: monospace; margin: 2px 0 0 0; letter-spacing: 1px; }
 
-/* Logo Sucre */
 .cert-logo-top { margin-bottom: 8px; }
 .cert-logo-sucre { height: 80px; object-fit: contain; }
 
-/* Cuerpo */
 .cert-body {
   text-align: center;
   flex: 1;
@@ -144,14 +127,12 @@ const CERTIFICADO_CSS = `
 .cert-logro { font-size: 14px; color: #444; line-height: 1.6; max-width: 600px; margin: 0 auto; text-align: center; }
 .cert-logro strong { color: #1a5ca8; font-weight: 700; }
 
-/* Firmas */
 .cert-firmas { display: flex; justify-content: space-around; width: 100%; gap: 40px; margin-top: auto; }
 .cert-firma { flex: 1; text-align: center; }
 .cert-firma-linea { width: 100%; height: 1.5px; background: #333; margin-bottom: 8px; }
 .cert-firma-nombre { font-size: 13px; font-weight: 700; color: #1a3a6b; margin: 0 0 3px 0; }
 .cert-firma-cargo { font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; line-height: 1.4; }
 
-/* Sidebar */
 .cert-sidebar { width: 200px; background: #ffffff; display: flex; flex-direction: column; align-items: center; padding: 40px 16px; position: relative; z-index: 1; }
 .cert-sidebar-title { font-size: 14px; font-weight: 900; color: #1a3a6b; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 16px 0; text-align: center; }
 .cert-sidebar-logo-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
@@ -159,7 +140,6 @@ const CERTIFICADO_CSS = `
 .cert-sidebar-carrera strong { font-size: 18px; font-style: italic; color: #1a3a6b; display: block; }
 .cert-sidebar-logo { width: 140px; object-fit: contain; background: #f0f0f0; border-radius: 8px; padding: 8px; }
 
-/* Modal */
 .cert-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
 .cert-modal.show { display: flex; }
 .cert-modal-content { background: #ffffff; border-radius: 16px; padding: 30px; max-width: 1200px; width: 100%; max-height: 90vh; overflow: auto; position: relative; }
@@ -174,6 +154,8 @@ const CERTIFICADO_CSS = `
 .btn-guardar-cert:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 `;
 
+// ── TEXTOS ────────────────────────────────────────────────────────────────────
+
 function obtenerTextoLogro(tipo, categoria) {
   const textos = {
     '1er': `Por haber obtenido el <strong>PRIMER LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.`,
@@ -186,67 +168,119 @@ function obtenerTextoLogro(tipo, categoria) {
 
 function obtenerDatosTipo(tipo) {
   const datos = {
-    '1er': { clase: 'primer', badge: '🥇 PRIMER LUGAR' },
-    '2do': { clase: 'segundo', badge: '🥈 SEGUNDO LUGAR' },
-    '3er': { clase: 'tercer', badge: '🥉 TERCER LUGAR' },
-    'participacion': { clase: 'participacion', badge: '🏅 PARTICIPACIÓN' }
+    '1er':          { clase: 'primer',       badge: '🥇 PRIMER LUGAR'  },
+    '2do':          { clase: 'segundo',      badge: '🥈 SEGUNDO LUGAR' },
+    '3er':          { clase: 'tercer',       badge: '🥉 TERCER LUGAR'  },
+    'participacion':{ clase: 'participacion',badge: '🏅 PARTICIPACIÓN' }
   };
   return datos[tipo] || datos['participacion'];
 }
 
-function previewCertificado(idx, nombreOverride, tipoOverride, mIdxOverride) {
-  const participante = participantesAprobados[idx];
-  const selectId = mIdxOverride !== undefined ? 'tipo-' + idx + '-' + mIdxOverride : 'tipo-' + idx;
-  const tipo = tipoOverride || document.getElementById(selectId)?.value || 'participacion';
-  const nombreFinal = nombreOverride || participante.nombre;
-  const fechaEvento = document.getElementById('fecha-evento').value;
-  const textoLogro  = obtenerTextoLogro(tipo, participante.categoria);
+// ── HTML DEL CERTIFICADO ──────────────────────────────────────────────────────
 
-  let htmlCert = CERTIFICADO_TEMPLATE
+function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
+  const textoLogro = obtenerTextoLogro(tipo, categoria);
+  return CERTIFICADO_TEMPLATE
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
-    .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
-    .replace(/\{\{FECHA_EVENTO\}\}/g, fechaEvento)
-    .replace(/\{\{CODIGO_VERIFICACION\}\}/g, 'CERT-2026-PREVIEW');
+    .replace(/\{\{TEXTO_LOGRO\}\}/g,         textoLogro)
+    .replace(/\{\{FECHA_EVENTO\}\}/g,         fechaEvento)
+    .replace(/\{\{CODIGO_VERIFICACION\}\}/g,  codigo);
+}
 
+// ── MODAL DE PREVIEW ──────────────────────────────────────────────────────────
+//
+// previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fechaEvento)
+//
+// Parámetros:
+//   participante  — índice numérico (modo legacy MI-REGISTRO) O null
+//   nombreFinal   — string con el nombre humano a mostrar en el diploma
+//   pObj          — objeto participante { nombre, correo, categoria, institucion }
+//   _unused       — ignorado (era mIdxOverride en versión anterior)
+//   tipo          — '1er' | '2do' | '3er' | 'participacion'
+//   fechaEvento   — string con la fecha del evento
+//
+// Uso desde GENERAR-CERTIFICADOS:
+//   previewCertificado(null, item.nombre, pFake, 0, tipoInterno, fechaEvento)
+//
+// Uso legacy desde MI-REGISTRO (si aún se usa índice):
+//   previewCertificado(idx, null, participantesAprobados[idx], 0, tipo, fecha)
+//
+function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fechaEvento) {
+  // Resolver el objeto participante
+  const p = pObj || (typeof participantesAprobados !== 'undefined' && participante !== null
+    ? participantesAprobados[participante]
+    : {});
+
+  // Resolver nombre: preferir nombreFinal explícito, luego p.nombre (NUNCA p.robot)
+  const nombre   = (nombreFinal && String(nombreFinal).trim()) || (p && p.nombre) || '—';
+  const categoria = (p && p.categoria) || '';
+  const fecha    = fechaEvento || (typeof document !== 'undefined'
+    ? (document.getElementById('fecha-evento')?.value || 'julio 2026')
+    : 'julio 2026');
+  const tipoFinal = tipo || 'participacion';
+
+  const htmlCert = buildCertHTML(nombre, tipoFinal, categoria, fecha, 'CERT-2026-PREVIEW');
+
+  // Crear/reusar modal
   let modal = document.getElementById('cert-modal');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'cert-modal';
     modal.className = 'cert-modal';
-    const modalContent = document.createElement('div');
-    modalContent.className = 'cert-modal-content';
-    const modalHeader = document.createElement('div');
-    modalHeader.className = 'cert-modal-header';
-    const modalTitle = document.createElement('div');
-    modalTitle.className = 'cert-modal-title';
-    modalTitle.textContent = '📜 VISTA PREVIA DEL CERTIFICADO';
+
+    const content = document.createElement('div');
+    content.className = 'cert-modal-content';
+
+    const header = document.createElement('div');
+    header.className = 'cert-modal-header';
+
+    const title = document.createElement('div');
+    title.className = 'cert-modal-title';
+    title.textContent = '📜 VISTA PREVIA DEL CERTIFICADO';
+
     const closeBtn = document.createElement('button');
     closeBtn.className = 'cert-modal-close';
     closeBtn.textContent = '×';
     closeBtn.onclick = cerrarModalCertificado;
-    modalHeader.appendChild(modalTitle);
-    modalHeader.appendChild(closeBtn);
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+
     const previewContainer = document.createElement('div');
     previewContainer.id = 'cert-preview-container';
     previewContainer.style.cssText = 'overflow-x:auto;';
+
     const actions = document.createElement('div');
     actions.className = 'cert-modal-actions';
+
     const saveBtn = document.createElement('button');
     saveBtn.id = 'btn-guardar-cert';
     saveBtn.className = 'btn-modal btn-guardar-cert';
-    saveBtn.textContent = '☁️ Guardar en Drive y enviar al participante';
+    saveBtn.textContent = '☁️ Guardar en Drive';
     actions.appendChild(saveBtn);
-    modalContent.appendChild(modalHeader);
-    modalContent.appendChild(previewContainer);
-    modalContent.appendChild(actions);
-    modal.appendChild(modalContent);
+
+    content.appendChild(header);
+    content.appendChild(previewContainer);
+    content.appendChild(actions);
+    modal.appendChild(content);
     document.body.appendChild(modal);
   }
 
-  const saveBtn = document.getElementById('btn-guardar-cert');
-  if (saveBtn) saveBtn.onclick = function() { guardarYSubirCertificado(idx, nombreFinal, tipo); };
-
   document.getElementById('cert-preview-container').innerHTML = htmlCert;
+
+  // El botón de guardar desde preview solo aplica en el contexto legacy (MI-REGISTRO).
+  // En GENERAR-CERTIFICADOS el botón de guardar es el "Generar" de la tabla.
+  const saveBtn = document.getElementById('btn-guardar-cert');
+  if (saveBtn) {
+    if (typeof guardarYSubirCertificado === 'function' && participante !== null) {
+      saveBtn.style.display = 'inline-flex';
+      saveBtn.onclick = () => guardarYSubirCertificado(participante, nombre, tipoFinal);
+    } else {
+      // Modo GENERAR-CERTIFICADOS: solo preview, sin botón guardar redundante
+      saveBtn.style.display = 'none';
+    }
+  }
+
   modal.classList.add('show');
 }
 
@@ -255,27 +289,31 @@ function cerrarModalCertificado() {
   if (modal) modal.classList.remove('show');
 }
 
+// ── GUARDAR DESDE MI-REGISTRO (legacy) ───────────────────────────────────────
+
 async function guardarYSubirCertificado(idx, nombreOverride, tipoOverride) {
+  // Solo se usa desde MI-REGISTRO donde existe participantesAprobados[]
+  if (typeof participantesAprobados === 'undefined') return;
   const participante = participantesAprobados[idx];
   const nombreFinal  = nombreOverride || participante.nombre;
   const tipo         = tipoOverride   || 'participacion';
-  const fechaEvento  = document.getElementById('fecha-evento').value;
+  const fechaEvento  = document.getElementById('fecha-evento')?.value || 'julio 2026';
 
   const saveBtn = document.getElementById('btn-guardar-cert');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Guardando...'; }
-  showToast('⏳ Guardando certificado en el sistema...');
+  if (typeof showToast === 'function') showToast('⏳ Guardando certificado en el sistema...');
 
   try {
     const response = await fetch(CONFIG.GAS_URL(), {
       method: 'POST',
       body: JSON.stringify({
-        action: 'guardarCertificado',
-        correo: participante.correo,
-        nombre_completo: nombreFinal,
-        categoria: participante.categoria,
-        institucion: participante.institucion,
-        evento: 'SucreBot 2026',
-        fecha_evento: fechaEvento,
+        action:           'guardarCertificado',
+        correo:           participante.correo,
+        nombre_completo:  nombreFinal,
+        categoria:        participante.categoria,
+        institucion:      participante.institucion,
+        evento:           'SucreBot 2026',
+        fecha_evento:     fechaEvento,
         tipo_certificado: tipo
       }),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
@@ -284,40 +322,46 @@ async function guardarYSubirCertificado(idx, nombreOverride, tipoOverride) {
     if (!result.ok) throw new Error('Error al guardar certificado en Sheets');
 
     const codigo = result.codigo;
-    showToast('⏳ Generando PDF y subiendo a Drive...');
+    if (typeof showToast === 'function') showToast('⏳ Generando PDF y subiendo a Drive...');
     if (saveBtn) saveBtn.textContent = '⏳ Subiendo a Drive...';
 
     const driveUrl = await generarYSubirPDF(participante, tipo, fechaEvento, codigo, nombreFinal);
     cerrarModalCertificado();
-    showToast('✅ Diploma de ' + nombreFinal + ' guardado en Drive');
+    if (typeof showToast === 'function') showToast('✅ Diploma de ' + nombreFinal + ' guardado en Drive');
     console.log('Diploma subido:', driveUrl);
 
-  } catch (e) {
+  } catch(e) {
     console.error('Error:', e);
-    showToast('❌ Error: ' + e.message);
+    if (typeof showToast === 'function') showToast('❌ Error: ' + e.message);
   } finally {
-    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '☁️ Guardar en Drive y enviar al participante'; }
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '☁️ Guardar en Drive'; }
   }
 }
 
-async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert, nombreOverride) {
+// ── GENERAR Y SUBIR PDF ───────────────────────────────────────────────────────
+//
+// generarYSubirPDF(pObj, tipo, fechaEvento, codigoCert, nombreFinal)
+//
+// pObj.categoria  — nombre de la categoría para el texto del logro
+// nombreFinal     — nombre humano del miembro (capitán, miembro2 o miembro3)
+//                   NUNCA usar pObj.robot aquí
+//
+async function generarYSubirPDF(pObj, tipo, fechaEvento, codigoCert, nombreFinal) {
   if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
     await cargarLibreriasPDF();
   }
 
-  const nombreFinal = nombreOverride || participante.nombre;
-  const textoLogro  = obtenerTextoLogro(tipo, participante.categoria);
+  // Nombre a imprimir: siempre el parámetro explícito, nunca p.robot
+  const nombre   = (nombreFinal && String(nombreFinal).trim()) || (pObj && pObj.nombre) || '—';
+  const categoria = (pObj && pObj.categoria) || '';
+
+  const htmlCert = buildCertHTML(nombre, tipo, categoria, fechaEvento, codigoCert);
 
   const tempDiv = document.createElement('div');
-  tempDiv.style.position = 'absolute';
-  tempDiv.style.left = '-9999px';
-  tempDiv.style.top = '0';
-  tempDiv.innerHTML = CERTIFICADO_TEMPLATE
-    .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
-    .replace(/\{\{TEXTO_LOGRO\}\}/g, textoLogro)
-    .replace(/\{\{FECHA_EVENTO\}\}/g, fechaEvento)
-    .replace(/\{\{CODIGO_VERIFICACION\}\}/g, codigoCert);
-
+  tempDiv.style.position  = 'absolute';
+  tempDiv.style.left      = '-9999px';
+  tempDiv.style.top       = '0';
+  tempDiv.innerHTML       = htmlCert;
   document.body.appendChild(tempDiv);
 
   try {
@@ -329,7 +373,7 @@ async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert, nom
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, 210);
     const pdfBase64 = pdf.output('datauristring').split(',')[1];
-    const fileName  = 'Diploma_' + nombreFinal.replace(/\s+/g, '_') + '_' + codigoCert + '.pdf';
+    const fileName  = 'Diploma_' + nombre.replace(/\s+/g, '_') + '_' + codigoCert + '.pdf';
 
     const uploadResp = await fetch(CONFIG.GAS_URL(), {
       method: 'POST',
@@ -343,6 +387,8 @@ async function generarYSubirPDF(participante, tipo, fechaEvento, codigoCert, nom
     document.body.removeChild(tempDiv);
   }
 }
+
+// ── CARGAR LIBRERÍAS PDF ──────────────────────────────────────────────────────
 
 async function cargarLibreriasPDF() {
   return new Promise((resolve, reject) => {
@@ -358,6 +404,8 @@ async function cargarLibreriasPDF() {
     document.head.appendChild(s1);
   });
 }
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
 
 (function initCertificados() {
   const style = document.createElement('style');
