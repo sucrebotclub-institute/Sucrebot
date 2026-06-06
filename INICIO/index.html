@@ -55,6 +55,109 @@
 .hero-logo-big::after {
   display: none !important;
 }
+
+/* ── Tarjetas de acceso rápido ── */
+.quick-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto 20px;
+  padding: 0 20px;
+}
+
+.quick-card {
+  background: var(--card-bg, #151b2e);
+  border: 1px solid rgba(91, 200, 240, 0.18);
+  border-radius: 14px;
+  padding: 32px 24px 28px;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.06), rgba(26, 92, 168, 0.08));
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  border-radius: 14px;
+}
+
+.quick-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(0, 212, 255, 0.55);
+  box-shadow: 0 8px 28px rgba(0, 136, 255, 0.22);
+}
+
+.quick-card:hover::before {
+  opacity: 1;
+}
+
+.quick-card-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.4));
+}
+
+.quick-card h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan, #00d4ff);
+  text-align: center;
+  margin: 0;
+}
+
+.quick-card p {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.78rem;
+  color: rgba(200, 220, 255, 0.7);
+  text-align: center;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.quick-card-arrow {
+  font-size: 0.75rem;
+  color: var(--cyan, #00d4ff);
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  margin-top: 2px;
+}
+
+.quick-card:hover .quick-card-arrow {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+@media (max-width: 640px) {
+  .quick-cards {
+    gap: 14px;
+  }
+  .quick-card {
+    width: calc(50% - 14px);
+    min-width: 140px;
+    padding: 24px 16px 20px;
+  }
+  .quick-card:last-child:nth-child(odd) {
+    width: 100%;
+    max-width: 300px;
+  }
+}
 </style>
 
 <div class="stats">
@@ -69,32 +172,37 @@
 </div>
 <div style="width:64px;height:2px;background:var(--cyan);margin:12px auto 36px;border-radius:1px;"></div>
 
-<div class="cards">
-  <div class="card">
-    <div class="card-icon">🤖</div>
-    <h3>Robótica</h3>
-    <p>Diseño y construcción de robots autónomos y de competencia.</p>
-  </div>
-  <div class="card">
-    <div class="card-icon">🏆</div>
-    <h3>Competencias</h3>
-    <p>Participamos en torneos nacionales e internacionales.</p>
-  </div>
-  <div class="card">
-    <div class="card-icon">💻</div>
-    <h3>Programación</h3>
-    <p>Talleres de código, inteligencia artificial y electrónica.</p>
-  </div>
-  <div class="card">
-    <div class="card-icon">👥</div>
-    <h3>Comunidad</h3>
-    <p>Únete al equipo de estudiantes innovadores del Instituto Sucre.</p>
-  </div>
-  <div class="card">
-    <div class="card-icon">📊</div>
+<div class="quick-cards">
+  <a class="quick-card" href="../REGISTRO/index.html">
+    <div class="quick-card-icon">📝</div>
+    <h3>Registro</h3>
+    <p>Inscríbete en la competencia SucreBot 2026.</p>
+    <span class="quick-card-arrow">→</span>
+  </a>
+  <a class="quick-card" href="../PARTICIPANTES_REGISTRADOS/index.html">
+    <div class="quick-card-icon">👥</div>
+    <h3>Participantes</h3>
+    <p>Consulta la lista de equipos registrados.</p>
+    <span class="quick-card-arrow">→</span>
+  </a>
+  <a class="quick-card" href="../RESULTADOS/index.html">
+    <div class="quick-card-icon">📊</div>
     <h3>Resultados</h3>
-    <p>Cronómetros, rondas y clasificaciones de cada evento.</p>
-  </div>
+    <p>Cronómetros, rondas y clasificaciones en vivo.</p>
+    <span class="quick-card-arrow">→</span>
+  </a>
+  <a class="quick-card" href="../CERTIFICADOS/index.html">
+    <div class="quick-card-icon">🏅</div>
+    <h3>Certificados</h3>
+    <p>Descarga tu diploma de participación o podio.</p>
+    <span class="quick-card-arrow">→</span>
+  </a>
+  <a class="quick-card" href="../REGLAMENTO/index.html">
+    <div class="quick-card-icon">📋</div>
+    <h3>Reglamento</h3>
+    <p>Reglas y bases oficiales del torneo.</p>
+    <span class="quick-card-arrow">→</span>
+  </a>
 </div>
 
 <div class="about-strip" id="institucion">
