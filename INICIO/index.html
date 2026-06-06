@@ -167,49 +167,6 @@
   <div class="stat"><div class="stat-num">4ta</div><div class="stat-lbl">Edición</div></div>
 </div>
 
-<script>
-(function() {
-  const CACHE_KEY = 'sucrebot_stats_inicio';
-  const TTL_MS = 6 * 60 * 60 * 1000; // 6 horas
-
-  function aplicarStats(p, i) {
-    document.getElementById('stat-participantes').textContent = p;
-    document.getElementById('stat-instituciones').textContent = i;
-  }
-
-  function fetchStats() {
-    const GAS = typeof CONFIG !== 'undefined' ? CONFIG.GAS_URL : null;
-    if (!GAS) return;
-    fetch(GAS + '?action=getParticipantes')
-      .then(r => r.json())
-      .then(data => {
-        if (!Array.isArray(data)) return;
-        const total = data.length;
-        const instituciones = new Set(data.map(p => (p.institucion || '').trim()).filter(Boolean)).size;
-        aplicarStats(total, instituciones);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          p: total, i: instituciones, ts: Date.now()
-        }));
-      })
-      .catch(() => {}); // silencioso — no bloquea la pagina
-  }
-
-  // Intentar cache primero
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) {
-      const cache = JSON.parse(raw);
-      if (Date.now() - cache.ts < TTL_MS) {
-        aplicarStats(cache.p, cache.i);
-        return; // cache valido, no llamar GAS
-      }
-    }
-  } catch(e) {}
-
-  // Cache expirado o inexistente → llamar GAS
-  fetchStats();
-})();
-</script>
 
 <div style="background:#ffffff;padding:48px 0 56px;">
 
@@ -259,5 +216,49 @@
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 
+
+<script>
+(function() {
+  const CACHE_KEY = 'sucrebot_stats_inicio';
+  const TTL_MS = 6 * 60 * 60 * 1000; // 6 horas
+
+  function aplicarStats(p, i) {
+    document.getElementById('stat-participantes').textContent = p;
+    document.getElementById('stat-instituciones').textContent = i;
+  }
+
+  function fetchStats() {
+    const GAS = typeof CONFIG !== 'undefined' ? CONFIG.GAS_URL : null;
+    if (!GAS) return;
+    fetch(GAS + '?action=getParticipantes')
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        const total = data.length;
+        const instituciones = new Set(data.map(p => (p.institucion || '').trim()).filter(Boolean)).size;
+        aplicarStats(total, instituciones);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          p: total, i: instituciones, ts: Date.now()
+        }));
+      })
+      .catch(() => {}); // silencioso — no bloquea la pagina
+  }
+
+  // Intentar cache primero
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const cache = JSON.parse(raw);
+      if (Date.now() - cache.ts < TTL_MS) {
+        aplicarStats(cache.p, cache.i);
+        return; // cache valido, no llamar GAS
+      }
+    }
+  } catch(e) {}
+
+  // Cache expirado o inexistente → llamar GAS
+  fetchStats();
+})();
+</script>
 </body>
 </html>
