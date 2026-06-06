@@ -624,8 +624,9 @@ function renderBracket() {
     return;
   }
   const fases = state.bracket.fases;
-  const final = fases[fases.length - 1];
-  const finalizado = final?.partidos?.some(p => p.estado === 'FINALIZADO' && p.ganador_id);
+  // FIX: buscar la fase FINAL explícitamente (no la última, que podría ser 3ER LUGAR)
+  const faseFinalRender = fases.find(f => f.nombre === 'FINAL');
+  const finalizado = faseFinalRender?.partidos?.some(p => p.estado === 'FINALIZADO' && p.ganador_id);
 
   document.getElementById('btnPodio').style.display    = finalizado ? 'inline-flex' : 'none';
   document.getElementById('btnVerPodio').style.display = finalizado ? 'inline-flex' : 'none';
@@ -727,51 +728,53 @@ function resetearBracket() {
   );
 }
 
-// ── HELPER: obtener terceros de semifinal ────────────────────
-// FIX: devuelve array de {id, nombre} de los perdedores de semifinal
-function obtenerTerceros() {
-  if (!state.bracket?.fases?.length || state.bracket.fases.length < 2) return [];
-  const fases = state.bracket.fases;
-  const semi = fases[fases.length - 2];
-  return (semi?.partidos || [])
-    .filter(p => p.estado === 'FINALIZADO' && p.ganador_id)
-    .map(p => ({
-      id:     p.ganador_id === p.equipo_a_id ? p.equipo_b_id     : p.equipo_a_id,
-      nombre: p.ganador_id === p.equipo_a_id ? (p.equipo_b_nombre || '—') : (p.equipo_a_nombre || '—')
-    }));
-}
+
 
 // ── VER PODIO ────────────────────────────────────────────────
 function verPodioEnBracket() {
   if (!state.bracket?.fases?.length) return;
   const fases = state.bracket.fases;
-  const final = fases[fases.length - 1];
-  const finalizado = final?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
-  if (!finalizado) { toast('La final aún no ha terminado', 'error'); return; }
 
-  const ganadorId      = finalizado.ganador_id;
-  const perdedorId     = ganadorId === finalizado.equipo_a_id ? finalizado.equipo_b_id    : finalizado.equipo_a_id;
-  const ganadorNombre  = ganadorId === finalizado.equipo_a_id ? finalizado.equipo_a_nombre : finalizado.equipo_b_nombre;
-  const perdedorNombre = perdedorId === finalizado.equipo_a_id ? finalizado.equipo_a_nombre : finalizado.equipo_b_nombre;
+  // Final
+  const faseFinal = fases.find(f => f.nombre === 'FINAL');
+  const partidoFinal = faseFinal?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
+  if (!partidoFinal) { toast('La final aún no ha terminado', 'error'); return; }
 
-  const terceros = obtenerTerceros();
+  const ganadorId      = partidoFinal.ganador_id;
+  const perdedorId     = ganadorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_b_id    : partidoFinal.equipo_a_id;
+  const ganadorNombre  = ganadorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_a_nombre : partidoFinal.equipo_b_nombre;
+  const perdedorNombre = perdedorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_a_nombre : partidoFinal.equipo_b_nombre;
 
-  // FIX: si hay varios perdedores de semi, se muestran en UNA SOLA tarjeta de bronce
+  // 3er lugar — leer el partido de la fase '3ER LUGAR' del bracket
   let tercerosHTML = '';
-  if (terceros.length === 1) {
-    tercerosHTML = `
-      <div class="podio-item bronce">
-        <div class="podio-item-icon">🥉</div>
-        <div class="podio-item-nombre">${terceros[0].nombre}</div>
-        <div class="podio-item-label">TERCER LUGAR</div>
-      </div>`;
-  } else if (terceros.length > 1) {
-    tercerosHTML = `
-      <div class="podio-item bronce">
-        <div class="podio-item-icon">🥉</div>
-        <div class="podio-item-nombre" style="font-size:.9rem;line-height:1.3;">${terceros.map(t => t.nombre).join(' · ')}</div>
-        <div class="podio-item-label">TERCER LUGAR (compartido)</div>
-      </div>`;
+  const fase3er = fases.find(f => f.nombre === '3ER LUGAR');
+  if (fase3er?.partidos?.length) {
+    const p3 = fase3er.partidos[0];
+    if (p3.estado === 'FINALIZADO' && p3.ganador_id) {
+      // El partido ya se jugó — hay un ganador real del bronce
+      const bronce4to = p3.ganador_id;
+      const bronce4toNombre = bronce4to === p3.equipo_a_id ? p3.equipo_a_nombre : p3.equipo_b_nombre;
+      const cuartoNombre    = bronce4to === p3.equipo_a_id ? p3.equipo_b_nombre : p3.equipo_a_nombre;
+      tercerosHTML = `
+        <div class="podio-item bronce">
+          <div class="podio-item-icon">🥉</div>
+          <div class="podio-item-nombre">${bronce4toNombre}</div>
+          <div class="podio-item-label">TERCER LUGAR</div>
+        </div>
+        <div class="podio-item" style="border:1px solid rgba(150,150,150,.2);">
+          <div class="podio-item-icon">4️⃣</div>
+          <div class="podio-item-nombre" style="color:#8a90a8;">${cuartoNombre}</div>
+          <div class="podio-item-label">CUARTO LUGAR</div>
+        </div>`;
+    } else {
+      // El partido aún no se juega — mostrar los contendientes pendientes
+      tercerosHTML = `
+        <div class="podio-item bronce" style="opacity:.7;">
+          <div class="podio-item-icon">🥉</div>
+          <div class="podio-item-nombre" style="font-size:.85rem;">${p3.equipo_a_nombre} vs ${p3.equipo_b_nombre}</div>
+          <div class="podio-item-label">3ER LUGAR — Por jugar</div>
+        </div>`;
+    }
   }
 
   document.getElementById('podio-display').innerHTML = `
@@ -796,14 +799,19 @@ function verPodioEnBracket() {
 }
 
 // ── GUARDAR PODIO ────────────────────────────────────────────
-// FIX: los perdedores de semi se guardan como certificados separados (correcto)
-// pero el display ya los muestra en una sola tarjeta
 async function guardarPodio() {
   if (!state.bracket?.fases?.length) return;
   const fases = state.bracket.fases;
-  const final = fases[fases.length - 1];
-  const partidoFinal = final?.partidos?.find(p => p.estado === 'FINALIZADO');
+
+  const faseFinal = fases.find(f => f.nombre === 'FINAL');
+  const partidoFinal = faseFinal?.partidos?.find(p => p.estado === 'FINALIZADO');
   if (!partidoFinal) { toast('La final no ha terminado aún', 'error'); return; }
+
+  const fase3er = fases.find(f => f.nombre === '3ER LUGAR');
+  const partido3er = fase3er?.partidos?.[0];
+  if (partido3er && partido3er.estado !== 'FINALIZADO') {
+    toast('El partido por el 3er lugar aún no ha terminado', 'error'); return;
+  }
 
   confirmar('🏆', 'GUARDAR PODIO',
     `¿Guardar el podio de ${CAT_INFO[state.categoria]?.nombre} en certificados?`,
@@ -819,44 +827,49 @@ async function guardarPodio() {
 
       try {
         const ganadorId      = partidoFinal.ganador_id;
-        const perdedorId     = ganadorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_b_id    : partidoFinal.equipo_a_id;
+        const perdedorId     = ganadorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_b_id : partidoFinal.equipo_a_id;
         const ganadorNombre  = ganadorId === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
         const perdedorNombre = perdedorId === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
 
         const dGan = datosP(ganadorId);
         const dPer = datosP(perdedorId);
 
-        await gasPost({
-          action: 'guardarCertificado', id_participante: ganadorId,
+        await gasPost({ action: 'guardarCertificado', id_participante: ganadorId,
           correo: dGan.correo, nombre: dGan.nombre || ganadorNombre,
           nombre_completo: dGan.nombre || ganadorNombre,
           categoria: catNombre, institucion: dGan.institucion,
-          tipo_certificado: 'GANADOR', evento: 'SucreBot 2026'
-        });
+          tipo_certificado: 'GANADOR', evento: 'SucreBot 2026' });
 
-        await gasPost({
-          action: 'guardarCertificado', id_participante: perdedorId,
+        await gasPost({ action: 'guardarCertificado', id_participante: perdedorId,
           correo: dPer.correo, nombre: dPer.nombre || perdedorNombre,
           nombre_completo: dPer.nombre || perdedorNombre,
           categoria: catNombre, institucion: dPer.institucion,
-          tipo_certificado: 'SUBCAMPEÓN', evento: 'SucreBot 2026'
-        });
+          tipo_certificado: 'SUBCAMPEÓN', evento: 'SucreBot 2026' });
 
-        // 3er lugar — cada perdedor de semi recibe su propio certificado
-        const terceros = obtenerTerceros();
-        for (const entry of terceros) {
-          const d = datosP(entry.id);
-          await gasPost({
-            action: 'guardarCertificado', id_participante: entry.id,
-            correo: d.correo, nombre: d.nombre || entry.nombre,
-            nombre_completo: d.nombre || entry.nombre,
-            categoria: catNombre, institucion: d.institucion,
-            tipo_certificado: 'TERCER LUGAR', evento: 'SucreBot 2026'
-          });
+        // 3er lugar — desde el partido real de la fase '3ER LUGAR'
+        if (partido3er && partido3er.estado === 'FINALIZADO' && partido3er.ganador_id) {
+          const bronceId     = partido3er.ganador_id;
+          const cuartoId     = bronceId === partido3er.equipo_a_id ? partido3er.equipo_b_id : partido3er.equipo_a_id;
+          const bronceNombre = bronceId === partido3er.equipo_a_id ? partido3er.equipo_a_nombre : partido3er.equipo_b_nombre;
+          const cuartoNombre = cuartoId === partido3er.equipo_a_id ? partido3er.equipo_a_nombre : partido3er.equipo_b_nombre;
+
+          const dBronce = datosP(bronceId);
+          const dCuarto = datosP(cuartoId);
+
+          await gasPost({ action: 'guardarCertificado', id_participante: bronceId,
+            correo: dBronce.correo, nombre: dBronce.nombre || bronceNombre,
+            nombre_completo: dBronce.nombre || bronceNombre,
+            categoria: catNombre, institucion: dBronce.institucion,
+            tipo_certificado: 'TERCER LUGAR', evento: 'SucreBot 2026' });
+
+          await gasPost({ action: 'guardarCertificado', id_participante: cuartoId,
+            correo: dCuarto.correo, nombre: dCuarto.nombre || cuartoNombre,
+            nombre_completo: dCuarto.nombre || cuartoNombre,
+            categoria: catNombre, institucion: dCuarto.institucion,
+            tipo_certificado: 'PARTICIPACIÓN', evento: 'SucreBot 2026' });
         }
 
         toast('🏆 Podio guardado en certificados', 'success');
-        // Mostrar podio visual actualizado
         verPodioEnBracket();
       } catch(e) {
         toast('Error: ' + e.message, 'error');
