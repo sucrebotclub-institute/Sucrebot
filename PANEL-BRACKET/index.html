@@ -137,7 +137,6 @@
     .cron-tiempo-num { font-family:'Orbitron'; font-size:5rem; font-weight:900; color:var(--cyan); line-height:1; letter-spacing:.05em; text-shadow:0 0 30px rgba(91,200,240,.6); }
     .cron-tiempo-num.alerta { color:var(--red); animation:parpadeo 1s infinite; }
     @keyframes parpadeo { 0%,100%{opacity:1} 50%{opacity:.7} }
-    .cron-tiempo-label { font-family:'DM Mono'; font-size:.8rem; color:var(--muted); margin-top:6px; letter-spacing:.1em; }
     .cron-penales { display:none; background:rgba(243,156,18,.08); border:1.5px solid rgba(243,156,18,.35); border-radius:12px; padding:20px; margin-bottom:16px; }
     .cron-penales.show { display:block; }
     .cron-pen-title { font-family:'Orbitron'; font-size:.7rem; color:var(--orange); letter-spacing:2px; text-align:center; margin-bottom:14px; }
@@ -368,7 +367,6 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-outline btn-sm" onclick="volverPaso1()">← Nueva categoría</button>
           <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
-          <!-- NUEVO: Ver Podio (visible cuando hay ganador final) -->
           <button class="btn btn-outline btn-sm" id="btnVerPodio" onclick="verPodioEnBracket()" style="display:none;">📊 Ver Podio</button>
           <button class="btn btn-green btn-sm" id="btnPodio" onclick="guardarPodio()" style="display:none;">🏆 Guardar Podio</button>
         </div>
@@ -376,7 +374,6 @@
       <div class="bracket-wrap">
         <div class="bracket-fases" id="bracketFases"></div>
       </div>
-      <!-- Podio se inyecta aquí -->
       <div id="podio-display"></div>
     </div>
   </div>
@@ -630,7 +627,6 @@ function renderBracket() {
   const final = fases[fases.length - 1];
   const finalizado = final?.partidos?.some(p => p.estado === 'FINALIZADO' && p.ganador_id);
 
-  // FIX: mostrar ambos botones cuando hay ganador final
   document.getElementById('btnPodio').style.display    = finalizado ? 'inline-flex' : 'none';
   document.getElementById('btnVerPodio').style.display = finalizado ? 'inline-flex' : 'none';
 
@@ -731,7 +727,21 @@ function resetearBracket() {
   );
 }
 
-// ── VER PODIO (display visual inline) ────────────────────────
+// ── HELPER: obtener terceros de semifinal ────────────────────
+// FIX: devuelve array de {id, nombre} de los perdedores de semifinal
+function obtenerTerceros() {
+  if (!state.bracket?.fases?.length || state.bracket.fases.length < 2) return [];
+  const fases = state.bracket.fases;
+  const semi = fases[fases.length - 2];
+  return (semi?.partidos || [])
+    .filter(p => p.estado === 'FINALIZADO' && p.ganador_id)
+    .map(p => ({
+      id:     p.ganador_id === p.equipo_a_id ? p.equipo_b_id     : p.equipo_a_id,
+      nombre: p.ganador_id === p.equipo_a_id ? (p.equipo_b_nombre || '—') : (p.equipo_a_nombre || '—')
+    }));
+}
+
+// ── VER PODIO ────────────────────────────────────────────────
 function verPodioEnBracket() {
   if (!state.bracket?.fases?.length) return;
   const fases = state.bracket.fases;
@@ -739,25 +749,30 @@ function verPodioEnBracket() {
   const finalizado = final?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
   if (!finalizado) { toast('La final aún no ha terminado', 'error'); return; }
 
-  const ganadorId  = finalizado.ganador_id;
-  const perdedorId = ganadorId === finalizado.equipo_a_id ? finalizado.equipo_b_id : finalizado.equipo_a_id;
-  const ganadorNombre  = ganadorId  === finalizado.equipo_a_id ? finalizado.equipo_a_nombre : finalizado.equipo_b_nombre;
+  const ganadorId      = finalizado.ganador_id;
+  const perdedorId     = ganadorId === finalizado.equipo_a_id ? finalizado.equipo_b_id    : finalizado.equipo_a_id;
+  const ganadorNombre  = ganadorId === finalizado.equipo_a_id ? finalizado.equipo_a_nombre : finalizado.equipo_b_nombre;
   const perdedorNombre = perdedorId === finalizado.equipo_a_id ? finalizado.equipo_a_nombre : finalizado.equipo_b_nombre;
 
-  let terceros = [];
-  if (fases.length >= 2) {
-    const semi = fases[fases.length - 2];
-    terceros = semi?.partidos
-      ?.filter(p => p.estado === 'FINALIZADO' && p.ganador_id)
-      ?.map(p => p.ganador_id === p.equipo_a_id ? (p.equipo_b_nombre || '—') : (p.equipo_a_nombre || '—')) || [];
-  }
+  const terceros = obtenerTerceros();
 
-  const tercerosHTML = terceros.map(n => `
-    <div class="podio-item bronce">
-      <div class="podio-item-icon">🥉</div>
-      <div class="podio-item-nombre">${n}</div>
-      <div class="podio-item-label">TERCER LUGAR</div>
-    </div>`).join('');
+  // FIX: si hay varios perdedores de semi, se muestran en UNA SOLA tarjeta de bronce
+  let tercerosHTML = '';
+  if (terceros.length === 1) {
+    tercerosHTML = `
+      <div class="podio-item bronce">
+        <div class="podio-item-icon">🥉</div>
+        <div class="podio-item-nombre">${terceros[0].nombre}</div>
+        <div class="podio-item-label">TERCER LUGAR</div>
+      </div>`;
+  } else if (terceros.length > 1) {
+    tercerosHTML = `
+      <div class="podio-item bronce">
+        <div class="podio-item-icon">🥉</div>
+        <div class="podio-item-nombre" style="font-size:.9rem;line-height:1.3;">${terceros.map(t => t.nombre).join(' · ')}</div>
+        <div class="podio-item-label">TERCER LUGAR (compartido)</div>
+      </div>`;
+  }
 
   document.getElementById('podio-display').innerHTML = `
     <div class="podio-display">
@@ -780,7 +795,9 @@ function verPodioEnBracket() {
   document.getElementById('podio-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ── GUARDAR PODIO (FIX: payload completo) ────────────────────
+// ── GUARDAR PODIO ────────────────────────────────────────────
+// FIX: los perdedores de semi se guardan como certificados separados (correcto)
+// pero el display ya los muestra en una sola tarjeta
 async function guardarPodio() {
   if (!state.bracket?.fases?.length) return;
   const fases = state.bracket.fases;
@@ -795,16 +812,15 @@ async function guardarPodio() {
       loading(true, 'GUARDANDO PODIO...');
       const catNombre = CAT_INFO[state.categoria]?.gasNombre || CAT_INFO[state.categoria]?.nombre || '';
 
-      // Helper: buscar datos del participante en state.participantes
       function datosP(id) {
         const p = state.participantes.find(x => x.id === id) || {};
         return { correo: p.correo || '', nombre: p.nombre || p.sub || '', institucion: p.institucion || '' };
       }
 
       try {
-        const ganadorId  = partidoFinal.ganador_id;
-        const perdedorId = ganadorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_b_id : partidoFinal.equipo_a_id;
-        const ganadorNombre  = ganadorId  === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
+        const ganadorId      = partidoFinal.ganador_id;
+        const perdedorId     = ganadorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_b_id    : partidoFinal.equipo_a_id;
+        const ganadorNombre  = ganadorId === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
         const perdedorNombre = perdedorId === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
 
         const dGan = datosP(ganadorId);
@@ -826,29 +842,22 @@ async function guardarPodio() {
           tipo_certificado: 'SUBCAMPEÓN', evento: 'SucreBot 2026'
         });
 
-        // 3er lugar — perdedores de semifinal
-        if (fases.length >= 2) {
-          const semi = fases[fases.length - 2];
-          const perdedoresSemi = semi?.partidos
-            ?.filter(p => p.estado === 'FINALIZADO' && p.ganador_id)
-            ?.map(p => ({
-              id:     p.ganador_id === p.equipo_a_id ? p.equipo_b_id : p.equipo_a_id,
-              nombre: p.ganador_id === p.equipo_a_id ? (p.equipo_b_nombre || '') : (p.equipo_a_nombre || '')
-            }));
-          if (perdedoresSemi?.length) {
-            for (const entry of perdedoresSemi) {
-              const d = datosP(entry.id);
-              await gasPost({
-                action: 'guardarCertificado', id_participante: entry.id,
-                correo: d.correo, nombre: d.nombre || entry.nombre,
-                nombre_completo: d.nombre || entry.nombre,
-                categoria: catNombre, institucion: d.institucion,
-                tipo_certificado: 'TERCER LUGAR', evento: 'SucreBot 2026'
-              });
-            }
-          }
+        // 3er lugar — cada perdedor de semi recibe su propio certificado
+        const terceros = obtenerTerceros();
+        for (const entry of terceros) {
+          const d = datosP(entry.id);
+          await gasPost({
+            action: 'guardarCertificado', id_participante: entry.id,
+            correo: d.correo, nombre: d.nombre || entry.nombre,
+            nombre_completo: d.nombre || entry.nombre,
+            categoria: catNombre, institucion: d.institucion,
+            tipo_certificado: 'TERCER LUGAR', evento: 'SucreBot 2026'
+          });
         }
+
         toast('🏆 Podio guardado en certificados', 'success');
+        // Mostrar podio visual actualizado
+        verPodioEnBracket();
       } catch(e) {
         toast('Error: ' + e.message, 'error');
       }
