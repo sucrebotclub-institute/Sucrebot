@@ -492,7 +492,7 @@ async function seleccionarCategoria(cat) {
     } else {
       state.participantes = todos
         .filter(p => p.categoria === gasNombre && p.aprobado === 'APROBADO')
-        .map(p => ({ id: p.id, nombre: p.robot || p.nombre, sub: p.nombre, institucion: p.institucion, correo: p.correo }));
+        .map(p => ({ id: p.id, nombre: p.robot || p.nombre, sub: p.nombre, institucion: p.institucion, correo: p.correo, miembro2: p.miembro2 || '', miembro3: p.miembro3 || '' }));
     }
 
     state.seleccionados = new Set();
@@ -820,9 +820,42 @@ async function guardarPodio() {
       loading(true, 'GUARDANDO PODIO...');
       const catNombre = CAT_INFO[state.categoria]?.gasNombre || CAT_INFO[state.categoria]?.nombre || '';
 
+      // FIX: datosP usa p.sub = nombre real del capitán (p.nombre = nombre del robot)
+      // También extrae miembro2 y miembro3 para guardar sus certificados
       function datosP(id) {
         const p = state.participantes.find(x => x.id === id) || {};
-        return { correo: p.correo || '', nombre: p.nombre || p.sub || '', institucion: p.institucion || '' };
+        return {
+          correo:      p.correo      || '',
+          nombre:      p.sub         || p.nombre || '',   // sub = nombre real del capitán
+          institucion: p.institucion || '',
+          miembro2:    p.miembro2    || '',
+          miembro3:    p.miembro3    || ''
+        };
+      }
+
+      // Helper: guarda cert del capitán + miembro2 + miembro3 si existen
+      async function guardarCertEquipo(id, nombreFallback, tipo) {
+        const d = datosP(id);
+        const nombreCapitan = d.nombre || nombreFallback;
+        // Capitán
+        await gasPost({ action: 'guardarCertificado', id_participante: id,
+          correo: d.correo, nombre: nombreCapitan, nombre_completo: nombreCapitan,
+          categoria: catNombre, institucion: d.institucion,
+          tipo_certificado: tipo, evento: 'SucreBot 2026' });
+        // Miembro 2
+        if (d.miembro2) {
+          await gasPost({ action: 'guardarCertificado', id_participante: id + '-m2',
+            correo: d.correo, nombre: d.miembro2, nombre_completo: d.miembro2,
+            categoria: catNombre, institucion: d.institucion,
+            tipo_certificado: tipo, evento: 'SucreBot 2026' });
+        }
+        // Miembro 3
+        if (d.miembro3) {
+          await gasPost({ action: 'guardarCertificado', id_participante: id + '-m3',
+            correo: d.correo, nombre: d.miembro3, nombre_completo: d.miembro3,
+            categoria: catNombre, institucion: d.institucion,
+            tipo_certificado: tipo, evento: 'SucreBot 2026' });
+        }
       }
 
       try {
@@ -831,20 +864,8 @@ async function guardarPodio() {
         const ganadorNombre  = ganadorId === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
         const perdedorNombre = perdedorId === partidoFinal.equipo_a_id ? (partidoFinal.equipo_a_nombre || '') : (partidoFinal.equipo_b_nombre || '');
 
-        const dGan = datosP(ganadorId);
-        const dPer = datosP(perdedorId);
-
-        await gasPost({ action: 'guardarCertificado', id_participante: ganadorId,
-          correo: dGan.correo, nombre: dGan.nombre || ganadorNombre,
-          nombre_completo: dGan.nombre || ganadorNombre,
-          categoria: catNombre, institucion: dGan.institucion,
-          tipo_certificado: 'GANADOR', evento: 'SucreBot 2026' });
-
-        await gasPost({ action: 'guardarCertificado', id_participante: perdedorId,
-          correo: dPer.correo, nombre: dPer.nombre || perdedorNombre,
-          nombre_completo: dPer.nombre || perdedorNombre,
-          categoria: catNombre, institucion: dPer.institucion,
-          tipo_certificado: 'SUBCAMPEÓN', evento: 'SucreBot 2026' });
+        await guardarCertEquipo(ganadorId,  ganadorNombre,  'GANADOR');
+        await guardarCertEquipo(perdedorId, perdedorNombre, 'SUBCAMPEÓN');
 
         // 3er lugar — desde el partido real de la fase '3ER LUGAR'
         if (partido3er && partido3er.estado === 'FINALIZADO' && partido3er.ganador_id) {
@@ -853,20 +874,8 @@ async function guardarPodio() {
           const bronceNombre = bronceId === partido3er.equipo_a_id ? partido3er.equipo_a_nombre : partido3er.equipo_b_nombre;
           const cuartoNombre = cuartoId === partido3er.equipo_a_id ? partido3er.equipo_a_nombre : partido3er.equipo_b_nombre;
 
-          const dBronce = datosP(bronceId);
-          const dCuarto = datosP(cuartoId);
-
-          await gasPost({ action: 'guardarCertificado', id_participante: bronceId,
-            correo: dBronce.correo, nombre: dBronce.nombre || bronceNombre,
-            nombre_completo: dBronce.nombre || bronceNombre,
-            categoria: catNombre, institucion: dBronce.institucion,
-            tipo_certificado: 'TERCER LUGAR', evento: 'SucreBot 2026' });
-
-          await gasPost({ action: 'guardarCertificado', id_participante: cuartoId,
-            correo: dCuarto.correo, nombre: dCuarto.nombre || cuartoNombre,
-            nombre_completo: dCuarto.nombre || cuartoNombre,
-            categoria: catNombre, institucion: dCuarto.institucion,
-            tipo_certificado: 'PARTICIPACIÓN', evento: 'SucreBot 2026' });
+          await guardarCertEquipo(bronceId, bronceNombre, 'TERCER LUGAR');
+          await guardarCertEquipo(cuartoId, cuartoNombre, 'PARTICIPACIÓN');
         }
 
         toast('🏆 Podio guardado en certificados', 'success');
