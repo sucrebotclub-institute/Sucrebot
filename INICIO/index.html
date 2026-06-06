@@ -161,11 +161,55 @@
 </style>
 
 <div class="stats">
-  <div class="stat"><div class="stat-num">12+</div><div class="stat-lbl">Eventos</div></div>
-  <div class="stat"><div class="stat-num">48</div><div class="stat-lbl">Miembros</div></div>
-  <div class="stat"><div class="stat-num">5</div><div class="stat-lbl">Torneos</div></div>
-  <div class="stat"><div class="stat-num">3</div><div class="stat-lbl">Proyectos</div></div>
+  <div class="stat"><div class="stat-num" id="stat-participantes">—</div><div class="stat-lbl">Participantes</div></div>
+  <div class="stat"><div class="stat-num" id="stat-instituciones">—</div><div class="stat-lbl">Instituciones</div></div>
+  <div class="stat"><div class="stat-num">13</div><div class="stat-lbl">Categorías</div></div>
+  <div class="stat"><div class="stat-num">4ta</div><div class="stat-lbl">Edición</div></div>
 </div>
+
+<script>
+(function() {
+  const CACHE_KEY = 'sucrebot_stats_inicio';
+  const TTL_MS = 6 * 60 * 60 * 1000; // 6 horas
+
+  function aplicarStats(p, i) {
+    document.getElementById('stat-participantes').textContent = p;
+    document.getElementById('stat-instituciones').textContent = i;
+  }
+
+  function fetchStats() {
+    const GAS = typeof CONFIG !== 'undefined' ? CONFIG.GAS_URL : null;
+    if (!GAS) return;
+    fetch(GAS + '?action=getParticipantes')
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        const total = data.length;
+        const instituciones = new Set(data.map(p => (p.institucion || '').trim()).filter(Boolean)).size;
+        aplicarStats(total, instituciones);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          p: total, i: instituciones, ts: Date.now()
+        }));
+      })
+      .catch(() => {}); // silencioso — no bloquea la pagina
+  }
+
+  // Intentar cache primero
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const cache = JSON.parse(raw);
+      if (Date.now() - cache.ts < TTL_MS) {
+        aplicarStats(cache.p, cache.i);
+        return; // cache valido, no llamar GAS
+      }
+    }
+  } catch(e) {}
+
+  // Cache expirado o inexistente → llamar GAS
+  fetchStats();
+})();
+</script>
 
 <div class="sec-head" id="sobre">
   <h2>Explora el mundo del <span>SucreBot</span></h2>
