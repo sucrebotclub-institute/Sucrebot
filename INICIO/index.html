@@ -229,11 +229,9 @@
 
   function fetchStats() {
     const GAS = 'https://script.google.com/macros/s/AKfycbyqMYRaEANLMMf4cc28mH-yiziqnXiEzeaEiF3bK8Jb5zm3xt_BaqgH2Gx6UJo287ypRQ/exec';
-    console.log('[Stats] GAS:', GAS);
     fetch(GAS + '?action=getParticipantes')
       .then(r => r.json())
       .then(data => {
-        console.log('[Stats] data:', Array.isArray(data), data?.length);
         if (!Array.isArray(data)) return;
         const total = data.length;
         const instituciones = new Set(data.map(p => (p.institucion || '').trim()).filter(Boolean)).size;
