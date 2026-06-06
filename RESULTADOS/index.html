@@ -26,7 +26,6 @@
     .sticky-header { position: sticky; top: 0; z-index: 1000; }
     .screen { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 80vh; padding: 20px 48px 40px; background: #ffffff; }
 
-    /* HEADER */
     .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-radius: 12px; box-shadow: 0 4px 12px rgba(26,92,168,0.15); flex-shrink: 0; }
     .page-header-left { display: flex; align-items: center; gap: 18px; }
     .page-header-left img { width: 56px; filter: drop-shadow(0 0 12px rgba(91,200,240,0.6)); }
@@ -39,7 +38,6 @@
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: blink 1.2s ease-in-out infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-    /* TABS */
     .cat-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; justify-content: center; }
     .cat-group-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.18em; color: #94a3b8; font-weight: 700; text-transform: uppercase; padding: 4px 8px; background: #f1f5f9; border-radius: 6px; white-space: nowrap; flex-shrink: 0; align-self: center; border: 1px solid #e2e8f0; }
     .cat-group-label.amateur { color: #1a5ca8; background: #e8f0ff; border-color: #c5d8ff; }
@@ -52,7 +50,6 @@
     .cat-tab.tiene-datos::before { content: ''; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: pulse-dot 2s ease-in-out infinite; }
     @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
 
-    /* TABLA TIEMPOS */
     .tabla-wrap { flex: 1; overflow: auto; display: flex; flex-direction: column; }
     table { width: 100%; border-collapse: collapse; }
     thead tr { background: linear-gradient(135deg, #1a5ca8, #2474cc); }
@@ -82,7 +79,6 @@
     .ronda-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
     .row-altura { height: 88px; }
 
-    /* RANKING CALIFICACIÓN */
     .calificacion-wrap { flex: 1; overflow: auto; }
     .calificacion-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; margin-bottom: 16px; background: linear-gradient(135deg, #1a3a6e, #1a5ca8); border-radius: 10px; }
     .calificacion-header-icon { font-size: 1.8rem; }
@@ -98,44 +94,57 @@
     .score-num { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; min-width: 60px; text-align: right; }
     tr.pos-1 .score-num { font-size: 2.2rem; color: #2474cc; }
 
-    /* BRACKET SOCCER */
-    .soccer-wrap { flex: 1; overflow-x: auto; }
-    .soccer-title { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .soccer-sin-datos { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; gap: 12px; }
-    .soccer-sin-datos-icon { font-size: 3.5rem; opacity: 0.25; }
-    .soccer-sin-datos-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.15em; color: #6a7a94; }
+    /* BRACKET GENERAL (ms_a, ms_rc, soc) */
+    .bracket-wrap { flex: 1; overflow-x: auto; }
+    .bracket-title { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .bracket-sin-datos { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; gap: 12px; }
+    .bracket-sin-datos-icon { font-size: 3.5rem; opacity: 0.25; }
+    .bracket-sin-datos-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.15em; color: #6a7a94; }
     .bracket-fases { display: flex; gap: 40px; min-width: max-content; padding-bottom: 8px; }
     .bracket-fase { display: flex; flex-direction: column; gap: 16px; min-width: 260px; }
     .fase-nombre { font-family: var(--font-mono); font-size: 0.7rem; color: #1a5ca8; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; text-align: center; margin-bottom: 8px; padding: 6px; background: rgba(26,92,168,0.08); border-radius: 8px; }
+    .fase-nombre.fase-3er { color: #9a3412; background: rgba(205,127,50,0.1); }
     .partido-card { background: #ffffff; border: 2px solid #e0e7ef; border-radius: 12px; padding: 14px; box-shadow: 0 2px 12px rgba(26,92,168,0.08); transition: all 0.2s; }
     .partido-card:hover { border-color: #5bc8f0; box-shadow: 0 4px 16px rgba(91,200,240,0.2); transform: translateY(-2px); }
     .partido-card.finalizado { border-color: #00d95f; background: #f0fdf4; }
-    .partido-card.pendiente { border-color: #e0e7ef; }
+    .partido-card.pendiente  { border-color: #e0e7ef; }
+    .partido-card.bye        { background: #fffbeb; border: 2px dashed #fbbf24; text-align: center; }
     .partido-equipo-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; background: #f8f9fa; margin-bottom: 6px; border: 1px solid #e0e7ef; }
     .partido-equipo-row:last-of-type { margin-bottom: 0; }
     .partido-equipo-row.ganador { background: #e8f5e9; border-color: #00d95f; }
+    .partido-equipo-row.perdedor { opacity: 0.5; }
     .partido-equipo-nombre { font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; color: #1a3a6e; }
-    .partido-equipo-goles { font-family: 'Orbitron', monospace; font-size: 1.3rem; font-weight: 900; color: #1a5ca8; }
-    .partido-equipo-row.ganador .partido-equipo-goles { color: #00a046; }
+    .partido-equipo-score { font-family: 'Orbitron', monospace; font-size: 1.2rem; font-weight: 900; color: #1a5ca8; }
+    .partido-equipo-row.ganador .partido-equipo-score { color: #00a046; }
     .partido-estado { text-align: center; margin-top: 8px; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; font-weight: 700; }
     .partido-estado.fin { color: #00a046; }
     .partido-estado.pend { color: #94a3b8; }
-    .partido-estado.pend-equipos { color: #cbd5e1; font-style: italic; }
-    .partido-bye { background: #fffbeb; border: 2px dashed #fbbf24; border-radius: 12px; padding: 14px; text-align: center; }
+    .partido-estado.espera { color: #cbd5e1; font-style: italic; }
     .bye-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: #1a3a6e; }
     .bye-badge { display: inline-block; background: #fbbf24; color: #78350f; font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; font-weight: 700; margin-top: 4px; }
 
-    /* EMPTY */
+    /* Podio inline en resultados */
+    .podio-inline { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px; padding: 20px; background: linear-gradient(135deg, #0e2a5a, #1a3a6e); border-radius: 12px; }
+    .podio-inline-title { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 2px; color: #5bc8f0; width: 100%; margin-bottom: 4px; }
+    .podio-card { flex: 1; min-width: 140px; background: rgba(255,255,255,0.07); border-radius: 10px; padding: 14px; text-align: center; }
+    .podio-card.oro    { border: 1px solid rgba(255,215,0,.4); }
+    .podio-card.plata  { border: 1px solid rgba(192,192,192,.3); }
+    .podio-card.bronce { border: 1px solid rgba(205,127,50,.3); }
+    .podio-card-icon   { font-size: 1.6rem; margin-bottom: 6px; }
+    .podio-card-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 1px; }
+    .podio-card.oro    .podio-card-nombre { color: #ffd700; }
+    .podio-card.plata  .podio-card-nombre { color: #c0c0c0; }
+    .podio-card.bronce .podio-card-nombre { color: #cd7f32; }
+    .podio-card-label  { font-family: var(--font-mono); font-size: 0.55rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
     .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; gap: 16px; }
     .empty-icon { font-size: 4rem; opacity: 0.2; filter: grayscale(1); }
     .empty-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.18em; color: #6a7a94; font-weight: 600; }
 
-    /* FOOTER */
     .tv-footer { margin-top: 20px; padding-top: 16px; border-top: 1px solid #e8edf3; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.7rem; color: #8a96b0; }
     .tv-footer-left { letter-spacing: 0.1em; color: #1a5ca8; font-weight: 600; }
     .tv-footer-right { font-size: 0.85rem; color: #0e2a5a; font-weight: 600; }
 
-    /* DROPDOWN MÓVIL */
     .cat-select-mobile { display: none; width: 100%; margin-bottom: 20px; background: #2d3748; border: 2px solid #1a5ca8; color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 1rem; font-weight: 700; padding: 14px 16px; border-radius: 10px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235bc8f0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 44px; }
     .cat-select-mobile option { background: #1a3a6b; color: #ffffff; }
     .cat-select-mobile optgroup { background: #0e2a5a; color: #5bc8f0; font-weight: 700; }
@@ -217,15 +226,17 @@
   <div data-include="../shared/components/footer.html"></div>
 
   <script>
-    // ── SOLO UNA FUENTE DE DATOS: el JSON de GitHub ──────────────
-    // bai, bat, dev ya están incluidos en el JSON por publicarJSON()
-    // No se llama al GAS directamente desde esta página.
-
     const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
     const GAS_URL  = CONFIG.GAS_URL();
 
-    // Categorías que usan puntuación por jueces (formato calificación)
+    // Categorías que usan puntuación por jueces
     const CATS_CALIFICACION = new Set(['bai', 'bat', 'dev']);
+    // Categorías que usan bracket general (no tabla de tiempos)
+    const CATS_BRACKET = new Set(['ms_a', 'ms_rc', 'soc']);
+
+    // Mapeo ruta → clave GAS para getBracketGeneral
+    const RUTA_CAT_GAS = { ms_a: 'ms_a', ms_rc: 'ms_rc', soc: 'soc' };
+    const CAT_ICONO    = { ms_a: '🤖', ms_rc: '🕹️', soc: '⚽' };
 
     const GRUPOS = [
       {
@@ -263,8 +274,6 @@
 
     const CAT_ICON = { bai: '🕺', bat: '⚔️', dev: '💡' };
 
-    // ── UTILIDADES ───────────────────────────────────────────────
-
     function tiempoASegundos(t) {
       if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
       const p = t.split(':').map(Number);
@@ -280,13 +289,15 @@
     document.getElementById('tv-hora').textContent = hora();
 
     let datosJSON       = null;
-    let bracketSoccer   = null;
     let categoriaActiva = null;
     let rutasConDatos   = [];
     let ultimoTs        = 0;
     const CACHE_KEY     = 'sucrebot_res_cache';
 
-    // ── CARGA INSTANTÁNEA desde localStorage (0ms) ───────────────
+    // Cache de brackets generales: { ms_a: bracket|null, ms_rc: bracket|null, soc: bracket|null }
+    const bracketCache  = { ms_a: null, ms_rc: null, soc: null };
+
+    // Carga instantánea desde localStorage
     try {
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
@@ -303,13 +314,13 @@
     // ── DETECCIÓN DE DATOS ───────────────────────────────────────
 
     function categoriaTieneDatos(ruta) {
-      if (ruta === 'soc') return bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
+      if (CATS_BRACKET.has(ruta)) {
+        const b = bracketCache[ruta];
+        return b && b.fases && b.fases.length > 0;
+      }
       const datos = datosJSON && datosJSON.resultados && datosJSON.resultados[ruta];
       if (!datos || datos.length === 0) return false;
-      if (CATS_CALIFICACION.has(ruta)) {
-        // Para calificación: tiene datos si hay al menos un entry con total > 0
-        return datos.some(d => (parseFloat(d.total) || 0) > 0);
-      }
+      if (CATS_CALIFICACION.has(ruta)) return datos.some(d => (parseFloat(d.total) || 0) > 0);
       return datos.some(d => tiempoValido(d.tiempo) || d.tiempo === 'DNF');
     }
 
@@ -339,7 +350,7 @@
       const sel = document.getElementById('cat-select-mobile');
       if (sel) sel.value = ruta;
 
-      if (ruta === 'soc')                   renderizarBracketSoccer();
+      if (CATS_BRACKET.has(ruta))           renderizarBracketGeneral(ruta);
       else if (CATS_CALIFICACION.has(ruta)) renderizarCalificacion(ruta);
       else                                  renderizarTabla(ruta);
     }
@@ -354,9 +365,144 @@
         </div>`;
     }
 
-    // ── RANKING CALIFICACIÓN — leído desde el JSON ───────────────
-    // El JSON contiene: resultados.bai = [{id, nombre, robot, institucion, total, rondas}, ...]
-    // Esto lo exporta publicarJSON() en el GAS llamando calcularRankingCalificacion()
+    // ── BRACKET GENERAL (ms_a, ms_rc, soc) ──────────────────────
+
+    function renderizarBracketGeneral(ruta) {
+      const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
+      const icono     = CAT_ICONO[ruta] || '🏆';
+      document.getElementById('tv-ronda').textContent = 'BRACKET';
+      document.getElementById('tv-cat').textContent   = nombreCat;
+
+      const wrap    = document.getElementById('tv-tabla-wrap');
+      const bracket = bracketCache[ruta];
+
+      if (!bracket || !bracket.fases || bracket.fases.length === 0) {
+        wrap.innerHTML = `
+          <div class="bracket-wrap">
+            <div class="bracket-title">${icono} ${nombreCat}</div>
+            <div class="bracket-sin-datos">
+              <div class="bracket-sin-datos-icon">${icono}</div>
+              <div class="bracket-sin-datos-text">BRACKET AÚN NO GENERADO</div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      // Detectar si hay ganador final para mostrar podio
+      const faseFinal   = bracket.fases.find(f => f.nombre === 'FINAL');
+      const partidoFin  = faseFinal?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
+      const fase3er     = bracket.fases.find(f => f.nombre === '3ER LUGAR');
+      const partido3er  = fase3er?.partidos?.[0];
+
+      // Render fases del bracket
+      const fasesHTML = bracket.fases.map(fase => {
+        const es3er = fase.nombre === '3ER LUGAR';
+        const partidosHTML = fase.partidos.map(p => {
+          if (p.tipo === 'BYE') {
+            return `<div class="partido-card bye">
+              <div class="bye-nombre">${p.equipo_a_nombre || p.equipoNombre || '—'}</div>
+              <div class="bye-badge">BYE — Pasa directo</div>
+            </div>`;
+          }
+
+          const finalizado  = p.estado === 'FINALIZADO';
+          const sinEquipos  = !p.equipo_a_id && !p.equipo_b_id;
+
+          if (sinEquipos) {
+            return `<div class="partido-card pendiente">
+              <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
+              <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
+              <div class="partido-estado espera">Esperando ganadores</div>
+            </div>`;
+          }
+
+          // Parsear marcador para soccer (goles)
+          let scoreA = '', scoreB = '';
+          if (finalizado && p.marcador && p.marcador !== '—') {
+            const m = String(p.marcador).match(/^(\d+)-(\d+)/);
+            if (m) { scoreA = m[1]; scoreB = m[2]; }
+          }
+
+          const claseA = finalizado ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
+          const claseB = finalizado ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
+
+          const scoreHTMLA = scoreA ? `<span class="partido-equipo-score">${scoreA}</span>` : '';
+          const scoreHTMLB = scoreB ? `<span class="partido-equipo-score">${scoreB}</span>` : '';
+
+          const estadoHTML = finalizado
+            ? `<div class="partido-estado fin">✓ ${p.marcador || 'FINALIZADO'}</div>`
+            : `<div class="partido-estado pend">Pendiente</div>`;
+
+          return `<div class="partido-card ${finalizado ? 'finalizado' : 'pendiente'}">
+            <div class="partido-equipo-row ${claseA}">
+              <span class="partido-equipo-nombre">${p.equipo_a_nombre || '—'}</span>
+              ${scoreHTMLA}
+            </div>
+            <div class="partido-equipo-row ${claseB}">
+              <span class="partido-equipo-nombre">${p.equipo_b_nombre || '—'}</span>
+              ${scoreHTMLB}
+            </div>
+            ${estadoHTML}
+          </div>`;
+        }).join('');
+
+        const claseNombre = es3er ? 'fase-nombre fase-3er' : 'fase-nombre';
+        return `<div class="bracket-fase">
+          <div class="${claseNombre}">${fase.nombre}</div>
+          ${partidosHTML}
+        </div>`;
+      }).join('');
+
+      // Podio inline si hay ganador final
+      let podioHTML = '';
+      if (partidoFin) {
+        const ganId  = partidoFin.ganador_id;
+        const perID  = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_b_id : partidoFin.equipo_a_id;
+        const ganN   = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_a_nombre : partidoFin.equipo_b_nombre;
+        const perN   = perID === partidoFin.equipo_a_id ? partidoFin.equipo_a_nombre : partidoFin.equipo_b_nombre;
+
+        let bronce = '';
+        if (partido3er && partido3er.estado === 'FINALIZADO' && partido3er.ganador_id) {
+          const bId = partido3er.ganador_id;
+          const bN  = bId === partido3er.equipo_a_id ? partido3er.equipo_a_nombre : partido3er.equipo_b_nombre;
+          bronce = `<div class="podio-card bronce">
+            <div class="podio-card-icon">🥉</div>
+            <div class="podio-card-nombre">${bN}</div>
+            <div class="podio-card-label">TERCER LUGAR</div>
+          </div>`;
+        } else if (partido3er && partido3er.estado === 'PENDIENTE') {
+          bronce = `<div class="podio-card bronce" style="opacity:.5;">
+            <div class="podio-card-icon">🥉</div>
+            <div class="podio-card-nombre" style="font-size:.85rem;">${partido3er.equipo_a_nombre} vs ${partido3er.equipo_b_nombre}</div>
+            <div class="podio-card-label">3ER LUGAR — POR JUGAR</div>
+          </div>`;
+        }
+
+        podioHTML = `<div class="podio-inline">
+          <div class="podio-inline-title">🏆 PODIO — ${nombreCat.toUpperCase()}</div>
+          <div class="podio-card oro">
+            <div class="podio-card-icon">🥇</div>
+            <div class="podio-card-nombre">${ganN}</div>
+            <div class="podio-card-label">GANADOR</div>
+          </div>
+          <div class="podio-card plata">
+            <div class="podio-card-icon">🥈</div>
+            <div class="podio-card-nombre">${perN}</div>
+            <div class="podio-card-label">SUBCAMPEÓN</div>
+          </div>
+          ${bronce}
+        </div>`;
+      }
+
+      wrap.innerHTML = `
+        <div class="bracket-wrap">
+          <div class="bracket-title">${icono} ${nombreCat} — Bracket</div>
+          <div class="bracket-fases">${fasesHTML}</div>
+          ${podioHTML}
+        </div>`;
+    }
+
+    // ── RANKING CALIFICACIÓN ─────────────────────────────────────
 
     function renderizarCalificacion(ruta) {
       const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
@@ -364,7 +510,6 @@
       document.getElementById('tv-ronda').textContent = 'CALIFICACIÓN';
       document.getElementById('tv-cat').textContent   = nombreCat;
 
-      // Leer directamente del JSON — mismo objeto que devuelve calcularRankingCalificacion()
       const ranking = (datosJSON && datosJSON.resultados && datosJSON.resultados[ruta]) || [];
       const wrap    = document.getElementById('tv-tabla-wrap');
 
@@ -387,7 +532,6 @@
       }
 
       const MAX_TOTAL = 25;
-
       const filas = ranking.map((p, i) => {
         const pos       = i + 1;
         const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
@@ -406,9 +550,7 @@
               <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
                 <span class="score-num">${total.toFixed(1)}</span>
                 <div class="score-bar-wrap">
-                  <div class="score-bar-bg">
-                    <div class="score-bar-fill" style="width:${pct}%"></div>
-                  </div>
+                  <div class="score-bar-bg"><div class="score-bar-fill" style="width:${pct}%"></div></div>
                 </div>
                 <span style="font-family:var(--font-mono);font-size:0.6rem;color:#94a3b8;">/ ${MAX_TOTAL}</span>
               </div>
@@ -433,10 +575,8 @@
           </div>
           <table>
             <thead><tr>
-              <th class="c">#</th>
-              <th>Robot / Participante</th>
-              <th class="c">Puntaje</th>
-              <th class="c">Evaluaciones</th>
+              <th class="c">#</th><th>Robot / Participante</th>
+              <th class="c">Puntaje</th><th class="c">Evaluaciones</th>
             </tr></thead>
             <tbody>${filas}</tbody>
           </table>
@@ -504,53 +644,12 @@
         </table>`;
     }
 
-    // ── BRACKET SOCCER ───────────────────────────────────────────
-
-    function renderizarBracketSoccer() {
-      document.getElementById('tv-ronda').textContent = 'BRACKET';
-      document.getElementById('tv-cat').textContent   = 'Robot Soccer';
-      const wrap = document.getElementById('tv-tabla-wrap');
-      if (!bracketSoccer || !bracketSoccer.fases || bracketSoccer.fases.length === 0) {
-        wrap.innerHTML = `<div class="soccer-wrap"><div class="soccer-title">⚽ Robot Soccer</div><div class="soccer-sin-datos"><div class="soccer-sin-datos-icon">⚽</div><div class="soccer-sin-datos-text">BRACKET AÚN NO GENERADO</div></div></div>`;
-        return;
-      }
-      const fasesHTML = bracketSoccer.fases.map(fase => {
-        const partidosHTML = fase.partidos.map(p => {
-          if (p.tipo === 'BYE') {
-            return `<div class="partido-bye"><div class="bye-nombre">${p.equipoNombre}</div><div class="bye-badge">BYE — Pasa directo</div></div>`;
-          }
-          const matchGoles = p.marcador ? p.marcador.match(/^(\d+)-(\d+)/) : null;
-          const golesArr   = matchGoles ? [matchGoles[1], matchGoles[2]] : null;
-          const finalizado = p.estado === 'FINALIZADO';
-          const sinEquipos = !p.equipo_a_id && !p.equipo_b_id;
-          if (sinEquipos) {
-            return `<div class="partido-card pendiente"><div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div><div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div><div class="partido-estado pend-equipos">Esperando ganadores</div></div>`;
-          }
-          return `<div class="partido-card ${finalizado ? 'finalizado' : 'pendiente'}">
-            <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_a_id ? 'ganador' : ''}">
-              <span class="partido-equipo-nombre">${p.equipoA_nombre || '—'}</span>
-              ${golesArr ? `<span class="partido-equipo-goles">${golesArr[0]}</span>` : ''}
-            </div>
-            <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_b_id ? 'ganador' : ''}">
-              <span class="partido-equipo-nombre">${p.equipoB_nombre || '—'}</span>
-              ${golesArr ? `<span class="partido-equipo-goles">${golesArr[1]}</span>` : ''}
-            </div>
-            <div class="partido-estado ${finalizado ? 'fin' : 'pend'}">${finalizado ? `✓ ${p.marcador}` : 'Pendiente'}</div>
-          </div>`;
-        }).join('');
-        return `<div class="bracket-fase"><div class="fase-nombre">${fase.nombre}</div>${partidosHTML}</div>`;
-      }).join('');
-      wrap.innerHTML = `<div class="soccer-wrap"><div class="soccer-title">⚽ Robot Soccer — Bracket</div><div class="bracket-fases">${fasesHTML}</div></div>`;
-    }
-
     // ── POLLING ──────────────────────────────────────────────────
-    // Solo 2 fuentes: JSON (todo excepto soccer) + GAS para bracket soccer
 
     async function pollJSON() {
       try {
         const r    = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-store' });
         const data = await r.json();
-        // Solo re-renderiza si los datos cambiaron (comparar timestamp)
         const nuevoTs = data.ts || 0;
         if (nuevoTs !== ultimoTs) {
           ultimoTs  = nuevoTs;
@@ -562,16 +661,21 @@
       } catch(e) { console.error('Error al cargar JSON:', e); }
     }
 
-    async function pollBracketSoccer() {
+    // Polling del bracket general para ms_a, ms_rc, soc
+    async function pollBracketGeneral(ruta) {
       try {
-        const r    = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getEquiposSoccer' }));
+        const r    = await fetch(GAS_URL + '?action=getBracketGeneral&categoria=' + ruta);
         const data = await r.json();
         if (data.ok) {
-          bracketSoccer = data.bracket || null;
-          renderTabs();
-          if (categoriaActiva === 'soc') renderizarBracketSoccer();
+          const nuevo = data.bracket || null;
+          // Comparar por stringify para detectar cambios reales
+          if (JSON.stringify(nuevo) !== JSON.stringify(bracketCache[ruta])) {
+            bracketCache[ruta] = nuevo;
+            renderTabs();
+            if (categoriaActiva === ruta) renderizarBracketGeneral(ruta);
+          }
         }
-      } catch(e) { console.error('Error al cargar bracket soccer:', e); }
+      } catch(e) { console.error('Error bracket ' + ruta + ':', e); }
     }
 
     function actualizarVista() {
@@ -579,18 +683,27 @@
         const primera = rutasConDatos[0] || null;
         if (primera) { categoriaActiva = primera; seleccionarCategoria(primera); }
       } else {
-        if (categoriaActiva === 'soc')                   renderizarBracketSoccer();
+        if (CATS_BRACKET.has(categoriaActiva))           renderizarBracketGeneral(categoriaActiva);
         else if (CATS_CALIFICACION.has(categoriaActiva)) renderizarCalificacion(categoriaActiva);
         else                                             renderizarTabla(categoriaActiva);
       }
     }
 
-    // JSON cada 5s (incluye bai/bat/dev), Soccer cada 8s
-    setInterval(pollJSON,          5000);
-    setInterval(pollBracketSoccer, 8000);
+    // JSON cada 5s (bai/bat/dev + tiempos)
+    setInterval(pollJSON, 5000);
 
+    // Brackets cada 8s — ms_a, ms_rc, soc en paralelo
+    setInterval(() => {
+      pollBracketGeneral('ms_a');
+      pollBracketGeneral('ms_rc');
+      pollBracketGeneral('soc');
+    }, 8000);
+
+    // Carga inicial
     pollJSON();
-    pollBracketSoccer();
+    pollBracketGeneral('ms_a');
+    pollBracketGeneral('ms_rc');
+    pollBracketGeneral('soc');
   </script>
 </body>
 </html>
