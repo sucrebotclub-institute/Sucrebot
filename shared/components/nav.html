@@ -1,6 +1,21 @@
 <nav>
   <a href="https://sucrebotclub-institute.github.io/Sucrebot/INICIO/" id="navInicio">Inicio</a>
-  <a href="https://sucrebotclub-institute.github.io/Sucrebot/INICIO/#institucion">Institución</a>
+
+  <!-- INSTITUCIÓN -->
+  <div class="nav-dropdown" id="navInstitucion">
+    <a href="javascript:void(0)">Institución</a>
+    <div class="dropdown-menu" id="menuInstitucion">
+      <a href="https://sucrebotclub-institute.github.io/Sucrebot/INSTITUCION/#quienes-somos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>¿Quiénes somos?
+      </a>
+      <a href="https://sucrebotclub-institute.github.io/Sucrebot/INSTITUCION/#mision-vision">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Misión y Visión
+      </a>
+      <a href="https://sucrebotclub-institute.github.io/Sucrebot/INSTITUCION/#valores">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Valores
+      </a>
+    </div>
+  </div>
 
   <!-- SUCREBOT 2026 -->
   <div class="nav-dropdown" id="navSucrebot">
@@ -44,31 +59,24 @@
   <div class="nav-dropdown" id="navStaff" style="display:none;">
     <a href="javascript:void(0)" id="navStaffLink">Jueces</a>
     <div class="dropdown-menu" id="menuStaff">
-
       <a href="https://sucrebotclub-institute.github.io/Sucrebot/ESCANER/">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h.01M14 18h.01M18 14h.01M18 18h.01M18 21v-3M21 18h-3"/></svg>Escáner QR
       </a>
-
       <a href="https://sucrebotclub-institute.github.io/Sucrebot/CRONOMETRO/">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Cronómetro
       </a>
-
       <a href="https://sucrebotclub-institute.github.io/Sucrebot/PANEL-BRACKET/">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h4v4H3zM10 6h4v4h-4zM17 6h4v4h-4zM5 10v4M12 10v4M8 14h8M12 14v4"/></svg>Panel de Bracket
       </a>
-
       <a href="https://sucrebotclub-institute.github.io/Sucrebot/PANTALLA/">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Pantalla en Vivo
       </a>
-
       <a href="https://sucrebotclub-institute.github.io/Sucrebot/GENERAR-CERTIFICADOS/">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>Generar Certificados
       </a>
-
       <a href="https://sucrebotclub-institute.github.io/Sucrebot/PANEL-CALIFICACION/">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Panel de Calificación
       </a>
-
     </div>
   </div>
 </nav>
@@ -88,55 +96,27 @@
     document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = '');
   }
 
-  // SUCREBOT 2026
-  (function() {
-    const ns = document.getElementById('navSucrebot'), ms = document.getElementById('menuSucrebot');
+  function initDropdown(triggerId, menuId) {
+    const trigger = document.getElementById(triggerId);
+    const menu    = document.getElementById(menuId);
+    if (!trigger || !menu) return;
     let t;
-    ns.addEventListener('mouseenter', () => { clearTimeout(t); ms.style.display = 'block'; });
-    ns.addEventListener('mouseleave', () => { t = setTimeout(() => ms.style.display = '', 180); });
-    ms.addEventListener('mouseenter', () => clearTimeout(t));
-    ms.addEventListener('mouseleave', () => { t = setTimeout(() => ms.style.display = '', 180); });
-    ns.querySelector('a').addEventListener('touchend', (e) => {
+    trigger.addEventListener('mouseenter', () => { clearTimeout(t); menu.style.display = 'block'; });
+    trigger.addEventListener('mouseleave', () => { t = setTimeout(() => menu.style.display = '', 180); });
+    menu.addEventListener('mouseenter', () => clearTimeout(t));
+    menu.addEventListener('mouseleave', () => { t = setTimeout(() => menu.style.display = '', 180); });
+    trigger.querySelector('a').addEventListener('touchend', (e) => {
       e.preventDefault();
-      const o = ms.style.display === 'block';
+      const open = menu.style.display === 'block';
       cerrarTodosLosDropdowns();
-      if (!o) ms.style.display = 'block';
+      if (!open) menu.style.display = 'block';
     });
-  })();
+  }
 
-  // MI CUENTA
-  (function() {
-    const np = document.getElementById('navPartDropdown'), mp = document.getElementById('menuParticipantes');
-    if (!np || !mp) return;
-    let t;
-    np.addEventListener('mouseenter', () => { clearTimeout(t); mp.style.display = 'block'; });
-    np.addEventListener('mouseleave', () => { t = setTimeout(() => mp.style.display = '', 180); });
-    mp.addEventListener('mouseenter', () => clearTimeout(t));
-    mp.addEventListener('mouseleave', () => { t = setTimeout(() => mp.style.display = '', 180); });
-    document.getElementById('navParticipantesLink').addEventListener('touchend', (e) => {
-      e.preventDefault();
-      const o = mp.style.display === 'block';
-      cerrarTodosLosDropdowns();
-      if (!o) mp.style.display = 'block';
-    });
-  })();
-
-  // JUECES
-  (function() {
-    const ns = document.getElementById('navStaff'), ms = document.getElementById('menuStaff');
-    if (!ns || !ms) return;
-    let t;
-    ns.addEventListener('mouseenter', () => { clearTimeout(t); ms.style.display = 'block'; });
-    ns.addEventListener('mouseleave', () => { t = setTimeout(() => ms.style.display = '', 180); });
-    ms.addEventListener('mouseenter', () => clearTimeout(t));
-    ms.addEventListener('mouseleave', () => { t = setTimeout(() => ms.style.display = '', 180); });
-    document.getElementById('navStaffLink').addEventListener('touchend', (e) => {
-      e.preventDefault();
-      const o = ms.style.display === 'block';
-      cerrarTodosLosDropdowns();
-      if (!o) ms.style.display = 'block';
-    });
-  })();
+  initDropdown('navInstitucion', 'menuInstitucion');
+  initDropdown('navSucrebot',    'menuSucrebot');
+  initDropdown('navPartDropdown','menuParticipantes');
+  initDropdown('navStaff',       'menuStaff');
 
   document.addEventListener('touchend', (e) => {
     if (!e.target.closest('.nav-dropdown') && e.target.id !== 'navPartLink') {
