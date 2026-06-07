@@ -211,11 +211,20 @@
 <main>
   <div class="wrapper" style="max-width:1200px;margin:0 auto;padding:0 20px 60px">
     <div class="cronograma-preview">
-      <div class="preview-header">
-        <div>
-          <div class="preview-title">CRONOGRAMA · 16 DE JULIO 2026</div>
-          <div class="preview-sub">Programa oficial del evento · Club de Robótica Sucre</div>
+      <div style="margin-bottom:28px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:#1a5ca8;border-radius:20px;padding:5px 14px;margin-bottom:14px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;"></span>
+          <span style="font-family:'Exo 2',sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;color:#fff;text-transform:uppercase;">SucreBot 2026 · Torneo de Robótica</span>
         </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,42px);letter-spacing:2px;line-height:1.1;color:#1a2a4a;">
+          CRONOGRAMA <span style="color:#1a5ca8;">16 DE JULIO</span>
+        </div>
+        <div style="height:3px;width:100%;background:linear-gradient(90deg,#1a5ca8 0%,rgba(26,92,168,0.1) 100%);border-radius:2px;margin:10px 0 8px;"></div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#6b7280;">
+          Programa oficial del evento · Club de Robótica Sucre
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
         <button class="btn-fullscreen" onclick="abrirFS()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
@@ -231,6 +240,42 @@
 <div data-include="../shared/components/footer.html"></div>
 
 <!-- FULLSCREEN -->
+<style>
+  /* Bloque extra al final del cascade — gana sobre styles.css */
+  #fsOverlay { background:#ffffff !important; color:#111827 !important; }
+  #fsOverlay .fs-wrap { background:#ffffff !important; color:#111827 !important; }
+  #fsOverlay .fs-header { background:#ffffff !important; }
+  #fsOverlay .fs-body   { background:#f5f7fb !important; }
+  #fsOverlay .fs-footer { background:#ffffff !important; }
+  #fsOverlay .fs-title  { color:#0e1e3a !important; }
+  #fsOverlay .fs-sub    { color:#374151 !important; }
+  #fsOverlay .fs-date   { color:#1a5ca8 !important; }
+  #fsOverlay .fs-place  { color:#374151 !important; }
+  #fsOverlay .fs-exit   { color:#1a5ca8 !important; background:#ffffff !important; border:2px solid #1a5ca8 !important; }
+  #fsOverlay .fs-lbl    { color:#1a5ca8 !important; }
+  #fsOverlay .slot      { background:#ffffff !important; border:1px solid #d1d9ed !important; border-left:4px solid #1a5ca8 !important; max-width:none !important; }
+  #fsOverlay .slot.c-ap { border-left-color:#b45309 !important; }
+  #fsOverlay .slot.c-co { border-left-color:#1a5ca8 !important; }
+  #fsOverlay .slot.c-te { border-left-color:#6b21a8 !important; }
+  #fsOverlay .slot.c-de { border-left-color:#166534 !important; }
+  #fsOverlay .slot.c-cl { border-left-color:#9a3412 !important; }
+  #fsOverlay .slot.c-pr { border-left-color:#b45309 !important; }
+  #fsOverlay .slot.on   { background:#dbeafe !important; border-color:#93c5fd !important; }
+  #fsOverlay .slot.old  { opacity:0.32 !important; }
+  #fsOverlay .s-time    { color:#0e3a6e !important; font-weight:700 !important; }
+  #fsOverlay .s-name    { color:#111827 !important; font-weight:700 !important; }
+  #fsOverlay .s-det     { color:#374151 !important; }
+  #fsOverlay .s-badge   { font-weight:700 !important; }
+  #fsOverlay .slot.c-ap .s-badge { background:#fef08a !important; color:#713f12 !important; border:1px solid #ca8a04 !important; }
+  #fsOverlay .slot.c-co .s-badge { background:#bfdbfe !important; color:#1e3a8a !important; border:1px solid #3b82f6 !important; }
+  #fsOverlay .slot.c-te .s-badge { background:#e9d5ff !important; color:#4c1d95 !important; border:1px solid #7c3aed !important; }
+  #fsOverlay .slot.c-de .s-badge { background:#bbf7d0 !important; color:#14532d !important; border:1px solid #16a34a !important; }
+  #fsOverlay .slot.c-cl .s-badge { background:#fed7aa !important; color:#7c2d12 !important; border:1px solid #ea580c !important; }
+  #fsOverlay .slot.c-pr .s-badge { background:#fef08a !important; color:#713f12 !important; border:1px solid #ca8a04 !important; }
+  #fsOverlay .fs-inst   { color:#4b5563 !important; }
+  #fsOverlay .fs-live   { color:#374151 !important; }
+  #fsOverlay .fs-clock  { color:#111827 !important; font-weight:700 !important; }
+</style>
 <div id="fsOverlay">
   <div class="fs-wrap">
     <div class="fs-header">
