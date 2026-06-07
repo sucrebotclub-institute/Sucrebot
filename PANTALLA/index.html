@@ -341,6 +341,9 @@
           </svg>
           PANTALLA COMPLETA
         </button>
+        <button onclick="probarTema()" style="background:none;border:1px solid #1a5ca8;color:#1a5ca8;border-radius:8px;padding:10px 18px;font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;">
+          🎨 Probar alternancia
+        </button>
       </div>
       <div class="schedule-preview-list" id="previewList"></div>
     </div>
@@ -492,13 +495,24 @@
     document.getElementById('fsOverlay').classList.remove('light');
   }
 
-  // ── Fullscreen ─────────────────────────────────────────────────
-  function abrirFS() {
-    const overlay=document.getElementById('fsOverlay');
+  function probarTema() {
+    const overlay = document.getElementById('fsOverlay');
     overlay.classList.add('active');
     renderFS();
     startThemeLoop();
-    overlay.requestFullscreen?.() || overlay.webkitRequestFullscreen?.();
+    // Sin fullscreen — solo el overlay encima de la página para probar
+  }
+
+  // ── Fullscreen ─────────────────────────────────────────────────
+  function abrirFS() {
+    const overlay = document.getElementById('fsOverlay');
+    overlay.classList.add('active');
+    renderFS();
+    // Pequeño delay para que el DOM pinte antes de arrancar la alternancia
+    setTimeout(startThemeLoop, 100);
+    // Fullscreen sobre documentElement — máxima compatibilidad cross-browser
+    (document.documentElement.requestFullscreen?.() ||
+     document.documentElement.webkitRequestFullscreen?.());
   }
 
   function cerrarFS() {
@@ -508,7 +522,10 @@
   }
 
   document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) { stopThemeLoop(); document.getElementById('fsOverlay').classList.remove('active'); }
+    if (!document.fullscreenElement) {
+      stopThemeLoop();
+      document.getElementById('fsOverlay').classList.remove('active');
+    }
   });
   document.addEventListener('keydown', e => { if (e.key==='Escape') cerrarFS(); });
 
