@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Institución · SucreBot 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="../shared/js/config.js"></script>
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <style>
+    body { background: #f0f4fa !important; padding-top: 0 !important; color: #1a1c28; }
+    main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
+
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
+
+    /* ── HERO ── */
+    .inst-hero {
+      background: linear-gradient(135deg, #0a193c 0%, #1a5ca8 60%, #0a193c 100%);
+      border-radius: 20px;
+      padding: 56px 48px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .inst-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(91,200,240,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .inst-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: -40px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(91,200,240,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .inst-hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(91,200,240,0.15);
+      border: 1px solid rgba(91,200,240,0.4);
+      color: #5bc8f0;
+      font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700;
+      letter-spacing: 3px; padding: 6px 16px; border-radius: 20px;
+      margin-bottom: 20px; text-transform: uppercase;
+    }
+    .inst-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #5bc8f0; animation: blink 1.6s infinite; }
+    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+    .inst-hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.2rem; letter-spacing: 4px;
+      color: #ffffff; line-height: 1; margin-bottom: 16px;
+    }
+    .inst-hero h1 span { color: #5bc8f0; }
+    .inst-hero p {
+      font-family: 'Exo 2', sans-serif; font-size: 15px;
+      color: rgba(200,220,255,0.8); max-width: 600px; line-height: 1.7;
+    }
+
+    /* ── SECCIONES ── */
+    .inst-section {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 40px 48px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 16px rgba(26,92,168,0.08);
+      border: 1px solid rgba(26,92,168,0.08);
+      scroll-margin-top: 200px;
+    }
+    .inst-section-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #e8f0ff; color: #1a5ca8;
+      font-family: 'Orbitron', monospace; font-size: 8px; font-weight: 700;
+      letter-spacing: 2px; padding: 4px 12px; border-radius: 12px;
+      margin-bottom: 14px; text-transform: uppercase;
+    }
+    .inst-section h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem; letter-spacing: 2px;
+      color: #1a3a6e; margin-bottom: 6px;
+    }
+    .inst-section h2 span { color: #1a5ca8; }
+    .inst-divider {
+      width: 48px; height: 3px;
+      background: linear-gradient(90deg, #1a5ca8, #5bc8f0);
+      border-radius: 2px; margin-bottom: 20px;
+    }
+    .inst-section p {
+      font-family: 'Exo 2', sans-serif; font-size: 14.5px;
+      color: #3a4a6e; line-height: 1.8; margin-bottom: 14px;
+    }
+    .inst-section p:last-child { margin-bottom: 0; }
+
+    /* ── MISIÓN / VISIÓN grid ── */
+    .mv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; }
+    .mv-card {
+      background: linear-gradient(135deg, #0a193c 0%, #1a4580 100%);
+      border-radius: 16px; padding: 32px 28px;
+      border: 1px solid rgba(91,200,240,0.2);
+      position: relative; overflow: hidden;
+    }
+    .mv-card::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(91,200,240,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .mv-card-icon { font-size: 2rem; margin-bottom: 14px; }
+    .mv-card-title {
+      font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700;
+      letter-spacing: 2px; color: #5bc8f0; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .mv-card p {
+      font-family: 'Exo 2', sans-serif; font-size: 13.5px;
+      color: rgba(200,220,255,0.85); line-height: 1.75; margin: 0;
+    }
+
+    /* ── VALORES ── */
+    .valores-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
+    .valor-card {
+      background: #f4f8ff;
+      border: 1px solid rgba(26,92,168,0.12);
+      border-radius: 14px; padding: 24px 20px;
+      text-align: center;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .valor-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(26,92,168,0.12); }
+    .valor-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .valor-title {
+      font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700;
+      letter-spacing: 1.5px; color: #1a5ca8; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .valor-desc {
+      font-family: 'Exo 2', sans-serif; font-size: 12.5px;
+      color: #4a5a7a; line-height: 1.55;
+    }
+
+    /* ── STATS ROW ── */
+    .inst-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; margin-top: 28px;
+    }
+    .inst-stat {
+      background: linear-gradient(135deg, #1a5ca8, #0a193c);
+      border-radius: 14px; padding: 20px;
+      text-align: center;
+    }
+    .inst-stat-num {
+      font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem;
+      color: #5bc8f0; line-height: 1;
+    }
+    .inst-stat-lbl {
+      font-family: 'Orbitron', monospace; font-size: 8px;
+      color: rgba(200,220,255,0.7); letter-spacing: 1.5px;
+      text-transform: uppercase; margin-top: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .inst-hero { padding: 32px 24px; }
+      .inst-hero h1 { font-size: 2rem; }
+      .inst-section { padding: 28px 20px; }
+      .mv-grid { grid-template-columns: 1fr; }
+      .valores-grid { grid-template-columns: 1fr 1fr; }
+      .inst-stats { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      .valores-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<main>
+  <div class="wrapper">
+
+    <!-- HERO -->
+    <div class="inst-hero">
+      <div class="inst-hero-badge">
+        <div class="inst-hero-badge-dot"></div>
+        Club de Robótica · Instituto Superior Universitario Sucre
+      </div>
+      <h1>CLUB DE ROBÓTICA<br><span>SUCREBOT</span></h1>
+      <p>Impulsamos la innovación tecnológica desde el Instituto Superior Universitario Sucre, formando estudiantes capaces de diseñar, construir y programar robots de competencia a nivel nacional.</p>
+    </div>
+
+    <!-- QUIÉNES SOMOS -->
+    <div class="inst-section" id="quienes-somos">
+      <div class="inst-section-badge">🤖 Nosotros</div>
+      <h2>¿QUIÉNES <span>SOMOS?</span></h2>
+      <div class="inst-divider"></div>
+      <p>El <strong>Club de Robótica Sucre — SucreBot</strong> es una comunidad estudiantil del Instituto Superior Universitario Tecnológico Sucre (ISUS), fundada con el propósito de fomentar el desarrollo de habilidades en robótica, electrónica, programación e inteligencia artificial entre los estudiantes de las carreras técnicas y tecnológicas de la institución.</p>
+      <p>Nacimos de la pasión compartida por la tecnología y la convicción de que los estudiantes del ISUS tienen el talento y la capacidad para competir y destacar en torneos de robótica a nivel local, nacional e internacional. Hoy somos más de 48 miembros activos de carreras como Desarrollo de Software, Electrónica, Electromecánica y Electricidad.</p>
+      <p>El <strong>SucreBot 2026</strong> es nuestro evento insignia — un torneo de robótica con 13 categorías de competencia que convoca a instituciones de educación superior de todo el Ecuador, y que en su cuarta edición reafirma nuestro compromiso con la excelencia tecnológica.</p>
+
+      <div class="inst-stats">
+        <div class="inst-stat">
+          <div class="inst-stat-num">48</div>
+          <div class="inst-stat-lbl">Miembros activos</div>
+        </div>
+        <div class="inst-stat">
+          <div class="inst-stat-num">4ta</div>
+          <div class="inst-stat-lbl">Edición del torneo</div>
+        </div>
+        <div class="inst-stat">
+          <div class="inst-stat-num">13</div>
+          <div class="inst-stat-lbl">Categorías</div>
+        </div>
+        <div class="inst-stat">
+          <div class="inst-stat-num">12+</div>
+          <div class="inst-stat-lbl">Eventos realizados</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MISIÓN Y VISIÓN -->
+    <div class="inst-section" id="mision-vision">
+      <div class="inst-section-badge">🎯 Filosofía</div>
+      <h2>MISIÓN <span>Y VISIÓN</span></h2>
+      <div class="inst-divider"></div>
+
+      <div class="mv-grid">
+        <div class="mv-card">
+          <div class="mv-card-icon">🚀</div>
+          <div class="mv-card-title">Misión</div>
+          <p>Fomentar el desarrollo de competencias en robótica, electrónica y programación en los estudiantes del Instituto Superior Universitario Sucre, a través de proyectos, talleres y competencias que impulsen la innovación tecnológica, el trabajo en equipo y la formación integral de futuros profesionales técnicos comprometidos con el avance del Ecuador.</p>
+        </div>
+        <div class="mv-card">
+          <div class="mv-card-icon">🌟</div>
+          <div class="mv-card-title">Visión</div>
+          <p>Ser reconocidos como el club de robótica referente de la educación técnica y tecnológica del Ecuador, consolidando al Instituto Superior Universitario Sucre como un semillero de talento en ciencia, tecnología, ingeniería y matemáticas, y posicionando al SucreBot como el torneo de robótica más importante del país para instituciones de nivel superior.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- VALORES -->
+    <div class="inst-section" id="valores">
+      <div class="inst-section-badge">💡 Principios</div>
+      <h2>NUESTROS <span>VALORES</span></h2>
+      <div class="inst-divider"></div>
+
+      <div class="valores-grid">
+        <div class="valor-card">
+          <div class="valor-icon">⚙️</div>
+          <div class="valor-title">Innovación</div>
+          <div class="valor-desc">Buscamos constantemente nuevas soluciones tecnológicas y fomentamos el pensamiento creativo en cada proyecto.</div>
+        </div>
+        <div class="valor-card">
+          <div class="valor-icon">🤝</div>
+          <div class="valor-title">Trabajo en equipo</div>
+          <div class="valor-desc">Creemos que los mejores resultados se logran cuando colaboramos, compartimos conocimiento y nos apoyamos mutuamente.</div>
+        </div>
+        <div class="valor-card">
+          <div class="valor-icon">🏆</div>
+          <div class="valor-title">Excelencia</div>
+          <div class="valor-desc">Nos exigimos dar lo mejor en cada competencia, proyecto y actividad, representando con orgullo al Instituto Sucre.</div>
+        </div>
+        <div class="valor-card">
+          <div class="valor-icon">📚</div>
+          <div class="valor-title">Aprendizaje continuo</div>
+          <div class="valor-desc">Cada error es una oportunidad para crecer. Promovemos la formación permanente en tecnología y robótica.</div>
+        </div>
+        <div class="valor-card">
+          <div class="valor-icon">🌐</div>
+          <div class="valor-title">Inclusión</div>
+          <div class="valor-desc">Abrimos las puertas a todos los estudiantes con ganas de aprender, sin importar su carrera o nivel de experiencia.</div>
+        </div>
+        <div class="valor-card">
+          <div class="valor-icon">🎯</div>
+          <div class="valor-title">Compromiso</div>
+          <div class="valor-desc">Asumimos con responsabilidad cada tarea, torneo y proyecto, honrando la confianza del Instituto Sucre y nuestra comunidad.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div data-include="../shared/components/footer.html"></div>
+
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
+</body>
+</html>
