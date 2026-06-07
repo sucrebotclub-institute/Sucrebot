@@ -601,11 +601,12 @@
     const overlay = document.getElementById('fsOverlay');
     overlay.classList.add('active');
     renderFS();
-    // Solicitar fullscreen real del browser
+    startThemeLoop();
     overlay.requestFullscreen?.() || overlay.webkitRequestFullscreen?.();
   }
 
   function cerrarFS() {
+    stopThemeLoop();
     document.getElementById('fsOverlay').classList.remove('active');
     document.exitFullscreen?.() || document.webkitExitFullscreen?.();
   }
@@ -613,6 +614,7 @@
   // Cerrar con Escape
   document.addEventListener('fullscreenchange', () => {
     if (!document.fullscreenElement) {
+      stopThemeLoop();
       document.getElementById('fsOverlay').classList.remove('active');
     }
   });
