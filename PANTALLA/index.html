@@ -6,292 +6,305 @@
   <title>Cronograma · SucreBot 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <script src="../shared/js/config.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f0f4fa !important; padding-top: 0 !important; }
+    main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
 
-    :root {
-      --azul:       #1a5ca8;
-      --azul-dark:  #0e3a6e;
-      --azul-deep:  #071e3d;
-      --azul-glow:  #2176d2;
-      --gold:       #f5c518;
-      --gold-soft:  #ffd96a;
-      --white:      #ffffff;
-      --dim:        rgba(255,255,255,0.55);
-      --line:       rgba(255,255,255,0.10);
-      --card-bg:    rgba(255,255,255,0.04);
-      --card-hover: rgba(255,255,255,0.08);
+    /* ── Preview card en página normal ── */
+    .cronograma-preview {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 24px rgba(26,92,168,0.10);
+      margin-bottom: 24px;
+    }
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .preview-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 2px;
+      color: #1a5ca8;
+    }
+    .preview-sub {
+      font-size: 13px;
+      color: #666;
+      margin-top: 2px;
+    }
+    .btn-fullscreen {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #1a5ca8, #2176d2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,92,168,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-fullscreen:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(26,92,168,0.45);
+    }
+    .btn-fullscreen svg { width: 20px; height: 20px; }
+
+    /* ── Mini tabla preview ── */
+    .schedule-preview-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    @media (max-width: 640px) {
+      .schedule-preview-list { grid-template-columns: 1fr; }
+    }
+    .preview-slot {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #f8faff;
+      border-left: 3px solid #1a5ca8;
+    }
+    .preview-slot.cat-apertura   { border-color: #f5c518; }
+    .preview-slot.cat-competencia { border-color: #4ea8f5; }
+    .preview-slot.cat-tecnico    { border-color: #a855f7; }
+    .preview-slot.cat-descanso   { border-color: #22c55e; }
+    .preview-slot.cat-clausura   { border-color: #f97316; }
+    .preview-slot.cat-premiacion { border-color: #f5c518; }
+    .preview-time {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: #1a5ca8;
+      font-weight: 500;
+      min-width: 44px;
+      flex-shrink: 0;
+    }
+    .preview-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a2a4a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preview-detail {
+      font-size: 11px;
+      color: #888;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: var(--azul-deep);
-      color: var(--white);
+    /* ── OVERLAY FULLSCREEN ── */
+    #fsOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #071e3d;
+      color: white;
       font-family: 'Exo 2', sans-serif;
     }
+    #fsOverlay.active { display: flex; flex-direction: column; }
 
-    /* ── Background ── */
-    .bg {
-      position: fixed; inset: 0; z-index: 0;
+    /* bg effects */
+    #fsOverlay::before {
+      content: '';
+      position: absolute; inset: 0;
       background:
         radial-gradient(ellipse 80% 60% at 15% 50%, rgba(26,92,168,0.45) 0%, transparent 70%),
         radial-gradient(ellipse 60% 80% at 85% 20%, rgba(33,118,210,0.30) 0%, transparent 65%),
-        radial-gradient(ellipse 50% 50% at 50% 100%, rgba(7,30,61,0.80) 0%, transparent 70%),
         linear-gradient(160deg, #071e3d 0%, #0d2f5c 50%, #071e3d 100%);
+      pointer-events: none;
     }
-    .bg-grid {
-      position: fixed; inset: 0; z-index: 0;
+    #fsOverlay::after {
+      content: '';
+      position: absolute; inset: 0;
       background-image:
         linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
       background-size: 60px 60px;
-    }
-    /* Diagonal accent line */
-    .bg-accent {
-      position: fixed; z-index: 0;
-      top: -10%; left: -5%;
-      width: 55%; height: 130%;
-      background: linear-gradient(105deg, transparent 0%, rgba(26,92,168,0.12) 40%, transparent 70%);
-      transform: skewX(-8deg);
       pointer-events: none;
     }
 
-    /* ── Layout ── */
-    .screen {
+    .fs-inner {
       position: relative; z-index: 1;
-      width: 100vw; height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: 0;
-      overflow: hidden;
+      display: flex; flex-direction: column;
+      height: 100%;
     }
 
-    /* ── Header ── */
-    header {
+    /* fs header */
+    .fs-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 28px 64px 20px;
-      border-bottom: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(7,30,61,0.6) 0%, transparent 100%);
-      animation: fadeDown 0.8s ease both;
+      padding: 20px 52px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      flex-shrink: 0;
     }
-    .header-left {
-      display: flex; align-items: center; gap: 20px;
-    }
-    .logo-mark {
-      width: 52px; height: 52px;
-      background: linear-gradient(135deg, var(--azul), var(--azul-glow));
-      border-radius: 12px;
+    .fs-header-left { display: flex; align-items: center; gap: 16px; }
+    .fs-logo {
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, #1a5ca8, #2176d2);
+      border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 1px;
-      color: white;
-      box-shadow: 0 0 24px rgba(26,92,168,0.6);
+      font-size: 18px; color: white;
+      box-shadow: 0 0 20px rgba(26,92,168,0.6);
       flex-shrink: 0;
     }
-    .header-titles {}
-    .event-title {
+    .fs-event-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(26px, 3.2vw, 42px);
-      letter-spacing: 3px;
-      color: var(--white);
-      line-height: 1;
+      font-size: clamp(24px, 3vw, 40px);
+      letter-spacing: 3px; color: white; line-height: 1;
     }
-    .event-sub {
-      font-size: clamp(10px, 1.1vw, 14px);
-      color: var(--dim);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-top: 3px;
-      font-weight: 300;
+    .fs-event-sub {
+      font-size: clamp(9px, 1vw, 13px);
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 2px; font-weight: 300;
     }
-    .header-right {
+    .fs-header-right { display: flex; align-items: center; gap: 20px; }
+    .fs-date {
       text-align: right;
     }
-    .event-date {
+    .fs-date-main {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(22px, 2.8vw, 38px);
-      letter-spacing: 3px;
-      color: var(--gold);
-      line-height: 1;
+      font-size: clamp(20px, 2.5vw, 36px);
+      letter-spacing: 3px; color: #f5c518; line-height: 1;
     }
-    .event-place {
-      font-size: clamp(10px, 1vw, 13px);
-      color: var(--dim);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-top: 4px;
-      font-weight: 300;
+    .fs-date-place {
+      font-size: clamp(9px, 0.9vw, 12px);
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 3px;
     }
-    .gold-bar {
-      width: 100%;
+    .btn-exit-fs {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px; letter-spacing: 1.5px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-exit-fs:hover { background: rgba(255,255,255,0.15); color: white; }
+    .btn-exit-fs svg { width: 16px; height: 16px; }
+
+    .fs-gold-bar {
       height: 3px;
-      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-soft), var(--gold), transparent);
-      opacity: 0.7;
+      background: linear-gradient(90deg, transparent, #f5c518, #ffd96a, #f5c518, transparent);
+      opacity: 0.7; flex-shrink: 0;
     }
 
-    /* ── Schedule ── */
-    .schedule-wrap {
-      overflow: hidden;
-      padding: 32px 64px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
+    /* fs body */
+    .fs-body {
+      flex: 1; overflow: hidden;
+      padding: 20px 52px 12px;
+      display: flex; flex-direction: column;
     }
-
-    .section-label {
+    .fs-section-label {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(11px, 1.1vw, 15px);
-      letter-spacing: 4px;
-      color: var(--gold);
-      margin-bottom: 14px;
+      font-size: clamp(11px, 1.1vw, 14px);
+      letter-spacing: 4px; color: #f5c518;
+      margin-bottom: 12px;
       display: flex; align-items: center; gap: 10px;
-      opacity: 0;
-      animation: fadeUp 0.6s ease forwards;
     }
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
+    .fs-section-label::after {
+      content: ''; flex: 1; height: 1px;
       background: linear-gradient(90deg, rgba(245,197,24,0.3), transparent);
     }
-
-    .schedule-grid {
+    .fs-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px 32px;
-    }
-
-    .slot {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      padding: 14px 18px;
-      border-radius: 10px;
-      background: var(--card-bg);
-      border: 1px solid var(--line);
-      position: relative;
+      gap: 7px 28px;
       overflow: hidden;
-      opacity: 0;
-      animation: fadeUp 0.55s ease forwards;
+    }
+    .fs-slot {
+      display: flex; align-items: center; gap: 14px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-left: 3px solid #1a5ca8;
+      position: relative;
       transition: background 0.3s;
     }
-    .slot::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-      border-radius: 3px 0 0 3px;
-    }
-    .slot.cat-apertura::before  { background: var(--gold); }
-    .slot.cat-competencia::before { background: #4ea8f5; }
-    .slot.cat-tecnico::before   { background: #a855f7; }
-    .slot.cat-descanso::before  { background: #22c55e; }
-    .slot.cat-clausura::before  { background: #f97316; }
-    .slot.cat-premiacion::before { background: var(--gold); box-shadow: 0 0 8px rgba(245,197,24,0.5); }
-
-    .slot-time {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(13px, 1.4vw, 18px);
-      font-weight: 500;
-      color: var(--gold-soft);
-      white-space: nowrap;
-      min-width: 80px;
-      flex-shrink: 0;
-    }
-    .slot-body { flex: 1; min-width: 0; }
-    .slot-name {
-      font-size: clamp(13px, 1.45vw, 19px);
-      font-weight: 600;
-      color: var(--white);
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .slot-detail {
-      font-size: clamp(10px, 1vw, 13px);
-      color: var(--dim);
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .slot-badge {
-      font-size: clamp(9px, 0.9vw, 11px);
-      font-family: 'DM Mono', monospace;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      padding: 3px 9px;
-      border-radius: 20px;
-      flex-shrink: 0;
-    }
-    .slot.cat-apertura  .slot-badge { background: rgba(245,197,24,0.15); color: var(--gold); border: 1px solid rgba(245,197,24,0.3); }
-    .slot.cat-competencia .slot-badge { background: rgba(78,168,245,0.15); color: #4ea8f5; border: 1px solid rgba(78,168,245,0.3); }
-    .slot.cat-tecnico   .slot-badge { background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
-    .slot.cat-descanso  .slot-badge { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
-    .slot.cat-clausura  .slot-badge { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
-    .slot.cat-premiacion .slot-badge { background: rgba(245,197,24,0.2); color: var(--gold); border: 1px solid rgba(245,197,24,0.4); }
-
-    /* ACTIVE highlight */
-    .slot.active {
+    .fs-slot.cat-apertura   { border-left-color: #f5c518; }
+    .fs-slot.cat-competencia { border-left-color: #4ea8f5; }
+    .fs-slot.cat-tecnico    { border-left-color: #a855f7; }
+    .fs-slot.cat-descanso   { border-left-color: #22c55e; }
+    .fs-slot.cat-clausura   { border-left-color: #f97316; }
+    .fs-slot.cat-premiacion { border-left-color: #f5c518; }
+    .fs-slot.active {
       background: rgba(26,92,168,0.25);
       border-color: rgba(33,118,210,0.5);
-      box-shadow: 0 0 20px rgba(26,92,168,0.3);
+      border-left-color: #4ea8f5;
+      box-shadow: 0 0 16px rgba(26,92,168,0.3);
     }
-    .slot.active .slot-name { color: #fff; }
-    .slot.past { opacity: 0.4; }
-
-    /* ── Footer ── */
-    footer {
-      padding: 14px 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid var(--line);
-      background: linear-gradient(0deg, rgba(7,30,61,0.5) 0%, transparent 100%);
-      animation: fadeUp 0.8s 0.5s ease both;
-    }
-    .footer-inst {
-      font-size: clamp(10px, 1vw, 13px);
-      color: var(--dim);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-    .live-dot {
-      display: flex; align-items: center; gap: 8px;
-      font-size: clamp(10px, 1vw, 13px);
-      color: var(--dim);
+    .fs-slot.past { opacity: 0.38; }
+    .fs-slot-time {
       font-family: 'DM Mono', monospace;
-      letter-spacing: 1px;
+      font-size: clamp(12px, 1.3vw, 17px);
+      font-weight: 500; color: #ffd96a;
+      min-width: 52px; flex-shrink: 0;
     }
-    .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #22c55e;
-      box-shadow: 0 0 8px #22c55e;
-      animation: pulse 1.8s ease infinite;
+    .fs-slot-body { flex: 1; min-width: 0; }
+    .fs-slot-name {
+      font-size: clamp(12px, 1.35vw, 17px);
+      font-weight: 600; color: white; line-height: 1.2;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .clock-display {
+    .fs-slot-detail {
+      font-size: clamp(9px, 0.9vw, 12px);
+      color: rgba(255,255,255,0.5); margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .fs-slot-badge {
+      font-size: clamp(8px, 0.8vw, 10px);
       font-family: 'DM Mono', monospace;
-      font-size: clamp(14px, 1.5vw, 20px);
-      color: var(--white);
-      letter-spacing: 2px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
     }
+    .fs-slot.cat-apertura   .fs-slot-badge { background: rgba(245,197,24,0.15); color: #f5c518; border: 1px solid rgba(245,197,24,0.3); }
+    .fs-slot.cat-competencia .fs-slot-badge { background: rgba(78,168,245,0.15); color: #4ea8f5; border: 1px solid rgba(78,168,245,0.3); }
+    .fs-slot.cat-tecnico    .fs-slot-badge { background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
+    .fs-slot.cat-descanso   .fs-slot-badge { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+    .fs-slot.cat-clausura   .fs-slot-badge { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
+    .fs-slot.cat-premiacion .fs-slot-badge { background: rgba(245,197,24,0.2); color: #f5c518; border: 1px solid rgba(245,197,24,0.4); }
 
-    /* ── Animations ── */
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to   { opacity: 1; transform: translateY(0); }
+    /* fs footer */
+    .fs-footer {
+      padding: 10px 52px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
     }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulse {
+    .fs-footer-inst { font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; }
+    .fs-live { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; letter-spacing: 1px; }
+    .fs-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 7px #22c55e; animation: fsPulse 1.8s ease infinite; }
+    .fs-clock { font-family: 'DM Mono', monospace; font-size: clamp(14px, 1.5vw, 20px); color: white; letter-spacing: 2px; }
+
+    @keyframes fsPulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50%       { opacity: 0.4; transform: scale(0.7); }
     }
@@ -299,115 +312,191 @@
 </head>
 <body>
 
-<div class="bg"></div>
-<div class="bg-grid"></div>
-<div class="bg-accent"></div>
-
-<div class="screen">
-
-  <!-- HEADER -->
-  <div>
-    <header>
-      <div class="header-left">
-        <div class="logo-mark">SB</div>
-        <div class="header-titles">
-          <div class="event-title">SucreBot 2026</div>
-          <div class="event-sub">Club de Robótica · Instituto Superior Universitario Sucre</div>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="event-date">16 · VII · 2026</div>
-        <div class="event-place">Quito, Ecuador</div>
-      </div>
-    </header>
-    <div class="gold-bar"></div>
-  </div>
-
-  <!-- SCHEDULE -->
-  <div class="schedule-wrap">
-    <div class="section-label" style="animation-delay:0.2s">▸ PROGRAMA DEL EVENTO</div>
-
-    <div class="schedule-grid" id="scheduleGrid">
-      <!-- JS rendered -->
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-inst">sucrebotclub-institute.github.io</div>
-    <div class="live-dot"><div class="dot"></div> EN VIVO</div>
-    <div class="clock-display" id="clock">00:00:00</div>
-  </footer>
-
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
 </div>
 
+<main>
+  <div class="wrapper" style="max-width:1200px;margin:0 auto;padding:0 20px 60px">
+
+    <!-- Card normal -->
+    <div class="cronograma-preview">
+      <div class="preview-header">
+        <div>
+          <div class="preview-title">CRONOGRAMA · 16 DE JULIO 2026</div>
+          <div class="preview-sub">Programa oficial del evento · Club de Robótica Sucre</div>
+        </div>
+        <button class="btn-fullscreen" onclick="abrirFS()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+          PANTALLA COMPLETA
+        </button>
+      </div>
+
+      <!-- Mini preview del schedule -->
+      <div class="schedule-preview-list" id="previewList"></div>
+    </div>
+
+  </div>
+</main>
+
+<div data-include="../shared/components/footer.html"></div>
+
+<!-- ══════════════════════════════════════════
+     OVERLAY FULLSCREEN
+══════════════════════════════════════════ -->
+<div id="fsOverlay">
+  <div class="fs-inner">
+
+    <div class="fs-header">
+      <div class="fs-header-left">
+        <div class="fs-logo">SB</div>
+        <div>
+          <div class="fs-event-title">SucreBot 2026</div>
+          <div class="fs-event-sub">Club de Robótica · Instituto Superior Universitario Sucre</div>
+        </div>
+      </div>
+      <div class="fs-header-right">
+        <div class="fs-date">
+          <div class="fs-date-main">16 · VII · 2026</div>
+          <div class="fs-date-place">Quito, Ecuador</div>
+        </div>
+        <button class="btn-exit-fs" onclick="cerrarFS()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+          </svg>
+          SALIR
+        </button>
+      </div>
+    </div>
+    <div class="fs-gold-bar"></div>
+
+    <div class="fs-body">
+      <div class="fs-section-label">▸ PROGRAMA DEL EVENTO</div>
+      <div class="fs-grid" id="fsGrid"></div>
+    </div>
+
+    <div class="fs-footer">
+      <div class="fs-footer-inst">sucrebotclub-institute.github.io</div>
+      <div class="fs-live"><div class="fs-dot"></div> EN VIVO</div>
+      <div class="fs-clock" id="fsClock">00:00:00</div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
 <script>
-  // ── Cronograma ─────────────────────────────────────────────────
+  // ── Datos del cronograma ────────────────────────────────────────
   const SCHEDULE = [
-    { time: '08:00', name: 'Acreditación y registro', detail: 'Recepción de participantes · Entrega de kits', cat: 'apertura',    badge: 'Apertura'     },
-    { time: '09:00', name: 'Ceremonia de apertura',   detail: 'Bienvenida institucional · Presentación del evento', cat: 'apertura', badge: 'Apertura' },
-    { time: '09:30', name: 'Insectos',                detail: 'Arena principal · Categoría Amateur',   cat: 'competencia', badge: 'Competencia'  },
-    { time: '09:30', name: 'Seguidor de Línea (Amateur)', detail: 'Pista ST · Categoría Amateur',     cat: 'competencia', badge: 'Competencia'  },
-    { time: '10:30', name: 'Trepador Amateur',        detail: 'Estructura de trepada · Arena 2',      cat: 'competencia', badge: 'Competencia'  },
-    { time: '10:30', name: 'Seguidor de Línea (Pro)', detail: 'Pista ST · Categoría Pro',             cat: 'competencia', badge: 'Competencia'  },
-    { time: '11:30', name: 'Receso',                  detail: 'Refrigerio · 30 minutos',              cat: 'descanso',    badge: 'Descanso'     },
-    { time: '12:00', name: 'Minisumo Autónomo',       detail: 'Arena Minisumo · Fase de grupos',      cat: 'competencia', badge: 'Competencia'  },
-    { time: '12:00', name: 'Minisumo RC',             detail: 'Arena Minisumo · Fase de grupos',      cat: 'competencia', badge: 'Competencia'  },
-    { time: '13:00', name: 'Revisión técnica ESP32',  detail: 'Laboratorio · Verificación de hardware', cat: 'tecnico',   badge: 'Técnico'      },
-    { time: '13:30', name: 'Almuerzo',                detail: 'Pausa · 1 hora',                       cat: 'descanso',    badge: 'Descanso'     },
-    { time: '14:30', name: 'Bailarín',                detail: 'Escenario principal · Panel de calificación', cat: 'competencia', badge: 'Competencia' },
-    { time: '14:30', name: 'Impacto Tecnológico',     detail: 'Sala de exposiciones · Presentaciones', cat: 'competencia', badge: 'Competencia'  },
-    { time: '15:30', name: 'Robot Soccer',            detail: 'Cancha principal · Fase eliminatoria', cat: 'competencia', badge: 'Competencia'  },
-    { time: '15:30', name: 'Cubo Rubik',              detail: 'Mesa de cronometraje · Rondas clasificatorias', cat: 'competencia', badge: 'Competencia' },
-    { time: '16:30', name: 'Lego Kids',               detail: 'Área Kids · Categoría infantil',       cat: 'competencia', badge: 'Competencia'  },
-    { time: '16:30', name: 'Trepador Pro',            detail: 'Estructura de trepada · Categoría Pro', cat: 'competencia', badge: 'Competencia'  },
-    { time: '17:30', name: 'Batalla de Robots',       detail: 'Arena principal · Eliminación directa', cat: 'competencia', badge: 'Competencia'  },
-    { time: '18:00', name: 'Semifinales y Finales',   detail: 'Todas las categorías · Rondas finales', cat: 'clausura',   badge: 'Final'        },
-    { time: '19:00', name: 'Ceremonia de premiación', detail: 'Auditorio · Entrega de trofeos y diplomas', cat: 'premiacion', badge: '🏆 Premiación' },
+    { time: '08:00', name: 'Acreditación y registro',      detail: 'Recepción de participantes · Entrega de kits',        cat: 'apertura',    badge: 'Apertura'     },
+    { time: '09:00', name: 'Ceremonia de apertura',         detail: 'Bienvenida institucional · Presentación del evento',  cat: 'apertura',    badge: 'Apertura'     },
+    { time: '09:30', name: 'Insectos',                      detail: 'Arena principal · Categoría Amateur',                 cat: 'competencia', badge: 'Competencia'  },
+    { time: '09:30', name: 'Seguidor de Línea (Amateur)',   detail: 'Pista ST · Categoría Amateur',                       cat: 'competencia', badge: 'Competencia'  },
+    { time: '10:30', name: 'Trepador Amateur',              detail: 'Estructura de trepada · Arena 2',                    cat: 'competencia', badge: 'Competencia'  },
+    { time: '10:30', name: 'Seguidor de Línea (Pro)',       detail: 'Pista ST · Categoría Pro',                           cat: 'competencia', badge: 'Competencia'  },
+    { time: '11:30', name: 'Receso',                        detail: 'Refrigerio · 30 minutos',                            cat: 'descanso',    badge: 'Descanso'     },
+    { time: '12:00', name: 'Minisumo Autónomo',             detail: 'Arena Minisumo · Fase de grupos',                    cat: 'competencia', badge: 'Competencia'  },
+    { time: '12:00', name: 'Minisumo RC',                   detail: 'Arena Minisumo · Fase de grupos',                    cat: 'competencia', badge: 'Competencia'  },
+    { time: '13:00', name: 'Revisión técnica ESP32',        detail: 'Laboratorio · Verificación de hardware',             cat: 'tecnico',     badge: 'Técnico'      },
+    { time: '13:30', name: 'Almuerzo',                      detail: 'Pausa · 1 hora',                                     cat: 'descanso',    badge: 'Descanso'     },
+    { time: '14:30', name: 'Bailarín',                      detail: 'Escenario principal · Panel de calificación',        cat: 'competencia', badge: 'Competencia'  },
+    { time: '14:30', name: 'Impacto Tecnológico',           detail: 'Sala de exposiciones · Presentaciones',              cat: 'competencia', badge: 'Competencia'  },
+    { time: '15:30', name: 'Robot Soccer',                  detail: 'Cancha principal · Fase eliminatoria',               cat: 'competencia', badge: 'Competencia'  },
+    { time: '15:30', name: 'Cubo Rubik',                    detail: 'Mesa de cronometraje · Rondas clasificatorias',      cat: 'competencia', badge: 'Competencia'  },
+    { time: '16:30', name: 'Lego Kids',                     detail: 'Área Kids · Categoría infantil',                     cat: 'competencia', badge: 'Competencia'  },
+    { time: '16:30', name: 'Trepador Pro',                  detail: 'Estructura de trepada · Categoría Pro',              cat: 'competencia', badge: 'Competencia'  },
+    { time: '17:30', name: 'Batalla de Robots',             detail: 'Arena principal · Eliminación directa',              cat: 'competencia', badge: 'Competencia'  },
+    { time: '18:00', name: 'Semifinales y Finales',         detail: 'Todas las categorías · Rondas finales',              cat: 'clausura',    badge: 'Final'        },
+    { time: '19:00', name: 'Ceremonia de premiación',       detail: 'Auditorio · Entrega de trofeos y diplomas',          cat: 'premiacion',  badge: '🏆 Premiación' },
   ];
 
-  // ── Render ──────────────────────────────────────────────────────
-  function render() {
-    const grid = document.getElementById('scheduleGrid');
-    grid.innerHTML = SCHEDULE.map((s, i) => `
-      <div class="slot cat-${s.cat}" id="slot-${i}"
-           style="animation-delay:${0.25 + i * 0.045}s">
-        <div class="slot-time">${s.time}</div>
-        <div class="slot-body">
-          <div class="slot-name">${s.name}</div>
-          <div class="slot-detail">${s.detail}</div>
+  // ── Render preview (página normal) ─────────────────────────────
+  function renderPreview() {
+    document.getElementById('previewList').innerHTML = SCHEDULE.map(s => `
+      <div class="preview-slot cat-${s.cat}">
+        <div class="preview-time">${s.time}</div>
+        <div>
+          <div class="preview-name">${s.name}</div>
+          <div class="preview-detail">${s.detail}</div>
         </div>
-        <div class="slot-badge">${s.badge}</div>
       </div>
     `).join('');
   }
 
-  // ── Clock + Active slot highlight ───────────────────────────────
-  function toMinutes(t) {
-    const [h, m] = t.split(':').map(Number);
-    return h * 60 + m;
+  // ── Render fullscreen grid ──────────────────────────────────────
+  function renderFS() {
+    document.getElementById('fsGrid').innerHTML = SCHEDULE.map((s, i) => `
+      <div class="fs-slot cat-${s.cat}" id="fss-${i}">
+        <div class="fs-slot-time">${s.time}</div>
+        <div class="fs-slot-body">
+          <div class="fs-slot-name">${s.name}</div>
+          <div class="fs-slot-detail">${s.detail}</div>
+        </div>
+        <div class="fs-slot-badge">${s.badge}</div>
+      </div>
+    `).join('');
+    updateActive();
   }
 
-  function tick() {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    const ss = String(now.getSeconds()).padStart(2,'0');
-    document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
+  // ── Active slot highlight ───────────────────────────────────────
+  function toMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
 
-    const nowMin = now.getHours() * 60 + now.getMinutes();
+  function updateActive() {
+    const now = new Date();
+    const cur = now.getHours()*60 + now.getMinutes();
     SCHEDULE.forEach((s, i) => {
-      const el = document.getElementById(`slot-${i}`);
+      const el = document.getElementById(`fss-${i}`);
       if (!el) return;
-      const start = toMinutes(s.time);
-      const next  = i + 1 < SCHEDULE.length ? toMinutes(SCHEDULE[i + 1].time) : start + 60;
-      el.classList.remove('active', 'past');
-      if (nowMin >= start && nowMin < next) el.classList.add('active');
-      else if (nowMin >= next)              el.classList.add('past');
+      const start = toMin(s.time);
+      const next  = i+1 < SCHEDULE.length ? toMin(SCHEDULE[i+1].time) : start+60;
+      el.classList.remove('active','past');
+      if (cur >= start && cur < next) el.classList.add('active');
+      else if (cur >= next)           el.classList.add('past');
     });
   }
 
-  render();
+  // ── Clock ───────────────────────────────────────────────────────
+  function tick() {
+    const n = new Date();
+    const t = [n.getHours(), n.getMinutes(), n.getSeconds()]
+      .map(v => String(v).padStart(2,'0')).join(':');
+    const el = document.getElementById('fsClock');
+    if (el) el.textContent = t;
+    updateActive();
+  }
+
+  // ── Fullscreen toggle ───────────────────────────────────────────
+  function abrirFS() {
+    const overlay = document.getElementById('fsOverlay');
+    overlay.classList.add('active');
+    renderFS();
+    // Solicitar fullscreen real del browser
+    overlay.requestFullscreen?.() || overlay.webkitRequestFullscreen?.();
+  }
+
+  function cerrarFS() {
+    document.getElementById('fsOverlay').classList.remove('active');
+    document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+  }
+
+  // Cerrar con Escape
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) {
+      document.getElementById('fsOverlay').classList.remove('active');
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') cerrarFS();
+  });
+
+  // ── Init ────────────────────────────────────────────────────────
+  renderPreview();
   tick();
   setInterval(tick, 1000);
 </script>
