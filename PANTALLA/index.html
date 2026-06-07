@@ -42,276 +42,148 @@
       border-left: 3px solid #1a5ca8;
     }
     .preview-slot.cat-apertura    { border-color: #f5c518; }
-    .preview-slot.cat-competencia { border-color: #4ea8f5; }
-    .preview-slot.cat-tecnico     { border-color: #a855f7; }
-    .preview-slot.cat-descanso    { border-color: #22c55e; }
-    .preview-slot.cat-clausura    { border-color: #f97316; }
+    .preview-slot.cat-competencia { border-color: #1a5ca8; }
+    .preview-slot.cat-tecnico     { border-color: #7e22ce; }
+    .preview-slot.cat-descanso    { border-color: #15803d; }
+    .preview-slot.cat-clausura    { border-color: #c2410c; }
     .preview-slot.cat-premiacion  { border-color: #f5c518; }
     .preview-time   { font-family:'DM Mono',monospace; font-size:13px; color:#1a5ca8; font-weight:500; min-width:44px; flex-shrink:0; }
     .preview-name   { font-size:13px; font-weight:600; color:#1a2a4a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .preview-detail { font-size:11px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
     /* ══════════════════════════════════════
-       FULLSCREEN OVERLAY
+       FULLSCREEN OVERLAY — SOLO BLANCO
     ══════════════════════════════════════ */
     #fsOverlay {
       display: none;
       position: fixed; inset: 0; z-index: 99999;
+      background: #ffffff;
       font-family: 'Exo 2', sans-serif;
+      color: #0e1e3a;
       overflow: hidden;
     }
     #fsOverlay.active { display: flex; flex-direction: column; }
 
-    /* Two background layers that cross-fade */
-    .fs-bg {
-      position: absolute; inset: 0; z-index: 0;
-      transition: opacity 1s ease;
-    }
-    .fs-bg-dark {
-      background:
-        radial-gradient(ellipse 80% 60% at 15% 50%, rgba(26,92,168,0.45) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 80% at 85% 20%, rgba(33,118,210,0.30) 0%, transparent 65%),
-        linear-gradient(160deg, #071e3d 0%, #0d2f5c 50%, #071e3d 100%);
-    }
-    .fs-bg-dark-grid {
-      background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-    }
-    .fs-bg-light {
-      background:
-        radial-gradient(ellipse 70% 50% at 10% 50%, rgba(26,92,168,0.08) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 60% at 90% 20%, rgba(33,118,210,0.07) 0%, transparent 65%),
-        linear-gradient(160deg, #e8eef8 0%, #f0f4fa 50%, #e8eef8 100%);
-      opacity: 0; /* starts hidden */
-    }
-    .fs-bg-light-grid {
-      background-image:
-        linear-gradient(rgba(26,92,168,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(26,92,168,0.06) 1px, transparent 1px);
-      background-size: 60px 60px;
-      opacity: 0;
-    }
-
-    /* Content sits above backgrounds */
-    .fs-inner {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column; height: 100%;
-      transition: color 1s ease;
-      color: white;
-    }
-    #fsOverlay.light .fs-inner { color: #0e1e3a; }
-    #fsOverlay.light .fs-bg-dark, #fsOverlay.light .fs-bg-dark-grid { opacity: 0; }
-    #fsOverlay.light .fs-bg-light, #fsOverlay.light .fs-bg-light-grid { opacity: 1; }
-
-    /* ── fs header ── */
+    /* ── header ── */
     .fs-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 52px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
+      padding: 22px 52px 18px;
+      border-bottom: 2px solid #1a5ca8;
       flex-shrink: 0;
-      transition: border-color 1s ease;
+      background: #ffffff;
     }
-    #fsOverlay.light .fs-header { border-bottom-color: rgba(26,92,168,0.15); }
     .fs-header-left { display: flex; align-items: center; gap: 16px; }
     .fs-logo {
       width: 46px; height: 46px;
       background: linear-gradient(135deg, #1a5ca8, #2176d2);
       border-radius: 10px; display: flex; align-items: center; justify-content: center;
       font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: white;
-      box-shadow: 0 0 20px rgba(26,92,168,0.6); flex-shrink: 0;
-      transition: box-shadow 1s ease;
+      flex-shrink: 0;
     }
-    #fsOverlay.light .fs-logo { box-shadow: 0 0 20px rgba(26,92,168,0.25); }
     .fs-event-title {
       font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(24px,3vw,40px); letter-spacing: 3px; line-height: 1;
-      transition: color 1s ease; color: white;
+      color: #0e1e3a;
     }
-    #fsOverlay.light .fs-event-title { color: #0e1e3a; }
     .fs-event-sub {
       font-size: clamp(9px,1vw,13px); letter-spacing: 2px; text-transform: uppercase;
-      margin-top: 2px; font-weight: 300;
-      transition: color 1s ease; color: rgba(255,255,255,0.55);
+      margin-top: 2px; font-weight: 300; color: #666;
     }
-    #fsOverlay.light .fs-event-sub { color: rgba(14,30,58,0.55); }
     .fs-header-right { display: flex; align-items: center; gap: 20px; }
     .fs-date-main {
       font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(20px,2.5vw,36px); letter-spacing: 3px; line-height: 1;
-      transition: color 1s ease; color: #f5c518;
-    }
-    #fsOverlay.light .fs-date-main { color: #1a5ca8; }
-    .fs-date-place {
-      font-size: clamp(9px,0.9vw,12px); letter-spacing: 2px; text-transform: uppercase;
-      margin-top: 3px; text-align:right;
-      transition: color 1s ease; color: rgba(255,255,255,0.55);
-    }
-    #fsOverlay.light .fs-date-place { color: rgba(14,30,58,0.5); }
-    .btn-exit-fs {
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.7); border-radius: 8px; padding: 8px 16px;
-      font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px;
-      cursor: pointer; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-      transition: background 0.2s, color 0.2s, border-color 1s;
-    }
-    .btn-exit-fs:hover { background: rgba(255,255,255,0.18); color: white; }
-    #fsOverlay.light .btn-exit-fs {
-      background: rgba(26,92,168,0.08); border-color: rgba(26,92,168,0.25);
       color: #1a5ca8;
     }
-    #fsOverlay.light .btn-exit-fs:hover { background: rgba(26,92,168,0.15); }
+    .fs-date-place {
+      font-size: clamp(9px,0.9vw,12px); letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 3px; text-align:right; color: #666;
+    }
+    .btn-exit-fs {
+      background: white; border: 1px solid #1a5ca8;
+      color: #1a5ca8; border-radius: 8px; padding: 8px 16px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px;
+      cursor: pointer; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .btn-exit-fs:hover { background: #f0f4fa; }
     .btn-exit-fs svg { width: 16px; height: 16px; }
 
-    .fs-gold-bar {
-      height: 3px; flex-shrink: 0;
-      transition: background 1s ease;
-      background: linear-gradient(90deg, transparent, #f5c518, #ffd96a, #f5c518, transparent);
-      opacity: 0.75;
-    }
-    #fsOverlay.light .fs-gold-bar {
-      background: linear-gradient(90deg, transparent, #1a5ca8, #2176d2, #1a5ca8, transparent);
-    }
-
-    /* ── fs body ── */
+    /* ── body ── */
     .fs-body {
-      flex: 1; overflow: hidden; padding: 18px 52px 10px;
+      flex: 1; overflow: hidden; padding: 20px 52px 12px;
       display: flex; flex-direction: column;
+      background: #ffffff;
     }
     .fs-section-label {
       font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(11px,1.1vw,14px); letter-spacing: 4px;
-      margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
-      transition: color 1s ease; color: #f5c518;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+      color: #1a5ca8;
     }
-    #fsOverlay.light .fs-section-label { color: #1a5ca8; }
     .fs-section-label::after {
       content: ''; flex: 1; height: 1px;
-      transition: background 1s ease;
-      background: linear-gradient(90deg, rgba(245,197,24,0.3), transparent);
+      background: #1a5ca8; opacity: 0.2;
     }
-    #fsOverlay.light .fs-section-label::after {
-      background: linear-gradient(90deg, rgba(26,92,168,0.3), transparent);
-    }
-    .fs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 28px; }
+    .fs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px; }
 
     /* slots */
     .fs-slot {
       display: flex; align-items: center; gap: 14px;
-      padding: 10px 14px; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-left: 3px solid #4ea8f5;
-      transition: background 1s ease, border-color 1s ease, box-shadow 1s ease, opacity 0.5s ease;
-      background: rgba(255,255,255,0.04);
+      padding: 11px 14px; border-radius: 8px;
+      background: #f8faff;
+      border: 1px solid #e4eaf5;
+      border-left: 3px solid #1a5ca8;
     }
-    /* dark borders */
-    .fs-slot.cat-apertura    { border-left-color: #f5c518; }
-    .fs-slot.cat-competencia { border-left-color: #4ea8f5; }
-    .fs-slot.cat-tecnico     { border-left-color: #a855f7; }
-    .fs-slot.cat-descanso    { border-left-color: #22c55e; }
-    .fs-slot.cat-clausura    { border-left-color: #f97316; }
-    .fs-slot.cat-premiacion  { border-left-color: #f5c518; }
-    .fs-slot.active {
-      background: rgba(26,92,168,0.28) !important;
-      border-color: rgba(33,118,210,0.5) !important;
-      border-left-color: #4ea8f5 !important;
-      box-shadow: 0 0 18px rgba(26,92,168,0.35) !important;
-    }
-    .fs-slot.past { opacity: 0.35; }
+    .fs-slot.cat-apertura    { border-left-color: #d4a800; }
+    .fs-slot.cat-competencia { border-left-color: #1a5ca8; }
+    .fs-slot.cat-tecnico     { border-left-color: #7e22ce; }
+    .fs-slot.cat-descanso    { border-left-color: #15803d; }
+    .fs-slot.cat-clausura    { border-left-color: #c2410c; }
+    .fs-slot.cat-premiacion  { border-left-color: #d4a800; }
 
-    /* light slots */
-    #fsOverlay.light .fs-slot {
-      background: rgba(255,255,255,0.75);
-      border-color: rgba(26,92,168,0.12);
-      box-shadow: 0 1px 6px rgba(26,92,168,0.07);
+    .fs-slot.active {
+      background: #dbeafe;
+      border-color: #93c5fd;
+      border-left-color: #1a5ca8;
     }
-    #fsOverlay.light .fs-slot.active {
-      background: rgba(26,92,168,0.10) !important;
-      border-color: rgba(26,92,168,0.35) !important;
-      box-shadow: 0 0 16px rgba(26,92,168,0.15) !important;
-    }
+    .fs-slot.past { opacity: 0.38; }
 
     .fs-slot-time {
       font-family: 'DM Mono', monospace;
       font-size: clamp(12px,1.3vw,17px); font-weight: 500;
-      min-width: 52px; flex-shrink: 0;
-      transition: color 1s ease; color: #ffd96a;
+      min-width: 52px; flex-shrink: 0; color: #1a5ca8;
     }
-    #fsOverlay.light .fs-slot-time { color: #1a5ca8; }
     .fs-slot-body { flex: 1; min-width: 0; }
     .fs-slot-name {
       font-size: clamp(12px,1.35vw,17px); font-weight: 600; line-height: 1.2;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      transition: color 1s ease; color: white;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #0e1e3a;
     }
-    #fsOverlay.light .fs-slot-name { color: #0e1e3a; }
     .fs-slot-detail {
       font-size: clamp(9px,0.9vw,12px); margin-top: 1px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      transition: color 1s ease; color: rgba(255,255,255,0.5);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #666;
     }
-    #fsOverlay.light .fs-slot-detail { color: rgba(14,30,58,0.5); }
     .fs-slot-badge {
       font-size: clamp(8px,0.8vw,10px); font-family: 'DM Mono', monospace;
       letter-spacing: 1.5px; text-transform: uppercase;
       padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
-      transition: background 1s ease, color 1s ease, border-color 1s ease;
     }
-    /* dark badges */
-    .fs-slot.cat-apertura    .fs-slot-badge { background: rgba(245,197,24,0.15); color:#f5c518; border:1px solid rgba(245,197,24,0.3); }
-    .fs-slot.cat-competencia .fs-slot-badge { background: rgba(78,168,245,0.15); color:#4ea8f5; border:1px solid rgba(78,168,245,0.3); }
-    .fs-slot.cat-tecnico     .fs-slot-badge { background: rgba(168,85,247,0.15); color:#a855f7; border:1px solid rgba(168,85,247,0.3); }
-    .fs-slot.cat-descanso    .fs-slot-badge { background: rgba(34,197,94,0.15);  color:#22c55e; border:1px solid rgba(34,197,94,0.3);  }
-    .fs-slot.cat-clausura    .fs-slot-badge { background: rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.3); }
-    .fs-slot.cat-premiacion  .fs-slot-badge { background: rgba(245,197,24,0.20); color:#f5c518; border:1px solid rgba(245,197,24,0.4); }
-    /* light badges */
-    #fsOverlay.light .fs-slot.cat-apertura    .fs-slot-badge { background:rgba(245,197,24,0.15); color:#a07000; border-color:rgba(160,112,0,0.3);    }
-    #fsOverlay.light .fs-slot.cat-competencia .fs-slot-badge { background:rgba(26,92,168,0.10);  color:#1a5ca8; border-color:rgba(26,92,168,0.3);     }
-    #fsOverlay.light .fs-slot.cat-tecnico     .fs-slot-badge { background:rgba(168,85,247,0.10); color:#7e22ce; border-color:rgba(126,34,206,0.3);    }
-    #fsOverlay.light .fs-slot.cat-descanso    .fs-slot-badge { background:rgba(34,197,94,0.10);  color:#15803d; border-color:rgba(21,128,61,0.3);     }
-    #fsOverlay.light .fs-slot.cat-clausura    .fs-slot-badge { background:rgba(249,115,22,0.10); color:#c2410c; border-color:rgba(194,65,12,0.3);     }
-    #fsOverlay.light .fs-slot.cat-premiacion  .fs-slot-badge { background:rgba(245,197,24,0.15); color:#a07000; border-color:rgba(160,112,0,0.3);     }
+    .fs-slot.cat-apertura    .fs-slot-badge { background:#fef9c3; color:#854d0e; border:1px solid #fde68a; }
+    .fs-slot.cat-competencia .fs-slot-badge { background:#dbeafe; color:#1a5ca8; border:1px solid #bfdbfe; }
+    .fs-slot.cat-tecnico     .fs-slot-badge { background:#f3e8ff; color:#7e22ce; border:1px solid #e9d5ff; }
+    .fs-slot.cat-descanso    .fs-slot-badge { background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
+    .fs-slot.cat-clausura    .fs-slot-badge { background:#ffedd5; color:#c2410c; border:1px solid #fdba74; }
+    .fs-slot.cat-premiacion  .fs-slot-badge { background:#fef9c3; color:#854d0e; border:1px solid #fde68a; }
 
-    /* ── fs footer ── */
+    /* ── footer ── */
     .fs-footer {
       padding: 10px 52px; display: flex; align-items: center; justify-content: space-between;
-      border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
-      transition: border-color 1s ease;
+      border-top: 1px solid #e4eaf5; flex-shrink: 0; background: #ffffff;
     }
-    #fsOverlay.light .fs-footer { border-top-color: rgba(26,92,168,0.15); }
-    .fs-footer-inst {
-      font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
-      transition: color 1s ease; color: rgba(255,255,255,0.4);
-    }
-    #fsOverlay.light .fs-footer-inst { color: rgba(14,30,58,0.4); }
-    .fs-live {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 12px; font-family: 'DM Mono', monospace; letter-spacing: 1px;
-      transition: color 1s ease; color: rgba(255,255,255,0.5);
-    }
-    #fsOverlay.light .fs-live { color: rgba(14,30,58,0.5); }
-    .fs-dot { width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 7px #22c55e; animation: fsPulse 1.8s ease infinite; }
-    .fs-clock {
-      font-family: 'DM Mono', monospace; font-size: clamp(14px,1.5vw,20px);
-      letter-spacing: 2px;
-      transition: color 1s ease; color: white;
-    }
-    #fsOverlay.light .fs-clock { color: #0e1e3a; }
-
-    /* theme pips */
-    .theme-pill {
-      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 7px; z-index: 10;
-    }
-    .theme-pip {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: rgba(255,255,255,0.25);
-      transition: background 0.4s, transform 0.4s;
-    }
-    .theme-pip.on { background: #f5c518; transform: scale(1.35); }
-    #fsOverlay.light .theme-pip { background: rgba(26,92,168,0.2); }
-    #fsOverlay.light .theme-pip.on { background: #1a5ca8; }
+    .fs-footer-inst { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #999; }
+    .fs-live { display: flex; align-items: center; gap: 8px; font-size: 12px; font-family: 'DM Mono', monospace; letter-spacing: 1px; color: #666; }
+    .fs-dot { width:7px; height:7px; border-radius:50%; background:#22c55e; animation: fsPulse 1.8s ease infinite; }
+    .fs-clock { font-family: 'DM Mono', monospace; font-size: clamp(14px,1.5vw,20px); letter-spacing: 2px; color: #0e1e3a; }
 
     @keyframes fsPulse {
       0%,100% { opacity:1; transform:scale(1); }
@@ -341,7 +213,6 @@
           </svg>
           PANTALLA COMPLETA
         </button>
-
       </div>
       <div class="schedule-preview-list" id="previewList"></div>
     </div>
@@ -352,51 +223,37 @@
 
 <!-- ══ FULLSCREEN OVERLAY ══ -->
 <div id="fsOverlay">
-  <!-- Background layers (cross-fade via opacity) -->
-  <div class="fs-bg fs-bg-dark"></div>
-  <div class="fs-bg fs-bg-dark-grid"></div>
-  <div class="fs-bg fs-bg-light"></div>
-  <div class="fs-bg fs-bg-light-grid"></div>
-
-  <div class="fs-inner">
-    <div class="fs-header">
-      <div class="fs-header-left">
-        <div class="fs-logo">SB</div>
-        <div>
-          <div class="fs-event-title">SucreBot 2026</div>
-          <div class="fs-event-sub">Club de Robótica · Instituto Superior Universitario Sucre</div>
-        </div>
-      </div>
-      <div class="fs-header-right">
-        <div>
-          <div class="fs-date-main">16 · VII · 2026</div>
-          <div class="fs-date-place">Quito, Ecuador</div>
-        </div>
-        <button class="btn-exit-fs" onclick="cerrarFS()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
-          </svg>
-          SALIR
-        </button>
+  <div class="fs-header">
+    <div class="fs-header-left">
+      <div class="fs-logo">SB</div>
+      <div>
+        <div class="fs-event-title">SucreBot 2026</div>
+        <div class="fs-event-sub">Club de Robótica · Instituto Superior Universitario Sucre</div>
       </div>
     </div>
-    <div class="fs-gold-bar"></div>
-
-    <div class="fs-body">
-      <div class="fs-section-label">▸ PROGRAMA DEL EVENTO</div>
-      <div class="fs-grid" id="fsGrid"></div>
-    </div>
-
-    <div class="fs-footer">
-      <div class="fs-footer-inst">sucrebotclub-institute.github.io</div>
-      <div class="fs-live"><div class="fs-dot"></div> EN VIVO</div>
-      <div class="fs-clock" id="fsClock">00:00:00</div>
+    <div class="fs-header-right">
+      <div>
+        <div class="fs-date-main">16 · VII · 2026</div>
+        <div class="fs-date-place">Quito, Ecuador</div>
+      </div>
+      <button class="btn-exit-fs" onclick="cerrarFS()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+        </svg>
+        SALIR
+      </button>
     </div>
   </div>
 
-  <div class="theme-pill">
-    <div class="theme-pip on"  id="pip0"></div>
-    <div class="theme-pip"     id="pip1"></div>
+  <div class="fs-body">
+    <div class="fs-section-label">▸ PROGRAMA DEL EVENTO</div>
+    <div class="fs-grid" id="fsGrid"></div>
+  </div>
+
+  <div class="fs-footer">
+    <div class="fs-footer-inst">sucrebotclub-institute.github.io</div>
+    <div class="fs-live"><div class="fs-dot"></div> EN VIVO</div>
+    <div class="fs-clock" id="fsClock">00:00:00</div>
   </div>
 </div>
 
@@ -426,7 +283,6 @@
     { time:'19:00', name:'Ceremonia de premiación',       detail:'Auditorio · Entrega de trofeos y diplomas',          cat:'premiacion',  badge:'🏆 Premiación' },
   ];
 
-  // Preview
   function renderPreview() {
     document.getElementById('previewList').innerHTML = SCHEDULE.map(s => `
       <div class="preview-slot cat-${s.cat}">
@@ -435,7 +291,6 @@
       </div>`).join('');
   }
 
-  // FS grid
   function renderFS() {
     document.getElementById('fsGrid').innerHTML = SCHEDULE.map((s,i) => `
       <div class="fs-slot cat-${s.cat}" id="fss-${i}">
@@ -449,7 +304,6 @@
     updateActive();
   }
 
-  // Active slot
   function toMin(t) { const [h,m]=t.split(':').map(Number); return h*60+m; }
   function updateActive() {
     const now = new Date(), cur = now.getHours()*60+now.getMinutes();
@@ -463,75 +317,34 @@
     });
   }
 
-  // Clock
   function tick() {
     const n=new Date(), t=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
     const el=document.getElementById('fsClock'); if(el) el.textContent=t;
     updateActive();
   }
 
-  // ── Theme alternation ──────────────────────────────────────────
-  let themeIdx = 0;
-  let themeTimer = null;
-
-  function setTheme(idx) {
-    themeIdx = idx;
-    const overlay = document.getElementById('fsOverlay');
-    if (idx === 1) overlay.classList.add('light');
-    else           overlay.classList.remove('light');
-    document.getElementById('pip0').classList.toggle('on', idx===0);
-    document.getElementById('pip1').classList.toggle('on', idx===1);
-  }
-
-  function startThemeLoop() {
-    setTheme(0);
-    themeTimer = setInterval(() => setTheme(themeIdx===0 ? 1 : 0), 15000);
-  }
-
-  function stopThemeLoop() {
-    clearInterval(themeTimer); themeTimer=null;
-    document.getElementById('fsOverlay').classList.remove('light');
-  }
-
-  function probarTema() {
-    const overlay = document.getElementById('fsOverlay');
-    overlay.classList.add('active');
-    renderFS();
-    startThemeLoop();
-    // Sin fullscreen — solo el overlay encima de la página para probar
-  }
-
-  // ── Fullscreen ─────────────────────────────────────────────────
   function abrirFS() {
-    const overlay = document.getElementById('fsOverlay');
+    const overlay=document.getElementById('fsOverlay');
     overlay.classList.add('active');
     renderFS();
-    // Pequeño delay para que el DOM pinte antes de arrancar la alternancia
-    setTimeout(startThemeLoop, 100);
-    // Fullscreen sobre documentElement — máxima compatibilidad cross-browser
     (document.documentElement.requestFullscreen?.() ||
      document.documentElement.webkitRequestFullscreen?.());
   }
 
   function cerrarFS() {
-    stopThemeLoop();
     document.getElementById('fsOverlay').classList.remove('active');
     document.exitFullscreen?.() || document.webkitExitFullscreen?.();
   }
 
   document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) {
-      stopThemeLoop();
+    if (!document.fullscreenElement)
       document.getElementById('fsOverlay').classList.remove('active');
-    }
   });
   document.addEventListener('keydown', e => { if (e.key==='Escape') cerrarFS(); });
 
-  // Init
   renderPreview();
   tick();
   setInterval(tick, 1000);
 </script>
-
 </body>
 </html>
