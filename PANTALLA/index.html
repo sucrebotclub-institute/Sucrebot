@@ -3,514 +3,414 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SucreBot — Resultados en Vivo</title> 
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;600&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../shared/css/styles.css">
-  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  <script src="../shared/js/config.js"></script>
-  <script src="../shared/js/load-components.js"></script>
-  <script src="../shared/js/auth.js"></script>
-  
+  <title>Cronograma · SucreBot 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --results-gold:   #FFD700;
-      --results-silver: #C0C0C0;
-      --results-bronze: #CD7F32;
-      --font-display: 'Bebas Neue', sans-serif;
-      --font-mono:    'DM Mono', monospace;
-      --font-body:    'DM Sans', sans-serif;
+      --azul:       #1a5ca8;
+      --azul-dark:  #0e3a6e;
+      --azul-deep:  #071e3d;
+      --azul-glow:  #2176d2;
+      --gold:       #f5c518;
+      --gold-soft:  #ffd96a;
+      --white:      #ffffff;
+      --dim:        rgba(255,255,255,0.55);
+      --line:       rgba(255,255,255,0.10);
+      --card-bg:    rgba(255,255,255,0.04);
+      --card-hover: rgba(255,255,255,0.08);
     }
-    body { padding-top: 0 !important; }
-    .sticky-header { position: sticky; top: 0; z-index: 1000; }
-    .screen { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 80vh; padding: 20px 48px 40px; background: #ffffff; }
 
-    /* HEADER */
-    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-radius: 12px; box-shadow: 0 4px 12px rgba(26,92,168,0.15); flex-shrink: 0; }
-    .page-header-left { display: flex; align-items: center; gap: 18px; }
-    .page-header-left img { width: 56px; filter: drop-shadow(0 0 12px rgba(91,200,240,0.6)); }
-    .page-header-title { font-family: var(--font-display); font-size: 3rem; letter-spacing: 0.06em; color: #5bc8f0; line-height: 1; text-shadow: 0 0 30px rgba(91,200,240,0.5); }
-    .page-header-sub { font-family: var(--font-mono); font-size: 0.72rem; color: rgba(255,255,255,0.7); letter-spacing: 0.14em; margin-top: 2px; }
-    .page-header-right { text-align: right; }
-    .ronda-label { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.08em; color: #ffffff; line-height: 1; }
-    .cat-label { font-family: var(--font-mono); font-size: 0.75rem; color: #90dcff; letter-spacing: 0.1em; margin-top: 4px; }
-    .live-badge { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em; color: #5bc8f0; background: rgba(91,200,240,0.1); border: 1px solid rgba(91,200,240,0.3); padding: 5px 12px; border-radius: 20px; margin-bottom: 4px; }
-    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: blink 1.2s ease-in-out infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
-    /* TABS */
-    .cat-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-    .cat-tab { font-family: 'Exo 2', sans-serif; font-size: 0.75rem; letter-spacing: 0.02em; padding: 12px 10px; background: #2d3748; border: 2px solid #4a5568; border-radius: 8px; color: #e2e8f0; cursor: pointer; transition: all 0.25s; font-weight: 600; white-space: normal; flex: 1; text-align: center; min-width: 0; line-height: 1.3; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-    .cat-tab:hover { background: #3d4e63; border-color: #5bc8f0; color: #90dcff; transform: translateY(-1px); }
-    .cat-tab.active { background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-color: #1a5ca8; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(26,92,168,0.3); transform: translateY(-2px); }
-    .cat-tab.tiene-datos { position: relative; }
-    .cat-tab.tiene-datos::before { content: ''; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: pulse-dot 2s ease-in-out infinite; }
-    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
-
-    /* TABLA TIEMPOS */
-    .tabla-wrap { flex: 1; overflow: auto; display: flex; flex-direction: column; }
-    table { width: 100%; border-collapse: collapse; }
-    thead tr { background: linear-gradient(135deg, #1a5ca8, #2474cc); }
-    thead th { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; color: #ffffff; padding: 10px 18px; text-align: left; border-bottom: 2px solid #5bc8f0; font-weight: 600; }
-    thead th.c { text-align: center; }
-    tbody tr { border-bottom: 1px solid #e8edf3; transition: background 0.3s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: rgba(91,200,240,0.05); }
-    tr.pos-1 { background: linear-gradient(90deg, rgba(255,215,0,0.08), rgba(255,215,0,0.03)); }
-    tr.pos-2 { background: linear-gradient(90deg, rgba(192,192,192,0.08), rgba(192,192,192,0.03)); }
-    tr.pos-3 { background: linear-gradient(90deg, rgba(205,127,50,0.08), rgba(205,127,50,0.03)); }
-    td { padding: 0 18px; vertical-align: middle; }
-    .td-pos { width: 72px; text-align: center; }
-    .pos-circle { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-family: var(--font-display); font-size: 1.4rem; }
-    .pc-1 { background: rgba(255,215,0,0.15); color: var(--results-gold); border: 2px solid rgba(255,215,0,0.4); box-shadow: 0 0 16px rgba(255,215,0,0.2); }
-    .pc-2 { background: rgba(192,192,192,0.12); color: var(--results-silver); border: 2px solid rgba(192,192,192,0.35); }
-    .pc-3 { background: rgba(205,127,50,0.12); color: var(--results-bronze); border: 2px solid rgba(205,127,50,0.35); }
-    .pc-n { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid rgba(255,255,255,0.07); }
-    .td-robot { min-width: 200px; }
-    .robot-name { font-size: 1.3rem; font-weight: 700; color: #0e2a5a; letter-spacing: 0.01em; line-height: 1.2; }
-    .robot-inst { font-size: 0.75rem; color: #6a7a94; margin-top: 2px; font-family: var(--font-mono); }
-    .td-mejor { text-align: center; min-width: 150px; }
-    .tiempo-valor { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; }
-    tr.pos-1 .tiempo-valor { font-size: 2.2rem; color: #2474cc; }
-    .td-intentos { min-width: 140px; }
-    .intento-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
-    .row-altura { height: 88px; }
-
-    /* ══ BRACKET SOCCER ══ */
-    .soccer-wrap { flex: 1; overflow-x: auto; }
-    .soccer-title { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .soccer-sin-datos { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; gap: 12px; }
-    .soccer-sin-datos-icon { font-size: 3.5rem; opacity: 0.25; }
-    .soccer-sin-datos-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.15em; color: #6a7a94; }
-
-    .bracket-fases { display: flex; gap: 40px; min-width: max-content; padding-bottom: 8px; }
-    .bracket-fase { display: flex; flex-direction: column; gap: 16px; min-width: 260px; }
-    .fase-nombre { font-family: var(--font-mono); font-size: 0.7rem; color: #1a5ca8; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; text-align: center; margin-bottom: 8px; padding: 6px; background: rgba(26,92,168,0.08); border-radius: 8px; }
-
-    .partido-card { background: #ffffff; border: 2px solid #e0e7ef; border-radius: 12px; padding: 14px; box-shadow: 0 2px 12px rgba(26,92,168,0.08); transition: all 0.2s; }
-    .partido-card:hover { border-color: #5bc8f0; box-shadow: 0 4px 16px rgba(91,200,240,0.2); transform: translateY(-2px); }
-    .partido-card.finalizado { border-color: #00d95f; background: #f0fdf4; }
-    .partido-card.pendiente { border-color: #e0e7ef; }
-
-    .partido-equipo-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; background: #f8f9fa; margin-bottom: 6px; border: 1px solid #e0e7ef; }
-    .partido-equipo-row:last-of-type { margin-bottom: 0; }
-    .partido-equipo-row.ganador { background: #e8f5e9; border-color: #00d95f; }
-    .partido-equipo-nombre { font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; color: #1a3a6e; }
-    .partido-equipo-goles { font-family: 'Orbitron', monospace; font-size: 1.3rem; font-weight: 900; color: #1a5ca8; }
-    .partido-equipo-row.ganador .partido-equipo-goles { color: #00a046; }
-
-    .partido-estado { text-align: center; margin-top: 8px; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; font-weight: 700; }
-    .partido-estado.fin { color: #00a046; }
-    .partido-estado.pend { color: #94a3b8; }
-    .partido-estado.pend-equipos { color: #cbd5e1; font-style: italic; }
-
-    .partido-bye { background: #fffbeb; border: 2px dashed #fbbf24; border-radius: 12px; padding: 14px; text-align: center; }
-    .bye-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: #1a3a6e; }
-    .bye-badge { display: inline-block; background: #fbbf24; color: #78350f; font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; font-weight: 700; margin-top: 4px; }
-
-    /* EMPTY */
-    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; gap: 16px; }
-    .empty-icon { font-size: 4rem; opacity: 0.2; filter: grayscale(1); }
-    .empty-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.18em; color: #6a7a94; font-weight: 600; }
-
-    /* FOOTER */
-    .tv-footer { margin-top: 20px; padding-top: 16px; border-top: 1px solid #e8edf3; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.7rem; color: #8a96b0; }
-    .tv-footer-left { letter-spacing: 0.1em; color: #1a5ca8; font-weight: 600; }
-    .tv-footer-right { font-size: 0.85rem; color: #0e2a5a; font-weight: 600; }
-
-    /* DROPDOWN MÓVIL */
-    .cat-select-mobile {
-      display: none;
-      width: 100%;
-      margin-bottom: 20px;
-      background: #2d3748;
-      border: 2px solid #1a5ca8;
-      color: #ffffff;
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--azul-deep);
+      color: var(--white);
       font-family: 'Exo 2', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      padding: 14px 16px;
-      border-radius: 10px;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235bc8f0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      padding-right: 44px;
     }
-    .cat-select-mobile option { background: #1a3a6b; color: #ffffff; }
-    .cat-select-mobile optgroup { background: #0e2a5a; color: #5bc8f0; font-weight: 700; }
 
-    @media (max-width: 768px) {
-      .screen { padding: 12px 16px 32px; }
-      .cat-tabs { display: none; }
-      .cat-select-mobile { display: block; }
-      .bracket-fases { gap: 20px; }
-      .bracket-fase { min-width: 200px; }
-      .page-header { padding: 16px; }
-      .page-header-title { font-size: 2rem; }
-      .ronda-label { font-size: 1.4rem; }
+    /* ── Background ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 50%, rgba(26,92,168,0.45) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 80% at 85% 20%, rgba(33,118,210,0.30) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 50% at 50% 100%, rgba(7,30,61,0.80) 0%, transparent 70%),
+        linear-gradient(160deg, #071e3d 0%, #0d2f5c 50%, #071e3d 100%);
+    }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    /* Diagonal accent line */
+    .bg-accent {
+      position: fixed; z-index: 0;
+      top: -10%; left: -5%;
+      width: 55%; height: 130%;
+      background: linear-gradient(105deg, transparent 0%, rgba(26,92,168,0.12) 40%, transparent 70%);
+      transform: skewX(-8deg);
+      pointer-events: none;
+    }
+
+    /* ── Layout ── */
+    .screen {
+      position: relative; z-index: 1;
+      width: 100vw; height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 64px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(7,30,61,0.6) 0%, transparent 100%);
+      animation: fadeDown 0.8s ease both;
+    }
+    .header-left {
+      display: flex; align-items: center; gap: 20px;
+    }
+    .logo-mark {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--azul), var(--azul-glow));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: white;
+      box-shadow: 0 0 24px rgba(26,92,168,0.6);
+      flex-shrink: 0;
+    }
+    .header-titles {}
+    .event-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(26px, 3.2vw, 42px);
+      letter-spacing: 3px;
+      color: var(--white);
+      line-height: 1;
+    }
+    .event-sub {
+      font-size: clamp(10px, 1.1vw, 14px);
+      color: var(--dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 3px;
+      font-weight: 300;
+    }
+    .header-right {
+      text-align: right;
+    }
+    .event-date {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(22px, 2.8vw, 38px);
+      letter-spacing: 3px;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .event-place {
+      font-size: clamp(10px, 1vw, 13px);
+      color: var(--dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      font-weight: 300;
+    }
+    .gold-bar {
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-soft), var(--gold), transparent);
+      opacity: 0.7;
+    }
+
+    /* ── Schedule ── */
+    .schedule-wrap {
+      overflow: hidden;
+      padding: 32px 64px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .section-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(11px, 1.1vw, 15px);
+      letter-spacing: 4px;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(245,197,24,0.3), transparent);
+    }
+
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 32px;
+    }
+
+    .slot {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeUp 0.55s ease forwards;
+      transition: background 0.3s;
+    }
+    .slot::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 3px 0 0 3px;
+    }
+    .slot.cat-apertura::before  { background: var(--gold); }
+    .slot.cat-competencia::before { background: #4ea8f5; }
+    .slot.cat-tecnico::before   { background: #a855f7; }
+    .slot.cat-descanso::before  { background: #22c55e; }
+    .slot.cat-clausura::before  { background: #f97316; }
+    .slot.cat-premiacion::before { background: var(--gold); box-shadow: 0 0 8px rgba(245,197,24,0.5); }
+
+    .slot-time {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(13px, 1.4vw, 18px);
+      font-weight: 500;
+      color: var(--gold-soft);
+      white-space: nowrap;
+      min-width: 80px;
+      flex-shrink: 0;
+    }
+    .slot-body { flex: 1; min-width: 0; }
+    .slot-name {
+      font-size: clamp(13px, 1.45vw, 19px);
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .slot-detail {
+      font-size: clamp(10px, 1vw, 13px);
+      color: var(--dim);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .slot-badge {
+      font-size: clamp(9px, 0.9vw, 11px);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .slot.cat-apertura  .slot-badge { background: rgba(245,197,24,0.15); color: var(--gold); border: 1px solid rgba(245,197,24,0.3); }
+    .slot.cat-competencia .slot-badge { background: rgba(78,168,245,0.15); color: #4ea8f5; border: 1px solid rgba(78,168,245,0.3); }
+    .slot.cat-tecnico   .slot-badge { background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
+    .slot.cat-descanso  .slot-badge { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+    .slot.cat-clausura  .slot-badge { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
+    .slot.cat-premiacion .slot-badge { background: rgba(245,197,24,0.2); color: var(--gold); border: 1px solid rgba(245,197,24,0.4); }
+
+    /* ACTIVE highlight */
+    .slot.active {
+      background: rgba(26,92,168,0.25);
+      border-color: rgba(33,118,210,0.5);
+      box-shadow: 0 0 20px rgba(26,92,168,0.3);
+    }
+    .slot.active .slot-name { color: #fff; }
+    .slot.past { opacity: 0.4; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 14px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(0deg, rgba(7,30,61,0.5) 0%, transparent 100%);
+      animation: fadeUp 0.8s 0.5s ease both;
+    }
+    .footer-inst {
+      font-size: clamp(10px, 1vw, 13px);
+      color: var(--dim);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .live-dot {
+      display: flex; align-items: center; gap: 8px;
+      font-size: clamp(10px, 1vw, 13px);
+      color: var(--dim);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 1px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulse 1.8s ease infinite;
+    }
+    .clock-display {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(14px, 1.5vw, 20px);
+      color: var(--white);
+      letter-spacing: 2px;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
     }
   </style>
 </head>
 <body>
-  <div class="sticky-header">
-    <div data-include="../shared/components/topbar.html"></div>
-    <div data-include="../shared/components/header.html"></div>
-    <div data-include="../shared/components/nav.html"></div>
-  </div>
 
-  <main class="screen">
-    <div class="page-header">
-      <div class="page-header-left">
-        <img src="../shared/images/robot-campeon.png" alt="Robot campeón">
-        <div>
-          <div class="live-badge"><span class="live-dot"></span>EN VIVO</div>
-          <div class="page-header-title">SUCREBOT</div>
-          <div class="page-header-sub">SUCREBOT SYSTEM · CRONOMETRAJE EN TIEMPO REAL</div>
+<div class="bg"></div>
+<div class="bg-grid"></div>
+<div class="bg-accent"></div>
+
+<div class="screen">
+
+  <!-- HEADER -->
+  <div>
+    <header>
+      <div class="header-left">
+        <div class="logo-mark">SB</div>
+        <div class="header-titles">
+          <div class="event-title">SucreBot 2026</div>
+          <div class="event-sub">Club de Robótica · Instituto Superior Universitario Sucre</div>
         </div>
       </div>
-      <div class="page-header-right">
-        <div class="ronda-label" id="tv-ronda">RONDA 1</div>
-        <div class="cat-label" id="tv-cat">—</div>
+      <div class="header-right">
+        <div class="event-date">16 · VII · 2026</div>
+        <div class="event-place">Quito, Ecuador</div>
       </div>
+    </header>
+    <div class="gold-bar"></div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="schedule-wrap">
+    <div class="section-label" style="animation-delay:0.2s">▸ PROGRAMA DEL EVENTO</div>
+
+    <div class="schedule-grid" id="scheduleGrid">
+      <!-- JS rendered -->
     </div>
+  </div>
 
-    <div class="cat-tabs" id="cat-tabs"></div>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inst">sucrebotclub-institute.github.io</div>
+    <div class="live-dot"><div class="dot"></div> EN VIVO</div>
+    <div class="clock-display" id="clock">00:00:00</div>
+  </footer>
 
-    <!-- DROPDOWN MÓVIL -->
-    <select class="cat-select-mobile" id="cat-select-mobile" onchange="seleccionarManual(this.value)">
-      <option value="">⚽ Selecciona una categoría...</option>
-      <optgroup label="🏅 AMATEUR">
-        <option value="ins">Insectos</option>
-        <option value="trp_a">Trepador (Amateur)</option>
-        <option value="sl_a">Seguidor ST (Amateur)</option>
-      </optgroup>
-      <optgroup label="🏆 PRO">
-        <option value="sl_p">Seguidor ST (Pro)</option>
-        <option value="ms_a">Minisumo Autónomo</option>
-        <option value="ms_rc">Minisumo RC</option>
-        <option value="bai">Bailarín</option>
-        <option value="bat">Batalla</option>
-        <option value="trp_p">Trepador (Pro)</option>
-        <option value="soc">Robot Soccer</option>
-      </optgroup>
-      <optgroup label="⭐ EXTRA">
-        <option value="cr">Cubo Rubik</option>
-      </optgroup>
-    </select>
+</div>
 
-    <div class="tabla-wrap" id="tv-tabla-wrap">
-      <div class="empty-state">
-        <div class="empty-icon">🏁</div>
-        <div class="empty-text">ESPERANDO RESULTADOS...</div>
+<script>
+  // ── Cronograma ─────────────────────────────────────────────────
+  const SCHEDULE = [
+    { time: '08:00', name: 'Acreditación y registro', detail: 'Recepción de participantes · Entrega de kits', cat: 'apertura',    badge: 'Apertura'     },
+    { time: '09:00', name: 'Ceremonia de apertura',   detail: 'Bienvenida institucional · Presentación del evento', cat: 'apertura', badge: 'Apertura' },
+    { time: '09:30', name: 'Insectos',                detail: 'Arena principal · Categoría Amateur',   cat: 'competencia', badge: 'Competencia'  },
+    { time: '09:30', name: 'Seguidor de Línea (Amateur)', detail: 'Pista ST · Categoría Amateur',     cat: 'competencia', badge: 'Competencia'  },
+    { time: '10:30', name: 'Trepador Amateur',        detail: 'Estructura de trepada · Arena 2',      cat: 'competencia', badge: 'Competencia'  },
+    { time: '10:30', name: 'Seguidor de Línea (Pro)', detail: 'Pista ST · Categoría Pro',             cat: 'competencia', badge: 'Competencia'  },
+    { time: '11:30', name: 'Receso',                  detail: 'Refrigerio · 30 minutos',              cat: 'descanso',    badge: 'Descanso'     },
+    { time: '12:00', name: 'Minisumo Autónomo',       detail: 'Arena Minisumo · Fase de grupos',      cat: 'competencia', badge: 'Competencia'  },
+    { time: '12:00', name: 'Minisumo RC',             detail: 'Arena Minisumo · Fase de grupos',      cat: 'competencia', badge: 'Competencia'  },
+    { time: '13:00', name: 'Revisión técnica ESP32',  detail: 'Laboratorio · Verificación de hardware', cat: 'tecnico',   badge: 'Técnico'      },
+    { time: '13:30', name: 'Almuerzo',                detail: 'Pausa · 1 hora',                       cat: 'descanso',    badge: 'Descanso'     },
+    { time: '14:30', name: 'Bailarín',                detail: 'Escenario principal · Panel de calificación', cat: 'competencia', badge: 'Competencia' },
+    { time: '14:30', name: 'Impacto Tecnológico',     detail: 'Sala de exposiciones · Presentaciones', cat: 'competencia', badge: 'Competencia'  },
+    { time: '15:30', name: 'Robot Soccer',            detail: 'Cancha principal · Fase eliminatoria', cat: 'competencia', badge: 'Competencia'  },
+    { time: '15:30', name: 'Cubo Rubik',              detail: 'Mesa de cronometraje · Rondas clasificatorias', cat: 'competencia', badge: 'Competencia' },
+    { time: '16:30', name: 'Lego Kids',               detail: 'Área Kids · Categoría infantil',       cat: 'competencia', badge: 'Competencia'  },
+    { time: '16:30', name: 'Trepador Pro',            detail: 'Estructura de trepada · Categoría Pro', cat: 'competencia', badge: 'Competencia'  },
+    { time: '17:30', name: 'Batalla de Robots',       detail: 'Arena principal · Eliminación directa', cat: 'competencia', badge: 'Competencia'  },
+    { time: '18:00', name: 'Semifinales y Finales',   detail: 'Todas las categorías · Rondas finales', cat: 'clausura',   badge: 'Final'        },
+    { time: '19:00', name: 'Ceremonia de premiación', detail: 'Auditorio · Entrega de trofeos y diplomas', cat: 'premiacion', badge: '🏆 Premiación' },
+  ];
+
+  // ── Render ──────────────────────────────────────────────────────
+  function render() {
+    const grid = document.getElementById('scheduleGrid');
+    grid.innerHTML = SCHEDULE.map((s, i) => `
+      <div class="slot cat-${s.cat}" id="slot-${i}"
+           style="animation-delay:${0.25 + i * 0.045}s">
+        <div class="slot-time">${s.time}</div>
+        <div class="slot-body">
+          <div class="slot-name">${s.name}</div>
+          <div class="slot-detail">${s.detail}</div>
+        </div>
+        <div class="slot-badge">${s.badge}</div>
       </div>
-    </div>
+    `).join('');
+  }
 
-    <div class="tv-footer">
-      <div class="tv-footer-left">SUCREBOT SYSTEM</div>
-      <div class="tv-footer-right" id="tv-hora">00:00:00</div>
-    </div>
-  </main>
+  // ── Clock + Active slot highlight ───────────────────────────────
+  function toMinutes(t) {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  }
 
-  <div data-include="../shared/components/footer.html"></div>
+  function tick() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
 
-  <script>
-    const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
-    const GAS_URL  = CONFIG.GAS_URL();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    SCHEDULE.forEach((s, i) => {
+      const el = document.getElementById(`slot-${i}`);
+      if (!el) return;
+      const start = toMinutes(s.time);
+      const next  = i + 1 < SCHEDULE.length ? toMinutes(SCHEDULE[i + 1].time) : start + 60;
+      el.classList.remove('active', 'past');
+      if (nowMin >= start && nowMin < next) el.classList.add('active');
+      else if (nowMin >= next)              el.classList.add('past');
+    });
+  }
 
-    const RUTAS_NOMBRE = {
-      'ins':   'Insectos',
-      'trp_a': 'Trepador (Amateur)',
-      'sl_a':  'Seguidor ST (Amateur)',
-      'sl_p':  'Seguidor ST (Pro)',
-      'ms_a':  'Minisumo Autónomo',
-      'ms_rc': 'Minisumo RC',
-      'bai':   'Bailarín',
-      'bat':   'Batalla',
-      'trp_p': 'Trepador (Pro)',
-      'soc':   'Robot Soccer',
-      'cr':    'Cubo Rubik'
-    };
+  render();
+  tick();
+  setInterval(tick, 1000);
+</script>
 
-    function tiempoASegundos(t) {
-      if (!t || t === '—') return Infinity;
-      const p = t.split(':').map(Number);
-      return p[0] * 60 + p[1] + p[2] / 100;
-    }
-
-    function hora() {
-      return new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-    setInterval(() => { document.getElementById('tv-hora').textContent = hora(); }, 1000);
-    document.getElementById('tv-hora').textContent = hora();
-
-    let datosJSON = null;
-    let bracketSoccer = null;
-    let categoriaActiva = null;
-    let autoRotarTimer = null;
-    let rutasConDatos = [];
-
-    const TIEMPO_ROTACION = 10000;
-
-    function iniciarAutoRotar() {
-      if (autoRotarTimer) clearInterval(autoRotarTimer);
-      autoRotarTimer = setInterval(() => {
-        const activas = rutasConDatos;
-        if (activas.length <= 1) return;
-        const idx = activas.indexOf(categoriaActiva);
-        const siguiente = activas[(idx + 1) % activas.length];
-        seleccionarCategoria(siguiente);
-      }, TIEMPO_ROTACION);
-    }
-
-    function seleccionarCategoria(ruta) {
-      categoriaActiva = ruta;
-      // Sincronizar tabs desktop
-      document.querySelectorAll('.cat-tab').forEach(t => {
-        t.classList.toggle('active', t.dataset.ruta === ruta);
-      });
-      // Sincronizar dropdown móvil
-      const sel = document.getElementById('cat-select-mobile');
-      if (sel) sel.value = ruta;
-      // Renderizar vista
-      if (ruta === 'soc') {
-        renderizarBracketSoccer();
-      } else {
-        renderizarTabla(ruta);
-      }
-    }
-
-    function renderTabs() {
-      const container = document.getElementById('cat-tabs');
-      const rutas = Object.keys(RUTAS_NOMBRE);
-
-      container.innerHTML = rutas.map(ruta => {
-        let tieneDatos = false;
-        if (ruta === 'soc') {
-          tieneDatos = bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
-        } else {
-          tieneDatos = datosJSON && datosJSON.resultados[ruta] && datosJSON.resultados[ruta].length > 0;
-        }
-        return `<button class="cat-tab ${tieneDatos ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}"
-          data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">
-          ${RUTAS_NOMBRE[ruta]}
-        </button>`;
-      }).join('');
-
-      rutasConDatos = rutas.filter(ruta => {
-        if (ruta === 'soc') return bracketSoccer && bracketSoccer.fases && bracketSoccer.fases.length > 0;
-        return datosJSON && datosJSON.resultados[ruta] && datosJSON.resultados[ruta].length > 0;
-      });
-    }
-
-    function seleccionarManual(ruta) {
-      if (autoRotarTimer) clearInterval(autoRotarTimer);
-      autoRotarTimer = null;
-      seleccionarCategoria(ruta);
-    }
-
-    function mostrarVacio() {
-      document.getElementById('tv-tabla-wrap').innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">🏁</div>
-          <div class="empty-text">ESPERANDO RESULTADOS...</div>
-        </div>`;
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // BRACKET SOCCER
-    // ══════════════════════════════════════════════════════════════
-    function renderizarBracketSoccer() {
-      document.getElementById('tv-ronda').textContent = 'BRACKET';
-      document.getElementById('tv-cat').textContent = 'Robot Soccer';
-
-      const wrap = document.getElementById('tv-tabla-wrap');
-
-      if (!bracketSoccer || !bracketSoccer.fases || bracketSoccer.fases.length === 0) {
-        wrap.innerHTML = `
-          <div class="soccer-wrap">
-            <div class="soccer-title">⚽ Robot Soccer</div>
-            <div class="soccer-sin-datos">
-              <div class="soccer-sin-datos-icon">⚽</div>
-              <div class="soccer-sin-datos-text">BRACKET AÚN NO GENERADO</div>
-            </div>
-          </div>`;
-        return;
-      }
-
-      const fasesHTML = bracketSoccer.fases.map(fase => {
-        const partidosHTML = fase.partidos.map(p => {
-          if (p.tipo === 'BYE') {
-            return `
-              <div class="partido-bye">
-                <div class="bye-nombre">${p.equipoNombre}</div>
-                <div class="bye-badge">BYE — Pasa directo</div>
-              </div>`;
-          }
-
-          // Extraer solo los goles iniciales: "3-1" o "2-1 (pen 4-3)" → ["3","1"]
-        const matchGoles = p.marcador ? p.marcador.match(/^(\d+)-(\d+)/) : null;
-        const golesArr = matchGoles ? [matchGoles[1], matchGoles[2]] : null;
-          const finalizado = p.estado === 'FINALIZADO';
-          const sinEquipos = !p.equipo_a_id && !p.equipo_b_id;
-
-          if (sinEquipos) {
-            return `
-              <div class="partido-card pendiente">
-                <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
-                <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
-                <div class="partido-estado pend-equipos">Esperando ganadores</div>
-              </div>`;
-          }
-
-          return `
-            <div class="partido-card ${finalizado ? 'finalizado' : 'pendiente'}">
-              <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_a_id ? 'ganador' : ''}">
-                <span class="partido-equipo-nombre">${p.equipoA_nombre || '—'}</span>
-                ${golesArr ? `<span class="partido-equipo-goles">${golesArr[0]}</span>` : ''}
-              </div>
-              <div class="partido-equipo-row ${finalizado && p.ganador_id === p.equipo_b_id ? 'ganador' : ''}">
-                <span class="partido-equipo-nombre">${p.equipoB_nombre || '—'}</span>
-                ${golesArr ? `<span class="partido-equipo-goles">${golesArr[1]}</span>` : ''}
-              </div>
-              <div class="partido-estado ${finalizado ? 'fin' : 'pend'}">
-                ${finalizado ? `✓ ${p.marcador}` : 'Pendiente'}
-              </div>
-            </div>`;
-        }).join('');
-
-        return `
-          <div class="bracket-fase">
-            <div class="fase-nombre">${fase.nombre}</div>
-            ${partidosHTML}
-          </div>`;
-      }).join('');
-
-      wrap.innerHTML = `
-        <div class="soccer-wrap">
-          <div class="soccer-title">⚽ Robot Soccer — Bracket</div>
-          <div class="bracket-fases">${fasesHTML}</div>
-        </div>`;
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // TABLA TIEMPOS (categorías normales)
-    // ══════════════════════════════════════════════════════════════
-    function renderizarTabla(ruta) {
-      if (!datosJSON || !datosJSON.resultados[ruta] || datosJSON.resultados[ruta].length === 0) {
-        mostrarVacio();
-        return;
-      }
-
-      document.getElementById('tv-ronda').textContent = 'RONDA 1';
-      document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[ruta] || ruta;
-
-      const datos = datosJSON.resultados[ruta];
-      const porRobot = {};
-      datos.forEach(d => {
-        if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, tiempos: [] };
-        porRobot[d.robot].tiempos.push(d.tiempo);
-      });
-
-      const clasificados = Object.values(porRobot).map(r => {
-        const mejorTiempo = r.tiempos.reduce((mejor, actual) =>
-          tiempoASegundos(actual) < tiempoASegundos(mejor) ? actual : mejor
-        );
-        return { robot: r.robot, tiempo: mejorTiempo, intentos: r.tiempos.length };
-      });
-      clasificados.sort((a, b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
-
-      const wrap = document.getElementById('tv-tabla-wrap');
-      const filas = clasificados.map((c, i) => {
-        const pos = i + 1;
-        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
-        const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
-        const emoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
-        return `
-          <tr class="row-altura ${claseRow}">
-            <td class="td-pos"><span class="pos-circle ${claseCirc}">${pos <= 3 ? emoji : pos}</span></td>
-            <td class="td-robot"><div class="robot-name">${c.robot}</div></td>
-            <td class="td-mejor"><span class="tiempo-valor">${c.tiempo}</span></td>
-            <td class="td-intentos"><span class="intento-num">${c.intentos} intento${c.intentos !== 1 ? 's' : ''}</span></td>
-          </tr>`;
-      }).join('');
-
-      wrap.innerHTML = `
-        <table>
-          <thead><tr>
-            <th class="c">#</th>
-            <th>Robot / Equipo</th>
-            <th class="c">Mejor Tiempo</th>
-            <th class="c">Intentos</th>
-          </tr></thead>
-          <tbody>${filas}</tbody>
-        </table>`;
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // POLLING
-    // ══════════════════════════════════════════════════════════════
-    async function pollJSON() {
-      try {
-        const r = await fetch(JSON_URL + '?t=' + Date.now());
-        datosJSON = await r.json();
-        renderTabs();
-        actualizarVista();
-      } catch(e) {
-        console.error('Error al cargar JSON:', e);
-      }
-    }
-
-    async function pollBracketSoccer() {
-      try {
-        const r = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getEquiposSoccer' }));
-        const data = await r.json();
-        if (data.ok) {
-          bracketSoccer = data.bracket || null;
-          // ✅ Solo actualizar tabs (el puntito) sin tocar el header ni la vista
-          renderTabs();
-          // Solo renderizar bracket si el usuario está en esa pestaña
-          if (categoriaActiva === 'soc') {
-            renderizarBracketSoccer();
-          }
-          // Si NO estamos en soc, restaurar el header a la categoría activa
-          if (categoriaActiva && categoriaActiva !== 'soc') {
-            document.getElementById('tv-ronda').textContent = 'RONDA 1';
-            document.getElementById('tv-cat').textContent = RUTAS_NOMBRE[categoriaActiva] || categoriaActiva;
-          }
-        }
-      } catch(e) {
-        console.error('Error al cargar bracket soccer:', e);
-      }
-    }
-
-    function actualizarVista() {
-      if (!categoriaActiva) {
-        // Solo al inicio: seleccionar primera con datos
-        const primera = rutasConDatos[0] || null;
-        if (primera) {
-          categoriaActiva = primera;
-          seleccionarCategoria(primera);
-        }
-      } else {
-        // Usuario ya eligió: solo refrescar esa vista sin cambiar de pestaña
-        if (categoriaActiva === 'soc') {
-          renderizarBracketSoccer();
-        } else {
-          renderizarTabla(categoriaActiva);
-        }
-      }
-    }
-
-    // Polling cada 5s para tiempos, cada 8s para bracket soccer
-    setInterval(pollJSON, 5000);
-    setInterval(pollBracketSoccer, 8000);
-    pollJSON();
-    pollBracketSoccer();
-  </script>
 </body>
 </html>
