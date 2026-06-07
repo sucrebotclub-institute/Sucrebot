@@ -104,6 +104,16 @@
     .field select optgroup { background: var(--r-blue-deep); color: var(--r-cyan-bright); font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 4px 0; }
     .field select option[value=""] { color: rgba(255,255,255,0.35); }
 
+    /* ── INSTITUCIÓN COMBO ── */
+    .inst-combo { position: relative; }
+    .inst-combo select { width: 100%; }
+    .inst-nueva-wrap { margin-top: 8px; display: none; animation: fadeIn .2s ease; }
+    .inst-nueva-wrap.show { display: block; }
+    .inst-nueva-wrap input { width: 100%; background: rgba(10,25,60,0.55); border: 1.5px solid var(--r-cyan); color: #e8f0ff; font-family: 'Exo 2', sans-serif; font-size: 14px; padding: 10px 14px 10px 36px; border-radius: 8px; outline: none; box-sizing: border-box; }
+    .inst-nueva-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+    .inst-nueva-wrap input:focus { background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .inst-loading { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(91,200,240,0.6); margin-top: 4px; letter-spacing: 0.05em; }
+
     /* ── CAMPO EQUIPO SOCCER ── */
     .soccer-equipo-wrap { display: none; margin-top: 4px; animation: fadeIn .25s ease; }
     .soccer-equipo-wrap.show { display: block; }
@@ -148,18 +158,11 @@
 
     /* ── MÓVIL ── */
     @media (max-width: 768px) {
-      /* Ocultar robot decorativo */
       .reg-robot { display: none; }
-
-      /* Wrapper sin padding lateral excesivo */
       .wrapper { padding: 0 12px 40px; }
-
-      /* Hero compacto */
       .page-hero { padding: 20px 0 14px; }
       .page-hero h2 { font-size: 1.6rem; letter-spacing: 1px; }
       .page-hero-badge { font-size: 8px; letter-spacing: 2px; }
-
-      /* Card: sin margin-top negativo, padding reducido, sin desborde */
       .form-card { 
         margin-top: 0 !important; 
         padding: 18px 14px;
@@ -167,22 +170,14 @@
         width: 100%;
         box-sizing: border-box;
       }
-
-      /* Todos los grids → 1 columna */
       .form-grid,
       .grid-comprobante { 
         grid-template-columns: 1fr !important; 
       }
-
-      /* Cualquier grid con columnas inline → 1 columna */
       .form-grid[style*="grid-template-columns"] {
         grid-template-columns: 1fr !important;
       }
-
-      /* Cualquier field con grid-column inline → ocupa todo */
       .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
-
-      /* Logo uploader: ocupa todo el ancho debajo de institución */
       .logo-uploader {
         width: 100%;
         flex-direction: column;
@@ -194,8 +189,6 @@
         box-sizing: border-box;
       }
       .logo-placeholder span { white-space: normal; }
-
-      /* Toast: ancho completo en móvil */
       .toast {
         left: 12px;
         right: 12px;
@@ -225,7 +218,6 @@
   
   <div class="reg-layout">
 
-    <!-- Columna izquierda: robot + aviso -->
     <div class="reg-robot">
       <img src="../shared/images/robot-inss.png" alt="Robot inscribiendo" />
       <div class="reg-aviso">
@@ -239,10 +231,8 @@
     <div class="form-card">
       <div class="form-title"><svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:var(--r-cyan-bright);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>REGISTRO DE PARTICIPANTE</div>
 
-      <!-- DATOS PERSONALES -->
       <div class="form-section-title">👤 Datos Personales</div>
 
-      <!-- Nombre Completo -->
       <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px;">
         <div class="field">
           <label>Nombre Completo</label>
@@ -251,16 +241,24 @@
         </div>
       </div>
 
-      <!-- Institución -->
+      <!-- Institución — dropdown dinámico + campo libre -->
       <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px;">
         <div class="field">
           <label>Institución / Club</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <input type="text" id="f-institucion" placeholder="Universidad / Club">
+          <div class="inst-combo">
+            <select id="f-institucion-select" onchange="onInstitucionChange()">
+              <option value="">— Cargando instituciones... —</option>
+            </select>
+            <div class="inst-nueva-wrap" id="inst-nueva-wrap">
+              <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--r-cyan);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <input type="text" id="f-institucion-nueva" placeholder="Nombre completo de tu institución o club" style="padding-left:36px;">
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Logo — fila separada, siempre ocupa todo el ancho -->
+      <!-- Logo -->
       <div style="margin-bottom:14px;">
         <div class="logo-uploader" id="logo-uploader">
           <label class="logo-label">
@@ -327,7 +325,6 @@
         </div>
       </div>
 
-      <!-- DATOS DEL ROBOT -->
       <div class="form-section-title">🤖 Datos del Robot</div>
       <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:4px;">
         <div class="field">
@@ -363,7 +360,6 @@
         </div>
       </div>
 
-      <!-- NOMBRE DE EQUIPO — solo visible para Robot soccer -->
       <div class="soccer-equipo-wrap" id="soccerEquipoWrap">
         <div class="soccer-equipo-badge">
           ⚽ <span>En <strong>Robot soccer</strong> compites por equipo. El bracket se generará agrupando todos los robots del mismo equipo.</span>
@@ -377,7 +373,6 @@
         </div>
       </div>
 
-      <!-- COMPROBANTE -->
       <div class="form-section-title">📎 Comprobante de Pago</div>
       <div class="form-grid grid-comprobante" style="grid-template-columns: 1fr 1fr;">
         <div class="field">
@@ -392,7 +387,6 @@
         </div>
       </div>
 
-      <!-- INTEGRANTES -->
       <div class="form-section-title">👥 Integrantes del Equipo <span style="font-size:9px;opacity:0.6;font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;">(opcional)</span></div>
       <div style="font-family:'Exo 2',sans-serif;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;">
         Sus nombres aparecerán en los diplomas. El QR se envía únicamente al capitán.
@@ -414,7 +408,6 @@
         <svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
         REGISTRAR PARTICIPANTE
       </button>
-
     </div>
   </div>
 </div>
@@ -432,18 +425,99 @@
 <script>
   const GAS_URL = CONFIG.GAS_URL();
 
+  // ── INSTITUCIÓN DROPDOWN DINÁMICO ──────────────────────────────
+  const GAS_INST = 'https://script.google.com/macros/s/AKfycbyqMYRaEANLMMf4cc28mH-yiziqnXiEzeaEiF3bK8Jb5zm3xt_BaqgH2Gx6UJo287ypRQ/exec';
+  const INST_CACHE_KEY = 'sucrebot_instituciones_cache';
+  const INST_TTL = 6 * 60 * 60 * 1000; // 6 horas
+
+  function poblarInstSelect(instituciones) {
+    const sel = document.getElementById('f-institucion-select');
+    sel.innerHTML = '<option value="">— Selecciona institución / club —</option>';
+    instituciones.sort().forEach(inst => {
+      const opt = document.createElement('option');
+      opt.value = inst;
+      opt.textContent = inst;
+      sel.appendChild(opt);
+    });
+    // Opción para agregar nueva
+    const sep = document.createElement('option');
+    sep.disabled = true;
+    sep.textContent = '──────────────────';
+    sel.appendChild(sep);
+    const nueva = document.createElement('option');
+    nueva.value = '__nueva__';
+    nueva.textContent = '➕ Otra / Nueva institución...';
+    sel.appendChild(nueva);
+  }
+
+  function cargarInstituciones() {
+    // Intentar cache primero
+    try {
+      const raw = localStorage.getItem(INST_CACHE_KEY);
+      if (raw) {
+        const cache = JSON.parse(raw);
+        if (Date.now() - cache.ts < INST_TTL) {
+          poblarInstSelect(cache.data);
+          return;
+        }
+      }
+    } catch(e) {}
+
+    // Fetch GAS
+    fetch(GAS_INST + '?action=getParticipantes')
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        const instituciones = [...new Set(
+          data.map(p => (p.institucion || '').trim()).filter(Boolean)
+        )];
+        poblarInstSelect(instituciones);
+        localStorage.setItem(INST_CACHE_KEY, JSON.stringify({
+          data: instituciones, ts: Date.now()
+        }));
+      })
+      .catch(() => {
+        // Si falla, mostrar solo "Otra"
+        const sel = document.getElementById('f-institucion-select');
+        sel.innerHTML = '<option value="">— Selecciona institución / club —</option>';
+        const nueva = document.createElement('option');
+        nueva.value = '__nueva__';
+        nueva.textContent = '➕ Otra / Nueva institución...';
+        sel.appendChild(nueva);
+      });
+  }
+
+  function onInstitucionChange() {
+    const sel = document.getElementById('f-institucion-select');
+    const wrap = document.getElementById('inst-nueva-wrap');
+    if (sel.value === '__nueva__') {
+      wrap.classList.add('show');
+      document.getElementById('f-institucion-nueva').focus();
+    } else {
+      wrap.classList.remove('show');
+      document.getElementById('f-institucion-nueva').value = '';
+    }
+  }
+
+  function getInstitucionValue() {
+    const sel = document.getElementById('f-institucion-select');
+    if (sel.value === '__nueva__') {
+      return document.getElementById('f-institucion-nueva').value.trim();
+    }
+    return sel.value;
+  }
+
+  // Cargar al arrancar
+  cargarInstituciones();
+
+  // ── LOGO ───────────────────────────────────────────────────────
   const dropZone     = document.getElementById('logo-drop-zone');
   const logoInput    = document.getElementById('f-logo');
   const logoPreview  = document.getElementById('logo-preview');
   const logoUploader = document.getElementById('logo-uploader');
 
-  // En móvil el logo-drop-zone es full width — asegurar que al cargar se ajuste
   function ajustarLogoDropZone() {
-    if (window.innerWidth <= 768) {
-      dropZone.style.width = '100%';
-    } else {
-      dropZone.style.width = '200px';
-    }
+    dropZone.style.width = window.innerWidth <= 768 ? '100%' : '200px';
   }
   ajustarLogoDropZone();
   window.addEventListener('resize', ajustarLogoDropZone);
@@ -518,7 +592,7 @@
 
   async function registrarParticipante() {
     const nombre       = document.getElementById('f-nombre').value.trim();
-    const institucion  = document.getElementById('f-institucion').value.trim();
+    const institucion  = getInstitucionValue();
     const ciudad       = document.getElementById('f-ciudad').value.trim();
     const robot        = document.getElementById('f-robot').value.trim();
     const contacto     = document.getElementById('f-contacto').value.trim();
@@ -534,6 +608,9 @@
 
     if (!nombre)              { showToast('El nombre completo es obligatorio', true); return; }
     if (!institucion)         { showToast('La institución es obligatoria', true); return; }
+    if (document.getElementById('f-institucion-select').value === '__nueva__' && !institucion) {
+      showToast('Escribe el nombre de tu institución o club', true); return;
+    }
     if (!ciudad)              { showToast('Selecciona una provincia', true); return; }
     if (!robot)               { showToast('El nombre del robot es obligatorio', true); return; }
     if (!contacto)            { showToast('El número de contacto es obligatorio', true); return; }
@@ -577,6 +654,18 @@
         miembro2, miembro3, comprobante, archivoUrl, logoUrl, equipo
       });
 
+      // Actualizar cache de instituciones con la nueva si aplica
+      if (document.getElementById('f-institucion-select').value === '__nueva__' && institucion) {
+        try {
+          const raw = localStorage.getItem(INST_CACHE_KEY);
+          const cache = raw ? JSON.parse(raw) : { data: [], ts: Date.now() };
+          if (!cache.data.includes(institucion)) {
+            cache.data.push(institucion);
+            localStorage.setItem(INST_CACHE_KEY, JSON.stringify(cache));
+          }
+        } catch(e) {}
+      }
+
       const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
       const idx   = lista.findIndex(p => p.id === idGenerado);
       const datosLocal = { id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria, equipo };
@@ -585,10 +674,13 @@
 
       showToast('✅ Registrado con ID: ' + idGenerado, false);
 
-      ['f-nombre','f-institucion','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3','f-equipo']
+      ['f-nombre','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3','f-equipo']
         .forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-ciudad').value = '';
       document.getElementById('f-categoria').value = '';
+      document.getElementById('f-institucion-select').value = '';
+      document.getElementById('f-institucion-nueva').value = '';
+      document.getElementById('inst-nueva-wrap').classList.remove('show');
       document.getElementById('soccerEquipoWrap').classList.remove('show');
       archivoInput.value = '';
       quitarLogo();
