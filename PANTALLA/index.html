@@ -13,393 +13,309 @@
     body { background: #f0f4fa !important; padding-top: 0 !important; }
     main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
 
-    /* ── Preview card en página normal ── */
+    /* ── Preview card ── */
     .cronograma-preview {
-      background: white;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 4px 24px rgba(26,92,168,0.10);
-      margin-bottom: 24px;
+      background: white; border-radius: 16px; padding: 32px;
+      box-shadow: 0 4px 24px rgba(26,92,168,0.10); margin-bottom: 24px;
     }
     .preview-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
     }
-    .preview-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 28px;
-      letter-spacing: 2px;
-      color: #1a5ca8;
-    }
-    .preview-sub {
-      font-size: 13px;
-      color: #666;
-      margin-top: 2px;
-    }
+    .preview-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: #1a5ca8; }
+    .preview-sub   { font-size: 13px; color: #666; margin-top: 2px; }
     .btn-fullscreen {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
+      display: inline-flex; align-items: center; gap: 10px;
       background: linear-gradient(135deg, #1a5ca8, #2176d2);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 14px 28px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 18px;
-      letter-spacing: 2px;
-      cursor: pointer;
-      box-shadow: 0 4px 16px rgba(26,92,168,0.35);
+      color: white; border: none; border-radius: 10px; padding: 14px 28px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+      cursor: pointer; box-shadow: 0 4px 16px rgba(26,92,168,0.35);
       transition: transform 0.15s, box-shadow 0.15s;
     }
-    .btn-fullscreen:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(26,92,168,0.45);
-    }
+    .btn-fullscreen:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,92,168,0.45); }
     .btn-fullscreen svg { width: 20px; height: 20px; }
-
-    /* ── Mini tabla preview ── */
-    .schedule-preview-list {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    @media (max-width: 640px) {
-      .schedule-preview-list { grid-template-columns: 1fr; }
-    }
+    .schedule-preview-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media (max-width: 640px) { .schedule-preview-list { grid-template-columns: 1fr; } }
     .preview-slot {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      background: #f8faff;
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 8px; background: #f8faff;
       border-left: 3px solid #1a5ca8;
     }
-    .preview-slot.cat-apertura   { border-color: #f5c518; }
+    .preview-slot.cat-apertura    { border-color: #f5c518; }
     .preview-slot.cat-competencia { border-color: #4ea8f5; }
-    .preview-slot.cat-tecnico    { border-color: #a855f7; }
-    .preview-slot.cat-descanso   { border-color: #22c55e; }
-    .preview-slot.cat-clausura   { border-color: #f97316; }
-    .preview-slot.cat-premiacion { border-color: #f5c518; }
-    .preview-time {
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      color: #1a5ca8;
-      font-weight: 500;
-      min-width: 44px;
-      flex-shrink: 0;
-    }
-    .preview-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: #1a2a4a;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .preview-detail {
-      font-size: 11px;
-      color: #888;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .preview-slot.cat-tecnico     { border-color: #a855f7; }
+    .preview-slot.cat-descanso    { border-color: #22c55e; }
+    .preview-slot.cat-clausura    { border-color: #f97316; }
+    .preview-slot.cat-premiacion  { border-color: #f5c518; }
+    .preview-time   { font-family:'DM Mono',monospace; font-size:13px; color:#1a5ca8; font-weight:500; min-width:44px; flex-shrink:0; }
+    .preview-name   { font-size:13px; font-weight:600; color:#1a2a4a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .preview-detail { font-size:11px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-    /* ── OVERLAY FULLSCREEN ── */
+    /* ══════════════════════════════════════
+       FULLSCREEN OVERLAY
+    ══════════════════════════════════════ */
     #fsOverlay {
       display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      background: #071e3d;
-      color: white;
+      position: fixed; inset: 0; z-index: 99999;
       font-family: 'Exo 2', sans-serif;
-      transition: background 0.8s ease, color 0.8s ease;
+      overflow: hidden;
     }
     #fsOverlay.active { display: flex; flex-direction: column; }
 
-    /* bg effects — dark */
-    #fsOverlay::before {
-      content: '';
-      position: absolute; inset: 0;
+    /* Two background layers that cross-fade */
+    .fs-bg {
+      position: absolute; inset: 0; z-index: 0;
+      transition: opacity 1s ease;
+    }
+    .fs-bg-dark {
       background:
         radial-gradient(ellipse 80% 60% at 15% 50%, rgba(26,92,168,0.45) 0%, transparent 70%),
         radial-gradient(ellipse 60% 80% at 85% 20%, rgba(33,118,210,0.30) 0%, transparent 65%),
         linear-gradient(160deg, #071e3d 0%, #0d2f5c 50%, #071e3d 100%);
-      pointer-events: none;
-      transition: opacity 0.8s ease;
     }
-    #fsOverlay::after {
-      content: '';
-      position: absolute; inset: 0;
+    .fs-bg-dark-grid {
       background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
       background-size: 60px 60px;
-      pointer-events: none;
-      transition: opacity 0.8s ease;
     }
-
-    /* ── LIGHT THEME ── */
-    #fsOverlay.theme-light {
-      background: #f0f4fa;
-      color: #0e1e3a;
-    }
-    #fsOverlay.theme-light::before {
+    .fs-bg-light {
       background:
         radial-gradient(ellipse 70% 50% at 10% 50%, rgba(26,92,168,0.08) 0%, transparent 70%),
         radial-gradient(ellipse 50% 60% at 90% 20%, rgba(33,118,210,0.07) 0%, transparent 65%),
         linear-gradient(160deg, #e8eef8 0%, #f0f4fa 50%, #e8eef8 100%);
+      opacity: 0; /* starts hidden */
     }
-    #fsOverlay.theme-light::after {
+    .fs-bg-light-grid {
       background-image:
         linear-gradient(rgba(26,92,168,0.06) 1px, transparent 1px),
         linear-gradient(90deg, rgba(26,92,168,0.06) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0;
     }
-    /* light header */
-    #fsOverlay.theme-light .fs-header {
-      border-bottom-color: rgba(26,92,168,0.15);
-      background: linear-gradient(180deg, rgba(240,244,250,0.8) 0%, transparent 100%);
+
+    /* Content sits above backgrounds */
+    .fs-inner {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; height: 100%;
+      transition: color 1s ease;
+      color: white;
     }
-    #fsOverlay.theme-light .fs-logo {
-      box-shadow: 0 0 20px rgba(26,92,168,0.25);
+    #fsOverlay.light .fs-inner { color: #0e1e3a; }
+    #fsOverlay.light .fs-bg-dark, #fsOverlay.light .fs-bg-dark-grid { opacity: 0; }
+    #fsOverlay.light .fs-bg-light, #fsOverlay.light .fs-bg-light-grid { opacity: 1; }
+
+    /* ── fs header ── */
+    .fs-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 52px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      flex-shrink: 0;
+      transition: border-color 1s ease;
     }
-    #fsOverlay.theme-light .fs-event-title { color: #0e1e3a; }
-    #fsOverlay.theme-light .fs-event-sub   { color: rgba(14,30,58,0.55); }
-    #fsOverlay.theme-light .fs-date-main   { color: #1a5ca8; }
-    #fsOverlay.theme-light .fs-date-place  { color: rgba(14,30,58,0.5); }
-    #fsOverlay.theme-light .btn-exit-fs {
-      background: rgba(26,92,168,0.08);
-      border-color: rgba(26,92,168,0.2);
+    #fsOverlay.light .fs-header { border-bottom-color: rgba(26,92,168,0.15); }
+    .fs-header-left { display: flex; align-items: center; gap: 16px; }
+    .fs-logo {
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, #1a5ca8, #2176d2);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: white;
+      box-shadow: 0 0 20px rgba(26,92,168,0.6); flex-shrink: 0;
+      transition: box-shadow 1s ease;
+    }
+    #fsOverlay.light .fs-logo { box-shadow: 0 0 20px rgba(26,92,168,0.25); }
+    .fs-event-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(24px,3vw,40px); letter-spacing: 3px; line-height: 1;
+      transition: color 1s ease; color: white;
+    }
+    #fsOverlay.light .fs-event-title { color: #0e1e3a; }
+    .fs-event-sub {
+      font-size: clamp(9px,1vw,13px); letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 2px; font-weight: 300;
+      transition: color 1s ease; color: rgba(255,255,255,0.55);
+    }
+    #fsOverlay.light .fs-event-sub { color: rgba(14,30,58,0.55); }
+    .fs-header-right { display: flex; align-items: center; gap: 20px; }
+    .fs-date-main {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(20px,2.5vw,36px); letter-spacing: 3px; line-height: 1;
+      transition: color 1s ease; color: #f5c518;
+    }
+    #fsOverlay.light .fs-date-main { color: #1a5ca8; }
+    .fs-date-place {
+      font-size: clamp(9px,0.9vw,12px); letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 3px; text-align:right;
+      transition: color 1s ease; color: rgba(255,255,255,0.55);
+    }
+    #fsOverlay.light .fs-date-place { color: rgba(14,30,58,0.5); }
+    .btn-exit-fs {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7); border-radius: 8px; padding: 8px 16px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px;
+      cursor: pointer; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+      transition: background 0.2s, color 0.2s, border-color 1s;
+    }
+    .btn-exit-fs:hover { background: rgba(255,255,255,0.18); color: white; }
+    #fsOverlay.light .btn-exit-fs {
+      background: rgba(26,92,168,0.08); border-color: rgba(26,92,168,0.25);
       color: #1a5ca8;
     }
-    #fsOverlay.theme-light .btn-exit-fs:hover {
-      background: rgba(26,92,168,0.15);
+    #fsOverlay.light .btn-exit-fs:hover { background: rgba(26,92,168,0.15); }
+    .btn-exit-fs svg { width: 16px; height: 16px; }
+
+    .fs-gold-bar {
+      height: 3px; flex-shrink: 0;
+      transition: background 1s ease;
+      background: linear-gradient(90deg, transparent, #f5c518, #ffd96a, #f5c518, transparent);
+      opacity: 0.75;
     }
-    /* light gold bar */
-    #fsOverlay.theme-light .fs-gold-bar {
+    #fsOverlay.light .fs-gold-bar {
       background: linear-gradient(90deg, transparent, #1a5ca8, #2176d2, #1a5ca8, transparent);
     }
-    /* light section label */
-    #fsOverlay.theme-light .fs-section-label { color: #1a5ca8; }
-    #fsOverlay.theme-light .fs-section-label::after {
+
+    /* ── fs body ── */
+    .fs-body {
+      flex: 1; overflow: hidden; padding: 18px 52px 10px;
+      display: flex; flex-direction: column;
+    }
+    .fs-section-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(11px,1.1vw,14px); letter-spacing: 4px;
+      margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+      transition: color 1s ease; color: #f5c518;
+    }
+    #fsOverlay.light .fs-section-label { color: #1a5ca8; }
+    .fs-section-label::after {
+      content: ''; flex: 1; height: 1px;
+      transition: background 1s ease;
+      background: linear-gradient(90deg, rgba(245,197,24,0.3), transparent);
+    }
+    #fsOverlay.light .fs-section-label::after {
       background: linear-gradient(90deg, rgba(26,92,168,0.3), transparent);
     }
+    .fs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 28px; }
+
+    /* slots */
+    .fs-slot {
+      display: flex; align-items: center; gap: 14px;
+      padding: 10px 14px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-left: 3px solid #4ea8f5;
+      transition: background 1s ease, border-color 1s ease, box-shadow 1s ease, opacity 0.5s ease;
+      background: rgba(255,255,255,0.04);
+    }
+    /* dark borders */
+    .fs-slot.cat-apertura    { border-left-color: #f5c518; }
+    .fs-slot.cat-competencia { border-left-color: #4ea8f5; }
+    .fs-slot.cat-tecnico     { border-left-color: #a855f7; }
+    .fs-slot.cat-descanso    { border-left-color: #22c55e; }
+    .fs-slot.cat-clausura    { border-left-color: #f97316; }
+    .fs-slot.cat-premiacion  { border-left-color: #f5c518; }
+    .fs-slot.active {
+      background: rgba(26,92,168,0.28) !important;
+      border-color: rgba(33,118,210,0.5) !important;
+      border-left-color: #4ea8f5 !important;
+      box-shadow: 0 0 18px rgba(26,92,168,0.35) !important;
+    }
+    .fs-slot.past { opacity: 0.35; }
+
     /* light slots */
-    #fsOverlay.theme-light .fs-slot {
-      background: rgba(255,255,255,0.7);
+    #fsOverlay.light .fs-slot {
+      background: rgba(255,255,255,0.75);
       border-color: rgba(26,92,168,0.12);
       box-shadow: 0 1px 6px rgba(26,92,168,0.07);
     }
-    #fsOverlay.theme-light .fs-slot.active {
-      background: rgba(26,92,168,0.10);
-      border-color: rgba(26,92,168,0.35);
-      box-shadow: 0 0 16px rgba(26,92,168,0.15);
+    #fsOverlay.light .fs-slot.active {
+      background: rgba(26,92,168,0.10) !important;
+      border-color: rgba(26,92,168,0.35) !important;
+      box-shadow: 0 0 16px rgba(26,92,168,0.15) !important;
     }
-    #fsOverlay.theme-light .fs-slot.past { opacity: 0.35; }
-    #fsOverlay.theme-light .fs-slot-time  { color: #1a5ca8; }
-    #fsOverlay.theme-light .fs-slot-name  { color: #0e1e3a; }
-    #fsOverlay.theme-light .fs-slot-detail { color: rgba(14,30,58,0.5); }
-    /* light badges */
-    #fsOverlay.theme-light .fs-slot.cat-apertura    .fs-slot-badge { background: rgba(245,197,24,0.15);  color: #b8900a; border-color: rgba(184,144,10,0.3);  }
-    #fsOverlay.theme-light .fs-slot.cat-competencia .fs-slot-badge { background: rgba(26,92,168,0.10);   color: #1a5ca8; border-color: rgba(26,92,168,0.3);    }
-    #fsOverlay.theme-light .fs-slot.cat-tecnico     .fs-slot-badge { background: rgba(168,85,247,0.10);  color: #7e22ce; border-color: rgba(126,34,206,0.3);   }
-    #fsOverlay.theme-light .fs-slot.cat-descanso    .fs-slot-badge { background: rgba(34,197,94,0.10);   color: #15803d; border-color: rgba(21,128,61,0.3);    }
-    #fsOverlay.theme-light .fs-slot.cat-clausura    .fs-slot-badge { background: rgba(249,115,22,0.10);  color: #c2410c; border-color: rgba(194,65,12,0.3);    }
-    #fsOverlay.theme-light .fs-slot.cat-premiacion  .fs-slot-badge { background: rgba(245,197,24,0.15);  color: #b8900a; border-color: rgba(184,144,10,0.3);   }
-    /* light footer */
-    #fsOverlay.theme-light .fs-footer {
-      border-top-color: rgba(26,92,168,0.15);
-    }
-    #fsOverlay.theme-light .fs-footer-inst { color: rgba(14,30,58,0.4); }
-    #fsOverlay.theme-light .fs-live        { color: rgba(14,30,58,0.5); }
-    #fsOverlay.theme-light .fs-clock       { color: #0e1e3a; }
 
-    /* theme indicator pill */
+    .fs-slot-time {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(12px,1.3vw,17px); font-weight: 500;
+      min-width: 52px; flex-shrink: 0;
+      transition: color 1s ease; color: #ffd96a;
+    }
+    #fsOverlay.light .fs-slot-time { color: #1a5ca8; }
+    .fs-slot-body { flex: 1; min-width: 0; }
+    .fs-slot-name {
+      font-size: clamp(12px,1.35vw,17px); font-weight: 600; line-height: 1.2;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      transition: color 1s ease; color: white;
+    }
+    #fsOverlay.light .fs-slot-name { color: #0e1e3a; }
+    .fs-slot-detail {
+      font-size: clamp(9px,0.9vw,12px); margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      transition: color 1s ease; color: rgba(255,255,255,0.5);
+    }
+    #fsOverlay.light .fs-slot-detail { color: rgba(14,30,58,0.5); }
+    .fs-slot-badge {
+      font-size: clamp(8px,0.8vw,10px); font-family: 'DM Mono', monospace;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
+      transition: background 1s ease, color 1s ease, border-color 1s ease;
+    }
+    /* dark badges */
+    .fs-slot.cat-apertura    .fs-slot-badge { background: rgba(245,197,24,0.15); color:#f5c518; border:1px solid rgba(245,197,24,0.3); }
+    .fs-slot.cat-competencia .fs-slot-badge { background: rgba(78,168,245,0.15); color:#4ea8f5; border:1px solid rgba(78,168,245,0.3); }
+    .fs-slot.cat-tecnico     .fs-slot-badge { background: rgba(168,85,247,0.15); color:#a855f7; border:1px solid rgba(168,85,247,0.3); }
+    .fs-slot.cat-descanso    .fs-slot-badge { background: rgba(34,197,94,0.15);  color:#22c55e; border:1px solid rgba(34,197,94,0.3);  }
+    .fs-slot.cat-clausura    .fs-slot-badge { background: rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.3); }
+    .fs-slot.cat-premiacion  .fs-slot-badge { background: rgba(245,197,24,0.20); color:#f5c518; border:1px solid rgba(245,197,24,0.4); }
+    /* light badges */
+    #fsOverlay.light .fs-slot.cat-apertura    .fs-slot-badge { background:rgba(245,197,24,0.15); color:#a07000; border-color:rgba(160,112,0,0.3);    }
+    #fsOverlay.light .fs-slot.cat-competencia .fs-slot-badge { background:rgba(26,92,168,0.10);  color:#1a5ca8; border-color:rgba(26,92,168,0.3);     }
+    #fsOverlay.light .fs-slot.cat-tecnico     .fs-slot-badge { background:rgba(168,85,247,0.10); color:#7e22ce; border-color:rgba(126,34,206,0.3);    }
+    #fsOverlay.light .fs-slot.cat-descanso    .fs-slot-badge { background:rgba(34,197,94,0.10);  color:#15803d; border-color:rgba(21,128,61,0.3);     }
+    #fsOverlay.light .fs-slot.cat-clausura    .fs-slot-badge { background:rgba(249,115,22,0.10); color:#c2410c; border-color:rgba(194,65,12,0.3);     }
+    #fsOverlay.light .fs-slot.cat-premiacion  .fs-slot-badge { background:rgba(245,197,24,0.15); color:#a07000; border-color:rgba(160,112,0,0.3);     }
+
+    /* ── fs footer ── */
+    .fs-footer {
+      padding: 10px 52px; display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+      transition: border-color 1s ease;
+    }
+    #fsOverlay.light .fs-footer { border-top-color: rgba(26,92,168,0.15); }
+    .fs-footer-inst {
+      font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+      transition: color 1s ease; color: rgba(255,255,255,0.4);
+    }
+    #fsOverlay.light .fs-footer-inst { color: rgba(14,30,58,0.4); }
+    .fs-live {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; font-family: 'DM Mono', monospace; letter-spacing: 1px;
+      transition: color 1s ease; color: rgba(255,255,255,0.5);
+    }
+    #fsOverlay.light .fs-live { color: rgba(14,30,58,0.5); }
+    .fs-dot { width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 7px #22c55e; animation: fsPulse 1.8s ease infinite; }
+    .fs-clock {
+      font-family: 'DM Mono', monospace; font-size: clamp(14px,1.5vw,20px);
+      letter-spacing: 2px;
+      transition: color 1s ease; color: white;
+    }
+    #fsOverlay.light .fs-clock { color: #0e1e3a; }
+
+    /* theme pips */
     .theme-pill {
-      position: absolute;
-      bottom: 14px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 6px; z-index: 10;
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 7px; z-index: 10;
     }
     .theme-pip {
       width: 8px; height: 8px; border-radius: 50%;
       background: rgba(255,255,255,0.25);
       transition: background 0.4s, transform 0.4s;
     }
-    .theme-pip.active-pip { background: #f5c518; transform: scale(1.3); }
-    #fsOverlay.theme-light .theme-pip { background: rgba(26,92,168,0.2); }
-    #fsOverlay.theme-light .theme-pip.active-pip { background: #1a5ca8; }
-
-    .fs-inner {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column;
-      height: 100%;
-    }
-
-    /* fs header */
-    .fs-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 52px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
-      flex-shrink: 0;
-    }
-    .fs-header-left { display: flex; align-items: center; gap: 16px; }
-    .fs-logo {
-      width: 46px; height: 46px;
-      background: linear-gradient(135deg, #1a5ca8, #2176d2);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 18px; color: white;
-      box-shadow: 0 0 20px rgba(26,92,168,0.6);
-      flex-shrink: 0;
-    }
-    .fs-event-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(24px, 3vw, 40px);
-      letter-spacing: 3px; color: white; line-height: 1;
-    }
-    .fs-event-sub {
-      font-size: clamp(9px, 1vw, 13px);
-      color: rgba(255,255,255,0.55);
-      letter-spacing: 2px; text-transform: uppercase;
-      margin-top: 2px; font-weight: 300;
-    }
-    .fs-header-right { display: flex; align-items: center; gap: 20px; }
-    .fs-date {
-      text-align: right;
-    }
-    .fs-date-main {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(20px, 2.5vw, 36px);
-      letter-spacing: 3px; color: #f5c518; line-height: 1;
-    }
-    .fs-date-place {
-      font-size: clamp(9px, 0.9vw, 12px);
-      color: rgba(255,255,255,0.55);
-      letter-spacing: 2px; text-transform: uppercase;
-      margin-top: 3px;
-    }
-    .btn-exit-fs {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.7);
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 15px; letter-spacing: 1.5px;
-      cursor: pointer;
-      display: flex; align-items: center; gap: 8px;
-      transition: background 0.2s, color 0.2s;
-      flex-shrink: 0;
-    }
-    .btn-exit-fs:hover { background: rgba(255,255,255,0.15); color: white; }
-    .btn-exit-fs svg { width: 16px; height: 16px; }
-
-    .fs-gold-bar {
-      height: 3px;
-      background: linear-gradient(90deg, transparent, #f5c518, #ffd96a, #f5c518, transparent);
-      opacity: 0.7; flex-shrink: 0;
-    }
-
-    /* fs body */
-    .fs-body {
-      flex: 1; overflow: hidden;
-      padding: 20px 52px 12px;
-      display: flex; flex-direction: column;
-    }
-    .fs-section-label {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(11px, 1.1vw, 14px);
-      letter-spacing: 4px; color: #f5c518;
-      margin-bottom: 12px;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .fs-section-label::after {
-      content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, rgba(245,197,24,0.3), transparent);
-    }
-    .fs-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 7px 28px;
-      overflow: hidden;
-    }
-    .fs-slot {
-      display: flex; align-items: center; gap: 14px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-left: 3px solid #1a5ca8;
-      position: relative;
-      transition: background 0.3s;
-    }
-    .fs-slot.cat-apertura   { border-left-color: #f5c518; }
-    .fs-slot.cat-competencia { border-left-color: #4ea8f5; }
-    .fs-slot.cat-tecnico    { border-left-color: #a855f7; }
-    .fs-slot.cat-descanso   { border-left-color: #22c55e; }
-    .fs-slot.cat-clausura   { border-left-color: #f97316; }
-    .fs-slot.cat-premiacion { border-left-color: #f5c518; }
-    .fs-slot.active {
-      background: rgba(26,92,168,0.25);
-      border-color: rgba(33,118,210,0.5);
-      border-left-color: #4ea8f5;
-      box-shadow: 0 0 16px rgba(26,92,168,0.3);
-    }
-    .fs-slot.past { opacity: 0.38; }
-    .fs-slot-time {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(12px, 1.3vw, 17px);
-      font-weight: 500; color: #ffd96a;
-      min-width: 52px; flex-shrink: 0;
-    }
-    .fs-slot-body { flex: 1; min-width: 0; }
-    .fs-slot-name {
-      font-size: clamp(12px, 1.35vw, 17px);
-      font-weight: 600; color: white; line-height: 1.2;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .fs-slot-detail {
-      font-size: clamp(9px, 0.9vw, 12px);
-      color: rgba(255,255,255,0.5); margin-top: 1px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .fs-slot-badge {
-      font-size: clamp(8px, 0.8vw, 10px);
-      font-family: 'DM Mono', monospace;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
-    }
-    .fs-slot.cat-apertura   .fs-slot-badge { background: rgba(245,197,24,0.15); color: #f5c518; border: 1px solid rgba(245,197,24,0.3); }
-    .fs-slot.cat-competencia .fs-slot-badge { background: rgba(78,168,245,0.15); color: #4ea8f5; border: 1px solid rgba(78,168,245,0.3); }
-    .fs-slot.cat-tecnico    .fs-slot-badge { background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
-    .fs-slot.cat-descanso   .fs-slot-badge { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
-    .fs-slot.cat-clausura   .fs-slot-badge { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
-    .fs-slot.cat-premiacion .fs-slot-badge { background: rgba(245,197,24,0.2); color: #f5c518; border: 1px solid rgba(245,197,24,0.4); }
-
-    /* fs footer */
-    .fs-footer {
-      padding: 10px 52px;
-      display: flex; align-items: center; justify-content: space-between;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      flex-shrink: 0;
-    }
-    .fs-footer-inst { font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; }
-    .fs-live { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; letter-spacing: 1px; }
-    .fs-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 7px #22c55e; animation: fsPulse 1.8s ease infinite; }
-    .fs-clock { font-family: 'DM Mono', monospace; font-size: clamp(14px, 1.5vw, 20px); color: white; letter-spacing: 2px; }
+    .theme-pip.on { background: #f5c518; transform: scale(1.35); }
+    #fsOverlay.light .theme-pip { background: rgba(26,92,168,0.2); }
+    #fsOverlay.light .theme-pip.on { background: #1a5ca8; }
 
     @keyframes fsPulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.4; transform: scale(0.7); }
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.4; transform:scale(0.7); }
     }
   </style>
 </head>
@@ -413,8 +329,6 @@
 
 <main>
   <div class="wrapper" style="max-width:1200px;margin:0 auto;padding:0 20px 60px">
-
-    <!-- Card normal -->
     <div class="cronograma-preview">
       <div class="preview-header">
         <div>
@@ -428,22 +342,22 @@
           PANTALLA COMPLETA
         </button>
       </div>
-
-      <!-- Mini preview del schedule -->
       <div class="schedule-preview-list" id="previewList"></div>
     </div>
-
   </div>
 </main>
 
 <div data-include="../shared/components/footer.html"></div>
 
-<!-- ══════════════════════════════════════════
-     OVERLAY FULLSCREEN
-══════════════════════════════════════════ -->
+<!-- ══ FULLSCREEN OVERLAY ══ -->
 <div id="fsOverlay">
-  <div class="fs-inner">
+  <!-- Background layers (cross-fade via opacity) -->
+  <div class="fs-bg fs-bg-dark"></div>
+  <div class="fs-bg fs-bg-dark-grid"></div>
+  <div class="fs-bg fs-bg-light"></div>
+  <div class="fs-bg fs-bg-light-grid"></div>
 
+  <div class="fs-inner">
     <div class="fs-header">
       <div class="fs-header-left">
         <div class="fs-logo">SB</div>
@@ -453,7 +367,7 @@
         </div>
       </div>
       <div class="fs-header-right">
-        <div class="fs-date">
+        <div>
           <div class="fs-date-main">16 · VII · 2026</div>
           <div class="fs-date-place">Quito, Ecuador</div>
         </div>
@@ -477,58 +391,52 @@
       <div class="fs-live"><div class="fs-dot"></div> EN VIVO</div>
       <div class="fs-clock" id="fsClock">00:00:00</div>
     </div>
-    <div class="theme-pill">
-      <div class="theme-pip active-pip" id="pip-0"></div>
-      <div class="theme-pip" id="pip-1"></div>
-    </div>
+  </div>
 
+  <div class="theme-pill">
+    <div class="theme-pip on"  id="pip0"></div>
+    <div class="theme-pip"     id="pip1"></div>
   </div>
 </div>
 
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
-
 <script>
-  // ── Datos del cronograma ────────────────────────────────────────
   const SCHEDULE = [
-    { time: '08:00', name: 'Acreditación y registro',      detail: 'Recepción de participantes · Entrega de kits',        cat: 'apertura',    badge: 'Apertura'     },
-    { time: '09:00', name: 'Ceremonia de apertura',         detail: 'Bienvenida institucional · Presentación del evento',  cat: 'apertura',    badge: 'Apertura'     },
-    { time: '09:30', name: 'Insectos',                      detail: 'Arena principal · Categoría Amateur',                 cat: 'competencia', badge: 'Competencia'  },
-    { time: '09:30', name: 'Seguidor de Línea (Amateur)',   detail: 'Pista ST · Categoría Amateur',                       cat: 'competencia', badge: 'Competencia'  },
-    { time: '10:30', name: 'Trepador Amateur',              detail: 'Estructura de trepada · Arena 2',                    cat: 'competencia', badge: 'Competencia'  },
-    { time: '10:30', name: 'Seguidor de Línea (Pro)',       detail: 'Pista ST · Categoría Pro',                           cat: 'competencia', badge: 'Competencia'  },
-    { time: '11:30', name: 'Receso',                        detail: 'Refrigerio · 30 minutos',                            cat: 'descanso',    badge: 'Descanso'     },
-    { time: '12:00', name: 'Minisumo Autónomo',             detail: 'Arena Minisumo · Fase de grupos',                    cat: 'competencia', badge: 'Competencia'  },
-    { time: '12:00', name: 'Minisumo RC',                   detail: 'Arena Minisumo · Fase de grupos',                    cat: 'competencia', badge: 'Competencia'  },
-    { time: '13:00', name: 'Revisión técnica ESP32',        detail: 'Laboratorio · Verificación de hardware',             cat: 'tecnico',     badge: 'Técnico'      },
-    { time: '13:30', name: 'Almuerzo',                      detail: 'Pausa · 1 hora',                                     cat: 'descanso',    badge: 'Descanso'     },
-    { time: '14:30', name: 'Bailarín',                      detail: 'Escenario principal · Panel de calificación',        cat: 'competencia', badge: 'Competencia'  },
-    { time: '14:30', name: 'Impacto Tecnológico',           detail: 'Sala de exposiciones · Presentaciones',              cat: 'competencia', badge: 'Competencia'  },
-    { time: '15:30', name: 'Robot Soccer',                  detail: 'Cancha principal · Fase eliminatoria',               cat: 'competencia', badge: 'Competencia'  },
-    { time: '15:30', name: 'Cubo Rubik',                    detail: 'Mesa de cronometraje · Rondas clasificatorias',      cat: 'competencia', badge: 'Competencia'  },
-    { time: '16:30', name: 'Lego Kids',                     detail: 'Área Kids · Categoría infantil',                     cat: 'competencia', badge: 'Competencia'  },
-    { time: '16:30', name: 'Trepador Pro',                  detail: 'Estructura de trepada · Categoría Pro',              cat: 'competencia', badge: 'Competencia'  },
-    { time: '17:30', name: 'Batalla de Robots',             detail: 'Arena principal · Eliminación directa',              cat: 'competencia', badge: 'Competencia'  },
-    { time: '18:00', name: 'Semifinales y Finales',         detail: 'Todas las categorías · Rondas finales',              cat: 'clausura',    badge: 'Final'        },
-    { time: '19:00', name: 'Ceremonia de premiación',       detail: 'Auditorio · Entrega de trofeos y diplomas',          cat: 'premiacion',  badge: '🏆 Premiación' },
+    { time:'08:00', name:'Acreditación y registro',      detail:'Recepción de participantes · Entrega de kits',        cat:'apertura',    badge:'Apertura'     },
+    { time:'09:00', name:'Ceremonia de apertura',         detail:'Bienvenida institucional · Presentación del evento',  cat:'apertura',    badge:'Apertura'     },
+    { time:'09:30', name:'Insectos',                      detail:'Arena principal · Categoría Amateur',                 cat:'competencia', badge:'Competencia'  },
+    { time:'09:30', name:'Seguidor de Línea (Amateur)',   detail:'Pista ST · Categoría Amateur',                       cat:'competencia', badge:'Competencia'  },
+    { time:'10:30', name:'Trepador Amateur',              detail:'Estructura de trepada · Arena 2',                    cat:'competencia', badge:'Competencia'  },
+    { time:'10:30', name:'Seguidor de Línea (Pro)',       detail:'Pista ST · Categoría Pro',                           cat:'competencia', badge:'Competencia'  },
+    { time:'11:30', name:'Receso',                        detail:'Refrigerio · 30 minutos',                            cat:'descanso',    badge:'Descanso'     },
+    { time:'12:00', name:'Minisumo Autónomo',             detail:'Arena Minisumo · Fase de grupos',                    cat:'competencia', badge:'Competencia'  },
+    { time:'12:00', name:'Minisumo RC',                   detail:'Arena Minisumo · Fase de grupos',                    cat:'competencia', badge:'Competencia'  },
+    { time:'13:00', name:'Revisión técnica ESP32',        detail:'Laboratorio · Verificación de hardware',             cat:'tecnico',     badge:'Técnico'      },
+    { time:'13:30', name:'Almuerzo',                      detail:'Pausa · 1 hora',                                     cat:'descanso',    badge:'Descanso'     },
+    { time:'14:30', name:'Bailarín',                      detail:'Escenario principal · Panel de calificación',        cat:'competencia', badge:'Competencia'  },
+    { time:'14:30', name:'Impacto Tecnológico',           detail:'Sala de exposiciones · Presentaciones',              cat:'competencia', badge:'Competencia'  },
+    { time:'15:30', name:'Robot Soccer',                  detail:'Cancha principal · Fase eliminatoria',               cat:'competencia', badge:'Competencia'  },
+    { time:'15:30', name:'Cubo Rubik',                    detail:'Mesa de cronometraje · Rondas clasificatorias',      cat:'competencia', badge:'Competencia'  },
+    { time:'16:30', name:'Lego Kids',                     detail:'Área Kids · Categoría infantil',                     cat:'competencia', badge:'Competencia'  },
+    { time:'16:30', name:'Trepador Pro',                  detail:'Estructura de trepada · Categoría Pro',              cat:'competencia', badge:'Competencia'  },
+    { time:'17:30', name:'Batalla de Robots',             detail:'Arena principal · Eliminación directa',              cat:'competencia', badge:'Competencia'  },
+    { time:'18:00', name:'Semifinales y Finales',         detail:'Todas las categorías · Rondas finales',              cat:'clausura',    badge:'Final'        },
+    { time:'19:00', name:'Ceremonia de premiación',       detail:'Auditorio · Entrega de trofeos y diplomas',          cat:'premiacion',  badge:'🏆 Premiación' },
   ];
 
-  // ── Render preview (página normal) ─────────────────────────────
+  // Preview
   function renderPreview() {
     document.getElementById('previewList').innerHTML = SCHEDULE.map(s => `
       <div class="preview-slot cat-${s.cat}">
         <div class="preview-time">${s.time}</div>
-        <div>
-          <div class="preview-name">${s.name}</div>
-          <div class="preview-detail">${s.detail}</div>
-        </div>
-      </div>
-    `).join('');
+        <div><div class="preview-name">${s.name}</div><div class="preview-detail">${s.detail}</div></div>
+      </div>`).join('');
   }
 
-  // ── Render fullscreen grid ──────────────────────────────────────
+  // FS grid
   function renderFS() {
-    document.getElementById('fsGrid').innerHTML = SCHEDULE.map((s, i) => `
+    document.getElementById('fsGrid').innerHTML = SCHEDULE.map((s,i) => `
       <div class="fs-slot cat-${s.cat}" id="fss-${i}">
         <div class="fs-slot-time">${s.time}</div>
         <div class="fs-slot-body">
@@ -536,69 +444,57 @@
           <div class="fs-slot-detail">${s.detail}</div>
         </div>
         <div class="fs-slot-badge">${s.badge}</div>
-      </div>
-    `).join('');
+      </div>`).join('');
     updateActive();
   }
 
-  // ── Active slot highlight ───────────────────────────────────────
-  function toMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
-
+  // Active slot
+  function toMin(t) { const [h,m]=t.split(':').map(Number); return h*60+m; }
   function updateActive() {
-    const now = new Date();
-    const cur = now.getHours()*60 + now.getMinutes();
-    SCHEDULE.forEach((s, i) => {
-      const el = document.getElementById(`fss-${i}`);
-      if (!el) return;
+    const now = new Date(), cur = now.getHours()*60+now.getMinutes();
+    SCHEDULE.forEach((s,i) => {
+      const el = document.getElementById(`fss-${i}`); if (!el) return;
       const start = toMin(s.time);
       const next  = i+1 < SCHEDULE.length ? toMin(SCHEDULE[i+1].time) : start+60;
       el.classList.remove('active','past');
-      if (cur >= start && cur < next) el.classList.add('active');
-      else if (cur >= next)           el.classList.add('past');
+      if (cur>=start && cur<next) el.classList.add('active');
+      else if (cur>=next)         el.classList.add('past');
     });
   }
 
-  // ── Clock ───────────────────────────────────────────────────────
+  // Clock
   function tick() {
-    const n = new Date();
-    const t = [n.getHours(), n.getMinutes(), n.getSeconds()]
-      .map(v => String(v).padStart(2,'0')).join(':');
-    const el = document.getElementById('fsClock');
-    if (el) el.textContent = t;
+    const n=new Date(), t=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+    const el=document.getElementById('fsClock'); if(el) el.textContent=t;
     updateActive();
   }
 
-  // ── Theme alternation (dark ↔ light every 15s) ─────────────────
-  const THEMES = ['theme-dark', 'theme-light'];
+  // ── Theme alternation ──────────────────────────────────────────
   let themeIdx = 0;
-  let themeInterval = null;
+  let themeTimer = null;
 
-  function applyTheme(idx) {
+  function setTheme(idx) {
+    themeIdx = idx;
     const overlay = document.getElementById('fsOverlay');
-    overlay.classList.remove('theme-light');
-    if (idx === 1) overlay.classList.add('theme-light');
-    // pips
-    document.querySelectorAll('.theme-pip').forEach((p, i) => {
-      p.classList.toggle('active-pip', i === idx);
-    });
+    if (idx === 1) overlay.classList.add('light');
+    else           overlay.classList.remove('light');
+    document.getElementById('pip0').classList.toggle('on', idx===0);
+    document.getElementById('pip1').classList.toggle('on', idx===1);
   }
 
   function startThemeLoop() {
-    themeIdx = 0;
-    applyTheme(0);
-    themeInterval = setInterval(() => {
-      themeIdx = (themeIdx + 1) % 2;
-      applyTheme(themeIdx);
-    }, 15000);
+    setTheme(0);
+    themeTimer = setInterval(() => setTheme(themeIdx===0 ? 1 : 0), 15000);
   }
 
   function stopThemeLoop() {
-    clearInterval(themeInterval);
-    themeInterval = null;
-    document.getElementById('fsOverlay').classList.remove('theme-light');
+    clearInterval(themeTimer); themeTimer=null;
+    document.getElementById('fsOverlay').classList.remove('light');
   }
+
+  // ── Fullscreen ─────────────────────────────────────────────────
   function abrirFS() {
-    const overlay = document.getElementById('fsOverlay');
+    const overlay=document.getElementById('fsOverlay');
     overlay.classList.add('active');
     renderFS();
     startThemeLoop();
@@ -611,18 +507,12 @@
     document.exitFullscreen?.() || document.webkitExitFullscreen?.();
   }
 
-  // Cerrar con Escape
   document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) {
-      stopThemeLoop();
-      document.getElementById('fsOverlay').classList.remove('active');
-    }
+    if (!document.fullscreenElement) { stopThemeLoop(); document.getElementById('fsOverlay').classList.remove('active'); }
   });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') cerrarFS();
-  });
+  document.addEventListener('keydown', e => { if (e.key==='Escape') cerrarFS(); });
 
-  // ── Init ────────────────────────────────────────────────────────
+  // Init
   renderPreview();
   tick();
   setInterval(tick, 1000);
