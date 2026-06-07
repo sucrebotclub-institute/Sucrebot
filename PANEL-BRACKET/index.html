@@ -481,18 +481,39 @@ async function seleccionarCategoria(cat) {
     const gasNombre = CAT_INFO[cat].gasNombre;
 
     if (cat === 'soc') {
+      // ── FIX: guardar miembro2/miembro3 dentro de cada robot del equipo ──
       const porEquipo = {};
       todos.filter(p => p.categoria === gasNombre && p.aprobado === 'APROBADO').forEach(p => {
         const eq = (p.equipo || '').trim();
         if (!eq) return;
-        if (!porEquipo[eq]) porEquipo[eq] = { id: 'eq-' + eq, nombre: eq, robots: [], institucion: p.institucion, correo: p.correo };
-        porEquipo[eq].robots.push({ id: p.id, nombre: p.nombre, robot: p.robot });
+        if (!porEquipo[eq]) porEquipo[eq] = {
+          id: 'eq-' + eq,
+          nombre: eq,
+          robots: [],
+          institucion: p.institucion,
+          correo: p.correo
+        };
+        porEquipo[eq].robots.push({
+          id:       p.id,
+          nombre:   p.nombre,
+          robot:    p.robot,
+          miembro2: p.miembro2 || '',
+          miembro3: p.miembro3 || ''
+        });
       });
       state.participantes = Object.values(porEquipo);
     } else {
       state.participantes = todos
         .filter(p => p.categoria === gasNombre && p.aprobado === 'APROBADO')
-        .map(p => ({ id: p.id, nombre: p.robot || p.nombre, sub: p.nombre, institucion: p.institucion, correo: p.correo, miembro2: p.miembro2 || '', miembro3: p.miembro3 || '' }));
+        .map(p => ({
+          id:          p.id,
+          nombre:      p.robot || p.nombre,
+          sub:         p.nombre,
+          institucion: p.institucion,
+          correo:      p.correo,
+          miembro2:    p.miembro2 || '',
+          miembro3:    p.miembro3 || ''
+        }));
     }
 
     state.seleccionados = new Set();
@@ -624,7 +645,6 @@ function renderBracket() {
     return;
   }
   const fases = state.bracket.fases;
-  // FIX: buscar la fase FINAL explícitamente (no la última, que podría ser 3ER LUGAR)
   const faseFinalRender = fases.find(f => f.nombre === 'FINAL');
   const finalizado = faseFinalRender?.partidos?.some(p => p.estado === 'FINALIZADO' && p.ganador_id);
 
@@ -728,14 +748,11 @@ function resetearBracket() {
   );
 }
 
-
-
 // ── VER PODIO ────────────────────────────────────────────────
 function verPodioEnBracket() {
   if (!state.bracket?.fases?.length) return;
   const fases = state.bracket.fases;
 
-  // Final
   const faseFinal = fases.find(f => f.nombre === 'FINAL');
   const partidoFinal = faseFinal?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
   if (!partidoFinal) { toast('La final aún no ha terminado', 'error'); return; }
@@ -745,13 +762,11 @@ function verPodioEnBracket() {
   const ganadorNombre  = ganadorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_a_nombre : partidoFinal.equipo_b_nombre;
   const perdedorNombre = perdedorId === partidoFinal.equipo_a_id ? partidoFinal.equipo_a_nombre : partidoFinal.equipo_b_nombre;
 
-  // 3er lugar — leer el partido de la fase '3ER LUGAR' del bracket
   let tercerosHTML = '';
   const fase3er = fases.find(f => f.nombre === '3ER LUGAR');
   if (fase3er?.partidos?.length) {
     const p3 = fase3er.partidos[0];
     if (p3.estado === 'FINALIZADO' && p3.ganador_id) {
-      // El partido ya se jugó — hay un ganador real del bronce
       const bronce4to = p3.ganador_id;
       const bronce4toNombre = bronce4to === p3.equipo_a_id ? p3.equipo_a_nombre : p3.equipo_b_nombre;
       const cuartoNombre    = bronce4to === p3.equipo_a_id ? p3.equipo_b_nombre : p3.equipo_a_nombre;
@@ -767,7 +782,6 @@ function verPodioEnBracket() {
           <div class="podio-item-label">CUARTO LUGAR</div>
         </div>`;
     } else {
-      // El partido aún no se juega — mostrar los contendientes pendientes
       tercerosHTML = `
         <div class="podio-item bronce" style="opacity:.7;">
           <div class="podio-item-icon">🥉</div>
@@ -820,41 +834,101 @@ async function guardarPodio() {
       loading(true, 'GUARDANDO PODIO...');
       const catNombre = CAT_INFO[state.categoria]?.gasNombre || CAT_INFO[state.categoria]?.nombre || '';
 
-      // FIX: datosP usa p.sub = nombre real del capitán (p.nombre = nombre del robot)
-      // También extrae miembro2 y miembro3 para guardar sus certificados
+      // Obtener objeto completo del participante por id
       function datosP(id) {
-        const p = state.participantes.find(x => x.id === id) || {};
-        return {
-          correo:      p.correo      || '',
-          nombre:      p.sub         || p.nombre || '',   // sub = nombre real del capitán
-          institucion: p.institucion || '',
-          miembro2:    p.miembro2    || '',
-          miembro3:    p.miembro3    || ''
-        };
+        return state.participantes.find(x => x.id === id) || {};
       }
 
-      // Helper: guarda cert del capitán + miembro2 + miembro3 si existen
+      // ── FIX: guardarCertEquipo diferencia Soccer (equipos con robots[]) vs Minisumo ──
       async function guardarCertEquipo(id, nombreFallback, tipo) {
-        const d = datosP(id);
-        const nombreCapitan = d.nombre || nombreFallback;
-        // Capitán
-        await gasPost({ action: 'guardarCertificado', id_participante: id,
-          correo: d.correo, nombre: nombreCapitan, nombre_completo: nombreCapitan,
-          categoria: catNombre, institucion: d.institucion,
-          tipo_certificado: tipo, evento: 'SucreBot 2026' });
-        // Miembro 2
-        if (d.miembro2) {
-          await gasPost({ action: 'guardarCertificado', id_participante: id + '-m2',
-            correo: d.correo, nombre: d.miembro2, nombre_completo: d.miembro2,
-            categoria: catNombre, institucion: d.institucion,
-            tipo_certificado: tipo, evento: 'SucreBot 2026' });
-        }
-        // Miembro 3
-        if (d.miembro3) {
-          await gasPost({ action: 'guardarCertificado', id_participante: id + '-m3',
-            correo: d.correo, nombre: d.miembro3, nombre_completo: d.miembro3,
-            categoria: catNombre, institucion: d.institucion,
-            tipo_certificado: tipo, evento: 'SucreBot 2026' });
+        const p = datosP(id);
+
+        if (state.tipo === 'soccer') {
+          // Soccer: un certificado por cada participante dentro del equipo
+          const robots = p.robots || [];
+          for (const robot of robots) {
+            const nombreCapitan = robot.nombre || nombreFallback;
+            // Capitán del robot
+            await gasPost({
+              action: 'guardarCertificado',
+              id_participante: robot.id,
+              correo: p.correo || '',
+              nombre: nombreCapitan,
+              nombre_completo: nombreCapitan,
+              categoria: catNombre,
+              institucion: p.institucion || '',
+              tipo_certificado: tipo,
+              evento: 'SucreBot 2026'
+            });
+            // Miembro 2 del robot
+            if (robot.miembro2) {
+              await gasPost({
+                action: 'guardarCertificado',
+                id_participante: robot.id + '-m2',
+                correo: p.correo || '',
+                nombre: robot.miembro2,
+                nombre_completo: robot.miembro2,
+                categoria: catNombre,
+                institucion: p.institucion || '',
+                tipo_certificado: tipo,
+                evento: 'SucreBot 2026'
+              });
+            }
+            // Miembro 3 del robot
+            if (robot.miembro3) {
+              await gasPost({
+                action: 'guardarCertificado',
+                id_participante: robot.id + '-m3',
+                correo: p.correo || '',
+                nombre: robot.miembro3,
+                nombre_completo: robot.miembro3,
+                categoria: catNombre,
+                institucion: p.institucion || '',
+                tipo_certificado: tipo,
+                evento: 'SucreBot 2026'
+              });
+            }
+          }
+        } else {
+          // Minisumo: capitán (sub = nombre real) + miembro2 + miembro3
+          const nombreCapitan = p.sub || p.nombre || nombreFallback;
+          await gasPost({
+            action: 'guardarCertificado',
+            id_participante: id,
+            correo: p.correo || '',
+            nombre: nombreCapitan,
+            nombre_completo: nombreCapitan,
+            categoria: catNombre,
+            institucion: p.institucion || '',
+            tipo_certificado: tipo,
+            evento: 'SucreBot 2026'
+          });
+          if (p.miembro2) {
+            await gasPost({
+              action: 'guardarCertificado',
+              id_participante: id + '-m2',
+              correo: p.correo || '',
+              nombre: p.miembro2,
+              nombre_completo: p.miembro2,
+              categoria: catNombre,
+              institucion: p.institucion || '',
+              tipo_certificado: tipo,
+              evento: 'SucreBot 2026'
+            });
+          }
+          if (p.miembro3) {
+            await gasPost({
+              action: 'guardarCertificado',
+              id_participante: id + '-m3',
+              correo: p.correo || '',
+              nombre: p.miembro3,
+              nombre_completo: p.miembro3,
+              categoria: catNombre,
+              institucion: p.institucion || '',
+              tipo_certificado: tipo,
+              evento: 'SucreBot 2026'
+            });
+          }
         }
       }
 
@@ -867,7 +941,6 @@ async function guardarPodio() {
         await guardarCertEquipo(ganadorId,  ganadorNombre,  'GANADOR');
         await guardarCertEquipo(perdedorId, perdedorNombre, 'SUBCAMPEÓN');
 
-        // 3er lugar — desde el partido real de la fase '3ER LUGAR'
         if (partido3er && partido3er.estado === 'FINALIZADO' && partido3er.ganador_id) {
           const bronceId     = partido3er.ganador_id;
           const cuartoId     = bronceId === partido3er.equipo_a_id ? partido3er.equipo_b_id : partido3er.equipo_a_id;
@@ -1016,7 +1089,13 @@ async function terminarPartidoSoccer() {
   cron.corriendo = false;
   loading(true, 'GUARDANDO RESULTADO...');
   try {
-    const res = await gasPost({ action: 'registrarResultadoGeneral', partido_id: cron.partido.partido_id || cron.partido.id, ganador_id: ganadorId, marcador, categoria: state.categoria });
+    const res = await gasPost({
+      action: 'registrarResultadoGeneral',
+      partido_id: cron.partido.partido_id || cron.partido.id,
+      ganador_id: ganadorId,
+      marcador,
+      categoria: state.categoria
+    });
     if (!res.ok) throw new Error(res.error || 'Error');
     state.bracket = res.bracket;
     document.getElementById('cronOverlay').classList.remove('show');
