@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cronograma · SucreBot 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@300;400;600;700&family=DM+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <script src="../shared/js/config.js"></script>
@@ -22,165 +22,182 @@
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
     }
-    .preview-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: #1a5ca8; }
-    .preview-sub   { font-size: 13px; color: #666; margin-top: 2px; }
+    .preview-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: #1a5ca8 !important; }
+    .preview-sub   { font-size: 13px; color: #555 !important; margin-top: 2px; }
     .btn-fullscreen {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: linear-gradient(135deg, #1a5ca8, #2176d2);
-      color: white; border: none; border-radius: 10px; padding: 14px 28px;
+      display: inline-flex !important; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, #1a5ca8, #2176d2) !important;
+      color: white !important; border: none; border-radius: 10px; padding: 14px 28px;
       font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
       cursor: pointer; box-shadow: 0 4px 16px rgba(26,92,168,0.35);
       transition: transform 0.15s, box-shadow 0.15s;
     }
-    .btn-fullscreen:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,92,168,0.45); }
     .btn-fullscreen svg { width: 20px; height: 20px; }
     .schedule-preview-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     @media (max-width: 640px) { .schedule-preview-list { grid-template-columns: 1fr; } }
     .preview-slot {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 14px; border-radius: 8px; background: #f8faff;
-      border-left: 3px solid #1a5ca8;
+      display: flex !important; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 8px; background: #f0f4fb !important;
+      border-left: 3px solid #1a5ca8; max-width: none !important;
     }
-    .preview-slot.cat-apertura    { border-color: #f5c518; }
-    .preview-slot.cat-competencia { border-color: #1a5ca8; }
-    .preview-slot.cat-tecnico     { border-color: #7e22ce; }
-    .preview-slot.cat-descanso    { border-color: #15803d; }
-    .preview-slot.cat-clausura    { border-color: #c2410c; }
-    .preview-slot.cat-premiacion  { border-color: #f5c518; }
-    .preview-time   { font-family:'DM Mono',monospace; font-size:13px; color:#1a5ca8; font-weight:500; min-width:44px; flex-shrink:0; }
-    .preview-name   { font-size:13px; font-weight:600; color:#1a2a4a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .preview-detail { font-size:11px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .preview-slot.cat-apertura    { border-left-color: #b45309 !important; }
+    .preview-slot.cat-competencia { border-left-color: #1a5ca8 !important; }
+    .preview-slot.cat-tecnico     { border-left-color: #6b21a8 !important; }
+    .preview-slot.cat-descanso    { border-left-color: #166534 !important; }
+    .preview-slot.cat-clausura    { border-left-color: #9a3412 !important; }
+    .preview-slot.cat-premiacion  { border-left-color: #b45309 !important; }
+    .preview-time   { font-family:'DM Mono',monospace; font-size:13px; color:#1a5ca8 !important; font-weight:700; min-width:44px; flex-shrink:0; }
+    .preview-name   { font-size:13px; font-weight:700; color:#111827 !important; }
+    .preview-detail { font-size:11px; color:#4b5563 !important; }
 
-    /* ══════════════════════════════════════
-       FULLSCREEN OVERLAY — SOLO BLANCO
-    ══════════════════════════════════════ */
+    /* ══ FULLSCREEN OVERLAY ══════════════════════════════════════ */
     #fsOverlay {
       display: none;
       position: fixed; inset: 0; z-index: 99999;
-      background: #ffffff !important;
-      font-family: 'Exo 2', sans-serif !important;
-      color: #0a1628 !important;
       overflow: hidden;
     }
     #fsOverlay.active { display: flex !important; flex-direction: column !important; }
-    /* Reset herencia de styles.css */
-    #fsOverlay * { color: inherit; box-sizing: border-box; }
+
+    /* Todo dentro del overlay resetea herencia con colores propios */
+    #fsOverlay,
+    #fsOverlay * {
+      font-family: 'Exo 2', sans-serif;
+      box-sizing: border-box;
+    }
+
+    #fsOverlay .fs-wrap {
+      display: flex; flex-direction: column; height: 100%;
+      background: #ffffff;
+    }
+
+    /* header */
     #fsOverlay .fs-header {
-      display: flex !important; align-items: center !important; justify-content: space-between !important;
-      padding: 22px 52px 18px !important;
-      border-bottom: 2px solid #1a5ca8 !important;
-      flex-shrink: 0 !important;
-      background: #ffffff !important;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 52px 16px;
+      border-bottom: 3px solid #1a5ca8;
+      background: #ffffff;
+      flex-shrink: 0;
     }
-    #fsOverlay .fs-header-left { display: flex !important; align-items: center !important; gap: 16px !important; }
+    #fsOverlay .fs-hl { display: flex; align-items: center; gap: 16px; }
     #fsOverlay .fs-logo {
-      width: 46px !important; height: 46px !important;
-      background: linear-gradient(135deg, #1a5ca8, #2176d2) !important;
-      border-radius: 10px !important; display: flex !important; align-items: center !important; justify-content: center !important;
-      font-family: 'Bebas Neue', sans-serif !important; font-size: 18px !important; color: white !important;
-      flex-shrink: 0 !important; max-width: none !important;
+      width: 46px; height: 46px; border-radius: 10px;
+      background: linear-gradient(135deg, #1a5ca8, #2176d2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+      color: #ffffff !important; flex-shrink: 0;
     }
-    #fsOverlay .fs-event-title {
-      font-family: 'Bebas Neue', sans-serif !important;
-      font-size: clamp(24px,3vw,40px) !important; letter-spacing: 3px !important; line-height: 1 !important;
+    #fsOverlay .fs-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(24px,3vw,40px); letter-spacing: 3px; line-height: 1;
       color: #0e1e3a !important;
     }
-    #fsOverlay .fs-event-sub {
-      font-size: clamp(9px,1vw,13px) !important; letter-spacing: 2px !important; text-transform: uppercase !important;
-      margin-top: 2px !important; font-weight: 300 !important; color: #374151 !important;
+    #fsOverlay .fs-sub {
+      font-size: clamp(9px,1vw,12px); letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 3px; font-weight: 400;
+      color: #374151 !important;
     }
-    #fsOverlay .fs-header-right { display: flex !important; align-items: center !important; gap: 20px !important; }
-    #fsOverlay .fs-date-main {
-      font-family: 'Bebas Neue', sans-serif !important;
-      font-size: clamp(20px,2.5vw,36px) !important; letter-spacing: 3px !important; line-height: 1 !important;
-      color: #1a5ca8 !important;
+    #fsOverlay .fs-hr { display: flex; align-items: center; gap: 20px; }
+    #fsOverlay .fs-date {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(20px,2.5vw,36px); letter-spacing: 3px; line-height: 1;
+      color: #1a5ca8 !important; text-align: right;
     }
-    #fsOverlay .fs-date-place {
-      font-size: clamp(9px,0.9vw,12px) !important; letter-spacing: 2px !important; text-transform: uppercase !important;
-      margin-top: 3px !important; text-align: right !important; color: #374151 !important;
+    #fsOverlay .fs-place {
+      font-size: clamp(9px,0.9vw,12px); letter-spacing: 2px; text-transform: uppercase;
+      text-align: right; margin-top: 3px;
+      color: #374151 !important;
     }
-    #fsOverlay .btn-exit-fs {
-      background: white !important; border: 1px solid #1a5ca8 !important;
-      color: #1a5ca8 !important; border-radius: 8px !important; padding: 8px 16px !important;
-      font-family: 'Bebas Neue', sans-serif !important; font-size: 15px !important; letter-spacing: 1.5px !important;
-      cursor: pointer !important; display: flex !important; align-items: center !important; gap: 8px !important; flex-shrink: 0 !important;
+    #fsOverlay .fs-exit {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 18px; border-radius: 8px;
+      border: 2px solid #1a5ca8; background: #ffffff;
+      font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px;
+      color: #1a5ca8 !important; cursor: pointer; flex-shrink: 0;
+      transition: background 0.2s;
     }
-    #fsOverlay .btn-exit-fs svg { width: 16px !important; height: 16px !important; stroke: #1a5ca8 !important; }
+    #fsOverlay .fs-exit:hover { background: #e8f0fb; }
+    #fsOverlay .fs-exit svg { width: 16px; height: 16px; stroke: #1a5ca8; }
+
+    /* body */
     #fsOverlay .fs-body {
-      flex: 1 !important; overflow: hidden !important; padding: 20px 52px 12px !important;
-      display: flex !important; flex-direction: column !important;
-      background: #ffffff !important;
+      flex: 1; overflow: hidden; padding: 18px 52px 10px;
+      display: flex; flex-direction: column;
+      background: #f5f7fb;
     }
-    #fsOverlay .fs-section-label {
-      font-family: 'Bebas Neue', sans-serif !important;
-      font-size: clamp(11px,1.1vw,14px) !important; letter-spacing: 4px !important;
-      margin-bottom: 12px !important; display: flex !important; align-items: center !important; gap: 10px !important;
+    #fsOverlay .fs-lbl {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(11px,1.1vw,14px); letter-spacing: 4px;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
       color: #1a5ca8 !important;
     }
-    #fsOverlay .fs-section-label::after {
-      content: '' !important; flex: 1 !important; height: 1px !important;
-      background: #1a5ca8 !important; opacity: 0.2 !important;
+    #fsOverlay .fs-lbl::after {
+      content: ''; flex: 1; height: 2px;
+      background: #1a5ca8; opacity: 0.25;
     }
     #fsOverlay .fs-grid {
-      display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px 28px !important;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px;
     }
-    #fsOverlay .fs-slot {
-      display: flex !important; align-items: center !important; gap: 14px !important;
-      padding: 11px 14px !important; border-radius: 8px !important;
-      background: #eef2f9 !important;
-      border: 1px solid #c8d4e8 !important;
-      border-left: 4px solid #1a5ca8 !important;
-      max-width: none !important; width: auto !important; min-width: 0 !important;
-      transform: none !important; box-shadow: none !important;
+
+    /* slots */
+    #fsOverlay .slot {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 16px; border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #d1d9ed;
+      border-left: 4px solid #1a5ca8;
+      max-width: none !important; width: auto !important;
     }
-    #fsOverlay .fs-slot.cat-apertura    { border-left-color: #b45309 !important; }
-    #fsOverlay .fs-slot.cat-competencia { border-left-color: #1a5ca8 !important; }
-    #fsOverlay .fs-slot.cat-tecnico     { border-left-color: #6b21a8 !important; }
-    #fsOverlay .fs-slot.cat-descanso    { border-left-color: #166534 !important; }
-    #fsOverlay .fs-slot.cat-clausura    { border-left-color: #9a3412 !important; }
-    #fsOverlay .fs-slot.cat-premiacion  { border-left-color: #b45309 !important; }
-    #fsOverlay .fs-slot.active {
-      background: #bfdbfe !important; border-color: #3b82f6 !important; border-left-color: #1a5ca8 !important;
+    #fsOverlay .slot.c-ap { border-left-color: #b45309; }
+    #fsOverlay .slot.c-co { border-left-color: #1a5ca8; }
+    #fsOverlay .slot.c-te { border-left-color: #6b21a8; }
+    #fsOverlay .slot.c-de { border-left-color: #166534; }
+    #fsOverlay .slot.c-cl { border-left-color: #9a3412; }
+    #fsOverlay .slot.c-pr { border-left-color: #b45309; }
+    #fsOverlay .slot.on  { background: #dbeafe; border-color: #93c5fd; border-left-color: #1d4ed8; }
+    #fsOverlay .slot.old { opacity: 0.32; }
+
+    #fsOverlay .s-time {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(13px,1.3vw,18px); font-weight: 700;
+      min-width: 54px; flex-shrink: 0;
+      color: #0e3a6e !important;
     }
-    #fsOverlay .fs-slot.past { opacity: 0.35 !important; }
-    #fsOverlay .fs-slot-time {
-      font-family: 'DM Mono', monospace !important; font-size: clamp(12px,1.3vw,17px) !important;
-      font-weight: 700 !important; min-width: 52px !important; flex-shrink: 0 !important; color: #0e3a6e !important;
+    #fsOverlay .s-body { flex: 1; min-width: 0; }
+    #fsOverlay .s-name {
+      font-size: clamp(13px,1.35vw,18px); font-weight: 700; line-height: 1.2;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #111827 !important;
     }
-    #fsOverlay .fs-slot-body { flex: 1 !important; min-width: 0 !important; }
-    #fsOverlay .fs-slot-name {
-      font-size: clamp(12px,1.35vw,17px) !important; font-weight: 700 !important; line-height: 1.2 !important;
-      white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; color: #0a1628 !important;
+    #fsOverlay .s-det {
+      font-size: clamp(10px,0.9vw,13px); margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #374151 !important;
     }
-    #fsOverlay .fs-slot-detail {
-      font-size: clamp(9px,0.9vw,12px) !important; margin-top: 1px !important;
-      white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; color: #374151 !important;
+    #fsOverlay .s-badge {
+      font-size: clamp(9px,0.8vw,11px); font-family: 'DM Mono', monospace;
+      letter-spacing: 1px; text-transform: uppercase; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px; flex-shrink: 0;
+      white-space: nowrap;
     }
-    #fsOverlay .fs-slot-badge {
-      font-size: clamp(8px,0.8vw,10px) !important; font-family: 'DM Mono', monospace !important;
-      letter-spacing: 1.5px !important; text-transform: uppercase !important;
-      padding: 3px 9px !important; border-radius: 20px !important; flex-shrink: 0 !important; font-weight: 600 !important;
-      max-width: none !important;
-    }
-    #fsOverlay .fs-slot.cat-apertura    .fs-slot-badge { background: #fef08a !important; color: #713f12 !important; border: 1px solid #ca8a04 !important; }
-    #fsOverlay .fs-slot.cat-competencia .fs-slot-badge { background: #bfdbfe !important; color: #1e3a8a !important; border: 1px solid #3b82f6 !important; }
-    #fsOverlay .fs-slot.cat-tecnico     .fs-slot-badge { background: #e9d5ff !important; color: #4c1d95 !important; border: 1px solid #7c3aed !important; }
-    #fsOverlay .fs-slot.cat-descanso    .fs-slot-badge { background: #bbf7d0 !important; color: #14532d !important; border: 1px solid #16a34a !important; }
-    #fsOverlay .fs-slot.cat-clausura    .fs-slot-badge { background: #fed7aa !important; color: #7c2d12 !important; border: 1px solid #ea580c !important; }
-    #fsOverlay .fs-slot.cat-premiacion  .fs-slot-badge { background: #fef08a !important; color: #713f12 !important; border: 1px solid #ca8a04 !important; }
+    #fsOverlay .slot.c-ap .s-badge { background:#fef08a; color:#713f12 !important; border:1px solid #ca8a04; }
+    #fsOverlay .slot.c-co .s-badge { background:#bfdbfe; color:#1e3a8a !important; border:1px solid #3b82f6; }
+    #fsOverlay .slot.c-te .s-badge { background:#e9d5ff; color:#4c1d95 !important; border:1px solid #7c3aed; }
+    #fsOverlay .slot.c-de .s-badge { background:#bbf7d0; color:#14532d !important; border:1px solid #16a34a; }
+    #fsOverlay .slot.c-cl .s-badge { background:#fed7aa; color:#7c2d12 !important; border:1px solid #ea580c; }
+    #fsOverlay .slot.c-pr .s-badge { background:#fef08a; color:#713f12 !important; border:1px solid #ca8a04; }
+
+    /* footer */
     #fsOverlay .fs-footer {
-      padding: 10px 52px !important; display: flex !important; align-items: center !important;
-      justify-content: space-between !important; border-top: 2px solid #c8d4e8 !important;
-      flex-shrink: 0 !important; background: #ffffff !important;
+      padding: 10px 52px; display: flex; align-items: center; justify-content: space-between;
+      border-top: 2px solid #d1d9ed; flex-shrink: 0;
+      background: #ffffff;
     }
-    #fsOverlay .fs-footer-inst { font-size: 12px !important; letter-spacing: 1.5px !important; text-transform: uppercase !important; color: #4b5563 !important; }
-    #fsOverlay .fs-live { display: flex !important; align-items: center !important; gap: 8px !important; font-size: 12px !important; font-family: 'DM Mono', monospace !important; color: #374151 !important; }
-    #fsOverlay .fs-dot { width: 7px !important; height: 7px !important; border-radius: 50% !important; background: #16a34a !important; animation: fsPulse 1.8s ease infinite !important; }
-    #fsOverlay .fs-clock { font-family: 'DM Mono', monospace !important; font-size: clamp(14px,1.5vw,20px) !important; letter-spacing: 2px !important; color: #0a1628 !important; font-weight: 600 !important; }
-    @keyframes fsPulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50%      { opacity:0.4; transform:scale(0.7); }
-    }
+    #fsOverlay .fs-inst { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #4b5563 !important; }
+    #fsOverlay .fs-live { display: flex; align-items: center; gap: 8px; font-size: 13px; font-family: 'DM Mono', monospace; color: #374151 !important; }
+    #fsOverlay .fs-dot  { width:8px; height:8px; border-radius:50%; background:#16a34a; flex-shrink:0; animation: dotpulse 1.8s ease infinite; }
+    #fsOverlay .fs-clock { font-family: 'DM Mono', monospace; font-size: clamp(16px,1.5vw,22px); letter-spacing: 2px; font-weight: 700; color: #111827 !important; }
+
+    @keyframes dotpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
   </style>
 </head>
 <body>
@@ -213,99 +230,107 @@
 
 <div data-include="../shared/components/footer.html"></div>
 
-<!-- ══ FULLSCREEN OVERLAY ══ -->
+<!-- FULLSCREEN -->
 <div id="fsOverlay">
-  <div class="fs-header">
-    <div class="fs-header-left">
-      <div class="fs-logo">SB</div>
-      <div>
-        <div class="fs-event-title">SucreBot 2026</div>
-        <div class="fs-event-sub">Club de Robótica · Instituto Superior Universitario Sucre</div>
+  <div class="fs-wrap">
+    <div class="fs-header">
+      <div class="fs-hl">
+        <div class="fs-logo">SB</div>
+        <div>
+          <div class="fs-title">SucreBot 2026</div>
+          <div class="fs-sub">Club de Robótica · Instituto Superior Universitario Sucre</div>
+        </div>
+      </div>
+      <div class="fs-hr">
+        <div>
+          <div class="fs-date">16 · VII · 2026</div>
+          <div class="fs-place">Quito, Ecuador</div>
+        </div>
+        <button class="fs-exit" onclick="cerrarFS()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+          </svg>
+          SALIR
+        </button>
       </div>
     </div>
-    <div class="fs-header-right">
-      <div>
-        <div class="fs-date-main">16 · VII · 2026</div>
-        <div class="fs-date-place">Quito, Ecuador</div>
-      </div>
-      <button class="btn-exit-fs" onclick="cerrarFS()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
-        </svg>
-        SALIR
-      </button>
+
+    <div class="fs-body">
+      <div class="fs-lbl">▸ PROGRAMA DEL EVENTO</div>
+      <div class="fs-grid" id="fsGrid"></div>
     </div>
-  </div>
 
-  <div class="fs-body">
-    <div class="fs-section-label">▸ PROGRAMA DEL EVENTO</div>
-    <div class="fs-grid" id="fsGrid"></div>
-  </div>
-
-  <div class="fs-footer">
-    <div class="fs-footer-inst">sucrebotclub-institute.github.io</div>
-    <div class="fs-live"><div class="fs-dot"></div> EN VIVO</div>
-    <div class="fs-clock" id="fsClock">00:00:00</div>
+    <div class="fs-footer">
+      <div class="fs-inst">sucrebotclub-institute.github.io</div>
+      <div class="fs-live"><div class="fs-dot"></div> EN VIVO</div>
+      <div class="fs-clock" id="fsClock">00:00:00</div>
+    </div>
   </div>
 </div>
 
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 <script>
+  const CAT = { apertura:'c-ap', competencia:'c-co', tecnico:'c-te', descanso:'c-de', clausura:'c-cl', premiacion:'c-pr' };
   const SCHEDULE = [
-    { time:'08:00', name:'Acreditación y registro',      detail:'Recepción de participantes · Entrega de kits',        cat:'apertura',    badge:'Apertura'     },
-    { time:'09:00', name:'Ceremonia de apertura',         detail:'Bienvenida institucional · Presentación del evento',  cat:'apertura',    badge:'Apertura'     },
-    { time:'09:30', name:'Insectos',                      detail:'Arena principal · Categoría Amateur',                 cat:'competencia', badge:'Competencia'  },
-    { time:'09:30', name:'Seguidor de Línea (Amateur)',   detail:'Pista ST · Categoría Amateur',                       cat:'competencia', badge:'Competencia'  },
-    { time:'10:30', name:'Trepador Amateur',              detail:'Estructura de trepada · Arena 2',                    cat:'competencia', badge:'Competencia'  },
-    { time:'10:30', name:'Seguidor de Línea (Pro)',       detail:'Pista ST · Categoría Pro',                           cat:'competencia', badge:'Competencia'  },
-    { time:'11:30', name:'Receso',                        detail:'Refrigerio · 30 minutos',                            cat:'descanso',    badge:'Descanso'     },
-    { time:'12:00', name:'Minisumo Autónomo',             detail:'Arena Minisumo · Fase de grupos',                    cat:'competencia', badge:'Competencia'  },
-    { time:'12:00', name:'Minisumo RC',                   detail:'Arena Minisumo · Fase de grupos',                    cat:'competencia', badge:'Competencia'  },
-    { time:'13:00', name:'Revisión técnica ESP32',        detail:'Laboratorio · Verificación de hardware',             cat:'tecnico',     badge:'Técnico'      },
-    { time:'13:30', name:'Almuerzo',                      detail:'Pausa · 1 hora',                                     cat:'descanso',    badge:'Descanso'     },
-    { time:'14:30', name:'Bailarín',                      detail:'Escenario principal · Panel de calificación',        cat:'competencia', badge:'Competencia'  },
-    { time:'14:30', name:'Impacto Tecnológico',           detail:'Sala de exposiciones · Presentaciones',              cat:'competencia', badge:'Competencia'  },
-    { time:'15:30', name:'Robot Soccer',                  detail:'Cancha principal · Fase eliminatoria',               cat:'competencia', badge:'Competencia'  },
-    { time:'15:30', name:'Cubo Rubik',                    detail:'Mesa de cronometraje · Rondas clasificatorias',      cat:'competencia', badge:'Competencia'  },
-    { time:'16:30', name:'Lego Kids',                     detail:'Área Kids · Categoría infantil',                     cat:'competencia', badge:'Competencia'  },
-    { time:'16:30', name:'Trepador Pro',                  detail:'Estructura de trepada · Categoría Pro',              cat:'competencia', badge:'Competencia'  },
-    { time:'17:30', name:'Batalla de Robots',             detail:'Arena principal · Eliminación directa',              cat:'competencia', badge:'Competencia'  },
-    { time:'18:00', name:'Semifinales y Finales',         detail:'Todas las categorías · Rondas finales',              cat:'clausura',    badge:'Final'        },
-    { time:'19:00', name:'Ceremonia de premiación',       detail:'Auditorio · Entrega de trofeos y diplomas',          cat:'premiacion',  badge:'🏆 Premiación' },
+    { time:'08:00', name:'Acreditación y registro',      det:'Recepción de participantes · Entrega de kits',        cat:'apertura',    badge:'Apertura'     },
+    { time:'09:00', name:'Ceremonia de apertura',         det:'Bienvenida institucional · Presentación del evento',  cat:'apertura',    badge:'Apertura'     },
+    { time:'09:30', name:'Insectos',                      det:'Arena principal · Categoría Amateur',                 cat:'competencia', badge:'Competencia'  },
+    { time:'09:30', name:'Seguidor de Línea (Amateur)',   det:'Pista ST · Categoría Amateur',                       cat:'competencia', badge:'Competencia'  },
+    { time:'10:30', name:'Trepador Amateur',              det:'Estructura de trepada · Arena 2',                    cat:'competencia', badge:'Competencia'  },
+    { time:'10:30', name:'Seguidor de Línea (Pro)',       det:'Pista ST · Categoría Pro',                           cat:'competencia', badge:'Competencia'  },
+    { time:'11:30', name:'Receso',                        det:'Refrigerio · 30 minutos',                            cat:'descanso',    badge:'Descanso'     },
+    { time:'12:00', name:'Minisumo Autónomo',             det:'Arena Minisumo · Fase de grupos',                    cat:'competencia', badge:'Competencia'  },
+    { time:'12:00', name:'Minisumo RC',                   det:'Arena Minisumo · Fase de grupos',                    cat:'competencia', badge:'Competencia'  },
+    { time:'13:00', name:'Revisión técnica ESP32',        det:'Laboratorio · Verificación de hardware',             cat:'tecnico',     badge:'Técnico'      },
+    { time:'13:30', name:'Almuerzo',                      det:'Pausa · 1 hora',                                     cat:'descanso',    badge:'Descanso'     },
+    { time:'14:30', name:'Bailarín',                      det:'Escenario principal · Panel de calificación',        cat:'competencia', badge:'Competencia'  },
+    { time:'14:30', name:'Impacto Tecnológico',           det:'Sala de exposiciones · Presentaciones',              cat:'competencia', badge:'Competencia'  },
+    { time:'15:30', name:'Robot Soccer',                  det:'Cancha principal · Fase eliminatoria',               cat:'competencia', badge:'Competencia'  },
+    { time:'15:30', name:'Cubo Rubik',                    det:'Mesa de cronometraje · Rondas clasificatorias',      cat:'competencia', badge:'Competencia'  },
+    { time:'16:30', name:'Lego Kids',                     det:'Área Kids · Categoría infantil',                     cat:'competencia', badge:'Competencia'  },
+    { time:'16:30', name:'Trepador Pro',                  det:'Estructura de trepada · Categoría Pro',              cat:'competencia', badge:'Competencia'  },
+    { time:'17:30', name:'Batalla de Robots',             det:'Arena principal · Eliminación directa',              cat:'competencia', badge:'Competencia'  },
+    { time:'18:00', name:'Semifinales y Finales',         det:'Todas las categorías · Rondas finales',              cat:'clausura',    badge:'Final'        },
+    { time:'19:00', name:'Ceremonia de premiación',       det:'Auditorio · Entrega de trofeos y diplomas',          cat:'premiacion',  badge:'🏆 Premiación' },
   ];
 
   function renderPreview() {
     document.getElementById('previewList').innerHTML = SCHEDULE.map(s => `
       <div class="preview-slot cat-${s.cat}">
         <div class="preview-time">${s.time}</div>
-        <div><div class="preview-name">${s.name}</div><div class="preview-detail">${s.detail}</div></div>
+        <div><div class="preview-name">${s.name}</div><div class="preview-detail">${s.det}</div></div>
       </div>`).join('');
-  }
-
-  function renderFS() {
-    document.getElementById('fsGrid').innerHTML = SCHEDULE.map((s,i) => `
-      <div class="fs-slot cat-${s.cat}" id="fss-${i}">
-        <div class="fs-slot-time">${s.time}</div>
-        <div class="fs-slot-body">
-          <div class="fs-slot-name">${s.name}</div>
-          <div class="fs-slot-detail">${s.detail}</div>
-        </div>
-        <div class="fs-slot-badge">${s.badge}</div>
-      </div>`).join('');
-    updateActive();
   }
 
   function toMin(t) { const [h,m]=t.split(':').map(Number); return h*60+m; }
-  function updateActive() {
+
+  function renderFS() {
     const now = new Date(), cur = now.getHours()*60+now.getMinutes();
-    SCHEDULE.forEach((s,i) => {
-      const el = document.getElementById(`fss-${i}`); if (!el) return;
+    document.getElementById('fsGrid').innerHTML = SCHEDULE.map((s,i) => {
       const start = toMin(s.time);
       const next  = i+1 < SCHEDULE.length ? toMin(SCHEDULE[i+1].time) : start+60;
-      el.classList.remove('active','past');
-      if (cur>=start && cur<next) el.classList.add('active');
-      else if (cur>=next)         el.classList.add('past');
+      const state = cur>=start&&cur<next ? 'on' : cur>=next ? 'old' : '';
+      return `<div class="slot ${CAT[s.cat]||''} ${state}">
+        <div class="s-time">${s.time}</div>
+        <div class="s-body">
+          <div class="s-name">${s.name}</div>
+          <div class="s-det">${s.det}</div>
+        </div>
+        <div class="s-badge">${s.badge}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function updateActive() {
+    const now = new Date(), cur = now.getHours()*60+now.getMinutes();
+    document.querySelectorAll('#fsGrid .slot').forEach((el,i) => {
+      if (i >= SCHEDULE.length) return;
+      const start = toMin(SCHEDULE[i].time);
+      const next  = i+1 < SCHEDULE.length ? toMin(SCHEDULE[i+1].time) : start+60;
+      el.classList.remove('on','old');
+      if (cur>=start&&cur<next) el.classList.add('on');
+      else if (cur>=next)       el.classList.add('old');
     });
   }
 
@@ -316,23 +341,18 @@
   }
 
   function abrirFS() {
-    const overlay=document.getElementById('fsOverlay');
-    overlay.classList.add('active');
+    document.getElementById('fsOverlay').classList.add('active');
     renderFS();
-    (document.documentElement.requestFullscreen?.() ||
-     document.documentElement.webkitRequestFullscreen?.());
+    (document.documentElement.requestFullscreen?.() || document.documentElement.webkitRequestFullscreen?.());
   }
-
   function cerrarFS() {
     document.getElementById('fsOverlay').classList.remove('active');
     document.exitFullscreen?.() || document.webkitExitFullscreen?.();
   }
-
   document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement)
-      document.getElementById('fsOverlay').classList.remove('active');
+    if (!document.fullscreenElement) document.getElementById('fsOverlay').classList.remove('active');
   });
-  document.addEventListener('keydown', e => { if (e.key==='Escape') cerrarFS(); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarFS(); });
 
   renderPreview();
   tick();
