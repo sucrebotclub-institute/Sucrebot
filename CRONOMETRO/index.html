@@ -536,6 +536,8 @@ let maxIntentos         = 2;
 let rondasData          = { 0: { clasificados: [], eliminados: [], cerrada: false } };
 let intentosLog         = [];
 let competenciaIniciada = false;
+let ultimoIdLimpiado = null;
+let ultimoIdLimpiadoTs = 0;
 
 // ── Paso 1/2: selección de presentes ──
 let presentes = [];        // lista de participantes aprobados de la categoría
@@ -769,6 +771,8 @@ function iniciarPolling() {
       let nuevoP;
       try { nuevoP = JSON.parse(data.raw); } catch { return; }
       if (cronoInterval) return;
+      // Ignorar el último participante limpiado por 5s para evitar que el polling lo recargue
+      if (ultimoIdLimpiado && nuevoP.id === ultimoIdLimpiado && Date.now() - ultimoIdLimpiadoTs < 5000) return;
       const marcaActual = participanteActual ? (participanteActual.inicio || participanteActual.timestamp || 0) : 0;
       const marcaNueva  = nuevoP.inicio || nuevoP.timestamp || 0;
       if (!participanteActual || participanteActual.id !== nuevoP.id || marcaNueva > marcaActual) {
@@ -810,6 +814,7 @@ function recibirParticipante(p) {
 }
 
 function limpiarParticipante() {
+  if (participanteActual?.id) { ultimoIdLimpiado = participanteActual.id; ultimoIdLimpiadoTs = Date.now(); }
   participanteActual = null; intentosLog = []; intentoActual = 1;
   actualizarBadges();
   const strip = document.getElementById('participante-strip');
