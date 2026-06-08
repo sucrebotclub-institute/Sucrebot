@@ -849,6 +849,8 @@ function registrarIntento(tiempo) {
 function siguienteIntento() {
   intentoActual++; actualizarBadges(); reiniciarCrono(); desbloquearBtn(); ocultarBotonesAccion();
   document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
+  // Re-armar sensor/pulsador para el siguiente intento del mismo robot
+  enviarSerial('R');
 }
 
 function pasarSiguienteParticipante() {
