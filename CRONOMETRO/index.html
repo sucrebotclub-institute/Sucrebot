@@ -1273,15 +1273,23 @@ async function guardarPodioCrono() {
   }
 
   showToast('Guardando podio...');
-  try {
-    for (let i = 0; i < ranking.length; i++) {
-      const tipo = tipos[i] || 'PARTICIPACIÓN';
-      await guardarCertParticipante(ranking[i], tipo);
+  let guardados = 0; let errores = 0;
+  for (let i = 0; i < ranking.length; i++) {
+    const tipo = tipos[i] || 'PARTICIPACIÓN';
+    const p = ranking[i];
+    console.log(`[Podio] ${i+1}/${ranking.length} — ${p?.nombre||p?.robot} — tipo: ${tipo} — m2: ${p?.miembro2||'—'} — m3: ${p?.miembro3||'—'}`);
+    try {
+      await guardarCertParticipante(p, tipo);
+      guardados++;
+    } catch(e) {
+      errores++;
+      console.error(`Error guardando ${p?.nombre||p?.robot} (${tipo}):`, e);
     }
+  }
+  if (errores === 0) {
     showToast('🏆 Podio guardado en certificados');
-  } catch(e) {
-    showToast('❌ Error: ' + e.message, true);
-    console.error(e);
+  } else {
+    showToast(`⚠️ ${guardados} guardados, ${errores} con error — revisa consola`, true);
   }
 }
 
@@ -1431,8 +1439,8 @@ document.addEventListener('componentsLoaded', async function() {
       return;
     }
     if (msg==='SENS' && CATS_SEGUIDOR.includes(categoriaActual)) {
-      if (!cronoInterval) { iniciarCrono(); seguidorArrancado=true; }
-      else { detenerCrono(); seguidorArrancado=false; }
+      if (msg==='START' && !cronoInterval) { iniciarCrono(); return; }
+      if (msg==='STOP'  &&  cronoInterval) { detenerCrono(); return; }
       return;
     }
     if (msg==='BTN' && CATS_PULSADOR.includes(categoriaActual)) {
