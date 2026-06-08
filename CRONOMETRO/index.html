@@ -25,7 +25,6 @@
       --font-mono: 'DM Mono', monospace;
       --font-body: 'DM Sans', sans-serif;
       --bg-start: #f0f4f8; --bg-end: #e1e8ed;
-      /* panel-bracket vars */
       --panel:  #0a2a5a;
       --panel2: #071e45;
       --border2: rgba(91,200,240,0.28);
@@ -37,7 +36,6 @@
     }
     main { padding-top: 174px; min-height: 100vh; }
 
-    /* ── Stepper ── */
     .stepper-wrap { display:flex; justify-content:center; align-items:center; padding:0 20px 28px; max-width:700px; margin:0 auto; }
     .step-item { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; }
     .step-item:not(:last-child)::after { content:''; position:absolute; top:18px; left:calc(50% + 20px); width:calc(100% - 40px); height:2px; background:#c8d4e8; z-index:0; }
@@ -49,12 +47,10 @@
     .step-item.active .step-label { color:var(--blue); font-weight:700; }
     .step-item.done .step-label { color:var(--green-dark); }
 
-    /* ── Step panels ── */
     .step-panel { display:none; animation:fadeUp .3s ease; }
     .step-panel.active { display:block; }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-    /* ── Hero ── */
     .pb-hero { text-align:center; padding:52px 20px 20px; }
     .pb-badge { display:inline-flex; align-items:center; gap:8px; background:var(--blue); color:#fff; font-family:'Orbitron'; font-size:9px; letter-spacing:3px; padding:6px 16px; border-radius:20px; margin-bottom:12px; }
     .pb-badge-dot { width:6px; height:6px; border-radius:50%; background:var(--cyan); animation:pulse 1.5s infinite; }
@@ -63,7 +59,6 @@
     .pb-title span { color:var(--blue); }
     .pb-title::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:3px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); }
 
-    /* ── Paso 1: Cat grid ── */
     .pb-card { background:var(--panel); border:1px solid rgba(91,200,240,0.15); border-radius:14px; padding:24px; color:var(--text); max-width:none !important; }
     .pb-card-title { font-family:'Orbitron'; font-size:.75rem; letter-spacing:2px; color:var(--cyan); text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
     .pb-card-title::before { content:''; width:3px; height:16px; background:var(--cyan); border-radius:2px; }
@@ -78,7 +73,6 @@
     .cat-btn-desc { font-size:.7rem; color:rgba(232,234,242,.6); margin-top:4px; }
     .cat-btn-tipo { display:inline-block; margin-top:8px; font-family:'Orbitron'; font-size:.5rem; letter-spacing:1px; padding:3px 10px; border-radius:10px; background:rgba(91,200,240,.15); color:var(--cyan); border:1px solid var(--border2); }
 
-    /* ── Paso 2: Presentes ── */
     .sel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
     .sel-counts { font-family:'DM Mono'; font-size:.8rem; color:rgba(232,234,242,.7); }
     .sel-counts span { color:var(--cyan); font-weight:700; }
@@ -96,7 +90,6 @@
     .aviso-empty { background:rgba(243,156,18,.1); border:1px solid rgba(243,156,18,.35); border-radius:8px; padding:12px 16px; font-size:.85rem; color:#f39c12; text-align:center; grid-column:1/-1; }
     .btn-row-nav { display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
 
-    /* ── Botones comunes ── */
     .btn { display:inline-flex; align-items:center; gap:8px; font-family:'Orbitron'; font-size:.7rem; letter-spacing:1.5px; padding:10px 22px; border-radius:8px; border:none; cursor:pointer; transition:all .2s; text-transform:uppercase; }
     .btn-outline { background:transparent; color:var(--cyan); border:1px solid var(--cyan); }
     .btn-outline:hover { background:rgba(91,200,240,.08); }
@@ -105,51 +98,21 @@
     .btn-green-pb:disabled { background:#2a2e42; color:rgba(232,234,242,.4); cursor:not-allowed; }
     .btn-sm { padding:7px 14px; font-size:.62rem; }
 
-    /* ── Paso 3: Cronómetro (estilos originales) ── */
-    .crono-wrapper {
-      max-width: 1400px; margin: 0 auto;
-      padding: 8px 16px 24px;
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column;
-    }
-    .crono-layout {
-      display: grid; grid-template-columns: 260px 1fr 320px;
-      gap: 16px; flex: 1;
-    }
+    .crono-wrapper { max-width: 1400px; margin: 0 auto; padding: 8px 16px 24px; position: relative; z-index: 1; display: flex; flex-direction: column; }
+    .crono-layout { display: grid; grid-template-columns: 260px 1fr 320px; gap: 16px; flex: 1; }
     .col-config { display: flex; flex-direction: column; gap: 10px; }
     .col-crono  { display: flex; flex-direction: column; gap: 12px; }
     .col-ranking { display: flex; flex-direction: column; }
-    .card-dark {
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-      border: 2px solid var(--border); border-radius: 10px;
-      padding: 12px 14px;
-    }
-    .card-label {
-      font-family: var(--font-mono); font-size: 0.65rem;
-      letter-spacing: 0.2em; color: var(--cyan); font-weight: 700;
-      text-transform: uppercase; margin-bottom: 8px;
-      display: flex; align-items: center; gap: 6px;
-    }
+    .card-dark { background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); border: 2px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+    .card-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--cyan); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
     .card-label::before { content: '⚡'; font-size: 1rem; }
-    .aviso-sensor {
-      background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-      border: 2px solid #f59e0b; border-radius: 8px;
-      padding: 10px 12px; display: none;
-      font-family: var(--font-body); font-size: 0.72rem;
-      font-weight: 600; color: #78350f;
-      align-items: flex-start; gap: 8px;
-    }
+    .aviso-sensor { background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #f59e0b; border-radius: 8px; padding: 10px 12px; display: none; font-family: var(--font-body); font-size: 0.72rem; font-weight: 600; color: #78350f; align-items: flex-start; gap: 8px; }
     .aviso-sensor.visible { display: flex; }
     .aviso-sensor-icon { font-size: 1.3rem; flex-shrink: 0; }
     .aviso-sensor-texto b { display: block; font-size: 0.78rem; margin-bottom: 2px; }
     .config-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .config-row label { font-size: 0.75rem; color: var(--text); font-family: var(--font-body); font-weight: 600; }
-    .config-input {
-      width: 60px; background: var(--surface-light);
-      border: 2px solid #e2e8f0; color: var(--surface);
-      font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700;
-      padding: 6px 8px; border-radius: 8px; outline: none; text-align: center;
-    }
+    .config-input { width: 60px; background: var(--surface-light); border: 2px solid #e2e8f0; color: var(--surface); font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; padding: 6px 8px; border-radius: 8px; outline: none; text-align: center; }
     .config-input:focus { border-color: var(--cyan); }
     .config-title { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--cyan); font-weight: 700; margin-bottom: 8px; }
     .badges-wrap { display: flex; flex-direction: column; gap: 6px; }
@@ -167,25 +130,13 @@
     .btn-excel:hover { box-shadow: 0 6px 20px rgba(26,122,60,0.4); }
     .btn-volver-cat { width:100%; padding:8px 12px; border-radius:8px; font-family:var(--font-body); font-size:0.72rem; font-weight:700; cursor:pointer; border:1px solid var(--cyan); background:transparent; color:var(--cyan); transition:all .2s; text-transform:uppercase; }
     .btn-volver-cat:hover { background:rgba(91,200,240,.08); }
-    .participante-strip {
-      background: linear-gradient(135deg, var(--surface) 0%, #0f2d52 100%);
-      border: 2px solid var(--border); border-left: 5px solid var(--cyan);
-      border-radius: 10px; padding: 10px 14px;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(13,40,71,0.25); flex-shrink: 0;
-    }
+    .participante-strip { background: linear-gradient(135deg, var(--surface) 0%, #0f2d52 100%); border: 2px solid var(--border); border-left: 5px solid var(--cyan); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 16px rgba(13,40,71,0.25); flex-shrink: 0; }
     .participante-strip.empty { border-left-color: var(--muted); background: linear-gradient(135deg, #1a2b47 0%, #0f1d35 100%); }
     .p-robot { font-size: 1.1rem; font-weight: 700; color: var(--text); }
     .p-inst  { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
     .p-badge { font-family: var(--font-mono); font-size: 0.75rem; background: var(--cyan); color: var(--surface); padding: 6px 14px; border-radius: 20px; font-weight: 700; white-space: nowrap; }
     .participante-strip.empty .p-robot { color: var(--muted); font-weight: 500; }
-    .crono-display {
-      background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%);
-      border: 3px solid var(--border); border-radius: 14px;
-      padding: 50px 20px; text-align: center;
-      position: relative; overflow: hidden;
-      box-shadow: 0 8px 32px rgba(13,40,71,0.4); flex-shrink: 0;
-    }
+    .crono-display { background: linear-gradient(135deg, var(--surface) 0%, #0a1e3a 100%); border: 3px solid var(--border); border-radius: 14px; padding: 50px 20px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 8px 32px rgba(13,40,71,0.4); flex-shrink: 0; }
     .crono-display::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:0; transition:opacity .3s; }
     .crono-display.running::after { opacity:1; animation:scanline 2s linear infinite; }
     @keyframes scanline { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
@@ -287,13 +238,11 @@
 <main>
 <div style="max-width:1400px;margin:0 auto;padding:0 16px 60px;">
 
-  <!-- Hero -->
   <div class="pb-hero" style="padding-top:48px;">
     <div class="pb-badge"><div class="pb-badge-dot"></div>SUCREBOT 2026 · STAFF</div>
     <h2 class="pb-title">CRONÓ<span>METRO</span></h2>
   </div>
 
-  <!-- Stepper -->
   <div class="stepper-wrap">
     <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
     <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Presentes</div></div>
@@ -373,7 +322,6 @@
   <!-- ══ PASO 3: CRONÓMETRO ══ -->
   <div class="step-panel" id="panel-3">
     <div class="crono-wrapper">
-
       <div class="crono-layout">
 
         <!-- COLUMNA CONFIG -->
@@ -539,8 +487,7 @@ let competenciaIniciada = false;
 let ultimoIdLimpiado = null;
 let ultimoIdLimpiadoTs = 0;
 
-// ── Paso 1/2: selección de presentes ──
-let presentes = [];        // lista de participantes aprobados de la categoría
+let presentes = [];
 let seleccionados = new Set();
 
 function setStep(n) {
@@ -557,7 +504,6 @@ async function elegirCategoria(cat, ev) {
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
   ev.currentTarget.classList.add('selected');
 
-  // Verificar bloqueo
   const bloqueada = await verificarBloqueo(cat);
   const userData  = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
   if (bloqueada && bloqueada.usuario !== userData.email) {
@@ -566,7 +512,6 @@ async function elegirCategoria(cat, ev) {
     return;
   }
 
-  // Cargar participantes aprobados
   showToast('Cargando participantes...');
   try {
     const r = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getParticipantes' }));
@@ -581,7 +526,7 @@ async function elegirCategoria(cat, ev) {
         miembro2: p.miembro2 || '', miembro3: p.miembro3 || '',
         ts: Date.now() + Math.random()
       }));
-    seleccionados = new Set(presentes.map(p => p.id)); // todos por defecto
+    seleccionados = new Set(presentes.map(p => p.id));
     document.getElementById('paso2Titulo').textContent = `Presentes — ${cat}`;
     document.getElementById('selTotal').textContent = presentes.length;
     renderSeleccion();
@@ -647,22 +592,18 @@ async function confirmarIniciarCrono() {
   const cat = document.querySelector('.cat-btn.selected');
   if (!cat) { showToast('⚠️ Selecciona una categoría', true); return; }
 
-  // Leer categoría del texto del botón seleccionado
   const catNombre = Object.keys(RUTAS).find(k => {
-    // buscar por el atributo del onclick
     return cat.getAttribute('onclick')?.includes(`'${k}'`);
   }) || '';
 
   if (!catNombre) return;
 
-  // Bloquear categoría en GAS
   const ok = await bloquearCategoria(catNombre);
   if (!ok) { showToast('❌ No se pudo bloquear la categoría', true); return; }
 
   categoriaActual = catNombre;
   localStorage.setItem('cronometro_categoria_activa', catNombre);
 
-  // Cargar presentes en ronda 0
   const selArr = presentes.filter(p => seleccionados.has(p.id));
   rondasData = { 0: { clasificados: [], eliminados: [], cerrada: false } };
   selArr.forEach((p, i) => {
@@ -671,7 +612,6 @@ async function confirmarIniciarCrono() {
   rondaActual = 0; intentoActual = 1; maxRondas = 3; maxIntentos = 2;
   competenciaIniciada = false; intentosLog = []; participanteActual = null;
 
-  // Actualizar UI paso 3
   document.getElementById('cat-activa-label').textContent = catNombre;
   document.getElementById('btn-cerrar-cat').style.display = 'block';
   document.getElementById('cfg-rondas').value = '3';
@@ -686,7 +626,6 @@ async function confirmarIniciarCrono() {
   bcr.disabled = false; bcr.style.opacity = ''; bcr.style.display = 'none';
   bcr.innerHTML = '🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>';
 
-  // Aviso sensor
   const aviso = document.getElementById('aviso-sensor');
   if (CATS_SERIAL.includes(catNombre)) {
     const info = AVISO_SENSOR[catNombre] || { titulo: 'DISPOSITIVO REQUERIDO', desc: 'Conecta el ESP32 antes de iniciar.' };
@@ -728,10 +667,9 @@ function volverPaso1Desde3() {
   setStep(1);
 }
 
-// ── Helpers ──
-function getRuta()     { return RUTAS[categoriaActual] || null; }
-function getKey()      { return 'sucrebot_estado_' + (getRuta() || 'general'); }
-function bloquearBtn() { const b = document.getElementById('btn-start'); if (b) b.disabled = true; }
+function getRuta()        { return RUTAS[categoriaActual] || null; }
+function getKey()         { return 'sucrebot_estado_' + (getRuta() || 'general'); }
+function bloquearBtn()    { const b = document.getElementById('btn-start'); if (b) b.disabled = true; }
 function desbloquearBtn() { const b = document.getElementById('btn-start'); if (b) b.disabled = false; }
 
 function tiempoASegundos(t) {
@@ -740,7 +678,6 @@ function tiempoASegundos(t) {
   return p[0] * 60 + p[1] + p[2] / 100;
 }
 
-// ── GAS — bloqueo categoría ──
 async function bloquearCategoria(cat) {
   const user = JSON.parse(localStorage.getItem('sucrebot_user') || '{}');
   try {
@@ -759,7 +696,6 @@ async function verificarBloqueo(cat) {
   } catch(e) { return null; }
 }
 
-// ── Polling ──
 function iniciarPolling() {
   if (pollingInterval) clearInterval(pollingInterval);
   pollingInterval = setInterval(async () => {
@@ -771,7 +707,6 @@ function iniciarPolling() {
       let nuevoP;
       try { nuevoP = JSON.parse(data.raw); } catch { return; }
       if (cronoInterval) return;
-      // Ignorar el último participante limpiado por 5s para evitar que el polling lo recargue
       if (ultimoIdLimpiado && nuevoP.id === ultimoIdLimpiado && Date.now() - ultimoIdLimpiadoTs < 5000) return;
       const marcaActual = participanteActual ? (participanteActual.inicio || participanteActual.timestamp || 0) : 0;
       const marcaNueva  = nuevoP.inicio || nuevoP.timestamp || 0;
@@ -804,7 +739,6 @@ function recibirParticipante(p) {
   const strip = document.getElementById('participante-strip');
   strip.className = 'participante-strip';
   strip.innerHTML = `<div><div class="p-robot">${p.robot||'—'}</div><div class="p-inst">${p.institucion||''}${p.ciudad?' · '+p.ciudad:''}</div></div><div class="p-badge">${rondaActual===0?'REVISIÓN ✓':'LISTO ✓'}</div>`;
-  // Avisar al ESP32 que hay participante listo
   if (rondaActual > 0) enviarSerial('R');
   if (rondaActual === 0) {
     const rd = getRonda(0);
@@ -828,7 +762,6 @@ function limpiarParticipante() {
   }
 }
 
-// ── Cronómetro ──
 function iniciarCrono() {
   if (rondaActual === 0)         { showToast('⚠️ Ronda 0 es solo revisión', true); return; }
   if (!participanteActual)       { showToast('⚠️ Sin participante', true); return; }
@@ -840,8 +773,7 @@ function iniciarCrono() {
   document.getElementById('crono-status').textContent = `EN MARCHA · Intento ${intentoActual} de ${maxIntentos}`;
   document.getElementById('btn-dnf').style.display    = 'block';
   ocultarBotonesAccion();
-  // Para seguidor de línea el ESP32 ya recibió 'R' al cargar el participante
-  // Para otras categorías enviamos 'R' aquí para indicar inicio
+  // Para Seguidor, el ESP32 ya recibió 'R' al cargar el participante y maneja START/STOP autónomamente
   const CATS_SEG = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
   if (!CATS_SEG.includes(categoriaActual)) enviarSerial('R');
 }
@@ -990,7 +922,6 @@ function agregarAlRanking(tiempo, esDNF) {
       ant.tiempo = tiempo; ant.esDNF = false;
     }
   } else {
-    // Buscar datos completos en presentes para no perder miembro2/miembro3/correo
     const datosFull = presentes.find(p => p.id === participanteActual.id) || {};
     rd.clasificados.push({
       id: participanteActual.id, robot: participanteActual.robot,
@@ -1222,10 +1153,8 @@ function showToast(msg, error=false) {
 
 async function guardarPodioCrono() {
   const catNombre = categoriaActual || '';
-  // Obtener la última ronda cerrada
   const ultimaRonda = Object.keys(rondasData).map(Number)
-    .filter(r => r > 0)
-    .sort((a,b) => b-a)[0];
+    .filter(r => r > 0).sort((a,b) => b-a)[0];
   if (!ultimaRonda) { showToast('⚠️ No hay ronda finalizada', true); return; }
   const rd = rondasData[ultimaRonda];
   const conT = rd.clasificados.filter(c => !c.esDNF && c.tiempo !== '—')
@@ -1238,43 +1167,27 @@ async function guardarPodioCrono() {
 
   const tipos = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
 
-  // Datos completos: prioriza rondasData (ya tiene miembro2/3) y complementa con presentes si hace falta
-  function datosCompletos(id) {
-    const enPresentes = presentes.find(p => p.id === id) || {};
-    return enPresentes;
-  }
+  function datosCompletos(id) { return presentes.find(p => p.id === id) || {}; }
 
   async function guardarCertParticipante(p, tipo) {
-    // p viene de rondasData — ya tiene correo, miembro2, miembro3
-    // Si faltara algo, complementar con presentes
     const d = datosCompletos(p.id);
     const correo  = p.correo  || d.correo  || '';
     const inst    = p.institucion || d.institucion || '';
     const m2      = p.miembro2 || d.miembro2 || '';
     const m3      = p.miembro3 || d.miembro3 || '';
     const nombre  = p.nombre  || p.robot || '';
-    // Capitán
     await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id,
         correo, nombre, nombre_completo: nombre,
-        categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
-    });
-    // Miembro 2
-    if (m2) {
-      await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id + '-m2',
-          correo, nombre: m2, nombre_completo: m2,
-          categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
-      });
-    }
-    // Miembro 3
-    if (m3) {
-      await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id + '-m3',
-          correo, nombre: m3, nombre_completo: m3,
-          categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
-      });
-    }
+        categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' }) });
+    if (m2) await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id+'-m2',
+        correo, nombre: m2, nombre_completo: m2,
+        categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' }) });
+    if (m3) await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id+'-m3',
+        correo, nombre: m3, nombre_completo: m3,
+        categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' }) });
   }
 
   showToast('Guardando podio...');
@@ -1283,19 +1196,11 @@ async function guardarPodioCrono() {
     const tipo = tipos[i] || 'PARTICIPACIÓN';
     const p = ranking[i];
     console.log(`[Podio] ${i+1}/${ranking.length} — ${p?.nombre||p?.robot} — tipo: ${tipo} — m2: ${p?.miembro2||'—'} — m3: ${p?.miembro3||'—'}`);
-    try {
-      await guardarCertParticipante(p, tipo);
-      guardados++;
-    } catch(e) {
-      errores++;
-      console.error(`Error guardando ${p?.nombre||p?.robot} (${tipo}):`, e);
-    }
+    try { await guardarCertParticipante(p, tipo); guardados++; }
+    catch(e) { errores++; console.error(`Error guardando ${p?.nombre||p?.robot} (${tipo}):`, e); }
   }
-  if (errores === 0) {
-    showToast('🏆 Podio guardado en certificados');
-  } else {
-    showToast(`⚠️ ${guardados} guardados, ${errores} con error — revisa consola`, true);
-  }
+  if (errores === 0) showToast('🏆 Podio guardado en certificados');
+  else showToast(`⚠️ ${guardados} guardados, ${errores} con error — revisa consola`, true);
 }
 
 // ── Init ──
@@ -1303,7 +1208,6 @@ document.addEventListener('componentsLoaded', async function() {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href='../INICIO/'; return; }
 
-  // Intentar restaurar sesión guardada
   const catGuardada = localStorage.getItem('cronometro_categoria_activa');
   if (catGuardada && RUTAS[catGuardada]) {
     const bloqueada = await verificarBloqueo(catGuardada);
@@ -1335,7 +1239,6 @@ document.addEventListener('componentsLoaded', async function() {
       iniciarPolling();
       setStep(3);
       showToast(`✅ Categoría "${catGuardada}" restaurada`);
-      // Recargar presentes desde GAS para que miembro2/miembro3 estén disponibles al guardar podio
       try {
         const rp = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getParticipantes' }));
         const todos = await rp.json();
@@ -1364,7 +1267,6 @@ document.addEventListener('componentsLoaded', async function() {
   const CATS_SEGUIDOR = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
   const CATS_PULSADOR = ['Cubo Rubik','Lego Kids'];
   const CATS_SERIAL   = [...CATS_SENSOR,...CATS_SEGUIDOR,...CATS_PULSADOR];
-  let seguidorArrancado = false;
 
   function inyectarBoton() {
     if (document.getElementById('btn-serial')) return;
@@ -1437,18 +1339,26 @@ document.addEventListener('componentsLoaded', async function() {
   }
 
   function procesarMensaje(msg) {
+    if (!msg) return;
     if (!CATS_SERIAL.includes(categoriaActual)) return;
     if (rondaActual===0) return;
     if (!participanteActual) return;
+
+    // Trepador: sensor detecta meta → STOP detiene el cronómetro
     if (msg==='STOP' && CATS_SENSOR.includes(categoriaActual)) {
       if (cronoInterval) { detenerCrono(); showToast('✅ Meta detectada'); }
       return;
     }
-    if (msg==='SENS' && CATS_SEGUIDOR.includes(categoriaActual)) {
-      if (msg==='START' && !cronoInterval) { iniciarCrono(); return; }
-      if (msg==='STOP'  &&  cronoInterval) { detenerCrono(); return; }
+
+    // Seguidor de línea: sensor toggle → START inicia, STOP detiene
+    // FIX: eliminado el if externo incorrecto (msg==='SENS') que bloqueaba este bloque
+    if (CATS_SEGUIDOR.includes(categoriaActual)) {
+      if (msg==='START' && !cronoInterval) { iniciarCrono(); showToast('▶ Sensor: inicio detectado'); return; }
+      if (msg==='STOP'  &&  cronoInterval) { detenerCrono(); showToast('✅ Sensor: meta detectada'); return; }
       return;
     }
+
+    // Pulsador (Cubo Rubik / Lego Kids): BTN toggle inicia o detiene
     if (msg==='BTN' && CATS_PULSADOR.includes(categoriaActual)) {
       if (!cronoInterval) iniciarCrono(); else detenerCrono();
       return;
