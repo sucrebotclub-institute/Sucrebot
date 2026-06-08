@@ -1228,30 +1228,40 @@ async function guardarPodioCrono() {
 
   const tipos = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
 
+  // Datos completos: prioriza rondasData (ya tiene miembro2/3) y complementa con presentes si hace falta
   function datosCompletos(id) {
-    return presentes.find(p => p.id === id) || {};
+    const enPresentes = presentes.find(p => p.id === id) || {};
+    return enPresentes;
   }
 
   async function guardarCertParticipante(p, tipo) {
+    // p viene de rondasData — ya tiene correo, miembro2, miembro3
+    // Si faltara algo, complementar con presentes
     const d = datosCompletos(p.id);
-    const correo = d.correo || p.correo || '';
-    const inst   = d.institucion || p.institucion || '';
+    const correo  = p.correo  || d.correo  || '';
+    const inst    = p.institucion || d.institucion || '';
+    const m2      = p.miembro2 || d.miembro2 || '';
+    const m3      = p.miembro3 || d.miembro3 || '';
+    const nombre  = p.nombre  || p.robot || '';
+    // Capitán
     await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id,
-        correo, nombre: p.nombre || p.robot, nombre_completo: p.nombre || p.robot,
+        correo, nombre, nombre_completo: nombre,
         categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
     });
-    if (d.miembro2) {
+    // Miembro 2
+    if (m2) {
       await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id + '-m2',
-          correo, nombre: d.miembro2, nombre_completo: d.miembro2,
+          correo, nombre: m2, nombre_completo: m2,
           categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
       });
     }
-    if (d.miembro3) {
+    // Miembro 3
+    if (m3) {
       await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id + '-m3',
-          correo, nombre: d.miembro3, nombre_completo: d.miembro3,
+          correo, nombre: m3, nombre_completo: m3,
           categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
       });
     }
