@@ -55,7 +55,7 @@
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
     /* ── Hero ── */
-    .pb-hero { text-align:center; padding:32px 20px 20px; }
+    .pb-hero { text-align:center; padding:52px 20px 20px; }
     .pb-badge { display:inline-flex; align-items:center; gap:8px; background:var(--blue); color:#fff; font-family:'Orbitron'; font-size:9px; letter-spacing:3px; padding:6px 16px; border-radius:20px; margin-bottom:12px; }
     .pb-badge-dot { width:6px; height:6px; border-radius:50%; background:var(--cyan); animation:pulse 1.5s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
@@ -288,7 +288,7 @@
 <div style="max-width:1400px;margin:0 auto;padding:0 16px 60px;">
 
   <!-- Hero -->
-  <div class="pb-hero">
+  <div class="pb-hero" style="padding-top:48px;">
     <div class="pb-badge"><div class="pb-badge-dot"></div>SUCREBOT 2026 · STAFF</div>
     <h2 class="pb-title">CRONÓ<span>METRO</span></h2>
   </div>
@@ -412,6 +412,7 @@
           <button class="btn-iniciar-comp" id="btn-iniciar-comp" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
           <button class="btn-bloque btn-cerrar-cat" id="btn-cerrar-cat" style="display:none" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
           <button class="btn-bloque btn-excel" id="btn-excel" onclick="exportarExcel()">📊 Descargar Excel</button>
+          <button class="btn-bloque" id="btn-podio" style="background:linear-gradient(135deg,#f9d423 0%,#e8b800 100%);border-color:#e8b800;color:#78350f;" onclick="guardarPodioCrono()">🏆 Guardar Podio</button>
           <button class="btn-volver-cat" onclick="volverPaso1Desde3()">← Cambiar categoría</button>
         </div>
 
@@ -574,7 +575,9 @@ async function elegirCategoria(cat, ev) {
       .map(p => ({
         id: p.id, robot: p.robot || p.nombre, nombre: p.nombre || '',
         institucion: p.institucion || '', ciudad: p.ciudad || '',
-        categoria: p.categoria || '', ts: Date.now() + Math.random()
+        categoria: p.categoria || '', correo: p.correo || '',
+        miembro2: p.miembro2 || '', miembro3: p.miembro3 || '',
+        ts: Date.now() + Math.random()
       }));
     seleccionados = new Set(presentes.map(p => p.id)); // todos por defecto
     document.getElementById('paso2Titulo').textContent = `Presentes — ${cat}`;
@@ -1083,6 +1086,7 @@ function confirmarCerrarRonda() {
     btn.disabled=true; btn.innerHTML='✓ Competencia finalizada'; btn.style.opacity='0.5';
     renderRondas(); limpiarParticipante(); guardarEstado();
     document.getElementById('btn-excel').classList.add('visible');
+    document.getElementById('btn-podio').classList.add('visible');
     showToast('🏆 ¡Competencia finalizada!');
     setTimeout(()=>exportarExcel(),500);
   }
@@ -1201,6 +1205,66 @@ function showToast(msg, error=false) {
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
 }
 
+async function guardarPodioCrono() {
+  const catNombre = categoriaActual || '';
+  // Obtener la última ronda cerrada
+  const ultimaRonda = Object.keys(rondasData).map(Number)
+    .filter(r => r > 0)
+    .sort((a,b) => b-a)[0];
+  if (!ultimaRonda) { showToast('⚠️ No hay ronda finalizada', true); return; }
+  const rd = rondasData[ultimaRonda];
+  const conT = rd.clasificados.filter(c => !c.esDNF && c.tiempo !== '—')
+    .sort((a,b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
+  const dnfs = rd.clasificados.filter(c => c.esDNF);
+  const sinT = rd.clasificados.filter(c => c.tiempo === '—');
+  const ranking = [...conT, ...sinT, ...dnfs];
+  if (ranking.length === 0) { showToast('⚠️ No hay participantes en el ranking', true); return; }
+  if (!confirm(`¿Guardar podio de ${catNombre} en certificados?\n${ranking.length} participantes.`)) return;
+
+  const tipos = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
+
+  function datosCompletos(id) {
+    return presentes.find(p => p.id === id) || {};
+  }
+
+  async function guardarCertParticipante(p, tipo) {
+    const d = datosCompletos(p.id);
+    const correo = d.correo || p.correo || '';
+    const inst   = d.institucion || p.institucion || '';
+    await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id,
+        correo, nombre: p.nombre || p.robot, nombre_completo: p.nombre || p.robot,
+        categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
+    });
+    if (d.miembro2) {
+      await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id + '-m2',
+          correo, nombre: d.miembro2, nombre_completo: d.miembro2,
+          categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
+      });
+    }
+    if (d.miembro3) {
+      await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id + '-m3',
+          correo, nombre: d.miembro3, nombre_completo: d.miembro3,
+          categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' })
+      });
+    }
+  }
+
+  showToast('Guardando podio...');
+  try {
+    for (let i = 0; i < ranking.length; i++) {
+      const tipo = tipos[i] || 'PARTICIPACIÓN';
+      await guardarCertParticipante(ranking[i], tipo);
+    }
+    showToast('🏆 Podio guardado en certificados');
+  } catch(e) {
+    showToast('❌ Error: ' + e.message, true);
+    console.error(e);
+  }
+}
+
 // ── Init ──
 document.addEventListener('componentsLoaded', async function() {
   const savedUser = localStorage.getItem('sucrebot_user');
@@ -1238,6 +1302,21 @@ document.addEventListener('componentsLoaded', async function() {
       iniciarPolling();
       setStep(3);
       showToast(`✅ Categoría "${catGuardada}" restaurada`);
+      // Recargar presentes desde GAS para que miembro2/miembro3 estén disponibles al guardar podio
+      try {
+        const rp = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getParticipantes' }));
+        const todos = await rp.json();
+        const lista = Array.isArray(todos) ? todos : (todos.participantes || []);
+        presentes = lista
+          .filter(p => p.categoria === catGuardada && p.aprobado === 'APROBADO')
+          .map(p => ({
+            id: p.id, robot: p.robot || p.nombre, nombre: p.nombre || '',
+            institucion: p.institucion || '', ciudad: p.ciudad || '',
+            categoria: p.categoria || '', correo: p.correo || '',
+            miembro2: p.miembro2 || '', miembro3: p.miembro3 || '',
+            ts: Date.now() + Math.random()
+          }));
+      } catch(e) { console.warn('No se pudieron recargar presentes tras F5:', e); }
     }
   }
   console.log('✅ Cronómetro listo');
