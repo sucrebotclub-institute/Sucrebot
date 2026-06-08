@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
-    /* ── igual que PANEL-CALIFICACION para evitar gap ── */
     body {
       background: #f0f4fa !important;
       font-family: 'Exo 2', sans-serif;
@@ -32,7 +31,6 @@
     .acceso-denegado { background: linear-gradient(135deg,#ff3b3b,#c41e3a); border-radius: 16px; padding: 60px 40px; text-align: center; max-width: 600px; margin: 60px auto; color: #fff; }
     .acceso-denegado h3 { font-family: 'Orbitron'; font-size: 1.8rem; margin-bottom: 12px; }
 
-    /* ── barra de fecha/stats — nombre distinto para no chocar con .top-bar del sticky ── */
     .fecha-stats-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding: 16px 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(26,92,168,0.08); gap: 16px; flex-wrap: wrap; border: 1px solid #e0e8f4; }
     .fecha-wrap { display: flex; align-items: center; gap: 10px; }
     .fecha-wrap label { font-family: 'Orbitron'; font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; text-transform: uppercase; }
@@ -64,16 +62,30 @@
     .cat-chip.todos-btn:hover { background: #057a55; }
     .cat-chip.todos-btn:disabled { opacity: .5; cursor: not-allowed; }
 
+    /* ── TABLA con filas alternadas blanco / azul institucional claro ── */
     .tabla { width: 100%; border-collapse: collapse; }
-    .tabla th { font-family: 'Orbitron'; font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #6a7a94; padding: 8px 14px; text-align: left; border-bottom: 2px solid #f0f4fa; text-transform: uppercase; }
-    .tabla td { padding: 10px 14px; font-size: 13px; color: #2a3f5f; border-bottom: 1px solid #f5f8fc; font-family: 'Exo 2'; font-weight: 600; vertical-align: middle; }
-    .tabla tbody tr:last-child td { border-bottom: none; }
-    .tabla tbody tr:hover td { background: #f8faff; }
-    .tabla tbody tr.done td { opacity: .6; }
+    .tabla th {
+      font-family: 'Orbitron'; font-size: 9px; font-weight: 700; letter-spacing: 1px;
+      color: #fff; padding: 10px 14px; text-align: left; text-transform: uppercase;
+      background: linear-gradient(135deg, #1a3a6e, #1a5ca8);
+    }
+    .tabla td {
+      padding: 11px 14px; font-size: 13px; color: #1a2a4a;
+      font-family: 'Exo 2'; font-weight: 600; vertical-align: middle;
+      border-bottom: none;
+    }
+    /* Fila impar — blanco */
+    .tabla tbody tr:nth-child(odd) td  { background: #ffffff; }
+    /* Fila par — azul institucional muy claro */
+    .tabla tbody tr:nth-child(even) td { background: #dce8f7; }
+    /* Hover */
+    .tabla tbody tr:hover td { background: #bdd4ef !important; }
+    /* Fila done (diploma ya generado) */
+    .tabla tbody tr.done td { opacity: .65; }
 
-    .badge { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; vertical-align: middle; }
+    .badge { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 3px 10px; border-radius: 10px; text-transform: uppercase; vertical-align: middle; }
     .b-1ro  { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-    .b-2do  { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+    .b-2do  { background: #e0e8f8; color: #1a3a6e; border: 1px solid #a8c0e8; }
     .b-3ro  { background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; }
     .b-part { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
 
@@ -87,7 +99,7 @@
     .btn-eye:hover { background: #5bc8f0; color: #0f3566; }
     .cert-link { display: inline-flex; align-items: center; gap: 5px; background: #dcfce7; color: #166534; text-decoration: none; padding: 5px 10px; border-radius: 8px; font-family: 'Exo 2'; font-size: 11px; font-weight: 700; border: 1px solid #86efac; }
     .cert-link:hover { background: #bbf7d0; }
-    .codigo-tag { font-family: 'DM Mono'; font-size: 10px; background: #f0f4f8; color: #1a5ca8; padding: 2px 8px; border-radius: 6px; }
+    .codigo-tag { font-family: 'DM Mono'; font-size: 10px; background: #e0eaf8; color: #1a5ca8; padding: 2px 8px; border-radius: 6px; }
 
     .vacio { text-align: center; padding: 40px; color: #94a3b8; font-family: 'DM Mono'; font-size: 12px; letter-spacing: 1px; }
 
@@ -168,18 +180,31 @@ const STAFF_EMAILS_CERT = [
 
 let estado = {};
 
-const TIPO_PODIO = new Set(['GANADOR','SUBCAMPEÓN','TERCER LUGAR','FINALISTA','TERCER_LUGAR']);
+// ── FIX: incluir variantes con/sin tilde y mayúsculas/minúsculas ──
+const TIPO_PODIO = new Set([
+  'GANADOR','SUBCAMPEÓN','SUBCAMPEON','TERCER LUGAR','TERCER_LUGAR','FINALISTA'
+]);
 const TIPO_BADGE = {
-  'GANADOR':       '<span class="badge b-1ro">🥇 1er Lugar</span>',
-  'SUBCAMPEÓN':    '<span class="badge b-2do">🥈 2do Lugar</span>',
-  'TERCER LUGAR':  '<span class="badge b-3ro">🥉 3er Lugar</span>',
-  'FINALISTA':     '<span class="badge b-2do">🥈 Finalista</span>',
-  'TERCER_LUGAR':  '<span class="badge b-3ro">🥉 3er Lugar</span>',
-  'participacion': '<span class="badge b-part">🏅 Participación</span>',
+  'GANADOR':        '<span class="badge b-1ro">🥇 1er Lugar</span>',
+  'SUBCAMPEÓN':     '<span class="badge b-2do">🥈 2do Lugar</span>',
+  'SUBCAMPEON':     '<span class="badge b-2do">🥈 2do Lugar</span>',
+  'TERCER LUGAR':   '<span class="badge b-3ro">🥉 3er Lugar</span>',
+  'TERCER_LUGAR':   '<span class="badge b-3ro">🥉 3er Lugar</span>',
+  'FINALISTA':      '<span class="badge b-2do">🥈 Finalista</span>',
+  'PARTICIPACIÓN':  '<span class="badge b-part">🏅 Participación</span>',
+  'PARTICIPACION':  '<span class="badge b-part">🏅 Participación</span>',
+  'participacion':  '<span class="badge b-part">🏅 Participación</span>',
 };
 const TIPO_INTERNO = {
-  'GANADOR': '1ro', 'SUBCAMPEÓN': '2do', 'TERCER LUGAR': '3ro',
-  'FINALISTA': '2do', 'TERCER_LUGAR': '3ro', 'participacion': 'participacion'
+  'GANADOR':       '1ro',
+  'SUBCAMPEÓN':    '2do',
+  'SUBCAMPEON':    '2do',
+  'TERCER LUGAR':  '3ro',
+  'TERCER_LUGAR':  '3ro',
+  'FINALISTA':     '2do',
+  'PARTICIPACIÓN': 'participacion',
+  'PARTICIPACION': 'participacion',
+  'participacion': 'participacion'
 };
 
 function strVal(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
@@ -279,7 +304,7 @@ function renderCat(cat) {
 }
 
 function renderFila(item, catKey, i) {
-  const tipoBadge = TIPO_BADGE[item.tipo] || `<span class="badge b-part">${item.tipo}</span>`;
+  const tipoBadge = TIPO_BADGE[item.tipo] || `<span class="badge b-part">🏅 ${item.tipo}</span>`;
   const esPodio   = item.esPodio;
 
   let estadoHTML = '';
