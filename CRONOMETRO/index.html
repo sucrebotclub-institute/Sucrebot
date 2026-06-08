@@ -804,6 +804,8 @@ function recibirParticipante(p) {
   const strip = document.getElementById('participante-strip');
   strip.className = 'participante-strip';
   strip.innerHTML = `<div><div class="p-robot">${p.robot||'—'}</div><div class="p-inst">${p.institucion||''}${p.ciudad?' · '+p.ciudad:''}</div></div><div class="p-badge">${rondaActual===0?'REVISIÓN ✓':'LISTO ✓'}</div>`;
+  // Avisar al ESP32 que hay participante listo
+  if (rondaActual > 0) enviarSerial('R');
   if (rondaActual === 0) {
     const rd = getRonda(0);
     if (rd.clasificados.some(c => c.robot === p.robot)) { showToast('⚠️ '+p.robot+' ya está en el registro'); return; }
@@ -838,7 +840,10 @@ function iniciarCrono() {
   document.getElementById('crono-status').textContent = `EN MARCHA · Intento ${intentoActual} de ${maxIntentos}`;
   document.getElementById('btn-dnf').style.display    = 'block';
   ocultarBotonesAccion();
-  enviarSerial('R');
+  // Para seguidor de línea el ESP32 ya recibió 'R' al cargar el participante
+  // Para otras categorías enviamos 'R' aquí para indicar inicio
+  const CATS_SEG = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
+  if (!CATS_SEG.includes(categoriaActual)) enviarSerial('R');
 }
 
 function detenerCrono() {
