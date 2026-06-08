@@ -985,10 +985,15 @@ function agregarAlRanking(tiempo, esDNF) {
       ant.tiempo = tiempo; ant.esDNF = false;
     }
   } else {
+    // Buscar datos completos en presentes para no perder miembro2/miembro3/correo
+    const datosFull = presentes.find(p => p.id === participanteActual.id) || {};
     rd.clasificados.push({
       id: participanteActual.id, robot: participanteActual.robot,
       nombre: participanteActual.nombre||'', institucion: participanteActual.institucion||'',
       ciudad: participanteActual.ciudad||'', categoria: participanteActual.categoria||'',
+      correo:   participanteActual.correo   || datosFull.correo   || '',
+      miembro2: participanteActual.miembro2 || datosFull.miembro2 || '',
+      miembro3: participanteActual.miembro3 || datosFull.miembro3 || '',
       tiempo, tiempos: (tiempo && tiempo !== '—' && tiempo !== '00:00:00') ? [tiempo] : [],
       esDNF, ronda: rondaActual, ts: Date.now()+rd.clasificados.length
     });
