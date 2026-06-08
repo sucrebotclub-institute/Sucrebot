@@ -1405,6 +1405,8 @@ document.addEventListener('componentsLoaded', async function() {
       actualizarBoton(document.getElementById('btn-serial'),true);
       document.getElementById('aviso-sensor').classList.remove('visible');
       showToast('🟢 Dispositivo conectado');
+      // Esperar a que el ESP32 arranque tras el reset por DTR
+      await new Promise(r => setTimeout(r, 2000));
       escuchar();
     } catch(e) { puerto=null;writer=null; if(e.name!=='NotFoundError') showToast('❌ '+e.message,true); }
   }
