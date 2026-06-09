@@ -42,7 +42,6 @@
 
     main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
 
-    /* ── STEPPER ── */
     .stepper-wrap {
       display: flex; justify-content: center; align-items: center;
       gap: 0; padding: 28px 20px 0; max-width: 600px; margin: 0 auto;
@@ -54,119 +53,74 @@
     .step-item:not(:last-child)::after {
       content:''; position:absolute; top: 18px; left: calc(50% + 20px);
       width: calc(100% - 40px); height: 2px;
-      background: #c8d4e8; transition: background .4s;
-      z-index: 0;
+      background: #c8d4e8; transition: background .4s; z-index: 0;
     }
     .step-item.done:not(:last-child)::after { background: #1a5ca8; }
     .step-dot {
       width: 36px; height: 36px; border-radius: 50%;
-      border: 2px solid #c8d4e8;
-      background: #fff;
+      border: 2px solid #c8d4e8; background: #fff;
       display: flex; align-items: center; justify-content: center;
       font-family: 'Orbitron'; font-size: .7rem; font-weight: 700;
       color: #8a9ab8; transition: all .3s; z-index: 1;
     }
-    .step-item.active .step-dot {
-      border-color: #5bc8f0; background: #1a5ca8; color: #fff;
-      box-shadow: 0 0 12px rgba(91,200,240,0.4);
-    }
-    .step-item.done .step-dot {
-      border-color: #2ecc71; background: #2ecc71; color: #fff;
-    }
-    .step-label {
-      font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1px;
-      color: #8a9ab8; margin-top: 6px; text-align: center;
-    }
+    .step-item.active .step-dot { border-color: #5bc8f0; background: #1a5ca8; color: #fff; box-shadow: 0 0 12px rgba(91,200,240,0.4); }
+    .step-item.done .step-dot { border-color: #2ecc71; background: #2ecc71; color: #fff; }
+    .step-label { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1px; color: #8a9ab8; margin-top: 6px; text-align: center; }
     .step-item.active .step-label { color: #1a5ca8; font-weight: 700; }
     .step-item.done .step-label { color: #2ecc71; }
 
-    /* ── MAIN WRAPPER ── */
-    .panel-wrap {
-      max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px;
-    }
+    .panel-wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
 
-    /* ── PANELS (steps) ── */
     .step-panel { display: none; animation: fadeUp .35s ease; }
     .step-panel.active { display: block; }
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(12px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-    /* ── PANEL CARDS ── */
     .panel-card {
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: 14px;
-      padding: 24px;
-      max-width: none !important;
-      color: var(--text-main);
+      background: var(--panel-bg); border: 1px solid var(--panel-border);
+      border-radius: 14px; padding: 24px; max-width: none !important; color: var(--text-main);
     }
     .panel-card-title {
       font-family: 'Orbitron'; font-size: .75rem; letter-spacing: 2px;
       color: var(--cyan); text-transform: uppercase; margin-bottom: 20px;
       display: flex; align-items: center; gap: 8px;
     }
-    .panel-card-title::before {
-      content:''; width: 3px; height: 16px; background: var(--cyan); border-radius: 2px;
-    }
+    .panel-card-title::before { content:''; width: 3px; height: 16px; background: var(--cyan); border-radius: 2px; }
 
-    /* ── CATEGORY CARDS (paso 1) ── */
+    /* ── CATEGORY CARDS ── */
     .cat-cards-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
       margin-bottom: 28px;
     }
-    @media(max-width:700px){ .cat-cards-grid { grid-template-columns: 1fr; } }
+    @media(max-width:900px){ .cat-cards-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width:500px){ .cat-cards-grid { grid-template-columns: 1fr; } }
 
     .cat-card {
-      background: var(--panel-bg2);
-      border: 2px solid var(--panel-border);
-      border-radius: 14px;
-      padding: 28px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .25s;
-      position: relative;
-      overflow: hidden;
+      background: var(--panel-bg2); border: 2px solid var(--panel-border);
+      border-radius: 14px; padding: 24px 16px; text-align: center;
+      cursor: pointer; transition: all .25s; position: relative; overflow: hidden;
     }
     .cat-card::before {
-      content: '';
-      position: absolute; inset: 0;
+      content: ''; position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(91,200,240,0.06), transparent);
       opacity: 0; transition: opacity .25s;
     }
     .cat-card:hover { border-color: var(--panel-border2); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
     .cat-card:hover::before { opacity: 1; }
-    .cat-card.selected {
-      border-color: var(--cyan);
-      background: rgba(26,92,168,0.25);
-      box-shadow: 0 0 20px rgba(91,200,240,0.2);
-    }
+    .cat-card.selected { border-color: var(--cyan); background: rgba(26,92,168,0.25); box-shadow: 0 0 20px rgba(91,200,240,0.2); }
     .cat-card.selected::before { opacity: 1; }
-    .cat-card.bloqueada-otro {
-      opacity: .45; cursor: not-allowed; pointer-events: none;
-    }
 
-    .cat-card-emoji { font-size: 2.4rem; margin-bottom: 14px; display: block; }
-    .cat-card-nombre {
-      font-family: 'Orbitron'; font-size: .78rem; letter-spacing: 2px;
-      color: var(--cyan); text-transform: uppercase; margin-bottom: 6px;
-    }
-    .cat-card-desc {
-      font-size: .78rem; color: var(--text-dim); margin-bottom: 14px; line-height: 1.4;
-    }
+    .cat-card-emoji { font-size: 2rem; margin-bottom: 12px; display: block; }
+    .cat-card-nombre { font-family: 'Orbitron'; font-size: .7rem; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; margin-bottom: 6px; }
+    .cat-card-desc { font-size: .73rem; color: var(--text-dim); margin-bottom: 12px; line-height: 1.4; }
     .cat-card-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1.5px;
-      padding: 4px 12px; border-radius: 20px; border: 1px solid var(--panel-border2);
+      font-family: 'Orbitron'; font-size: .52rem; letter-spacing: 1.5px;
+      padding: 3px 10px; border-radius: 20px; border: 1px solid var(--panel-border2);
       color: var(--text-dim); background: transparent;
     }
-    .cat-card.selected .cat-card-badge {
-      border-color: var(--cyan); color: var(--cyan);
-      background: rgba(91,200,240,0.1);
-    }
+    .cat-card.selected .cat-card-badge { border-color: var(--cyan); color: var(--cyan); background: rgba(91,200,240,0.1); }
 
     .cat-bloqueada-badge {
       display: none; align-items: center; gap: 8px;
@@ -175,84 +129,32 @@
       font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; color: var(--cyan);
     }
     .cat-bloqueada-badge.show { display: flex; }
-    .cat-lock-dot {
-      width: 8px; height: 8px; border-radius: 50%; background: var(--cyan);
-      animation: pulse 1.5s infinite;
-    }
+    .cat-lock-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-    /* ── STEP 1: CONFIGURAR ── */
     .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media(max-width:700px){ .config-grid { grid-template-columns: 1fr; } }
 
     .form-group { margin-bottom: 16px; }
-    .form-label {
-      display: block; font-family: 'Orbitron'; font-size: .65rem;
-      letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 8px;
-      text-transform: uppercase;
-    }
-    .form-control {
-      width: 100%; background: var(--panel-bg2); border: 1px solid var(--panel-border2);
-      border-radius: 8px; padding: 10px 14px; color: var(--text-main);
-      font-family: 'Exo 2'; font-size: .95rem; outline: none;
-      transition: border-color .2s;
-    }
+    .form-label { display: block; font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
+    .form-control { width: 100%; background: var(--panel-bg2); border: 1px solid var(--panel-border2); border-radius: 8px; padding: 10px 14px; color: var(--text-main); font-family: 'Exo 2'; font-size: .95rem; outline: none; transition: border-color .2s; }
     .form-control:focus { border-color: var(--cyan); }
 
     .criterios-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    .criterios-table th {
-      font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px;
-      color: var(--text-dim); padding: 8px 10px; text-align: left;
-      border-bottom: 1px solid var(--panel-border);
-    }
+    .criterios-table th { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; color: var(--text-dim); padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--panel-border); }
     .criterios-table td { padding: 6px 6px; vertical-align: middle; }
     .criterios-table tr:hover td { background: rgba(91,200,240,0.04); }
 
-    .crit-input {
-      background: var(--panel-bg3); border: 1px solid var(--panel-border);
-      border-radius: 6px; padding: 6px 10px; color: var(--text-main);
-      font-family: 'Exo 2'; font-size: .88rem; width: 100%; outline: none;
-    }
+    .crit-input { background: var(--panel-bg3); border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px 10px; color: var(--text-main); font-family: 'Exo 2'; font-size: .88rem; width: 100%; outline: none; }
     .crit-input:focus { border-color: var(--cyan); }
 
-    .btn-icon {
-      background: transparent;
-      border: 1.5px solid rgba(255,255,255,0.55);
-      border-radius: 5px;
-      cursor: pointer;
-      padding: 3px 7px;
-      color: #fff;
-      font-size: .85rem;
-      line-height: 1;
-      transition: all .2s;
-    }
-    .btn-icon:hover {
-      background: rgba(255,255,255,0.12);
-      border-color: #fff;
-    }
+    .btn-icon { background: transparent; border: 1.5px solid rgba(255,255,255,0.55); border-radius: 5px; cursor: pointer; padding: 3px 7px; color: #fff; font-size: .85rem; line-height: 1; transition: all .2s; }
+    .btn-icon:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
 
-    .btn-agregar {
-      background: transparent;
-      border: 1.5px solid var(--cyan);
-      color: var(--cyan);
-      font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 1.5px;
-      padding: 8px 18px; border-radius: 8px; cursor: pointer;
-      transition: all .2s; text-transform: uppercase;
-      display: inline-flex; align-items: center; gap: 6px;
-    }
-    .btn-agregar:hover {
-      background: var(--cyan);
-      color: #071e45;
-      font-weight: 700;
-      box-shadow: 0 4px 14px rgba(91,200,240,0.35);
-    }
+    .btn-agregar { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 1.5px; padding: 8px 18px; border-radius: 8px; cursor: pointer; transition: all .2s; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-agregar:hover { background: var(--cyan); color: #071e45; font-weight: 700; box-shadow: 0 4px 14px rgba(91,200,240,0.35); }
 
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-family: 'Orbitron'; font-size: .7rem; letter-spacing: 1.5px;
-      padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer;
-      transition: all .2s; text-transform: uppercase;
-    }
+    .btn { display: inline-flex; align-items: center; gap: 8px; font-family: 'Orbitron'; font-size: .7rem; letter-spacing: 1.5px; padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; transition: all .2s; text-transform: uppercase; }
     .btn-primary { background: var(--blue); color: #fff; }
     .btn-primary:hover { background: #1e6bc4; box-shadow: 0 4px 16px rgba(26,92,168,0.4); }
     .btn-primary:disabled { background: #2a2e42; color: var(--text-dim); cursor: not-allowed; }
@@ -264,167 +166,73 @@
     .btn-danger { background: var(--red); color: #fff; }
     .btn-danger:hover { background: #c0392b; }
     .btn-sm { padding: 7px 14px; font-size: .62rem; }
-
-    .btn-violet {
-      background: #7c3aed;
-      border: 2px solid #6d28d9;
-      color: #fff;
-      font-weight: 700;
-    }
-    .btn-violet:hover {
-      background: #8b5cf6;
-      border-color: #7c3aed;
-      box-shadow: 0 4px 16px rgba(124,58,237,0.45);
-      transform: translateY(-1px);
-    }
+    .btn-violet { background: #7c3aed; border: 2px solid #6d28d9; color: #fff; font-weight: 700; }
+    .btn-violet:hover { background: #8b5cf6; border-color: #7c3aed; box-shadow: 0 4px 16px rgba(124,58,237,0.45); transform: translateY(-1px); }
     .btn-violet:active { transform: translateY(0); }
-
-    .btn-ranking {
-      background: var(--gold);
-      border: 2px solid var(--gold-dark);
-      color: #1a1a1a;
-      font-weight: 700;
-    }
-    .btn-ranking:hover {
-      background: #f5b420;
-      border-color: var(--gold);
-      box-shadow: 0 4px 16px rgba(240,165,0,0.45);
-      transform: translateY(-1px);
-    }
+    .btn-ranking { background: var(--gold); border: 2px solid var(--gold-dark); color: #1a1a1a; font-weight: 700; }
+    .btn-ranking:hover { background: #f5b420; border-color: var(--gold); box-shadow: 0 4px 16px rgba(240,165,0,0.45); transform: translateY(-1px); }
     .btn-ranking:active { transform: translateY(0); }
-
     .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
 
-    /* ── STEP 2: CALIFICAR ── */
-    .calificar-split {
-      display: grid; grid-template-columns: 280px 1fr;
-      gap: 20px; align-items: start;
-    }
+    .calificar-split { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
     @media(max-width:800px) { .calificar-split { grid-template-columns: 1fr; } }
 
-    .lista-robots {
-      background: var(--panel-bg); border: 1px solid var(--panel-border);
-      border-radius: 14px; overflow: hidden; position: sticky; top: 20px;
-    }
-    .lista-header {
-      padding: 14px 16px; border-bottom: 1px solid var(--panel-border);
-      background: var(--panel-bg2);
-    }
-    .lista-header-title {
-      font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 2px;
-      color: var(--cyan); text-transform: uppercase;
-    }
+    .lista-robots { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; overflow: hidden; position: sticky; top: 20px; }
+    .lista-header { padding: 14px 16px; border-bottom: 1px solid var(--panel-border); background: var(--panel-bg2); }
+    .lista-header-title { font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; }
     .lista-progress { font-family: 'DM Mono'; font-size: .75rem; color: var(--text-dim); margin-top: 4px; }
     .lista-progress span { color: var(--cyan); font-weight: 600; }
-
     .progress-bar-wrap { height: 3px; background: var(--panel-border); margin-top: 8px; border-radius: 2px; }
     .progress-bar-fill { height: 100%; background: var(--cyan); border-radius: 2px; transition: width .4s; }
-
     .robots-list { padding: 8px; max-height: 60vh; overflow-y: auto; }
     .robots-list::-webkit-scrollbar { width: 4px; }
     .robots-list::-webkit-scrollbar-thumb { background: var(--panel-border2); border-radius: 2px; }
 
-    .robot-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: 8px; cursor: pointer;
-      transition: all .2s; border: 1px solid transparent; margin-bottom: 4px;
-    }
+    .robot-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all .2s; border: 1px solid transparent; margin-bottom: 4px; }
     .robot-item:hover { background: rgba(91,200,240,0.06); border-color: var(--panel-border); }
     .robot-item.selected { background: rgba(26,92,168,0.25); border-color: var(--blue); }
     .robot-item.calificado { opacity: .75; }
-    .robot-estado {
-      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .75rem; border: 1.5px solid var(--panel-border); background: var(--panel-bg2);
-    }
+    .robot-estado { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .75rem; border: 1.5px solid var(--panel-border); background: var(--panel-bg2); }
     .robot-item.calificado .robot-estado { background: var(--green-dim); border-color: var(--green); color: var(--green); }
     .robot-item.selected .robot-estado { background: rgba(26,92,168,0.3); border-color: var(--cyan); color: var(--cyan); }
     .robot-info { flex: 1; min-width: 0; }
-    .robot-nombre {
-      font-family: 'Exo 2'; font-weight: 600; font-size: .85rem;
-      color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .robot-nombre { font-family: 'Exo 2'; font-weight: 600; font-size: .85rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .robot-inst { font-size: .72rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .robot-score { font-family: 'DM Mono'; font-size: .8rem; color: var(--green); flex-shrink: 0; }
 
-    .form-cal {
-      background: var(--panel-bg); border: 1px solid var(--panel-border);
-      border-radius: 14px; padding: 24px; color: var(--text-main);
-    }
-    .form-cal-header {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 24px; padding-bottom: 16px;
-      border-bottom: 1px solid var(--panel-border); flex-wrap: wrap; gap: 12px;
-    }
+    .form-cal { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; padding: 24px; color: var(--text-main); }
+    .form-cal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--panel-border); flex-wrap: wrap; gap: 12px; }
     .form-cal-robot { font-family: 'Bebas Neue'; font-size: 1.8rem; letter-spacing: 2px; color: var(--cyan); line-height: 1; }
     .form-cal-inst { font-size: .85rem; color: var(--text-dim); margin-top: 4px; }
-    .form-cal-id {
-      font-family: 'DM Mono'; font-size: .7rem; color: var(--text-dim);
-      background: var(--panel-bg2); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--panel-border);
-    }
+    .form-cal-id { font-family: 'DM Mono'; font-size: .7rem; color: var(--text-dim); background: var(--panel-bg2); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--panel-border); }
 
     .criterios-cal { margin-bottom: 24px; }
-    .criterio-row {
-      display: grid; grid-template-columns: 1fr 140px;
-      align-items: center; gap: 16px; padding: 14px 0;
-      border-bottom: 1px solid var(--panel-border);
-    }
+    .criterio-row { display: grid; grid-template-columns: 1fr 140px; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--panel-border); }
     .criterio-row:last-child { border-bottom: none; }
     .criterio-nombre { font-family: 'Exo 2'; font-weight: 600; font-size: .92rem; color: var(--text-main); }
     .criterio-desc { font-size: .78rem; color: var(--text-dim); margin-top: 2px; }
     .criterio-peso-hint { font-family: 'DM Mono'; font-size: .65rem; color: var(--text-dim); margin-top: 4px; }
     .criterio-input-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-    .criterio-nota-input {
-      width: 72px; text-align: center;
-      background: var(--panel-bg2); border: 1.5px solid var(--panel-border2);
-      border-radius: 8px; padding: 8px 6px;
-      color: var(--text-main); font-family: 'Orbitron'; font-size: 1.1rem; font-weight: 700;
-      outline: none; transition: border-color .2s;
-    }
+    .criterio-nota-input { width: 72px; text-align: center; background: var(--panel-bg2); border: 1.5px solid var(--panel-border2); border-radius: 8px; padding: 8px 6px; color: var(--text-main); font-family: 'Orbitron'; font-size: 1.1rem; font-weight: 700; outline: none; transition: border-color .2s; }
     .criterio-nota-input:focus { border-color: var(--cyan); }
     .criterio-max { font-family: 'DM Mono'; font-size: .7rem; color: var(--text-dim); }
 
-    .total-box {
-      display: flex; align-items: center; justify-content: space-between;
-      background: var(--panel-bg2); border: 1px solid var(--panel-border2);
-      border-radius: 10px; padding: 14px 20px; margin-bottom: 16px;
-    }
+    .total-box { display: flex; align-items: center; justify-content: space-between; background: var(--panel-bg2); border: 1px solid var(--panel-border2); border-radius: 10px; padding: 14px 20px; margin-bottom: 16px; }
     .total-label { font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
     .total-valor { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 2px; color: var(--cyan); }
     .total-de { font-family: 'DM Mono'; font-size: .75rem; color: var(--text-dim); }
 
     textarea.form-control { resize: vertical; min-height: 60px; font-size: .88rem; }
+    .ronda-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; background: rgba(26,92,168,0.25); color: var(--cyan); border: 1px solid rgba(91,200,240,0.3); border-radius: 20px; padding: 4px 12px; }
 
-    .ronda-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px;
-      background: rgba(26,92,168,0.25); color: var(--cyan);
-      border: 1px solid rgba(91,200,240,0.3); border-radius: 20px; padding: 4px 12px;
-    }
-
-    /* ── STEP 3: RANKING ── */
-    .ranking-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
-    }
+    .ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .ranking-title { font-family: 'Bebas Neue'; font-size: 1.6rem; letter-spacing: 2px; color: var(--cyan); }
     .ranking-table { width: 100%; border-collapse: collapse; }
-    .ranking-table th {
-      font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px;
-      color: var(--text-dim); padding: 10px 12px; text-align: left;
-      border-bottom: 1px solid var(--panel-border);
-    }
-    .ranking-table td {
-      padding: 12px 12px; border-bottom: 1px solid rgba(91,200,240,0.06);
-      font-size: .9rem; color: var(--text-main);
-    }
+    .ranking-table th { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; color: var(--text-dim); padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--panel-border); }
+    .ranking-table td { padding: 12px 12px; border-bottom: 1px solid rgba(91,200,240,0.06); font-size: .9rem; color: var(--text-main); }
     .ranking-table tr:hover td { background: rgba(91,200,240,0.04); }
 
-    .pos-badge {
-      width: 32px; height: 32px; border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-family: 'Orbitron'; font-weight: 700; font-size: .75rem;
-    }
+    .pos-badge { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-weight: 700; font-size: .75rem; }
     .pos-1 { background: linear-gradient(135deg,#f9d423,#e65c00); color: #fff; }
     .pos-2 { background: linear-gradient(135deg,#bdc3c7,#2c3e50); color: #fff; }
     .pos-3 { background: linear-gradient(135deg,#cd7f32,#7b3f00); color: #fff; }
@@ -435,41 +243,17 @@
     .score-bar-fill { height: 100%; border-radius: 3px; background: var(--cyan); }
     .score-num { font-family: 'DM Mono'; font-size: .8rem; color: var(--cyan); min-width: 40px; }
 
-    .badge-pendiente {
-      display: inline-block; font-family: 'Orbitron'; font-size: .55rem;
-      letter-spacing: 1px; padding: 3px 8px; border-radius: 10px;
-      background: rgba(243,156,18,0.15); color: var(--orange); border: 1px solid rgba(243,156,18,0.3);
-    }
-    .badge-calificado {
-      display: inline-block; font-family: 'Orbitron'; font-size: .55rem;
-      letter-spacing: 1px; padding: 3px 8px; border-radius: 10px;
-      background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3);
-    }
+    .badge-pendiente { display: inline-block; font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1px; padding: 3px 8px; border-radius: 10px; background: rgba(243,156,18,0.15); color: var(--orange); border: 1px solid rgba(243,156,18,0.3); }
+    .badge-calificado { display: inline-block; font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1px; padding: 3px 8px; border-radius: 10px; background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 
-    #toast {
-      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
-      background: var(--panel-bg); border: 1px solid var(--panel-border2);
-      color: var(--text-main); padding: 12px 24px; border-radius: 10px;
-      font-family: 'Exo 2'; font-size: .9rem;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      transition: transform .3s; z-index: 9999; white-space: nowrap;
-    }
+    #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--panel-bg); border: 1px solid var(--panel-border2); color: var(--text-main); padding: 12px 24px; border-radius: 10px; font-family: 'Exo 2'; font-size: .9rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: transform .3s; z-index: 9999; white-space: nowrap; }
     #toast.show { transform: translateX(-50%) translateY(0); }
     #toast.success { border-color: rgba(46,204,113,0.5); }
     #toast.error { border-color: rgba(231,76,60,0.5); }
 
-    .loading-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(14,18,30,0.7); backdrop-filter: blur(4px);
-      align-items: center; justify-content: center;
-      z-index: 9000; flex-direction: column; gap: 16px;
-    }
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(14,18,30,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 9000; flex-direction: column; gap: 16px; }
     .loading-overlay.show { display: flex; }
-    .spinner {
-      width: 40px; height: 40px; border: 3px solid var(--panel-border);
-      border-top-color: var(--cyan); border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--panel-border); border-top-color: var(--cyan); border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-txt { font-family: 'Orbitron'; font-size: .7rem; color: var(--cyan); letter-spacing: 2px; }
 
@@ -477,16 +261,9 @@
     .empty-state-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: .5; }
     .empty-state p { font-size: .9rem; }
 
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(10,12,20,0.8); backdrop-filter: blur(6px);
-      align-items: center; justify-content: center; z-index: 9500;
-    }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,12,20,0.8); backdrop-filter: blur(6px); align-items: center; justify-content: center; z-index: 9500; }
     .modal-overlay.show { display: flex; }
-    .modal-box {
-      background: var(--panel-bg); border: 1px solid var(--panel-border2);
-      border-radius: 14px; padding: 32px; max-width: 420px; width: 90%; text-align: center;
-    }
+    .modal-box { background: var(--panel-bg); border: 1px solid var(--panel-border2); border-radius: 14px; padding: 32px; max-width: 420px; width: 90%; text-align: center; }
     .modal-icon { font-size: 2rem; margin-bottom: 12px; }
     .modal-title { font-family: 'Orbitron'; font-size: .85rem; color: var(--cyan); letter-spacing: 2px; margin-bottom: 10px; }
     .modal-msg { font-size: .9rem; color: var(--text-dim); margin-bottom: 24px; line-height: 1.6; white-space: pre-line; }
@@ -499,33 +276,30 @@
     }
 
     .pc-hero { text-align: center; padding: 48px 20px 36px; }
-    .pc-hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: #1a5ca8; color: #fff;
-      font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 3px;
-      padding: 6px 16px; border-radius: 20px; margin-bottom: 16px;
-    }
+    .pc-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 16px; }
     .pc-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); animation: pulse 1.5s infinite; }
-    .pc-hero-title {
-      display: block; font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem;
-      letter-spacing: 3px; color: #1a3a6e; position: relative; margin-bottom: 8px;
-    }
+    .pc-hero-title { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; position: relative; margin-bottom: 8px; }
     .pc-hero-title span { color: #1a5ca8; }
-    .pc-hero-title::after {
-      content: ''; position: absolute; bottom: -10px; left: 0;
-      width: 100%; height: 3px;
-      background: linear-gradient(90deg, transparent, #5bc8f0, transparent);
-    }
+    .pc-hero-title::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, #5bc8f0, transparent); }
     .pc-hero-sub { display: block; color: #5a7a9a; font-size: .95rem; margin-top: 18px; }
 
-    /* ── participantes info (paso 1 inferior) ── */
-    .participantes-info-panel {
+    .participantes-info-panel { display: none; }
+    .participantes-info-panel.show { display: block; margin-top: 20px; }
+
+    /* Nota informativa Lego Kids */
+    .lk-nota {
       display: none;
+      background: rgba(91,200,240,0.08);
+      border: 1px solid rgba(91,200,240,0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 14px;
+      font-size: .82rem;
+      color: var(--text-dim);
+      line-height: 1.6;
     }
-    .participantes-info-panel.show {
-      display: block;
-      margin-top: 20px;
-    }
+    .lk-nota.show { display: block; }
+    .lk-nota strong { color: var(--cyan); }
   </style>
 </head>
 <body>
@@ -564,7 +338,7 @@
     SUCREBOT 2026 · STAFF
   </div>
   <h2 class="pc-hero-title">PANEL DE <span>CALIFICACIÓN</span></h2>
-  <p class="pc-hero-sub">Evaluación por criterios · Bailarín · Impacto Tecnológico · Batalla</p>
+  <p class="pc-hero-sub">Evaluación por criterios · Bailarín · Impacto Tecnológico · Batalla · Lego Kids</p>
 </div>
 
 <div class="stepper-wrap">
@@ -587,7 +361,6 @@
   <!-- PASO 1 -->
   <div class="step-panel active" id="panel-1">
 
-    <!-- Tarjetas de categoría -->
     <div class="panel-card" style="margin-bottom:20px">
       <div class="panel-card-title">Seleccionar Categoría</div>
       <div class="cat-cards-grid">
@@ -613,15 +386,31 @@
           <div class="cat-card-badge">CRITERIOS</div>
         </div>
 
+        <div class="cat-card" id="card-lk" onclick="seleccionarCategoria('lk')">
+          <span class="cat-card-emoji">🧱</span>
+          <div class="cat-card-nombre">Lego Kids</div>
+          <div class="cat-card-desc">Ensamble · Funcionalidad · Tiempo de carrera</div>
+          <div class="cat-card-badge">CRITERIOS · 100 PTS</div>
+        </div>
+
       </div>
 
       <div class="cat-bloqueada-badge" id="catBloqueadaBadge">
         <div class="cat-lock-dot"></div>
         <span id="catBloqueadaTxt">CATEGORÍA BLOQUEADA EN ESTE PC</span>
       </div>
+
+      <!-- Nota especial Lego Kids -->
+      <div class="lk-nota" id="lkNota">
+        📋 <strong>Lego Kids — 2 fases:</strong>
+        Fase 1 (45 min): calificar <strong>Ensamble (50 pts)</strong> y <strong>Funcionalidad (20 pts)</strong> a todos los participantes.
+        El juez decide cuántos clasifican a Fase 2 (carrera).
+        Fase 2: usar el Cronómetro para medir tiempos y luego ingresar aquí el puntaje de <strong>Tiempo de carrera (0–30 pts)</strong> a los clasificados.
+        Puntaje final = Fase 1 + Fase 2 = <strong>100 pts</strong>.
+      </div>
     </div>
 
-    <!-- Criterios + participantes (aparece al seleccionar) -->
+    <!-- Criterios + participantes -->
     <div class="participantes-info-panel" id="configuracionPanel">
       <div class="config-grid">
 
@@ -645,20 +434,14 @@
 
         <div class="panel-card">
           <div class="panel-card-title">Criterios de Evaluación</div>
-          <div id="criteriosWrap">
-            <table class="criterios-table">
-              <thead>
-                <tr>
-                  <th>CRITERIO</th>
-                  <th>DESCRIPCIÓN</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="criteriosTbody"></tbody>
-            </table>
-            <div class="btn-row" style="margin-top:14px">
-              <button class="btn-agregar" onclick="agregarCriterio()">＋ Agregar</button>
-            </div>
+          <table class="criterios-table">
+            <thead>
+              <tr><th>CRITERIO</th><th>DESCRIPCIÓN</th><th></th></tr>
+            </thead>
+            <tbody id="criteriosTbody"></tbody>
+          </table>
+          <div class="btn-row" style="margin-top:14px">
+            <button class="btn-agregar" onclick="agregarCriterio()">＋ Agregar</button>
           </div>
         </div>
 
@@ -743,7 +526,7 @@
               <button class="btn btn-danger btn-sm" onclick="cerrarCategoria()">🔒 Cerrar Categoría</button>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-violet btn-sm" id="btnSiguiente" onclick="siguienteRobot()">→ Siguiente</button>
+              <button class="btn btn-violet btn-sm" onclick="siguienteRobot()">→ Siguiente</button>
               <button class="btn btn-green" onclick="guardarCalificacion()">💾 Guardar</button>
             </div>
           </div>
@@ -769,18 +552,10 @@
       <div style="overflow-x:auto">
         <table class="ranking-table">
           <thead>
-            <tr>
-              <th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th>
-              <th>PUNTUACIÓN</th><th>RONDAS</th><th>ESTADO</th>
-            </tr>
+            <tr><th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th><th>PUNTUACIÓN</th><th>RONDAS</th><th>ESTADO</th></tr>
           </thead>
           <tbody id="rankingTbody">
-            <tr><td colspan="6">
-              <div class="empty-state">
-                <div class="empty-state-icon">📋</div>
-                <p>Aún no hay calificaciones registradas.</p>
-              </div>
-            </td></tr>
+            <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Aún no hay calificaciones registradas.</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -799,10 +574,13 @@
 <script>
 const GAS = CONFIG.GAS_URL();
 
+const ALL_CATS = ['bai','dev','bat','lk'];
+
 const CAT_NOMBRES = {
   bai: 'Bailarín',
   dev: 'Impacto Tecnológico',
-  bat: 'Batalla'
+  bat: 'Batalla',
+  lk:  'Lego Kids'
 };
 
 const DEFAULTS_CRITERIOS = {
@@ -821,11 +599,16 @@ const DEFAULTS_CRITERIOS = {
     { nombre: 'Impacto Social',    descripcion: 'Beneficio potencial para la sociedad',      peso: 5 },
   ],
   bat: [
-    { nombre: 'Estrategia',        descripcion: 'Tácticas de combate y maniobras',           peso: 5 },
-    { nombre: 'Construcción',      descripcion: 'Solidez y calidad del hardware',            peso: 5 },
-    { nombre: 'Desempeño',         descripcion: 'Efectividad en la arena durante el combate',peso: 5 },
-    { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño del robot',         peso: 5 },
-    { nombre: 'Control',           descripcion: 'Precisión y maniobrabilidad del robot',     peso: 5 },
+    { nombre: 'Estrategia',        descripcion: 'Tácticas de combate y maniobras',            peso: 5 },
+    { nombre: 'Construcción',      descripcion: 'Solidez y calidad del hardware',             peso: 5 },
+    { nombre: 'Desempeño',         descripcion: 'Efectividad en la arena durante el combate', peso: 5 },
+    { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño del robot',          peso: 5 },
+    { nombre: 'Control',           descripcion: 'Precisión y maniobrabilidad del robot',      peso: 5 },
+  ],
+  lk: [
+    { nombre: 'Ensamble completo', descripcion: 'Cumplimiento del instructivo de ensamble (Fase 1)',           peso: 50 },
+    { nombre: 'Funcionalidad',     descripcion: 'El prototipo funciona correctamente (Fase 1)',                peso: 20 },
+    { nombre: 'Tiempo de carrera', descripcion: 'Puntaje según tiempo de recorrido — ingresar 0-30 (Fase 2)', peso: 30 },
   ]
 };
 
@@ -901,20 +684,17 @@ document.getElementById('modalConfirmBtn').onclick = () => {
   if (cb) cb();
 };
 
-// ── PASO 1 — selección por tarjeta ──
+// ── PASO 1 ──
 async function seleccionarCategoria(cat) {
   if (state.categoria && state.categoria !== cat) {
-    const catAnterior = CAT_NOMBRES[state.categoria];
-    gasPost({ action: 'desbloquearCategoria', categoria: catAnterior }).catch(() => {});
+    gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] }).catch(() => {});
     localStorage.removeItem('panel_cal_sesion');
     state.calificaciones = {};
     state.rondaActual = {};
   }
 
-  // Actualizar tarjetas
-  ['bai','dev','bat'].forEach(k => {
-    document.getElementById(`card-${k}`).classList.toggle('selected', k === cat);
-  });
+  ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
+  document.getElementById('lkNota').classList.toggle('show', cat === 'lk');
 
   state.categoria = cat;
   document.getElementById('configuracionPanel').classList.add('show');
@@ -928,11 +708,7 @@ async function seleccionarCategoria(cat) {
 
   try {
     const res = await gasGet({ action: 'getCriterios', categoria: cat });
-    if (res.ok && res.criterios?.length) {
-      renderCriteriosConfig(res.criterios);
-    } else {
-      renderCriteriosConfig(DEFAULTS_CRITERIOS[cat]);
-    }
+    renderCriteriosConfig((res.ok && res.criterios?.length) ? res.criterios : DEFAULTS_CRITERIOS[cat]);
   } catch(e) {
     renderCriteriosConfig(DEFAULTS_CRITERIOS[cat]);
   }
@@ -940,13 +716,10 @@ async function seleccionarCategoria(cat) {
   try {
     const res2 = await gasGet({ action: 'getParticipantes' });
     const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
-    const catNombre = CAT_NOMBRES[cat];
-    const filtrados = todos.filter(p => p.categoria === catNombre && p.aprobado === 'APROBADO');
+    const filtrados = todos.filter(p => p.categoria === CAT_NOMBRES[cat] && p.aprobado === 'APROBADO');
     state.participantes = filtrados;
-
     document.getElementById('countAprobados').textContent = filtrados.length;
     document.getElementById('countCalificados').textContent = 0;
-
     if (filtrados.length === 0) {
       document.getElementById('avisoSinParticipantes').style.display = 'block';
       document.getElementById('listPreview').innerHTML = '';
@@ -958,30 +731,16 @@ async function seleccionarCategoria(cat) {
       document.getElementById('listPreview').innerHTML = preview +
         (filtrados.length > 5 ? `<br><span style="color:var(--text-dim)">... y ${filtrados.length - 5} más</span>` : '');
     }
-  } catch(e) {
-    toast('Error cargando participantes', 'error');
-  }
+  } catch(e) { toast('Error cargando participantes', 'error'); }
 
   try {
-    await gasPost({
-      action: 'bloquearCategoria',
-      categoria: CAT_NOMBRES[cat],
-      usuario: 'panel-calificacion'
-    });
-  } catch(e) {
-    console.warn('bloquearCategoria falló:', e);
-  }
+    await gasPost({ action: 'bloquearCategoria', categoria: CAT_NOMBRES[cat], usuario: 'panel-calificacion' });
+  } catch(e) {}
 
-  localStorage.setItem('panel_cal_sesion', JSON.stringify({
-    categoria: cat,
-    criterios: null,
-    paso: 1
-  }));
-
+  localStorage.setItem('panel_cal_sesion', JSON.stringify({ categoria: cat, criterios: null, paso: 1 }));
   loading(false);
 
-  document.getElementById('catBloqueadaTxt').textContent =
-    `${CAT_NOMBRES[cat].toUpperCase()} — BLOQUEADA EN ESTE PC`;
+  document.getElementById('catBloqueadaTxt').textContent = `${CAT_NOMBRES[cat].toUpperCase()} — BLOQUEADA EN ESTE PC`;
   document.getElementById('catBloqueadaBadge').classList.add('show');
   document.getElementById('btnCerrarCat1').style.display = 'flex';
   document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
@@ -1018,9 +777,7 @@ function agregarCriterio() {
 
 function quitarCriterio(idx) {
   const tbody = document.getElementById('criteriosTbody');
-  tbody.querySelectorAll('tr').forEach(r => {
-    if (parseInt(r.dataset.idx) === idx) r.remove();
-  });
+  tbody.querySelectorAll('tr').forEach(r => { if (parseInt(r.dataset.idx) === idx) r.remove(); });
   tbody.querySelectorAll('tr').forEach((r, i) => {
     r.dataset.idx = i;
     r.querySelector('.btn-icon').setAttribute('onclick', `quitarCriterio(${i})`);
@@ -1028,20 +785,22 @@ function quitarCriterio(idx) {
 }
 
 function leerCriteriosConfig() {
-  const rows = document.querySelectorAll('#criteriosTbody tr');
   const criterios = [];
-  rows.forEach(r => {
+  document.querySelectorAll('#criteriosTbody tr').forEach(r => {
     const nombre      = r.querySelector('[data-field="nombre"]').value.trim();
     const descripcion = r.querySelector('[data-field="descripcion"]').value.trim();
-    if (nombre) criterios.push({ nombre, descripcion, peso: 5 });
+    // Para lk conservamos el peso original del default; para otras siempre 5
+    const esDef = DEFAULTS_CRITERIOS[state.categoria] || [];
+    const defMatch = esDef.find(d => d.nombre === nombre);
+    const peso = defMatch ? defMatch.peso : 5;
+    if (nombre) criterios.push({ nombre, descripcion, peso });
   });
   return criterios;
 }
 
 function cerrarCategoriaPaso1() {
-  const catNombre = CAT_NOMBRES[state.categoria] || 'esta categoría';
   confirmar('🔒', 'CERRAR CATEGORÍA',
-    `¿Confirmas cerrar ${catNombre}? Se liberará el bloqueo y volverás al inicio.`,
+    `¿Confirmas cerrar ${CAT_NOMBRES[state.categoria]}? Se liberará el bloqueo y volverás al inicio.`,
     'Cerrar', 'danger',
     async () => {
       loading(true, 'CERRANDO...');
@@ -1060,44 +819,27 @@ function cerrarCategoriaPaso1() {
 async function iniciarCalificacion() {
   const cat = state.categoria;
   if (!cat) { toast('Selecciona una categoría', 'error'); return; }
-
   state.criterios = leerCriteriosConfig();
   if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
+  if (!state.participantes.length) toast('⚠️ Sin participantes aprobados aún', 'info');
 
-  if (!state.participantes.length) {
-    toast('⚠️ Sin participantes aprobados aún — puedes calificar luego cuando se aprueben', 'info');
-  }
-
-  gasPost({ action: 'guardarCriterios', categoria: state.categoria, criterios: state.criterios })
-    .catch(e => console.warn('guardarCriterios background:', e));
-
-  localStorage.setItem('panel_cal_sesion', JSON.stringify({
-    categoria: cat,
-    criterios: state.criterios,
-    paso: 2
-  }));
+  gasPost({ action: 'guardarCriterios', categoria: cat, criterios: state.criterios }).catch(() => {});
+  localStorage.setItem('panel_cal_sesion', JSON.stringify({ categoria: cat, criterios: state.criterios, paso: 2 }));
 
   loading(true, 'INICIANDO CALIFICACIÓN...');
   try {
     const res = await gasGet({ action: 'getPuntuaciones', categoria: cat });
-    const puns = res.puntuaciones || [];
-    puns.forEach(p => {
+    (res.puntuaciones || []).forEach(p => {
       const ronda = parseInt(p.ronda) || 1;
-      if (!state.calificaciones[p.id_participante] ||
-          ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
+      if (!state.calificaciones[p.id_participante] || ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
         state.calificaciones[p.id_participante] = {
-          total: parseFloat(p.total) || 0,
-          ronda,
-          notas_json: p.notas_json ? JSON.stringify(p.notas_json) : '{}',
-          guardado: true
+          total: parseFloat(p.total) || 0, ronda,
+          notas_json: p.notas_json ? JSON.stringify(p.notas_json) : '{}', guardado: true
         };
         state.rondaActual[p.id_participante] = ronda + 1;
       }
     });
-  } catch(e) {
-    console.warn('getPuntuaciones falló (continuando sin historial):', e);
-  }
-
+  } catch(e) {}
   loading(false);
   buildPaso2();
   setStep(2);
@@ -1116,7 +858,6 @@ function renderListaRobots() {
   lista.innerHTML = '';
   const total = state.participantes.length;
   const calificados = Object.values(state.calificaciones).filter(c => c?.guardado).length;
-
   document.getElementById('progCal').textContent = calificados;
   document.getElementById('progTotal').textContent = total;
   document.getElementById('progBar').style.width = total ? `${(calificados/total)*100}%` : '0%';
@@ -1126,7 +867,6 @@ function renderListaRobots() {
     lista.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🤖</div><p>Sin participantes aprobados aún</p></div>';
     return;
   }
-
   state.participantes.forEach(p => {
     const cal = state.calificaciones[p.id];
     const esCal = cal?.guardado;
@@ -1150,7 +890,6 @@ function seleccionarRobot(id) {
   state.selectedId = id;
   const p = state.participantes.find(x => x.id === id);
   if (!p) return;
-
   const ronda = state.rondaActual[id] || 1;
 
   document.getElementById('emptyFormState').style.display = 'none';
@@ -1168,13 +907,10 @@ function seleccionarRobot(id) {
   const criteriosCal = document.getElementById('criteriosCal');
   criteriosCal.innerHTML = '';
   let notasGuardadas = {};
-  if (cal?.notas_json) {
-    try { notasGuardadas = JSON.parse(cal.notas_json); } catch(e){}
-  }
+  if (cal?.notas_json) { try { notasGuardadas = JSON.parse(cal.notas_json); } catch(e){} }
 
   state.criterios.forEach((c, i) => {
-    const key = `c${i}`;
-    const valGuardado = notasGuardadas[key] ?? '';
+    const valGuardado = notasGuardadas[`c${i}`] ?? '';
     const row = document.createElement('div');
     row.className = 'criterio-row';
     row.innerHTML = `
@@ -1214,19 +950,15 @@ async function guardarCalificacion() {
   const id = state.selectedId;
   if (!id) return;
   const p = state.participantes.find(x => x.id === id);
-
   const inputs = document.querySelectorAll('.criterio-nota-input');
   let suma = 0, valido = true;
   const notasJson = {}, criteriosJson = {};
 
   inputs.forEach((inp, i) => {
-    const v    = parseFloat(inp.value);
-    const peso = parseFloat(inp.dataset.peso) || 10;
-    if (isNaN(v) || v < 0 || v > peso) {
-      valido = false; inp.style.borderColor = 'var(--red)'; return;
-    }
+    const v = parseFloat(inp.value), peso = parseFloat(inp.dataset.peso) || 10;
+    if (isNaN(v) || v < 0 || v > peso) { valido = false; inp.style.borderColor = 'var(--red)'; return; }
     inp.style.borderColor = '';
-    notasJson[`c${i}`]    = v;
+    notasJson[`c${i}`] = v;
     criteriosJson[`c${i}`] = state.criterios[i]?.nombre || `C${i+1}`;
     suma += v;
   });
@@ -1239,96 +971,69 @@ async function guardarCalificacion() {
   loading(true, 'GUARDANDO...');
   try {
     const res = await gasPost({
-      action:         'guardarPuntuacion',
-      id_participante: p.id,
-      nombre:          p.nombre,
-      robot:           p.robot || p.nombre,
-      institucion:     p.institucion || '',
-      categoria:       state.categoria,
-      juez_email:      'operador@sucrebot2026',
-      juez_nombre:     'Operador',
-      criterios:       criteriosJson,
-      notas:           notasJson,
-      total:           suma,
-      timestamp:       new Date().toISOString()
+      action: 'guardarPuntuacion',
+      id_participante: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
+      institucion: p.institucion || '', categoria: state.categoria,
+      juez_email: 'operador@sucrebot2026', juez_nombre: 'Operador',
+      criterios: criteriosJson, notas: notasJson, total: suma,
+      timestamp: new Date().toISOString()
     });
-
     if (res.ok) {
-      state.calificaciones[id] = {
-        total: suma, ronda, notas_json: JSON.stringify(notasJson), guardado: true, notas
-      };
+      state.calificaciones[id] = { total: suma, ronda, notas_json: JSON.stringify(notasJson), guardado: true, notas };
       toast('✅ Calificación guardada', 'success');
       renderListaRobots();
       seleccionarRobot(id);
-    } else {
-      toast('Error: ' + (res.error || 'desconocido'), 'error');
-    }
+    } else { toast('Error: ' + (res.error || 'desconocido'), 'error'); }
   } catch(e) { toast('Error de red', 'error'); }
   loading(false);
 }
 
 function siguienteRobot() {
   const idx = state.participantes.findIndex(p => p.id === state.selectedId);
-  let siguiente = state.participantes.find((p, i) => i > idx && !state.calificaciones[p.id]?.guardado);
-  if (!siguiente) {
-    siguiente = state.participantes.find(p => !state.calificaciones[p.id]?.guardado);
-  }
-  if (siguiente) {
-    seleccionarRobot(siguiente.id);
-  } else {
-    toast('Todos los robots han sido calificados ✅', 'success');
-  }
+  let sig = state.participantes.find((p, i) => i > idx && !state.calificaciones[p.id]?.guardado);
+  if (!sig) sig = state.participantes.find(p => !state.calificaciones[p.id]?.guardado);
+  if (sig) seleccionarRobot(sig.id);
+  else toast('Todos los robots han sido calificados ✅', 'success');
 }
 
 function irARanking()  { cargarRanking(); setStep(3); }
 function irACalificar() { setStep(2); }
 
 function volverAConfigurar() {
-  confirmar('⚙️', 'VOLVER A CONFIGURAR',
-    'Volverás al paso 1. El bloqueo de categoría se mantiene activo.',
-    'Volver', 'danger',
-    () => {
-      const sesion = JSON.parse(localStorage.getItem('panel_cal_sesion') || '{}');
-      sesion.paso = 1;
-      localStorage.setItem('panel_cal_sesion', JSON.stringify(sesion));
-
-      // Restaurar tarjeta seleccionada
-      ['bai','dev','bat'].forEach(k => {
-        document.getElementById(`card-${k}`).classList.toggle('selected', k === state.categoria);
-      });
-      document.getElementById('configuracionPanel').classList.add('show');
-      document.getElementById('catBloqueadaTxt').textContent =
-        `${CAT_NOMBRES[state.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
-      document.getElementById('catBloqueadaBadge').classList.add('show');
-      document.getElementById('btnCerrarCat1').style.display = 'flex';
-      document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
-      document.getElementById('btnIniciarCal').disabled = false;
-      setStep(1);
-    }
-  );
+  confirmar('⚙️', 'VOLVER A CONFIGURAR', 'Volverás al paso 1. El bloqueo de categoría se mantiene activo.', 'Volver', 'danger', () => {
+    const sesion = JSON.parse(localStorage.getItem('panel_cal_sesion') || '{}');
+    sesion.paso = 1;
+    localStorage.setItem('panel_cal_sesion', JSON.stringify(sesion));
+    ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === state.categoria));
+    document.getElementById('lkNota').classList.toggle('show', state.categoria === 'lk');
+    document.getElementById('configuracionPanel').classList.add('show');
+    document.getElementById('catBloqueadaTxt').textContent = `${CAT_NOMBRES[state.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
+    document.getElementById('catBloqueadaBadge').classList.add('show');
+    document.getElementById('btnCerrarCat1').style.display = 'flex';
+    document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
+    document.getElementById('btnIniciarCal').disabled = false;
+    setStep(1);
+  });
 }
 
 async function cerrarCategoria() {
-  confirmar('🔒', 'CERRAR CATEGORÍA',
-    `¿Confirmas cerrar ${CAT_NOMBRES[state.categoria]}? Se liberará el bloqueo.`,
-    'Cerrar', 'danger',
-    async () => {
-      loading(true, 'CERRANDO...');
-      try {
-        await gasPost({ action: 'finalizarCategoria',   categoria: CAT_NOMBRES[state.categoria] });
-        await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
-      } catch(e) {}
-      localStorage.removeItem('panel_cal_sesion');
-      resetearUI();
-      loading(false);
-      toast('Categoría cerrada', 'success');
-    }
-  );
+  confirmar('🔒', 'CERRAR CATEGORÍA', `¿Confirmas cerrar ${CAT_NOMBRES[state.categoria]}? Se liberará el bloqueo.`, 'Cerrar', 'danger', async () => {
+    loading(true, 'CERRANDO...');
+    try {
+      await gasPost({ action: 'finalizarCategoria',   categoria: CAT_NOMBRES[state.categoria] });
+      await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
+    } catch(e) {}
+    localStorage.removeItem('panel_cal_sesion');
+    resetearUI();
+    loading(false);
+    toast('Categoría cerrada', 'success');
+  });
 }
 
 function resetearUI() {
   state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[] };
-  ['bai','dev','bat'].forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
+  ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
+  document.getElementById('lkNota').classList.remove('show');
   document.getElementById('configuracionPanel').classList.remove('show');
   document.getElementById('btnIniciarCal').disabled = true;
   document.getElementById('btnCerrarCat1').style.display = 'none';
@@ -1347,30 +1052,27 @@ async function cargarRanking() {
   } catch(e) {
     state.rankingData = state.participantes.map(p => {
       const cal = state.calificaciones[p.id];
-      return { id: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
-               institucion: p.institucion, total: cal?.total || 0, rondas: cal ? 1 : 0 };
+      return { id: p.id, nombre: p.nombre, robot: p.robot || p.nombre, institucion: p.institucion, total: cal?.total || 0, rondas: cal ? 1 : 0 };
     }).sort((a, b) => b.total - a.total);
   }
 
-  const maxScore  = state.rankingData[0]?.total || 1;
-  const catNombre = CAT_NOMBRES[state.categoria];
-  document.getElementById('rankingTitle').textContent  = `RANKING — ${catNombre}`;
-  document.getElementById('rankingStats').textContent  = `${state.rankingData.length} participantes evaluados`;
+  const maxScore = state.rankingData[0]?.total || 1;
+  document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[state.categoria]}`;
+  document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados`;
 
   const tbody = document.getElementById('rankingTbody');
   tbody.innerHTML = '';
 
   if (!state.rankingData.length) {
     tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Sin calificaciones aún.</p></div></td></tr>';
-    loading(false);
-    return;
+    loading(false); return;
   }
 
   state.rankingData.forEach((r, i) => {
-    const pos      = i + 1;
+    const pos = i + 1;
     const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
-    const pct      = maxScore > 0 ? (r.total / maxScore) * 100 : 0;
-    const tr       = document.createElement('tr');
+    const pct = maxScore > 0 ? (r.total / maxScore) * 100 : 0;
+    const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><span class="pos-badge ${posClass}">${pos}</span></td>
       <td style="font-weight:600">${r.robot || r.nombre}</td>
@@ -1391,39 +1093,28 @@ async function cargarRanking() {
 
 async function verRankingDesdePaso1() {
   if (!state.categoria) { toast('Selecciona una categoría primero', 'error'); return; }
-
   loading(true, 'CARGANDO RANKING...');
-
   if (!state.participantes.length) {
     try {
       const res2 = await gasGet({ action: 'getParticipantes' });
       const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
-      const catNombre = CAT_NOMBRES[state.categoria];
-      state.participantes = todos.filter(p => p.categoria === catNombre && p.aprobado === 'APROBADO');
+      state.participantes = todos.filter(p => p.categoria === CAT_NOMBRES[state.categoria] && p.aprobado === 'APROBADO');
     } catch(e) {}
   }
-
   if (!state.criterios.length) {
     try {
       const resCrit = await gasGet({ action: 'getCriterios', categoria: state.categoria });
-      state.criterios = (resCrit.ok && resCrit.criterios?.length)
-        ? resCrit.criterios
-        : DEFAULTS_CRITERIOS[state.categoria];
-    } catch(e) {
-      state.criterios = DEFAULTS_CRITERIOS[state.categoria];
-    }
+      state.criterios = (resCrit.ok && resCrit.criterios?.length) ? resCrit.criterios : DEFAULTS_CRITERIOS[state.categoria];
+    } catch(e) { state.criterios = DEFAULTS_CRITERIOS[state.categoria]; }
   }
-
   await cargarRanking();
   setStep(3);
 }
 
 async function guardarPodio() {
   if (!state.rankingData.length) { toast('No hay datos para guardar', 'error'); return; }
-
-  const total     = state.rankingData.length;
+  const total = state.rankingData.length;
   const catNombre = CAT_NOMBRES[state.categoria];
-
   let totalDiplomas = 0;
   state.rankingData.forEach(r => {
     const p = state.participantes.find(x => x.id === r.id) || {};
@@ -1433,47 +1124,35 @@ async function guardarPodio() {
   });
 
   confirmar('🏆', 'GUARDAR TODOS LOS COMPETIDORES',
-    `¿Guardar los ${total} equipos de ${catNombre}?\n${totalDiplomas} diplomas en total (capitán + miembros).\nTOP 3 con su posición, el resto como Participación.`,
+    `¿Guardar los ${total} equipos de ${catNombre}?\n${totalDiplomas} diplomas en total.\nTOP 3 con su posición, el resto como Participación.`,
     'Guardar todos', 'success',
     async () => {
       loading(true, 'GUARDANDO COMPETIDORES...');
       const TIPOS_PODIO = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
-
       for (let i = 0; i < state.rankingData.length; i++) {
-        const r    = state.rankingData[i];
-        const p    = state.participantes.find(x => x.id === r.id) || {};
+        const r = state.rankingData[i];
+        const p = state.participantes.find(x => x.id === r.id) || {};
         const tipo = i < 3 ? TIPOS_PODIO[i] : 'participacion';
-
         const capitan = (p.nombre || r.nombre || '').trim();
-        const m2      = (p.miembro2 || '').trim();
-        const m3      = (p.miembro3 || '').trim();
-
+        const m2 = (p.miembro2 || '').trim();
+        const m3 = (p.miembro3 || '').trim();
         const miembros = [];
         if (capitan) miembros.push({ nombre: capitan, correo: p.correo || r.correo || '' });
-        if (m2)      miembros.push({ nombre: m2, correo: '' });
-        if (m3)      miembros.push({ nombre: m3, correo: '' });
+        if (m2) miembros.push({ nombre: m2, correo: '' });
+        if (m3) miembros.push({ nombre: m3, correo: '' });
         if (!miembros.length) miembros.push({ nombre: r.nombre || '', correo: '' });
-
         for (const miembro of miembros) {
           try {
-            const res = await gasPost({
-              action:           'guardarCertificado',
-              id_participante:  r.id,
-              correo:           miembro.correo,
-              nombre:           miembro.nombre,
-              nombre_completo:  miembro.nombre,
-              categoria:        catNombre,
-              institucion:      p.institucion || r.institucion || '',
-              tipo_certificado: tipo,
-              evento:           'SucreBot 2026'
+            await gasPost({
+              action: 'guardarCertificado',
+              id_participante: r.id, correo: miembro.correo,
+              nombre: miembro.nombre, nombre_completo: miembro.nombre,
+              categoria: catNombre, institucion: p.institucion || r.institucion || '',
+              tipo_certificado: tipo, evento: 'SucreBot 2026'
             });
-            if (!res.ok) console.warn(`guardarCertificado ${miembro.nombre}:`, res.error);
-          } catch(e) {
-            console.warn('guardarCertificado error:', miembro.nombre, e);
-          }
+          } catch(e) { console.warn('guardarCertificado error:', miembro.nombre, e); }
         }
       }
-
       loading(false);
       toast(`✅ ${totalDiplomas} diplomas guardados en certificados`, 'success');
     }
@@ -1482,51 +1161,33 @@ async function guardarPodio() {
 
 async function exportarExcel() {
   if (!state.rankingData.length) { toast('No hay datos', 'error'); return; }
-
   loading(true, 'GENERANDO CSV...');
-
   let puntuaciones = [];
   try {
     const res = await gasGet({ action: 'getPuntuaciones', categoria: state.categoria });
     puntuaciones = res.puntuaciones || [];
   } catch(e) {}
-
   const mapaNotas = {};
-  puntuaciones.forEach(p => {
-    if (!mapaNotas[p.id_participante]) mapaNotas[p.id_participante] = p.notas || {};
-  });
-
-  const nomCriterios = state.criterios.map(c => c.nombre);
-  const header = ['#', 'Robot', 'Nombre', 'Institución', ...nomCriterios, 'TOTAL'];
+  puntuaciones.forEach(p => { if (!mapaNotas[p.id_participante]) mapaNotas[p.id_participante] = p.notas || {}; });
+  const header = ['#', 'Robot', 'Nombre', 'Institución', ...state.criterios.map(c => c.nombre), 'TOTAL'];
   const rows = [header];
-
   state.rankingData.forEach((r, i) => {
     const notas = mapaNotas[r.id] || {};
-    const valCriterios = state.criterios.map((_, idx) => {
-      const v = notas[`c${idx}`];
-      return v !== undefined ? v : '';
-    });
+    const valCriterios = state.criterios.map((_, idx) => { const v = notas[`c${idx}`]; return v !== undefined ? v : ''; });
     rows.push([i + 1, r.robot || r.nombre, r.nombre, r.institucion || '', ...valCriterios, r.total]);
   });
-
   const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url;
-  a.download = `ranking_${CAT_NOMBRES[state.categoria]}_${Date.now()}.csv`;
-  a.click();
+  a.href = url; a.download = `ranking_${CAT_NOMBRES[state.categoria]}_${Date.now()}.csv`; a.click();
   URL.revokeObjectURL(url);
   loading(false);
 }
 
 // ── RESTAURAR SESIÓN (F5) ──
 async function restaurarSesion() {
-  const safetyTimer = setTimeout(() => {
-    localStorage.removeItem('panel_cal_sesion');
-    loading(false);
-  }, 10000);
-
+  const safetyTimer = setTimeout(() => { localStorage.removeItem('panel_cal_sesion'); loading(false); }, 10000);
   try {
     const raw = localStorage.getItem('panel_cal_sesion');
     if (!raw) { clearTimeout(safetyTimer); loading(false); return; }
@@ -1535,30 +1196,18 @@ async function restaurarSesion() {
     if (!sesion.categoria) { clearTimeout(safetyTimer); loading(false); return; }
 
     try {
-      const res     = await gasGet({ action: 'getCategoriasActivas' });
+      const res = await gasGet({ action: 'getCategoriasActivas' });
       const activas = res.activas || res.categorias || (Array.isArray(res) ? res : []);
-      const nombre  = CAT_NOMBRES[sesion.categoria];
-      const activa  = activas.find(a => a.categoria === nombre);
-      if (!activa) {
-        localStorage.removeItem('panel_cal_sesion');
-        clearTimeout(safetyTimer);
-        loading(false);
-        return;
-      }
-    } catch(e) {
-      localStorage.removeItem('panel_cal_sesion');
-      clearTimeout(safetyTimer);
-      loading(false);
-      return;
-    }
+      const activa = activas.find(a => a.categoria === CAT_NOMBRES[sesion.categoria]);
+      if (!activa) { localStorage.removeItem('panel_cal_sesion'); clearTimeout(safetyTimer); loading(false); return; }
+    } catch(e) { localStorage.removeItem('panel_cal_sesion'); clearTimeout(safetyTimer); loading(false); return; }
 
     state.categoria = sesion.categoria;
 
     try {
       const res2 = await gasGet({ action: 'getParticipantes' });
       const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
-      const catNombre = CAT_NOMBRES[sesion.categoria];
-      state.participantes = todos.filter(p => p.categoria === catNombre && p.aprobado === 'APROBADO');
+      state.participantes = todos.filter(p => p.categoria === CAT_NOMBRES[sesion.categoria] && p.aprobado === 'APROBADO');
     } catch(e) {}
 
     if (sesion.criterios?.length) {
@@ -1566,22 +1215,15 @@ async function restaurarSesion() {
     } else {
       try {
         const resCrit = await gasGet({ action: 'getCriterios', categoria: sesion.categoria });
-        state.criterios = (resCrit.ok && resCrit.criterios?.length)
-          ? resCrit.criterios
-          : DEFAULTS_CRITERIOS[sesion.categoria];
-      } catch(e) {
-        state.criterios = DEFAULTS_CRITERIOS[sesion.categoria];
-      }
+        state.criterios = (resCrit.ok && resCrit.criterios?.length) ? resCrit.criterios : DEFAULTS_CRITERIOS[sesion.categoria];
+      } catch(e) { state.criterios = DEFAULTS_CRITERIOS[sesion.categoria]; }
     }
 
-    // Restaurar tarjeta seleccionada
-    ['bai','dev','bat'].forEach(k => {
-      document.getElementById(`card-${k}`).classList.toggle('selected', k === sesion.categoria);
-    });
+    ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === sesion.categoria));
+    document.getElementById('lkNota').classList.toggle('show', sesion.categoria === 'lk');
     document.getElementById('configuracionPanel').classList.add('show');
     document.getElementById('countAprobados').textContent = state.participantes.length;
-    document.getElementById('catBloqueadaTxt').textContent =
-      `${CAT_NOMBRES[sesion.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
+    document.getElementById('catBloqueadaTxt').textContent = `${CAT_NOMBRES[sesion.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
     document.getElementById('catBloqueadaBadge').classList.add('show');
     document.getElementById('btnCerrarCat1').style.display = 'flex';
     document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
@@ -1591,49 +1233,29 @@ async function restaurarSesion() {
     if (sesion.paso === 2 && sesion.criterios?.length) {
       try {
         const res = await gasGet({ action: 'getPuntuaciones', categoria: sesion.categoria });
-        const puns = res.puntuaciones || [];
-        puns.forEach(p => {
+        (res.puntuaciones || []).forEach(p => {
           const ronda = parseInt(p.ronda) || 1;
-          if (!state.calificaciones[p.id_participante] ||
-              ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
-            state.calificaciones[p.id_participante] = {
-              total: parseFloat(p.total) || 0, ronda,
-              notas_json: p.notas_json ? JSON.stringify(p.notas_json) : '{}', guardado: true
-            };
+          if (!state.calificaciones[p.id_participante] || ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
+            state.calificaciones[p.id_participante] = { total: parseFloat(p.total) || 0, ronda, notas_json: p.notas_json ? JSON.stringify(p.notas_json) : '{}', guardado: true };
             state.rondaActual[p.id_participante] = ronda + 1;
           }
         });
       } catch(e) {}
-
-      buildPaso2();
-      setStep(2);
-      loading(false);
+      buildPaso2(); setStep(2); loading(false);
       toast('Sesión restaurada — Calificando ' + CAT_NOMBRES[sesion.categoria] + ' ✅', 'success');
     } else {
-      setStep(1);
-      loading(false);
+      setStep(1); loading(false);
       toast('Sesión restaurada — ' + CAT_NOMBRES[sesion.categoria] + ' bloqueada ✅', 'success');
     }
-  } catch(e) {
-    localStorage.removeItem('panel_cal_sesion');
-    loading(false);
-  } finally {
-    clearTimeout(safetyTimer);
-  }
+  } catch(e) { localStorage.removeItem('panel_cal_sesion'); loading(false); }
+  finally { clearTimeout(safetyTimer); }
 }
 
 document.addEventListener('componentsLoaded', () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
-
   const raw = localStorage.getItem('panel_cal_sesion');
-  if (raw) {
-    try {
-      const s = JSON.parse(raw);
-      if (s.categoria) loading(true, 'RESTAURANDO SESIÓN...');
-    } catch(e) {}
-  }
-
+  if (raw) { try { const s = JSON.parse(raw); if (s.categoria) loading(true, 'RESTAURANDO SESIÓN...'); } catch(e) {} }
   restaurarSesion();
 });
 </script>
