@@ -773,7 +773,6 @@ function iniciarCrono() {
   document.getElementById('crono-status').textContent = `EN MARCHA · Intento ${intentoActual} de ${maxIntentos}`;
   document.getElementById('btn-dnf').style.display    = 'block';
   ocultarBotonesAccion();
-  // Para Seguidor, el ESP32 ya recibió 'R' al cargar el participante y maneja START/STOP autónomamente
   const CATS_SEG = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
   if (!CATS_SEG.includes(categoriaActual)) enviarSerial('R');
 }
@@ -849,7 +848,6 @@ function registrarIntento(tiempo) {
 function siguienteIntento() {
   intentoActual++; actualizarBadges(); reiniciarCrono(); desbloquearBtn(); ocultarBotonesAccion();
   document.getElementById('crono-status').textContent = `LISTO · Intento ${intentoActual} de ${maxIntentos}`;
-  // Re-armar sensor/pulsador para el siguiente intento del mismo robot
   enviarSerial('R');
 }
 
@@ -923,6 +921,10 @@ function agregarAlRanking(tiempo, esDNF) {
     if (!esDNF && (ant.esDNF || tiempoASegundos(tiempo) < tiempoASegundos(ant.tiempo))) {
       ant.tiempo = tiempo; ant.esDNF = false;
     }
+    // Asegurar que correo/miembro2/miembro3 se preserven desde presentes si faltan
+    if (!ant.correo   && participanteActual.correo)   ant.correo   = participanteActual.correo;
+    if (!ant.miembro2 && participanteActual.miembro2) ant.miembro2 = participanteActual.miembro2;
+    if (!ant.miembro3 && participanteActual.miembro3) ant.miembro3 = participanteActual.miembro3;
   } else {
     const datosFull = presentes.find(p => p.id === participanteActual.id) || {};
     rd.clasificados.push({
@@ -957,7 +959,8 @@ function seleccionarCompetido(ts, r) {
     if (!confirm(`Ya tienes "${participanteActual.robot}". ¿Cambiar a "${c.robot}"?`)) return;
   }
   fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'clearActivo', ruta: getRuta()||'general' }) }).catch(()=>{});
-  participanteActual = { id:c.id, robot:c.robot, nombre:c.nombre, institucion:c.institucion, ciudad:c.ciudad, categoria:c.categoria };
+  participanteActual = { id:c.id, robot:c.robot, nombre:c.nombre, institucion:c.institucion, ciudad:c.ciudad, categoria:c.categoria,
+    correo: c.correo||'', miembro2: c.miembro2||'', miembro3: c.miembro3||'' };
   fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'setActivo', ruta: getRuta()||'general', participante:{ ...participanteActual, timestamp:Date.now() } }) }).catch(()=>{});
   const tiemposYa = (c.tiempos || []).filter(t => t && t !== '—' && t !== '00:00:00');
   intentosLog = tiemposYa.map((t, i) => ({ ronda: rondaActual, intento: i+1, tiempo: t, esDNF: t==='DNF' }));
@@ -1094,6 +1097,7 @@ function cargarEstado(cat) {
     if (rondaActual>=maxRondas && getRonda(rondaActual).cerrada) {
       const btn=document.getElementById('btn-cerrar-ronda'); btn.disabled=true; btn.innerHTML='✓ Competencia finalizada'; btn.style.opacity='0.5';
       document.getElementById('btn-excel').classList.add('visible');
+      document.getElementById('btn-podio').classList.add('visible');
     }
     return true;
   } catch(e) { console.error('Error cargar estado:',e); return false; }
@@ -1153,31 +1157,69 @@ function showToast(msg, error=false) {
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
 }
 
+// ══════════════════════════════════════════════════════════════
+// guardarPodioCrono — FIX jun-9-2026
+// Recopila participantes de TODAS las rondas (no solo la última)
+// para incluir eliminados de rondas anteriores con PARTICIPACIÓN
+// ══════════════════════════════════════════════════════════════
 async function guardarPodioCrono() {
   const catNombre = categoriaActual || '';
-  const ultimaRonda = Object.keys(rondasData).map(Number)
-    .filter(r => r > 0).sort((a,b) => b-a)[0];
-  if (!ultimaRonda) { showToast('⚠️ No hay ronda finalizada', true); return; }
-  const rd = rondasData[ultimaRonda];
-  const conT = rd.clasificados.filter(c => !c.esDNF && c.tiempo !== '—')
+  if (!catNombre) { showToast('⚠️ Sin categoría activa', true); return; }
+
+  // Recopilar todos los participantes únicos de todas las rondas > 0
+  const mapaParticipantes = new Map(); // robot → datos con mejor tiempo
+
+  Object.keys(rondasData).map(Number).filter(r => r > 0).sort((a,b) => a-b).forEach(r => {
+    const rd = rondasData[r];
+    [...rd.clasificados, ...rd.eliminados].forEach(c => {
+      if (!c.robot) return;
+      const full = presentes.find(p => p.id === c.id) || {};
+      const existing = mapaParticipantes.get(c.robot);
+      if (!existing) {
+        mapaParticipantes.set(c.robot, {
+          ...c,
+          correo:   c.correo   || full.correo   || '',
+          miembro2: c.miembro2 || full.miembro2 || '',
+          miembro3: c.miembro3 || full.miembro3 || '',
+        });
+      } else {
+        // Actualizar con mejor tiempo si esta ronda tiene uno mejor
+        if (!c.esDNF && c.tiempo !== '—' && c.tiempo !== 'DNF' &&
+            tiempoASegundos(c.tiempo) < tiempoASegundos(existing.tiempo)) {
+          existing.tiempo = c.tiempo;
+          existing.esDNF  = false;
+        }
+        // Completar campos faltantes
+        if (!existing.miembro2) existing.miembro2 = c.miembro2 || full.miembro2 || '';
+        if (!existing.miembro3) existing.miembro3 = c.miembro3 || full.miembro3 || '';
+        if (!existing.correo)   existing.correo   = c.correo   || full.correo   || '';
+      }
+    });
+  });
+
+  if (mapaParticipantes.size === 0) { showToast('⚠️ No hay participantes en el ranking', true); return; }
+
+  // Ordenar: mejores tiempos primero, sin tiempo, DNF al final
+  const conT = [...mapaParticipantes.values()]
+    .filter(c => !c.esDNF && c.tiempo !== '—' && c.tiempo !== 'DNF')
     .sort((a,b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
-  const dnfs = rd.clasificados.filter(c => c.esDNF);
-  const sinT = rd.clasificados.filter(c => c.tiempo === '—');
+  const sinT = [...mapaParticipantes.values()]
+    .filter(c => !c.esDNF && (c.tiempo === '—' || !c.tiempo) && c.tiempo !== 'DNF');
+  const dnfs = [...mapaParticipantes.values()]
+    .filter(c => c.esDNF || c.tiempo === 'DNF');
   const ranking = [...conT, ...sinT, ...dnfs];
-  if (ranking.length === 0) { showToast('⚠️ No hay participantes en el ranking', true); return; }
-  if (!confirm(`¿Guardar podio de ${catNombre} en certificados?\n${ranking.length} participantes.`)) return;
+
+  const preview = ranking.map((p,i) => `${i+1}. ${p.robot} (${p.tiempo||'—'})`).join('\n');
+  if (!confirm(`¿Guardar podio de ${catNombre} en certificados?\n${ranking.length} participantes:\n${preview}`)) return;
 
   const tipos = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
 
-  function datosCompletos(id) { return presentes.find(p => p.id === id) || {}; }
-
   async function guardarCertParticipante(p, tipo) {
-    const d = datosCompletos(p.id);
-    const correo  = p.correo  || d.correo  || '';
-    const inst    = p.institucion || d.institucion || '';
-    const m2      = p.miembro2 || d.miembro2 || '';
-    const m3      = p.miembro3 || d.miembro3 || '';
-    const nombre  = p.nombre  || p.robot || '';
+    const correo = p.correo      || '';
+    const inst   = p.institucion || '';
+    const m2     = p.miembro2    || '';
+    const m3     = p.miembro3    || '';
+    const nombre = p.nombre      || p.robot || '';
     await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id,
         correo, nombre, nombre_completo: nombre,
@@ -1193,16 +1235,16 @@ async function guardarPodioCrono() {
   }
 
   showToast('Guardando podio...');
-  let guardados = 0; let errores = 0;
+  let guardados = 0, errores = 0;
   for (let i = 0; i < ranking.length; i++) {
     const tipo = tipos[i] || 'PARTICIPACIÓN';
     const p = ranking[i];
-    console.log(`[Podio] ${i+1}/${ranking.length} — ${p?.nombre||p?.robot} — tipo: ${tipo} — m2: ${p?.miembro2||'—'} — m3: ${p?.miembro3||'—'}`);
+    console.log(`[Podio] ${i+1}/${ranking.length} — ${p.robot} — tipo: ${tipo} — correo: ${p.correo||'—'} — m2: ${p.miembro2||'—'} — m3: ${p.miembro3||'—'}`);
     try { await guardarCertParticipante(p, tipo); guardados++; }
-    catch(e) { errores++; console.error(`Error guardando ${p?.nombre||p?.robot} (${tipo}):`, e); }
+    catch(e) { errores++; console.error(`Error guardando ${p.robot} (${tipo}):`, e); }
   }
-  if (errores === 0) showToast('🏆 Podio guardado en certificados');
-  else showToast(`⚠️ ${guardados} guardados, ${errores} con error — revisa consola`, true);
+  if (errores === 0) showToast(`🏆 Podio guardado — ${guardados} participantes`);
+  else showToast(`⚠️ ${guardados} guardados, ${errores} con error`, true);
 }
 
 // ── Init ──
@@ -1309,7 +1351,6 @@ document.addEventListener('componentsLoaded', async function() {
       actualizarBoton(document.getElementById('btn-serial'),true);
       document.getElementById('aviso-sensor').classList.remove('visible');
       showToast('🟢 Dispositivo conectado');
-      // Esperar a que el ESP32 arranque tras el reset por DTR
       await new Promise(r => setTimeout(r, 2000));
       escuchar();
     } catch(e) { puerto=null;writer=null; if(e.name!=='NotFoundError') showToast('❌ '+e.message,true); }
@@ -1346,21 +1387,17 @@ document.addEventListener('componentsLoaded', async function() {
     if (rondaActual===0) return;
     if (!participanteActual) return;
 
-    // Trepador: sensor detecta meta → STOP detiene el cronómetro
     if (msg==='STOP' && CATS_SENSOR.includes(categoriaActual)) {
       if (cronoInterval) { detenerCrono(); showToast('✅ Meta detectada'); }
       return;
     }
 
-    // Seguidor de línea: sensor toggle → START inicia, STOP detiene
-    // FIX: eliminado el if externo incorrecto (msg==='SENS') que bloqueaba este bloque
     if (CATS_SEGUIDOR.includes(categoriaActual)) {
       if (msg==='START' && !cronoInterval) { iniciarCrono(); showToast('▶ Sensor: inicio detectado'); return; }
       if (msg==='STOP'  &&  cronoInterval) { detenerCrono(); showToast('✅ Sensor: meta detectada'); return; }
       return;
     }
 
-    // Pulsador (Cubo Rubik / Lego Kids): BTN toggle inicia o detiene
     if (msg==='BTN' && CATS_PULSADOR.includes(categoriaActual)) {
       if (!cronoInterval) iniciarCrono(); else detenerCrono();
       return;
