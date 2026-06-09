@@ -461,7 +461,7 @@ const AVISO_SENSOR = {
   'Trepador (Pro)':                 { titulo: 'SENSOR REQUERIDO (E18-D80NK)', desc: 'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.' },
   'Seguidor de línea ST (Amateur)': { titulo: 'SENSOR REQUERIDO (TOGGLE)', desc: 'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.' },
   'Seguidor de línea ST (Pro)':     { titulo: 'SENSOR REQUERIDO (TOGGLE)', desc: 'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.' },
-  'Cubo Rubik':                     { titulo: 'PULSADOR REQUERIDO', desc: 'Conecta el ESP32. El pulsador inicia y detiene el tiempo manualmente.' }
+  'Cubo Rubik':                     { titulo: 'PULSADORES REQUERIDOS (x2)', desc: 'Conecta el Arduino. Suelta ambos pulsadores para iniciar. Presiona ambos para detener.' }
 };
 
 // ── Estado ──
@@ -1402,8 +1402,11 @@ document.addEventListener('componentsLoaded', async function() {
       return;
     }
 
-    if (msg==='BTN' && CATS_PULSADOR.includes(categoriaActual)) {
-      if (!cronoInterval) iniciarCrono(); else detenerCrono();
+    // Cubo Rubik: START/STOP por pulsadores (igual que Seguidor)
+    // START = sueltan ambos pulsadores, STOP = presionan ambos
+    if (CATS_PULSADOR.includes(categoriaActual)) {
+      if (msg==='START' && !cronoInterval) { iniciarCrono(); showToast('▶ Pulsadores: inicio'); return; }
+      if (msg==='STOP'  &&  cronoInterval) { detenerCrono(); showToast('✅ Pulsadores: tiempo detenido'); return; }
       return;
     }
   }
