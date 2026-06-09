@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />  
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SucreBot — Cronómetro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1158,9 +1158,10 @@ function showToast(msg, error=false) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// guardarPodioCrono — FIX jun-9-2026
-// Recopila participantes de TODAS las rondas (no solo la última)
-// para incluir eliminados de rondas anteriores con PARTICIPACIÓN
+// guardarPodioCrono — FIX jun-9-2026 v2
+// - Recopila participantes de TODAS las rondas
+// - Cada fetch tiene su propio try/catch para que un error de Web Serial
+//   (NetworkError: device lost) no aborte los demás participantes
 // ══════════════════════════════════════════════════════════════
 async function guardarPodioCrono() {
   const catNombre = categoriaActual || '';
@@ -1183,13 +1184,11 @@ async function guardarPodioCrono() {
           miembro3: c.miembro3 || full.miembro3 || '',
         });
       } else {
-        // Actualizar con mejor tiempo si esta ronda tiene uno mejor
         if (!c.esDNF && c.tiempo !== '—' && c.tiempo !== 'DNF' &&
             tiempoASegundos(c.tiempo) < tiempoASegundos(existing.tiempo)) {
           existing.tiempo = c.tiempo;
           existing.esDNF  = false;
         }
-        // Completar campos faltantes
         if (!existing.miembro2) existing.miembro2 = c.miembro2 || full.miembro2 || '';
         if (!existing.miembro3) existing.miembro3 = c.miembro3 || full.miembro3 || '';
         if (!existing.correo)   existing.correo   = c.correo   || full.correo   || '';
@@ -1199,7 +1198,12 @@ async function guardarPodioCrono() {
 
   if (mapaParticipantes.size === 0) { showToast('⚠️ No hay participantes en el ranking', true); return; }
 
-  // Ordenar: mejores tiempos primero, sin tiempo, DNF al final
+  // Advertir si hay pocos participantes (posible estado incompleto por F5)
+  if (mapaParticipantes.size < 2) {
+    const ok = confirm(`⚠️ Solo se detectó ${mapaParticipantes.size} participante en el ranking.\n¿El estado de la competencia está completo?\n\nSi recargaste la página (F5) durante la competencia, el ranking puede estar incompleto.\n\n¿Continuar de todas formas?`);
+    if (!ok) return;
+  }
+
   const conT = [...mapaParticipantes.values()]
     .filter(c => !c.esDNF && c.tiempo !== '—' && c.tiempo !== 'DNF')
     .sort((a,b) => tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo));
@@ -1214,24 +1218,31 @@ async function guardarPodioCrono() {
 
   const tipos = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
 
+  // Función auxiliar: un solo fetch a GAS con try/catch propio
+  async function gasCert(payload) {
+    try {
+      await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+    } catch(e) {
+      console.warn('[gasCert] fetch error (ignorado):', e.message, '— payload:', payload.nombre_completo);
+    }
+  }
+
   async function guardarCertParticipante(p, tipo) {
     const correo = p.correo      || '';
     const inst   = p.institucion || '';
     const m2     = p.miembro2    || '';
     const m3     = p.miembro3    || '';
     const nombre = p.nombre      || p.robot || '';
-    await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id,
-        correo, nombre, nombre_completo: nombre,
-        categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' }) });
-    if (m2) await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id+'-m2',
-        correo, nombre: m2, nombre_completo: m2,
-        categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' }) });
-    if (m3) await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({ action:'guardarCertificado', id_participante: p.id+'-m3',
-        correo, nombre: m3, nombre_completo: m3,
-        categoria: catNombre, institucion: inst, tipo_certificado: tipo, evento: 'SucreBot 2026' }) });
+    const base = { action:'guardarCertificado', id_participante: p.id,
+      correo, categoria: catNombre, institucion: inst,
+      tipo_certificado: tipo, evento: 'SucreBot 2026' };
+    await gasCert({ ...base, nombre, nombre_completo: nombre });
+    if (m2) await gasCert({ ...base, id_participante: p.id+'-m2', nombre: m2, nombre_completo: m2 });
+    if (m3) await gasCert({ ...base, id_participante: p.id+'-m3', nombre: m3, nombre_completo: m3 });
   }
 
   showToast('Guardando podio...');
