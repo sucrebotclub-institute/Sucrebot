@@ -94,7 +94,7 @@
     .score-num { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; min-width: 60px; text-align: right; }
     tr.pos-1 .score-num { font-size: 2.2rem; color: #2474cc; }
 
-    /* BRACKET GENERAL (ms_a, ms_rc, soc) */
+    /* BRACKET GENERAL */
     .bracket-wrap { flex: 1; overflow-x: auto; }
     .bracket-title { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
     .bracket-sin-datos { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; gap: 12px; }
@@ -123,7 +123,6 @@
     .bye-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: #1a3a6e; }
     .bye-badge { display: inline-block; background: #fbbf24; color: #78350f; font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; font-weight: 700; margin-top: 4px; }
 
-    /* Podio inline en resultados */
     .podio-inline { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px; padding: 20px; background: linear-gradient(135deg, #0e2a5a, #1a3a6e); border-radius: 12px; }
     .podio-inline-title { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 2px; color: #5bc8f0; width: 100%; margin-bottom: 4px; }
     .podio-card { flex: 1; min-width: 140px; background: rgba(255,255,255,0.07); border-radius: 10px; padding: 14px; text-align: center; }
@@ -148,6 +147,12 @@
     .cat-select-mobile { display: none; width: 100%; margin-bottom: 20px; background: #2d3748; border: 2px solid #1a5ca8; color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 1rem; font-weight: 700; padding: 14px 16px; border-radius: 10px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235bc8f0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 44px; }
     .cat-select-mobile option { background: #1a3a6b; color: #ffffff; }
     .cat-select-mobile optgroup { background: #0e2a5a; color: #5bc8f0; font-weight: 700; }
+
+    /* Fases Lego Kids */
+    .lk-fases-wrap { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .lk-fase-badge { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 20px; font-weight: 700; }
+    .lk-fase-badge.f1 { background: rgba(240,165,0,0.15); color: #f0a500; border: 1px solid rgba(240,165,0,0.35); }
+    .lk-fase-badge.f2 { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.35); }
 
     @media (max-width: 768px) {
       .screen { padding: 12px 16px 32px; }
@@ -229,14 +234,18 @@
     const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
     const GAS_URL  = CONFIG.GAS_URL();
 
-    // Categorías que usan puntuación por jueces
-    const CATS_CALIFICACION = new Set(['bai', 'bat', 'dev']);
-    // Categorías que usan bracket general (no tabla de tiempos)
-    const CATS_BRACKET = new Set(['ms_a', 'ms_rc', 'soc']);
+    // ── CAMBIO 1: lk agregado a CATS_CALIFICACION ──
+    const CATS_CALIFICACION = new Set(['bai', 'bat', 'dev', 'lk']);
+    const CATS_BRACKET      = new Set(['ms_a', 'ms_rc', 'soc']);
 
-    // Mapeo ruta → clave GAS para getBracketGeneral
     const RUTA_CAT_GAS = { ms_a: 'ms_a', ms_rc: 'ms_rc', soc: 'soc' };
     const CAT_ICONO    = { ms_a: '🤖', ms_rc: '🕹️', soc: '⚽' };
+
+    // ── CAMBIO 2: lk agregado a CAT_ICON ──
+    const CAT_ICON = { bai: '🕺', bat: '⚔️', dev: '💡', lk: '🧱' };
+
+    // Máximo de puntaje por categoría de calificación
+    const CAT_MAX_SCORE = { bai: 25, bat: 25, dev: 25, lk: 100 };
 
     const GRUPOS = [
       {
@@ -272,8 +281,6 @@
     const RUTAS_NOMBRE = {};
     GRUPOS.forEach(g => g.rutas.forEach(r => { RUTAS_NOMBRE[r.ruta] = r.nombre; }));
 
-    const CAT_ICON = { bai: '🕺', bat: '⚔️', dev: '💡' };
-
     function tiempoASegundos(t) {
       if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
       const p = t.split(':').map(Number);
@@ -293,11 +300,8 @@
     let rutasConDatos   = [];
     let ultimoTs        = 0;
     const CACHE_KEY     = 'sucrebot_res_cache';
-
-    // Cache de brackets generales: { ms_a: bracket|null, ms_rc: bracket|null, soc: bracket|null }
     const bracketCache  = { ms_a: null, ms_rc: null, soc: null };
 
-    // Carga instantánea desde localStorage
     try {
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
@@ -311,8 +315,6 @@
       }
     } catch(e) {}
 
-    // ── DETECCIÓN DE DATOS ───────────────────────────────────────
-
     function categoriaTieneDatos(ruta) {
       if (CATS_BRACKET.has(ruta)) {
         const b = bracketCache[ruta];
@@ -323,8 +325,6 @@
       if (CATS_CALIFICACION.has(ruta)) return datos.some(d => (parseFloat(d.total) || 0) > 0);
       return datos.some(d => tiempoValido(d.tiempo) || d.tiempo === 'DNF');
     }
-
-    // ── TABS ─────────────────────────────────────────────────────
 
     function renderTabs() {
       const container = document.getElementById('cat-tabs');
@@ -365,7 +365,7 @@
         </div>`;
     }
 
-    // ── BRACKET GENERAL (ms_a, ms_rc, soc) ──────────────────────
+    // ── BRACKET GENERAL ──────────────────────────────────────────
 
     function renderizarBracketGeneral(ruta) {
       const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
@@ -388,13 +388,11 @@
         return;
       }
 
-      // Detectar si hay ganador final para mostrar podio
-      const faseFinal   = bracket.fases.find(f => f.nombre === 'FINAL');
-      const partidoFin  = faseFinal?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
-      const fase3er     = bracket.fases.find(f => f.nombre === '3ER LUGAR');
-      const partido3er  = fase3er?.partidos?.[0];
+      const faseFinal  = bracket.fases.find(f => f.nombre === 'FINAL');
+      const partidoFin = faseFinal?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
+      const fase3er    = bracket.fases.find(f => f.nombre === '3ER LUGAR');
+      const partido3er = fase3er?.partidos?.[0];
 
-      // Render fases del bracket
       const fasesHTML = bracket.fases.map(fase => {
         const es3er = fase.nombre === '3ER LUGAR';
         const partidosHTML = fase.partidos.map(p => {
@@ -404,10 +402,8 @@
               <div class="bye-badge">BYE — Pasa directo</div>
             </div>`;
           }
-
-          const finalizado  = p.estado === 'FINALIZADO';
-          const sinEquipos  = !p.equipo_a_id && !p.equipo_b_id;
-
+          const finalizado = p.estado === 'FINALIZADO';
+          const sinEquipos = !p.equipo_a_id && !p.equipo_b_id;
           if (sinEquipos) {
             return `<div class="partido-card pendiente">
               <div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div>
@@ -415,37 +411,28 @@
               <div class="partido-estado espera">Esperando ganadores</div>
             </div>`;
           }
-
-          // Parsear marcador para soccer (goles)
           let scoreA = '', scoreB = '';
           if (finalizado && p.marcador && p.marcador !== '—') {
             const m = String(p.marcador).match(/^(\d+)-(\d+)/);
             if (m) { scoreA = m[1]; scoreB = m[2]; }
           }
-
           const claseA = finalizado ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
           const claseB = finalizado ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
-
           const scoreHTMLA = scoreA ? `<span class="partido-equipo-score">${scoreA}</span>` : '';
           const scoreHTMLB = scoreB ? `<span class="partido-equipo-score">${scoreB}</span>` : '';
-
           const estadoHTML = finalizado
             ? `<div class="partido-estado fin">✓ ${p.marcador || 'FINALIZADO'}</div>`
             : `<div class="partido-estado pend">Pendiente</div>`;
-
           return `<div class="partido-card ${finalizado ? 'finalizado' : 'pendiente'}">
             <div class="partido-equipo-row ${claseA}">
-              <span class="partido-equipo-nombre">${p.equipo_a_nombre || '—'}</span>
-              ${scoreHTMLA}
+              <span class="partido-equipo-nombre">${p.equipo_a_nombre || '—'}</span>${scoreHTMLA}
             </div>
             <div class="partido-equipo-row ${claseB}">
-              <span class="partido-equipo-nombre">${p.equipo_b_nombre || '—'}</span>
-              ${scoreHTMLB}
+              <span class="partido-equipo-nombre">${p.equipo_b_nombre || '—'}</span>${scoreHTMLB}
             </div>
             ${estadoHTML}
           </div>`;
         }).join('');
-
         const claseNombre = es3er ? 'fase-nombre fase-3er' : 'fase-nombre';
         return `<div class="bracket-fase">
           <div class="${claseNombre}">${fase.nombre}</div>
@@ -453,43 +440,23 @@
         </div>`;
       }).join('');
 
-      // Podio inline si hay ganador final
       let podioHTML = '';
       if (partidoFin) {
-        const ganId  = partidoFin.ganador_id;
-        const perID  = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_b_id : partidoFin.equipo_a_id;
-        const ganN   = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_a_nombre : partidoFin.equipo_b_nombre;
-        const perN   = perID === partidoFin.equipo_a_id ? partidoFin.equipo_a_nombre : partidoFin.equipo_b_nombre;
-
-        let bronce = '';
+        const ganId = partidoFin.ganador_id;
+        const ganN  = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_a_nombre : partidoFin.equipo_b_nombre;
+        const perN  = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_b_nombre : partidoFin.equipo_a_nombre;
+        let bronce  = '';
         if (partido3er && partido3er.estado === 'FINALIZADO' && partido3er.ganador_id) {
           const bId = partido3er.ganador_id;
           const bN  = bId === partido3er.equipo_a_id ? partido3er.equipo_a_nombre : partido3er.equipo_b_nombre;
-          bronce = `<div class="podio-card bronce">
-            <div class="podio-card-icon">🥉</div>
-            <div class="podio-card-nombre">${bN}</div>
-            <div class="podio-card-label">TERCER LUGAR</div>
-          </div>`;
+          bronce = `<div class="podio-card bronce"><div class="podio-card-icon">🥉</div><div class="podio-card-nombre">${bN}</div><div class="podio-card-label">TERCER LUGAR</div></div>`;
         } else if (partido3er && partido3er.estado === 'PENDIENTE') {
-          bronce = `<div class="podio-card bronce" style="opacity:.5;">
-            <div class="podio-card-icon">🥉</div>
-            <div class="podio-card-nombre" style="font-size:.85rem;">${partido3er.equipo_a_nombre} vs ${partido3er.equipo_b_nombre}</div>
-            <div class="podio-card-label">3ER LUGAR — POR JUGAR</div>
-          </div>`;
+          bronce = `<div class="podio-card bronce" style="opacity:.5;"><div class="podio-card-icon">🥉</div><div class="podio-card-nombre" style="font-size:.85rem;">${partido3er.equipo_a_nombre} vs ${partido3er.equipo_b_nombre}</div><div class="podio-card-label">3ER LUGAR — POR JUGAR</div></div>`;
         }
-
         podioHTML = `<div class="podio-inline">
           <div class="podio-inline-title">🏆 PODIO — ${nombreCat.toUpperCase()}</div>
-          <div class="podio-card oro">
-            <div class="podio-card-icon">🥇</div>
-            <div class="podio-card-nombre">${ganN}</div>
-            <div class="podio-card-label">GANADOR</div>
-          </div>
-          <div class="podio-card plata">
-            <div class="podio-card-icon">🥈</div>
-            <div class="podio-card-nombre">${perN}</div>
-            <div class="podio-card-label">SUBCAMPEÓN</div>
-          </div>
+          <div class="podio-card oro"><div class="podio-card-icon">🥇</div><div class="podio-card-nombre">${ganN}</div><div class="podio-card-label">GANADOR</div></div>
+          <div class="podio-card plata"><div class="podio-card-icon">🥈</div><div class="podio-card-nombre">${perN}</div><div class="podio-card-label">SUBCAMPEÓN</div></div>
           ${bronce}
         </div>`;
       }
@@ -502,12 +469,17 @@
         </div>`;
     }
 
-    // ── RANKING CALIFICACIÓN ─────────────────────────────────────
+    // ── RANKING CALIFICACIÓN (bai, bat, dev, lk) ─────────────────
 
     function renderizarCalificacion(ruta) {
       const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
       const icon      = CAT_ICON[ruta] || '🏆';
-      document.getElementById('tv-ronda').textContent = 'CALIFICACIÓN';
+      const esLk      = ruta === 'lk';
+
+      // ── CAMBIO 3: MAX_TOTAL dinámico ──
+      const MAX_TOTAL = CAT_MAX_SCORE[ruta] || 25;
+
+      document.getElementById('tv-ronda').textContent = esLk ? 'LEGO KIDS' : 'CALIFICACIÓN';
       document.getElementById('tv-cat').textContent   = nombreCat;
 
       const ranking = (datosJSON && datosJSON.resultados && datosJSON.resultados[ruta]) || [];
@@ -520,7 +492,7 @@
               <span class="calificacion-header-icon">${icon}</span>
               <div>
                 <div class="calificacion-header-title">${nombreCat.toUpperCase()}</div>
-                <div class="calificacion-header-sub">EVALUACIÓN POR JUECES · PUNTAJE SOBRE 25</div>
+                <div class="calificacion-header-sub">EVALUACIÓN POR JUECES · PUNTAJE SOBRE ${MAX_TOTAL}</div>
               </div>
             </div>
             <div class="empty-state">
@@ -531,14 +503,31 @@
         return;
       }
 
-      const MAX_TOTAL = 25;
+      // Para lk: indicador de fases si hay datos
+      const hayFase2 = esLk && ranking.some(p => (parseFloat(p.total) || 0) > 70);
+      const fasesInfo = esLk ? `
+        <div class="lk-fases-wrap">
+          <span class="lk-fase-badge f1">Fase 1: Ensamble + Funcionalidad (70 pts)</span>
+          ${hayFase2 ? '<span class="lk-fase-badge f2">Fase 2: Tiempo de carrera (30 pts)</span>' : ''}
+        </div>` : '';
+
       const filas = ranking.map((p, i) => {
         const pos       = i + 1;
         const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
         const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
         const emoji     = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
         const total     = parseFloat(p.total) || 0;
-        const pct       = (total / MAX_TOTAL) * 100;
+        const pct       = Math.min((total / MAX_TOTAL) * 100, 100);
+
+        // Para lk: mostrar desglose F1/F2 si aplica
+        let desglose = '';
+        if (esLk && p.fase1Total !== undefined) {
+          desglose = `<div style="font-family:var(--font-mono);font-size:0.6rem;color:#94a3b8;margin-top:4px;">
+            F1: ${parseFloat(p.fase1Total||0).toFixed(1)}
+            ${p.fase2Total ? '· F2: ' + parseFloat(p.fase2Total).toFixed(1) : ''}
+          </div>`;
+        }
+
         return `
           <tr class="row-altura ${claseRow}">
             <td class="td-pos"><span class="pos-circle ${claseCirc}">${emoji}</span></td>
@@ -553,6 +542,7 @@
                   <div class="score-bar-bg"><div class="score-bar-fill" style="width:${pct}%"></div></div>
                 </div>
                 <span style="font-family:var(--font-mono);font-size:0.6rem;color:#94a3b8;">/ ${MAX_TOTAL}</span>
+                ${desglose}
               </div>
             </td>
             <td class="td-ronda">
@@ -569,10 +559,11 @@
             <span class="calificacion-header-icon">${icon}</span>
             <div>
               <div class="calificacion-header-title">${nombreCat.toUpperCase()}</div>
-              <div class="calificacion-header-sub">EVALUACIÓN POR JUECES · PUNTAJE SOBRE 25</div>
+              <div class="calificacion-header-sub">EVALUACIÓN POR JUECES · PUNTAJE SOBRE ${MAX_TOTAL}</div>
             </div>
             <div class="calificacion-badge">⭐ ${ranking.length} PARTICIPANTE${ranking.length > 1 ? 'S' : ''}</div>
           </div>
+          ${fasesInfo}
           <table>
             <thead><tr>
               <th class="c">#</th><th>Robot / Participante</th>
@@ -661,14 +652,12 @@
       } catch(e) { console.error('Error al cargar JSON:', e); }
     }
 
-    // Polling del bracket general para ms_a, ms_rc, soc
     async function pollBracketGeneral(ruta) {
       try {
         const r    = await fetch(GAS_URL + '?action=getBracketGeneral&categoria=' + ruta);
         const data = await r.json();
         if (data.ok) {
           const nuevo = data.bracket || null;
-          // Comparar por stringify para detectar cambios reales
           if (JSON.stringify(nuevo) !== JSON.stringify(bracketCache[ruta])) {
             bracketCache[ruta] = nuevo;
             renderTabs();
@@ -689,17 +678,13 @@
       }
     }
 
-    // JSON cada 5s (bai/bat/dev + tiempos)
     setInterval(pollJSON, 5000);
-
-    // Brackets cada 8s — ms_a, ms_rc, soc en paralelo
     setInterval(() => {
       pollBracketGeneral('ms_a');
       pollBracketGeneral('ms_rc');
       pollBracketGeneral('soc');
     }, 8000);
 
-    // Carga inicial
     pollJSON();
     pollBracketGeneral('ms_a');
     pollBracketGeneral('ms_rc');
