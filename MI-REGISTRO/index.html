@@ -6,112 +6,73 @@
   <title>SucreBot — Mi Registro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- CSS compartido -->
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <script src="../shared/js/config.js"></script>
-  
-  <!-- CSS específico de MI-REGISTRO -->
   <style>
-    :root {
-      --cyan: #5bc8f0; --sucre-blue: #1a5ca8; --sucre-dark: #1a3a6e;
-      --green: #00ff88; --red: #ff3b3b; --yellow: #ffd966;
-      --font-mono: 'DM Mono', monospace; --font-body: 'Exo 2', sans-serif;
-      --surface2: #1a1a26;
-    }
-
-    body { background: #ffffff !important; color: #1a1a2e !important; }
-    main { min-height: calc(100vh - 174px); background: #f4f7fb; }
-
-    /* ── CONTENIDO ── */
-    .wrapper { max-width: 680px; margin: 0 auto; padding: 40px 20px 60px; }
-
-    /* Pantalla login */
-    .login-screen { text-align: center; padding: 60px 20px; }
-    .login-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 3px; color: var(--sucre-dark); margin-bottom: 12px; }
-    .login-screen p { font-size: 14px; color: #7a7a8c; margin-bottom: 32px; }
-    .btn-google { display: inline-flex; align-items: center; gap: 10px; background: var(--sucre-blue); color: #ffffff; border: none; padding: 14px 28px; border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-    .btn-google:hover { background: var(--sucre-dark); }
-
-    /* Pantalla no encontrado */
-    .not-found { text-align: center; padding: 60px 20px; }
-    .not-found h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: var(--sucre-dark); margin-bottom: 12px; }
-    .not-found p { font-size: 14px; color: #7a7a8c; margin-bottom: 24px; }
-    .not-found a { color: var(--sucre-blue); font-weight: 600; text-decoration: none; }
-    .not-found a:hover { text-decoration: underline; }
-
-    /* Ficha */
-    .ficha { background: var(--sucre-blue); border-radius: 20px; box-shadow: 0 4px 24px rgba(26,92,168,0.30); overflow: hidden; }
-    .ficha-header { background: var(--sucre-dark); padding: 28px 32px; }
-    .ficha-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; }
-    .ficha-robot { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 2px; color: #ffffff; line-height: 1; margin-bottom: 10px; }
-    .ficha-estado { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; padding: 5px 14px; border-radius: 20px; }
-    .estado-aprobado { background: #00ff88; color: #ffffff; }
-    .estado-pendiente { background: rgba(255,235,59,0.25); color: #ffeb3b; border: 1px solid rgba(255,235,59,0.5); }
-    .estado-nocumple { background: rgba(220,50,50,0.2); color: #ff6b6b; border: 1px solid rgba(220,50,50,0.5); }
-
-    .ficha-body { padding: 28px 32px; background: var(--sucre-blue); }
-    .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
-    .ficha-campo { display: flex; flex-direction: column; gap: 4px; }
-    .ficha-campo span { font-size: 0.65rem; color: rgba(255,255,255,0.7); font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
-    .ficha-campo strong { font-size: 0.92rem; color: #ffffff; font-weight: 700; }
-
-    /* QR */
-    .ficha-qr { text-align: center; padding: 24px; background: rgba(0,0,0,0.15); border-radius: 14px; margin-bottom: 24px; }
-    .ficha-qr-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.8); text-transform: uppercase; margin-bottom: 16px; }
-    .ficha-qr img { width: 200px; height: 200px; border-radius: 10px; border: 3px solid rgba(255,255,255,0.3); background: #ffffff; padding: 6px; }
-    .ficha-qr-id { font-family: var(--font-mono); font-size: 0.78rem; color: rgba(255,255,255,0.9); margin-top: 12px; letter-spacing: 0.08em; background: rgba(0,0,0,0.2); padding: 6px 12px; border-radius: 6px; display: inline-block; }
-    .ficha-qr-nota { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 10px; font-family: var(--font-mono); }
-
-    /* Aviso pendiente */
-    .ficha-pendiente-aviso { background: rgba(255,200,0,0.15); border: 1px solid rgba(255,200,0,0.4); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
-    .ficha-pendiente-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
-    .ficha-pendiente-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
-    .ficha-pendiente-aviso strong { font-weight: 700; color: #ffeb3b; }
-
-    /* Aviso no cumple */
-    .ficha-nocumple-aviso { background: rgba(220,50,50,0.15); border: 1px solid rgba(220,50,50,0.4); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
-    .ficha-nocumple-aviso .aviso-icon { font-size: 1.2rem; flex-shrink: 0; }
-    .ficha-nocumple-aviso p { font-size: 0.82rem; color: #ffffff; line-height: 1.5; }
-    .ficha-nocumple-aviso strong { font-weight: 700; color: #ff6b6b; }
-    .ficha-nocumple-aviso .razon-texto { display: block; margin: 8px 0; padding: 8px 12px; background: rgba(0,0,0,0.2); border-left: 3px solid #ff6b6b; border-radius: 4px; font-style: italic; }
-
-    /* Formulario edición */
-    .ficha-form { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 24px; }
-    .ficha-form-title { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.9); text-transform: uppercase; margin-bottom: 18px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-    .form-field { display: flex; flex-direction: column; gap: 6px; }
-    .form-field label { font-size: 0.68rem; color: rgba(255,255,255,0.7); font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
-    .form-field input, .form-field select { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.88rem; padding: 10px 14px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.2s; }
-    .form-field input::placeholder { color: rgba(255,255,255,0.4); }
-    .form-field input:focus, .form-field select:focus { border-color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.3); }
-    .form-field select optgroup { background: #0d2847; color: #5bc8f0; font-family: 'DM Mono', monospace; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; padding: 6px 0; }
-    .form-field select option { background: #0f2044; color: #ffffff; padding: 6px; }
-    .form-field-full { grid-column: 1 / -1; }
-
-    /* Aviso comprobante */
-    .comprobante-aviso { background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
-    .comprobante-aviso svg { width: 16px; height: 16px; flex-shrink: 0; color: rgba(255,255,255,0.6); }
-    .comprobante-aviso span { font-size: 0.8rem; color: rgba(255,255,255,0.8); font-family: var(--font-mono); line-height: 1.4; }
-    .comprobante-aviso a { color: #ffeb3b; font-weight: 600; text-decoration: none; }
-    .comprobante-aviso a:hover { text-decoration: underline; }
-
-    .btn-guardar { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 14px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; margin-top: 8px; }
-    .btn-guardar:hover { background: var(--sucre-dark); border-color: rgba(255,255,255,0.5); }
-    .btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid rgba(0,255,136,0.4); color: var(--green); font-family: var(--font-mono); font-size: 0.8rem; padding: 12px 24px; border-radius: 30px; transition: transform 0.3s ease; z-index: 9999; white-space: nowrap; }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    @media (max-width: 600px) {
-      .wrapper { padding: 24px 12px 40px; }
-      .ficha-header { padding: 20px; }
-      .ficha-body { padding: 20px; }
-      .ficha-grid { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      .ficha-robot { font-size: 1.6rem; }
-    }
+    :root { --cyan:#5bc8f0; --sucre-blue:#1a5ca8; --sucre-dark:#1a3a6e; --green:#00ff88; --red:#ff3b3b; --yellow:#ffd966; --font-mono:'DM Mono',monospace; --font-body:'Exo 2',sans-serif; --surface2:#1a1a26; }
+    body{background:#ffffff !important;color:#1a1a2e !important}
+    main{min-height:calc(100vh - 174px);background:#f4f7fb}
+    .wrapper{max-width:680px;margin:0 auto;padding:40px 20px 60px}
+    .login-screen{text-align:center;padding:60px 20px}
+    .login-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;color:var(--sucre-dark);margin-bottom:12px}
+    .login-screen p{font-size:14px;color:#7a7a8c;margin-bottom:32px}
+    .btn-google{display:inline-flex;align-items:center;gap:10px;background:var(--sucre-blue);color:#ffffff;border:none;padding:14px 28px;border-radius:10px;font-family:'Exo 2',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s}
+    .btn-google:hover{background:var(--sucre-dark)}
+    .not-found{text-align:center;padding:60px 20px}
+    .not-found h2{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--sucre-dark);margin-bottom:12px}
+    .not-found p{font-size:14px;color:#7a7a8c;margin-bottom:24px}
+    .not-found a{color:var(--sucre-blue);font-weight:600;text-decoration:none}
+    .not-found a:hover{text-decoration:underline}
+    .ficha{background:var(--sucre-blue);border-radius:20px;box-shadow:0 4px 24px rgba(26,92,168,0.30);overflow:hidden}
+    .ficha-header{background:var(--sucre-dark);padding:28px 32px}
+    .ficha-label{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.14em;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:6px}
+    .ficha-robot{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:2px;color:#ffffff;line-height:1;margin-bottom:10px}
+    .ficha-estado{display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:700;padding:5px 14px;border-radius:20px}
+    .estado-aprobado{background:#00ff88;color:#ffffff}
+    .estado-pendiente{background:rgba(255,235,59,0.25);color:#ffeb3b;border:1px solid rgba(255,235,59,0.5)}
+    .estado-nocumple{background:rgba(220,50,50,0.2);color:#ff6b6b;border:1px solid rgba(220,50,50,0.5)}
+    .ficha-body{padding:28px 32px;background:var(--sucre-blue)}
+    .ficha-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px}
+    .ficha-campo{display:flex;flex-direction:column;gap:4px}
+    .ficha-campo span{font-size:0.65rem;color:rgba(255,255,255,0.7);font-family:var(--font-mono);letter-spacing:0.08em;text-transform:uppercase}
+    .ficha-campo strong{font-size:0.92rem;color:#ffffff;font-weight:700}
+    .ficha-qr{text-align:center;padding:24px;background:rgba(0,0,0,0.15);border-radius:14px;margin-bottom:24px}
+    .ficha-qr-label{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.12em;color:rgba(255,255,255,0.8);text-transform:uppercase;margin-bottom:16px}
+    .ficha-qr img{width:200px;height:200px;border-radius:10px;border:3px solid rgba(255,255,255,0.3);background:#ffffff;padding:6px}
+    .ficha-qr-id{font-family:var(--font-mono);font-size:0.78rem;color:rgba(255,255,255,0.9);margin-top:12px;letter-spacing:0.08em;background:rgba(0,0,0,0.2);padding:6px 12px;border-radius:6px;display:inline-block}
+    .ficha-qr-nota{font-size:0.75rem;color:rgba(255,255,255,0.7);margin-top:10px;font-family:var(--font-mono)}
+    .ficha-pendiente-aviso{background:rgba(255,200,0,0.15);border:1px solid rgba(255,200,0,0.4);border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:flex-start;gap:12px}
+    .ficha-pendiente-aviso .aviso-icon{font-size:1.2rem;flex-shrink:0}
+    .ficha-pendiente-aviso p{font-size:0.82rem;color:#ffffff;line-height:1.5}
+    .ficha-pendiente-aviso strong{font-weight:700;color:#ffeb3b}
+    .ficha-nocumple-aviso{background:rgba(220,50,50,0.15);border:1px solid rgba(220,50,50,0.4);border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:flex-start;gap:12px}
+    .ficha-nocumple-aviso .aviso-icon{font-size:1.2rem;flex-shrink:0}
+    .ficha-nocumple-aviso p{font-size:0.82rem;color:#ffffff;line-height:1.5}
+    .ficha-nocumple-aviso strong{font-weight:700;color:#ff6b6b}
+    .ficha-nocumple-aviso .razon-texto{display:block;margin:8px 0;padding:8px 12px;background:rgba(0,0,0,0.2);border-left:3px solid #ff6b6b;border-radius:4px;font-style:italic}
+    .ficha-form{border-top:1px solid rgba(255,255,255,0.15);padding-top:24px}
+    .ficha-form-title{font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.12em;color:rgba(255,255,255,0.9);text-transform:uppercase;margin-bottom:18px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .form-field{display:flex;flex-direction:column;gap:6px}
+    .form-field label{font-size:0.68rem;color:rgba(255,255,255,0.7);font-family:var(--font-mono);letter-spacing:0.06em;text-transform:uppercase}
+    .form-field input,.form-field select{background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.2);color:#ffffff;font-family:'Exo 2',sans-serif;font-size:0.88rem;padding:10px 14px;border-radius:8px;outline:none;transition:border-color 0.2s,background 0.2s}
+    .form-field input::placeholder{color:rgba(255,255,255,0.4)}
+    .form-field input:focus,.form-field select:focus{border-color:rgba(255,255,255,0.5);background:rgba(0,0,0,0.3)}
+    .form-field select optgroup{background:#0d2847;color:#5bc8f0;font-family:'DM Mono',monospace;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;padding:6px 0}
+    .form-field select option{background:#0f2044;color:#ffffff;padding:6px}
+    .form-field-full{grid-column:1/-1}
+    .comprobante-aviso{background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:10px}
+    .comprobante-aviso svg{width:16px;height:16px;flex-shrink:0;color:rgba(255,255,255,0.6)}
+    .comprobante-aviso span{font-size:0.8rem;color:rgba(255,255,255,0.8);font-family:var(--font-mono);line-height:1.4}
+    .comprobante-aviso a{color:#ffeb3b;font-weight:600;text-decoration:none}
+    .comprobante-aviso a:hover{text-decoration:underline}
+    .btn-guardar{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.3);color:#ffffff;font-family:'Exo 2',sans-serif;font-size:0.95rem;font-weight:700;padding:14px;border-radius:10px;cursor:pointer;transition:background 0.2s,border-color 0.2s;margin-top:8px}
+    .btn-guardar:hover{background:var(--sucre-dark);border-color:rgba(255,255,255,0.5)}
+    .btn-guardar:disabled{opacity:0.5;cursor:not-allowed}
+    .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid rgba(0,255,136,0.4);color:var(--green);font-family:var(--font-mono);font-size:0.8rem;padding:12px 24px;border-radius:30px;transition:transform 0.3s ease;z-index:9999;white-space:nowrap}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    @media(max-width:600px){.wrapper{padding:24px 12px 40px}.ficha-header{padding:20px}.ficha-body{padding:20px}.ficha-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.ficha-robot{font-size:1.6rem}}
   </style>
 </head>
 <body>
@@ -125,7 +86,6 @@
 <main>
   <div class="wrapper">
 
-    <!-- PANTALLA: debe iniciar sesión -->
     <div id="screen-login" class="login-screen">
       <h2>MI REGISTRO</h2>
       <p>Inicia sesión con el correo con el que te registraste para ver tu ficha y estado de aprobación.</p>
@@ -135,22 +95,18 @@
       </button>
     </div>
 
-    <!-- PANTALLA: cargando -->
     <div id="screen-loading" style="display:none;text-align:center;padding:60px 20px;">
       <p style="font-family:var(--font-mono);font-size:0.85rem;color:#8a96b0;letter-spacing:0.1em;">BUSCANDO TU REGISTRO...</p>
     </div>
 
-    <!-- PANTALLA: no encontrado -->
     <div id="screen-notfound" class="not-found" style="display:none;">
       <h2>NO ENCONTRAMOS TU REGISTRO</h2>
       <p>El correo con el que iniciaste sesión no tiene ningún registro en SucreBot 2026.</p>
       <p style="margin-top:8px;">¿Todavía no te registraste? <a href="https://sucrebotclub-institute.github.io/Sucrebot/REGISTRO/">Regístrate aquí →</a></p>
     </div>
 
-    <!-- PANTALLA: ficha -->
     <div id="screen-ficha" style="display:none;">
       <div class="ficha">
-
         <div class="ficha-header">
           <div class="ficha-label">MI REGISTRO — SUCREBOT 2026</div>
           <div class="ficha-robot" id="f-robot">—</div>
@@ -158,7 +114,6 @@
         </div>
 
         <div class="ficha-body">
-
           <div class="ficha-grid">
             <div class="ficha-campo"><span>Categoría</span><strong id="f-categoria">—</strong></div>
             <div class="ficha-campo"><span>Institución</span><strong id="f-institucion">—</strong></div>
@@ -168,16 +123,13 @@
             <div class="ficha-campo"><span>Contacto</span><strong id="f-contacto">—</strong></div>
           </div>
 
-          <!-- Integrantes del equipo — solo si existen -->
-          <div id="ficha-equipo-section" style="display:none; background:rgba(0,0,0,0.15); border-radius:12px; padding:16px 20px; margin-bottom:24px;">
+          <div id="ficha-equipo-section" style="display:none;background:rgba(0,0,0,0.15);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
             <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.12em;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:12px;">👥 Integrantes del Equipo</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div style="display:grid;grid-template-columns:1fr;gap:14px;">
               <div class="ficha-campo" id="ficha-campo-miembro2" style="display:none;"><span>Miembro 2</span><strong id="f-miembro2">—</strong></div>
-              <div class="ficha-campo" id="ficha-campo-miembro3" style="display:none;"><span>Miembro 3</span><strong id="f-miembro3">—</strong></div>
             </div>
           </div>
 
-          <!-- QR — solo si aprobado -->
           <div class="ficha-qr" id="ficha-qr-section" style="display:none;">
             <div class="ficha-qr-label">TU CÓDIGO QR DE ACCESO</div>
             <img id="f-qr-img" src="" alt="QR de acceso" />
@@ -185,14 +137,11 @@
             <p class="ficha-qr-nota">Presenta este QR el día del evento para acceder a la competencia.</p>
           </div>
 
-          <!-- Sección pendiente: aviso + formulario -->
           <div id="ficha-pendiente-section" style="display:none;">
-
             <div class="ficha-pendiente-aviso" id="aviso-pendiente">
               <span class="aviso-icon">⏳</span>
               <p>Tu registro está <strong>pendiente de revisión</strong> por el staff. Si necesitas corregir algún dato, puedes editarlo a continuación. Al guardar, tu registro volverá a revisión.</p>
             </div>
-
             <div class="ficha-nocumple-aviso" id="aviso-nocumple" style="display:none;">
               <span class="aviso-icon">✖</span>
               <p>Tu registro <strong>no cumple con los requisitos</strong> de la competencia.<span id="razon-rechazo-container"></span> Por favor revisa y corrige la información a continuación, o contacta al staff en <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></p>
@@ -201,12 +150,7 @@
             <div class="ficha-form">
               <div class="ficha-form-title">✏️ EDITAR MI REGISTRO</div>
               <div class="form-grid">
-
-                <div class="form-field">
-                  <label>Nombre del Robot</label>
-                  <input type="text" id="edit-robot" placeholder="Nombre del robot" />
-                </div>
-
+                <div class="form-field"><label>Nombre del Robot</label><input type="text" id="edit-robot" placeholder="Nombre del robot" /></div>
                 <div class="form-field">
                   <label>Categoría</label>
                   <select id="edit-categoria">
@@ -230,43 +174,19 @@
                     </optgroup>
                   </select>
                 </div>
+                <div class="form-field"><label>Institución</label><input type="text" id="edit-institucion" placeholder="Nombre de tu institución" /></div>
+                <div class="form-field"><label>Ciudad</label><input type="text" id="edit-ciudad" placeholder="Ciudad" /></div>
+                <div class="form-field"><label>Nombre del Participante</label><input type="text" id="edit-nombre" placeholder="Tu nombre completo" /></div>
+                <div class="form-field"><label>Teléfono / WhatsApp</label><input type="text" id="edit-contacto" placeholder="0987654321" /></div>
 
-                <div class="form-field">
-                  <label>Institución</label>
-                  <input type="text" id="edit-institucion" placeholder="Nombre de tu institución" />
-                </div>
-
-                <div class="form-field">
-                  <label>Ciudad</label>
-                  <input type="text" id="edit-ciudad" placeholder="Ciudad" />
-                </div>
-
-                <div class="form-field">
-                  <label>Nombre del Participante</label>
-                  <input type="text" id="edit-nombre" placeholder="Tu nombre completo" />
-                </div>
-
-                <div class="form-field">
-                  <label>Teléfono / WhatsApp</label>
-                  <input type="text" id="edit-contacto" placeholder="0987654321" />
-                </div>
-
-                <!-- Aviso comprobante — no editable desde web -->
                 <div class="form-field form-field-full" style="border-top:1px solid rgba(255,255,255,0.1);padding-top:14px;margin-top:4px;">
                   <label style="margin-bottom:8px;">👥 Integrantes del Equipo <span style="opacity:0.6;font-size:0.62rem;">(opcional — para diplomas)</span></label>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <div class="form-field">
-                      <label>Miembro 2</label>
-                      <input type="text" id="edit-miembro2" placeholder="Nombre completo" />
-                    </div>
-                    <div class="form-field">
-                      <label>Miembro 3</label>
-                      <input type="text" id="edit-miembro3" placeholder="Nombre completo" />
-                    </div>
+                  <div class="form-field">
+                    <label>Miembro 2</label>
+                    <input type="text" id="edit-miembro2" placeholder="Nombre completo" />
                   </div>
                 </div>
 
-                <!-- Aviso comprobante — no editable desde web -->
                 <div class="form-field form-field-full">
                   <label>Comprobante de Pago</label>
                   <div class="comprobante-aviso">
@@ -274,16 +194,14 @@
                     <span>Para cambiar el comprobante de pago escríbenos a <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></span>
                   </div>
                 </div>
-
               </div>
               <button class="btn-guardar" id="btn-guardar" onclick="guardarCambios()">💾 Guardar cambios</button>
             </div>
+          </div>
 
-          </div><!-- /ficha-pendiente-section -->
-
-        </div><!-- /ficha-body -->
-      </div><!-- /ficha -->
-    </div><!-- /screen-ficha -->
+        </div>
+      </div>
+    </div>
 
   </div>
   <div class="toast" id="toast"></div>
@@ -299,12 +217,8 @@
   document.addEventListener('componentsLoaded', function() {
     const savedUser = localStorage.getItem('sucrebot_user');
     if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        buscarParticipante(userData.email);
-      } catch (e) {
-        console.error('Error al leer sesión:', e);
-      }
+      try { const userData = JSON.parse(savedUser); buscarParticipante(userData.email); }
+      catch (e) { console.error('Error al leer sesión:', e); }
     }
   });
 
@@ -313,20 +227,12 @@
     document.getElementById('screen-loading').style.display = 'block';
     document.getElementById('screen-notfound').style.display = 'none';
     document.getElementById('screen-ficha').style.display = 'none';
-
     try {
       const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
       const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
       const lista = await r.json();
-
       const p = lista.find(x => x.correo && x.correo.toLowerCase() === correo.toLowerCase());
-
-      if (!p) {
-        document.getElementById('screen-loading').style.display = 'none';
-        document.getElementById('screen-notfound').style.display = 'block';
-        return;
-      }
-
+      if (!p) { document.getElementById('screen-loading').style.display = 'none'; document.getElementById('screen-notfound').style.display = 'block'; return; }
       participanteActual = p;
       mostrarFicha(p);
     } catch (error) {
@@ -336,22 +242,16 @@
     }
   }
 
-  // Genera el texto del QR: ID + nombres de integrantes para la manilla
-  // Formato: sb-2026-bai-001|Juan López|María García|Pedro Gómez
-  // El escáner ESC-NER solo lee el primer segmento (antes del primer |)
   function construirTextoQR(p) {
     const partes = [p.id];
     if (p.nombre)   partes.push(p.nombre);
     if (p.miembro2) partes.push(p.miembro2);
-    if (p.miembro3) partes.push(p.miembro3);
     return partes.join('~');
   }
 
   function mostrarFicha(p) {
     document.getElementById('screen-loading').style.display = 'none';
     document.getElementById('screen-ficha').style.display = 'block';
-
-    // Datos principales
     document.getElementById('f-robot').textContent = p.robot || '—';
     document.getElementById('f-categoria').textContent = p.categoria || '—';
     document.getElementById('f-institucion').textContent = p.institucion || '—';
@@ -360,21 +260,15 @@
     document.getElementById('f-nombre').textContent = p.nombre || '—';
     document.getElementById('f-contacto').textContent = p.contacto || '—';
 
-     // Integrantes del equipo
-    const tieneEquipo = p.miembro2 || p.miembro3;
+    const tieneEquipo = !!p.miembro2;
     document.getElementById('ficha-equipo-section').style.display = tieneEquipo ? 'block' : 'none';
     if (p.miembro2) {
       document.getElementById('f-miembro2').textContent = p.miembro2;
       document.getElementById('ficha-campo-miembro2').style.display = 'flex';
     }
-    if (p.miembro3) {
-      document.getElementById('f-miembro3').textContent = p.miembro3;
-      document.getElementById('ficha-campo-miembro3').style.display = 'flex';
-    }
 
     const aprobado = p.aprobado === 'APROBADO' || p.aprobado === true || p.aprobado === 'true';
     const nocumple = p.aprobado === 'NO CUMPLE' || p.aprobado === 'NOCUMPLE' || p.aprobado === 'nocumple';
-
     const badge = document.getElementById('f-estado-badge');
     const qrSection = document.getElementById('ficha-qr-section');
     const pendienteSection = document.getElementById('ficha-pendiente-section');
@@ -382,45 +276,25 @@
     const avisoNocumple = document.getElementById('aviso-nocumple');
 
     if (aprobado) {
-      // APROBADO
-      badge.className = 'ficha-estado estado-aprobado';
-      badge.textContent = '✅ Aprobado';
-      qrSection.style.display = 'block';
-      pendienteSection.style.display = 'none';
-
-      // QR contiene ID + nombres (capitán + miembros) para las manillas
+      badge.className = 'ficha-estado estado-aprobado'; badge.textContent = '✅ Aprobado';
+      qrSection.style.display = 'block'; pendienteSection.style.display = 'none';
       const textoQR = construirTextoQR(p);
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data=${encodeURIComponent(textoQR)}`;
+      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data=' + encodeURIComponent(textoQR);
       document.getElementById('f-qr-img').src = qrUrl;
-      
-      // Mostrar el ID debajo del QR (visible para el participante)
       document.getElementById('f-qr-id').textContent = '🆔 ' + p.id;
     } else if (nocumple) {
-      // NO CUMPLE
-      badge.className = 'ficha-estado estado-nocumple';
-      badge.textContent = '✖ No cumple requisitos';
-      qrSection.style.display = 'none';
-      pendienteSection.style.display = 'block';
-      avisoPendiente.style.display = 'none';
-      avisoNocumple.style.display = 'flex';
-      
-      // Mostrar razón del rechazo si existe
+      badge.className = 'ficha-estado estado-nocumple'; badge.textContent = '✖ No cumple requisitos';
+      qrSection.style.display = 'none'; pendienteSection.style.display = 'block';
+      avisoPendiente.style.display = 'none'; avisoNocumple.style.display = 'flex';
       const razonContainer = document.getElementById('razon-rechazo-container');
       if (p.razonRechazo && p.razonRechazo.trim()) {
-        razonContainer.innerHTML = `<span class="razon-texto"><strong>Razón:</strong> ${p.razonRechazo}</span>`;
-      } else {
-        razonContainer.innerHTML = '';
-      }
-      
+        razonContainer.innerHTML = '<span class="razon-texto"><strong>Razón:</strong> ' + p.razonRechazo + '</span>';
+      } else { razonContainer.innerHTML = ''; }
       cargarFormulario(p);
     } else {
-      // PENDIENTE
-      badge.className = 'ficha-estado estado-pendiente';
-      badge.textContent = '⏳ Pendiente de aprobación';
-      qrSection.style.display = 'none';
-      pendienteSection.style.display = 'block';
-      avisoPendiente.style.display = 'flex';
-      avisoNocumple.style.display = 'none';
+      badge.className = 'ficha-estado estado-pendiente'; badge.textContent = '⏳ Pendiente de aprobación';
+      qrSection.style.display = 'none'; pendienteSection.style.display = 'block';
+      avisoPendiente.style.display = 'flex'; avisoNocumple.style.display = 'none';
       cargarFormulario(p);
     }
   }
@@ -433,16 +307,12 @@
     document.getElementById('edit-nombre').value = p.nombre || '';
     document.getElementById('edit-contacto').value = p.contacto || '';
     document.getElementById('edit-miembro2').value = p.miembro2 || '';
-    document.getElementById('edit-miembro3').value = p.miembro3 || '';
   }
 
   async function guardarCambios() {
     if (!participanteActual) return;
-
     const btn = document.getElementById('btn-guardar');
-    btn.disabled = true;
-    btn.textContent = '⏳ Guardando...';
-
+    btn.disabled = true; btn.textContent = '⏳ Guardando...';
     const datos = {
       action: 'actualizarParticipante',
       id: participanteActual.id,
@@ -452,33 +322,23 @@
       ciudad: document.getElementById('edit-ciudad').value.trim(),
       nombre: document.getElementById('edit-nombre').value.trim(),
       contacto: document.getElementById('edit-contacto').value.trim(),
-      miembro2: document.getElementById('edit-miembro2').value.trim(),
-      miembro3: document.getElementById('edit-miembro3').value.trim()
+      miembro2: document.getElementById('edit-miembro2').value.trim()
     };
-
     try {
       const qs = new URLSearchParams(datos).toString();
       const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
       const result = await r.json();
-
-      if (result.ok) {
-        showToast('✅ Cambios guardados correctamente');
-        setTimeout(() => location.reload(), 1500);
-      } else {
-        throw new Error(result.error || 'Error desconocido');
-      }
+      if (result.ok) { showToast('✅ Cambios guardados correctamente'); setTimeout(() => location.reload(), 1500); }
+      else { throw new Error(result.error || 'Error desconocido'); }
     } catch (error) {
       console.error('Error completo:', error);
       showToast('❌ Error al guardar: ' + error.message);
-      btn.disabled = false;
-      btn.textContent = '💾 Guardar cambios';
+      btn.disabled = false; btn.textContent = '💾 Guardar cambios';
     }
   }
 
   function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
   }
 </script>
