@@ -125,7 +125,7 @@
     .logo-uploader { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
     .logo-uploader label.logo-label { font-family: 'Orbitron', monospace; font-size: 10px; color: rgba(255,255,255,0.95); margin-bottom: 6px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; display: block; width: 100%; text-align: left; }
     .logo-drop-zone { width: 200px; height: 38px; border: 1.5px dashed rgba(91,200,240,0.4); border-radius: 8px; background: rgba(10,25,60,0.55); display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 7px; cursor: pointer; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; flex-shrink: 0; padding: 0 10px; box-sizing: border-box; }
-    .logo-drop-zone:hover { border-color: var(--r-cyan); background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .logo-drop-zone:hover, .logo-drop-zone:focus { border-color: var(--r-cyan); background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); outline: none; }
     .logo-drop-zone.drag-over { border-color: var(--r-cyan); background: rgba(91,200,240,0.08); box-shadow: 0 0 0 3px rgba(91,200,240,0.2); }
     .logo-drop-zone.has-logo { border-color: rgba(61,214,140,0.6); border-style: solid; }
     .logo-placeholder { display: flex; flex-direction: row; align-items: center; gap: 6px; pointer-events: none; }
@@ -237,7 +237,7 @@
         <div class="field">
           <label>Nombre Completo</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-nombre" placeholder="Juan Pérez">
+          <input type="text" id="f-nombre" placeholder="Juan Pérez" tabindex="1">
         </div>
       </div>
 
@@ -247,12 +247,12 @@
           <label>Institución / Club</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <div class="inst-combo">
-            <select id="f-institucion-select" onchange="onInstitucionChange()">
+            <select id="f-institucion-select" onchange="onInstitucionChange()" tabindex="2">
               <option value="">— Cargando instituciones... —</option>
             </select>
             <div class="inst-nueva-wrap" id="inst-nueva-wrap">
               <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--r-cyan);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              <input type="text" id="f-institucion-nueva" placeholder="Nombre completo de tu institución o club" style="padding-left:36px;">
+              <input type="text" id="f-institucion-nueva" placeholder="Nombre completo de tu institución o club" style="padding-left:36px;" tabindex="3">
             </div>
           </div>
         </div>
@@ -264,14 +264,17 @@
           <label class="logo-label">
             Logo <span style="color:#e74c3c;font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(obligatorio)</span>
           </label>
-          <div class="logo-drop-zone" id="logo-drop-zone" title="Clic para subir logo del club o institución">
+          <div class="logo-drop-zone" id="logo-drop-zone"
+               tabindex="4"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();logoInput.click()}"
+               title="Clic para subir logo del club o institución">
             <div class="logo-placeholder">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               <span>Subir logo (PNG / JPG)</span>
             </div>
             <img class="logo-preview-img" id="logo-preview" alt="Preview logo" />
           </div>
-          <button type="button" class="logo-remove-btn" id="logo-remove-btn" onclick="quitarLogo()">✕ quitar logo</button>
+          <button type="button" class="logo-remove-btn" id="logo-remove-btn" onclick="quitarLogo()" tabindex="-1">✕ quitar logo</button>
           <input type="file" id="f-logo" accept="image/png,image/jpeg,image/svg+xml,image/webp" />
         </div>
       </div>
@@ -281,7 +284,7 @@
         <div class="field">
           <label>Provincia</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <select id="f-ciudad">
+          <select id="f-ciudad" tabindex="5">
             <option value="">— Selecciona —</option>
             <option value="Azuay">Azuay</option>
             <option value="Bolívar">Bolívar</option>
@@ -312,7 +315,7 @@
         <div class="field">
           <label>Contacto / WhatsApp</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.4A2 2 0 0 1 3.55 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l1.3-1.3a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <input type="tel" id="f-contacto" placeholder="0991234567">
+          <input type="tel" id="f-contacto" placeholder="0991234567" tabindex="6">
         </div>
       </div>
 
@@ -321,7 +324,7 @@
         <div class="field">
           <label>Correo Electrónico</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
-          <input type="email" id="f-correo" placeholder="juan@gmail.com">
+          <input type="email" id="f-correo" placeholder="juan@gmail.com" tabindex="7">
         </div>
       </div>
 
@@ -330,12 +333,12 @@
         <div class="field">
           <label>Nombre del Robot</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
-          <input type="text" id="f-robot" placeholder="RoboX-1">
+          <input type="text" id="f-robot" placeholder="RoboX-1" tabindex="8">
         </div>
         <div class="field">
           <label>Categoría de Competencia</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-          <select id="f-categoria" onchange="onCategoriaChange()">
+          <select id="f-categoria" onchange="onCategoriaChange()" tabindex="9">
             <option value="">— Selecciona —</option>
             <optgroup label="🏅 AMATEUR">
               <option value="Insectos">Insectos</option>
@@ -368,7 +371,7 @@
           <div class="field">
             <label>Nombre del Equipo <span style="color:#e74c3c;font-family:'Exo 2',sans-serif;font-size:10px;letter-spacing:0;text-transform:none;font-weight:400;">(obligatorio)</span></label>
             <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <input type="text" id="f-equipo" placeholder="Ej: Los Titanes">
+            <input type="text" id="f-equipo" placeholder="Ej: Los Titanes" tabindex="10">
           </div>
         </div>
       </div>
@@ -378,12 +381,12 @@
         <div class="field">
           <label>Número de Comprobante</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          <input type="text" id="f-comprobante" placeholder="Ej: 0012345678" style="font-family:'DM Mono',monospace;letter-spacing:1px;">
+          <input type="text" id="f-comprobante" placeholder="Ej: 0012345678" style="font-family:'DM Mono',monospace;letter-spacing:1px;" tabindex="11">
         </div>
         <div class="field">
           <label>Imagen o PDF del Comprobante</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <input type="file" id="f-archivo" accept="image/*,.pdf" style="width:100%;padding-left:36px;box-sizing:border-box;" />
+          <input type="file" id="f-archivo" accept="image/*,.pdf" style="width:100%;padding-left:36px;box-sizing:border-box;" tabindex="12" />
         </div>
       </div>
 
@@ -395,16 +398,16 @@
         <div class="field">
           <label>Nombre — Miembro 2</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-miembro2" placeholder="Nombre completo">
+          <input type="text" id="f-miembro2" placeholder="Nombre completo" tabindex="13">
         </div>
         <div class="field">
           <label>Nombre — Miembro 3</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-miembro3" placeholder="Nombre completo">
+          <input type="text" id="f-miembro3" placeholder="Nombre completo" tabindex="14">
         </div>
       </div>
 
-      <button class="btn-register" onclick="registrarParticipante()">
+      <button class="btn-register" onclick="registrarParticipante()" tabindex="15">
         <svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
         REGISTRAR PARTICIPANTE
       </button>
@@ -439,7 +442,6 @@
       opt.textContent = inst;
       sel.appendChild(opt);
     });
-    // Opción para agregar nueva
     const sep = document.createElement('option');
     sep.disabled = true;
     sep.textContent = '──────────────────';
@@ -451,7 +453,6 @@
   }
 
   function cargarInstituciones() {
-    // Intentar cache primero
     try {
       const raw = localStorage.getItem(INST_CACHE_KEY);
       if (raw) {
@@ -463,7 +464,6 @@
       }
     } catch(e) {}
 
-    // Fetch GAS
     fetch(GAS_INST + '?action=getParticipantes')
       .then(r => r.json())
       .then(data => {
@@ -477,7 +477,6 @@
         }));
       })
       .catch(() => {
-        // Si falla, mostrar solo "Otra"
         const sel = document.getElementById('f-institucion-select');
         sel.innerHTML = '<option value="">— Selecciona institución / club —</option>';
         const nueva = document.createElement('option');
@@ -507,7 +506,6 @@
     return sel.value;
   }
 
-  // Cargar al arrancar
   cargarInstituciones();
 
   // ── LOGO ───────────────────────────────────────────────────────
@@ -654,7 +652,6 @@
         miembro2, miembro3, comprobante, archivoUrl, logoUrl, equipo
       });
 
-      // Actualizar cache de instituciones con la nueva si aplica
       if (document.getElementById('f-institucion-select').value === '__nueva__' && institucion) {
         try {
           const raw = localStorage.getItem(INST_CACHE_KEY);
