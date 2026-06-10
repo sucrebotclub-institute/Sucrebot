@@ -86,7 +86,6 @@
     }
     .panel-card-title::before { content:''; width: 3px; height: 16px; background: var(--cyan); border-radius: 2px; }
 
-    /* ── CATEGORY CARDS ── */
     .cat-cards-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -216,6 +215,7 @@
     .criterio-nota-input { width: 72px; text-align: center; background: var(--panel-bg2); border: 1.5px solid var(--panel-border2); border-radius: 8px; padding: 8px 6px; color: var(--text-main); font-family: 'Orbitron'; font-size: 1.1rem; font-weight: 700; outline: none; transition: border-color .2s; }
     .criterio-nota-input:focus { border-color: var(--cyan); }
     .criterio-max { font-family: 'DM Mono'; font-size: .7rem; color: var(--text-dim); }
+    .criterio-nota-input:disabled { opacity: .4; cursor: not-allowed; }
 
     .total-box { display: flex; align-items: center; justify-content: space-between; background: var(--panel-bg2); border: 1px solid var(--panel-border2); border-radius: 10px; padding: 14px 20px; margin-bottom: 16px; }
     .total-label { font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
@@ -224,6 +224,9 @@
 
     textarea.form-control { resize: vertical; min-height: 60px; font-size: .88rem; }
     .ronda-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; background: rgba(26,92,168,0.25); color: var(--cyan); border: 1px solid rgba(91,200,240,0.3); border-radius: 20px; padding: 4px 12px; }
+    .fase-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; border-radius: 20px; padding: 4px 12px; }
+    .fase-badge.fase-1 { background: rgba(240,165,0,0.15); color: var(--gold); border: 1px solid rgba(240,165,0,0.3); }
+    .fase-badge.fase-2 { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 
     .ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .ranking-title { font-family: 'Bebas Neue'; font-size: 1.6rem; letter-spacing: 2px; color: var(--cyan); }
@@ -245,6 +248,7 @@
 
     .badge-pendiente { display: inline-block; font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1px; padding: 3px 8px; border-radius: 10px; background: rgba(243,156,18,0.15); color: var(--orange); border: 1px solid rgba(243,156,18,0.3); }
     .badge-calificado { display: inline-block; font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1px; padding: 3px 8px; border-radius: 10px; background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+    .badge-fase2 { display: inline-block; font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1px; padding: 3px 8px; border-radius: 10px; background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
 
     #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--panel-bg); border: 1px solid var(--panel-border2); color: var(--text-main); padding: 12px 24px; border-radius: 10px; font-family: 'Exo 2'; font-size: .9rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: transform .3s; z-index: 9999; white-space: nowrap; }
     #toast.show { transform: translateX(-50%) translateY(0); }
@@ -286,7 +290,7 @@
     .participantes-info-panel { display: none; }
     .participantes-info-panel.show { display: block; margin-top: 20px; }
 
-    /* Nota informativa Lego Kids */
+    /* ── LEGO KIDS ── */
     .lk-nota {
       display: none;
       background: rgba(91,200,240,0.08);
@@ -300,6 +304,62 @@
     }
     .lk-nota.show { display: block; }
     .lk-nota strong { color: var(--cyan); }
+
+    /* ── CRONÓMETRO FASE 1 ── */
+    .lk-cronometro-bar {
+      display: none;
+      align-items: center;
+      gap: 16px;
+      background: var(--panel-bg2);
+      border: 1px solid var(--panel-border2);
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .lk-cronometro-bar.show { display: flex; }
+    .lk-crono-display {
+      font-family: 'Orbitron';
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 4px;
+      min-width: 120px;
+      transition: color .3s;
+    }
+    .lk-crono-display.warning { color: var(--orange); }
+    .lk-crono-display.danger  { color: var(--red); animation: blink-red .8s infinite; }
+    @keyframes blink-red { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .lk-crono-label { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 2px; color: var(--text-dim); }
+    .lk-crono-progress-wrap { flex: 1; min-width: 100px; }
+    .lk-crono-progress { height: 6px; background: var(--panel-border); border-radius: 3px; overflow: hidden; }
+    .lk-crono-progress-fill { height: 100%; border-radius: 3px; background: var(--cyan); transition: width 1s linear, background .3s; }
+    .lk-crono-btn { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; transition: all .2s; }
+    .lk-crono-btn.start { background: var(--green); color: #fff; }
+    .lk-crono-btn.start:hover { background: #27ae60; }
+    .lk-crono-btn.pause { background: var(--orange); color: #fff; }
+    .lk-crono-btn.pause:hover { background: #d68910; }
+    .lk-crono-badge { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 20px; background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+
+    /* ── FASE 2 CLASIFICADOS ── */
+    .lk-fase2-panel {
+      display: none;
+      margin-top: 20px;
+    }
+    .lk-fase2-panel.show { display: block; }
+    .clasificados-grid { display: grid; gap: 8px; margin-top: 12px; }
+    .clasificado-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--panel-bg2); border: 1px solid var(--panel-border);
+      border-radius: 10px; padding: 12px 16px; cursor: pointer;
+      transition: all .2s;
+    }
+    .clasificado-item:hover { border-color: var(--panel-border2); }
+    .clasificado-item.checked { border-color: var(--green); background: rgba(46,204,113,0.08); }
+    .clasificado-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--panel-border2); background: var(--panel-bg3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; font-size: .8rem; }
+    .clasificado-item.checked .clasificado-check { background: var(--green); border-color: var(--green); }
+    .clasificado-nombre { font-weight: 600; font-size: .9rem; color: var(--text-main); }
+    .clasificado-score { font-family: 'DM Mono'; font-size: .78rem; color: var(--cyan); margin-left: auto; }
   </style>
 </head>
 <body>
@@ -400,17 +460,15 @@
         <span id="catBloqueadaTxt">CATEGORÍA BLOQUEADA EN ESTE PC</span>
       </div>
 
-      <!-- Nota especial Lego Kids -->
       <div class="lk-nota" id="lkNota">
         📋 <strong>Lego Kids — 2 fases:</strong>
-        Fase 1 (45 min): calificar <strong>Ensamble (50 pts)</strong> y <strong>Funcionalidad (20 pts)</strong> a todos los participantes.
-        El juez decide cuántos clasifican a Fase 2 (carrera).
-        Fase 2: usar el Cronómetro para medir tiempos y luego ingresar aquí el puntaje de <strong>Tiempo de carrera (0–30 pts)</strong> a los clasificados.
-        Puntaje final = Fase 1 + Fase 2 = <strong>100 pts</strong>.
+        <strong>Fase 1</strong> (45 min): calificar <strong>Ensamble (50 pts)</strong> y <strong>Funcionalidad (20 pts)</strong> a todos.
+        El juez selecciona quiénes clasifican a Fase 2.
+        <strong>Fase 2</strong> (carrera): ingresar <strong>Tiempo de carrera (0–30 pts)</strong> solo a clasificados.
+        Puntaje final = Fase 1 + Fase 2 = <strong>100 pts máx</strong>.
       </div>
     </div>
 
-    <!-- Criterios + participantes -->
     <div class="participantes-info-panel" id="configuracionPanel">
       <div class="config-grid">
 
@@ -466,6 +524,26 @@
 
   <!-- PASO 2 -->
   <div class="step-panel" id="panel-2">
+
+    <!-- Cronómetro Fase 1 Lego Kids -->
+    <div class="lk-cronometro-bar" id="lkCronometroBar">
+      <div>
+        <div class="lk-crono-label">⏱ FASE 1 — ENSAMBLE</div>
+        <div class="lk-crono-display" id="lkCronoDisplay">45:00</div>
+      </div>
+      <div class="lk-crono-progress-wrap">
+        <div class="lk-crono-progress">
+          <div class="lk-crono-progress-fill" id="lkCronoFill" style="width:100%"></div>
+        </div>
+        <div style="font-family:'DM Mono';font-size:.65rem;color:var(--text-dim);margin-top:4px" id="lkCronoSub">45 minutos para calificar Ensamble y Funcionalidad</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="lk-crono-btn start" id="lkCronoBtn" onclick="toggleCrono()">▶ Iniciar</button>
+        <button class="lk-crono-btn" style="background:var(--panel-bg3);color:var(--text-dim);border:1px solid var(--panel-border2);" onclick="resetCrono()">↺ Reset</button>
+        <div class="lk-crono-badge" id="lkCronoBadge" style="display:none">✓ TIEMPO AGOTADO</div>
+      </div>
+    </div>
+
     <div class="calificar-split">
 
       <div class="lista-robots">
@@ -480,11 +558,18 @@
           <div class="progress-bar-wrap">
             <div class="progress-bar-fill" id="progBar" style="width:0%"></div>
           </div>
+          <!-- Botón Fase 2 solo para lk -->
+          <div id="lkFase2Trigger" style="display:none;margin-top:10px">
+            <button class="btn btn-green btn-sm" style="width:100%;justify-content:center;" onclick="abrirClasificados()">
+              🏁 Clasificar a Fase 2
+            </button>
+          </div>
         </div>
         <div class="robots-list" id="robotsList"></div>
       </div>
 
       <div id="formCalWrap">
+        <!-- Panel vacío -->
         <div class="panel-card" id="emptyFormState">
           <div class="empty-state">
             <div class="empty-state-icon">👈</div>
@@ -492,6 +577,7 @@
           </div>
         </div>
 
+        <!-- Formulario calificación -->
         <div class="form-cal" id="formCal" style="display:none">
           <div class="form-cal-header">
             <div>
@@ -500,6 +586,7 @@
               <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                 <div class="form-cal-id" id="calRobotId">—</div>
                 <div class="ronda-badge" id="calRondaBadge">Ronda 1</div>
+                <div class="fase-badge fase-1" id="calFaseBadge" style="display:none">Fase 1</div>
               </div>
             </div>
             <div style="text-align:right"><div id="calEstadoBadge"></div></div>
@@ -523,7 +610,7 @@
           <div class="btn-row" style="justify-content:space-between">
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-ranking btn-sm" onclick="irARanking()">📊 Ver Ranking</button>
-              <button class="btn btn-danger btn-sm" onclick="cerrarCategoria()">🔒 Cerrar Categoría</button>
+              <button class="btn btn-danger btn-sm" onclick="cerrarCategoria()">🔒 Cerrar</button>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-violet btn-sm" onclick="siguienteRobot()">→ Siguiente</button>
@@ -531,6 +618,22 @@
             </div>
           </div>
         </div>
+
+        <!-- Panel selección clasificados Fase 2 -->
+        <div class="lk-fase2-panel" id="lkFase2Panel">
+          <div class="panel-card">
+            <div class="panel-card-title">🏁 Clasificar a Fase 2 — Carrera</div>
+            <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px;">
+              Selecciona los participantes que pasan a la Fase 2 (carrera). Recibirán puntaje adicional de <strong style="color:var(--cyan)">Tiempo de carrera (0–30 pts)</strong>.
+            </p>
+            <div class="clasificados-grid" id="clasificadosGrid"></div>
+            <div class="btn-row" style="justify-content:space-between;margin-top:20px">
+              <button class="btn btn-outline btn-sm" onclick="cerrarClasificados()">← Cancelar</button>
+              <button class="btn btn-green" onclick="confirmarClasificados()">✓ Confirmar Clasificados</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -552,10 +655,10 @@
       <div style="overflow-x:auto">
         <table class="ranking-table">
           <thead>
-            <tr><th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th><th>PUNTUACIÓN</th><th>RONDAS</th><th>ESTADO</th></tr>
+            <tr><th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th><th>F1 (70)</th><th id="thF2Col" style="display:none">F2 (30)</th><th>TOTAL</th><th>ESTADO</th></tr>
           </thead>
           <tbody id="rankingTbody">
-            <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Aún no hay calificaciones registradas.</p></div></td></tr>
+            <tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Aún no hay calificaciones registradas.</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -583,6 +686,14 @@ const CAT_NOMBRES = {
   lk:  'Lego Kids'
 };
 
+// Criterios Fase 1 de Lego Kids (Ensamble + Funcionalidad)
+const LK_CRITERIOS_F1 = [
+  { nombre: 'Ensamble completo', descripcion: 'Cumplimiento del instructivo de ensamble (Fase 1)', peso: 50 },
+  { nombre: 'Funcionalidad',     descripcion: 'El prototipo funciona correctamente (Fase 1)',       peso: 20 },
+];
+// Criterio Fase 2 de Lego Kids
+const LK_CRITERIO_F2  = { nombre: 'Tiempo de carrera', descripcion: 'Puntaje según tiempo de recorrido (Fase 2)', peso: 30 };
+
 const DEFAULTS_CRITERIOS = {
   bai: [
     { nombre: 'Coreografía',       descripcion: 'Coordinación y secuencia de movimientos', peso: 5 },
@@ -605,11 +716,7 @@ const DEFAULTS_CRITERIOS = {
     { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño del robot',          peso: 5 },
     { nombre: 'Control',           descripcion: 'Precisión y maniobrabilidad del robot',      peso: 5 },
   ],
-  lk: [
-    { nombre: 'Ensamble completo', descripcion: 'Cumplimiento del instructivo de ensamble (Fase 1)',           peso: 50 },
-    { nombre: 'Funcionalidad',     descripcion: 'El prototipo funciona correctamente (Fase 1)',                peso: 20 },
-    { nombre: 'Tiempo de carrera', descripcion: 'Puntaje según tiempo de recorrido — ingresar 0-30 (Fase 2)', peso: 30 },
-  ]
+  lk: LK_CRITERIOS_F1  // configuración muestra solo criterios F1
 };
 
 let state = {
@@ -617,12 +724,83 @@ let state = {
   categoria: '',
   criterios: [],
   participantes: [],
-  calificaciones: {},
+  calificaciones: {},    // id → { total, ronda, notas_json, guardado, fase1Total, fase2Total, fase2: bool }
   selectedId: null,
   rondaActual: {},
   rankingData: [],
+  lkFase: 1,            // 1 o 2 — solo para lk
+  lkClasificados: [],   // ids que pasan a fase 2
 };
 
+// ── CRONÓMETRO FASE 1 LK ──────────────────────────────────────
+const LK_DURACION = 45 * 60; // 45 minutos en segundos
+let cronoSegundos   = LK_DURACION;
+let cronoInterval   = null;
+let cronoRunning    = false;
+
+function toggleCrono() {
+  if (cronoRunning) {
+    clearInterval(cronoInterval);
+    cronoRunning = false;
+    document.getElementById('lkCronoBtn').textContent = '▶ Reanudar';
+    document.getElementById('lkCronoBtn').className = 'lk-crono-btn start';
+  } else {
+    if (cronoSegundos <= 0) return;
+    cronoRunning = true;
+    document.getElementById('lkCronoBtn').textContent = '⏸ Pausar';
+    document.getElementById('lkCronoBtn').className = 'lk-crono-btn pause';
+    cronoInterval = setInterval(tickCrono, 1000);
+  }
+}
+
+function tickCrono() {
+  cronoSegundos--;
+  renderCrono();
+  if (cronoSegundos <= 0) {
+    clearInterval(cronoInterval);
+    cronoRunning = false;
+    document.getElementById('lkCronoBtn').style.display = 'none';
+    document.getElementById('lkCronoBadge').style.display = 'inline-flex';
+    document.getElementById('lkCronoSub').textContent = '¡Tiempo de Fase 1 agotado! Procede a clasificar para Fase 2.';
+    // Alerta audible del navegador
+    try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.frequency.value = 880; gain.gain.setValueAtTime(0.3, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5); osc.start(); osc.stop(ctx.currentTime + 1.5); } catch(e){}
+    toast('⏰ ¡Tiempo de Fase 1 agotado! Procede a clasificar.', 'info');
+  }
+}
+
+function renderCrono() {
+  const min = Math.floor(cronoSegundos / 60);
+  const seg = cronoSegundos % 60;
+  const txt = `${String(min).padStart(2,'0')}:${String(seg).padStart(2,'0')}`;
+  const el  = document.getElementById('lkCronoDisplay');
+  el.textContent = txt;
+  const pct = (cronoSegundos / LK_DURACION) * 100;
+  document.getElementById('lkCronoFill').style.width = pct + '%';
+  if (cronoSegundos <= 60) {
+    el.className = 'lk-crono-display danger';
+    document.getElementById('lkCronoFill').style.background = 'var(--red)';
+  } else if (cronoSegundos <= 5 * 60) {
+    el.className = 'lk-crono-display warning';
+    document.getElementById('lkCronoFill').style.background = 'var(--orange)';
+  } else {
+    el.className = 'lk-crono-display';
+    document.getElementById('lkCronoFill').style.background = 'var(--cyan)';
+  }
+}
+
+function resetCrono() {
+  clearInterval(cronoInterval);
+  cronoRunning = false;
+  cronoSegundos = LK_DURACION;
+  renderCrono();
+  document.getElementById('lkCronoBtn').textContent = '▶ Iniciar';
+  document.getElementById('lkCronoBtn').className = 'lk-crono-btn start';
+  document.getElementById('lkCronoBtn').style.display = '';
+  document.getElementById('lkCronoBadge').style.display = 'none';
+  document.getElementById('lkCronoSub').textContent = '45 minutos para calificar Ensamble y Funcionalidad';
+}
+
+// ── UTILITIES ─────────────────────────────────────────────────
 function loading(show, txt = 'CARGANDO...') {
   document.getElementById('loadingOverlay').classList.toggle('show', show);
   document.getElementById('loadingTxt').textContent = txt;
@@ -684,13 +862,15 @@ document.getElementById('modalConfirmBtn').onclick = () => {
   if (cb) cb();
 };
 
-// ── PASO 1 ──
+// ── PASO 1 ────────────────────────────────────────────────────
 async function seleccionarCategoria(cat) {
   if (state.categoria && state.categoria !== cat) {
     gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] }).catch(() => {});
     localStorage.removeItem('panel_cal_sesion');
     state.calificaciones = {};
     state.rondaActual = {};
+    state.lkFase = 1;
+    state.lkClasificados = [];
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
@@ -708,9 +888,13 @@ async function seleccionarCategoria(cat) {
 
   try {
     const res = await gasGet({ action: 'getCriterios', categoria: cat });
-    renderCriteriosConfig((res.ok && res.criterios?.length) ? res.criterios : DEFAULTS_CRITERIOS[cat]);
+    // Para lk en config solo mostramos criterios F1
+    const critConfig = cat === 'lk'
+      ? LK_CRITERIOS_F1
+      : ((res.ok && res.criterios?.length) ? res.criterios : DEFAULTS_CRITERIOS[cat]);
+    renderCriteriosConfig(critConfig);
   } catch(e) {
-    renderCriteriosConfig(DEFAULTS_CRITERIOS[cat]);
+    renderCriteriosConfig(cat === 'lk' ? LK_CRITERIOS_F1 : DEFAULTS_CRITERIOS[cat]);
   }
 
   try {
@@ -789,7 +973,6 @@ function leerCriteriosConfig() {
   document.querySelectorAll('#criteriosTbody tr').forEach(r => {
     const nombre      = r.querySelector('[data-field="nombre"]').value.trim();
     const descripcion = r.querySelector('[data-field="descripcion"]').value.trim();
-    // Para lk conservamos el peso original del default; para otras siempre 5
     const esDef = DEFAULTS_CRITERIOS[state.categoria] || [];
     const defMatch = esDef.find(d => d.nombre === nombre);
     const peso = defMatch ? defMatch.peso : 5;
@@ -808,6 +991,7 @@ function cerrarCategoriaPaso1() {
         await gasPost({ action: 'finalizarCategoria',   categoria: CAT_NOMBRES[state.categoria] });
         await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
       } catch(e) {}
+      clearInterval(cronoInterval);
       localStorage.removeItem('panel_cal_sesion');
       resetearUI();
       loading(false);
@@ -819,8 +1003,16 @@ function cerrarCategoriaPaso1() {
 async function iniciarCalificacion() {
   const cat = state.categoria;
   if (!cat) { toast('Selecciona una categoría', 'error'); return; }
-  state.criterios = leerCriteriosConfig();
-  if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
+
+  // Para lk siempre usamos los criterios F1 internamente
+  if (cat === 'lk') {
+    state.criterios = [...LK_CRITERIOS_F1];
+    state.lkFase = 1;
+  } else {
+    state.criterios = leerCriteriosConfig();
+    if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
+  }
+
   if (!state.participantes.length) toast('⚠️ Sin participantes aprobados aún', 'info');
 
   gasPost({ action: 'guardarCriterios', categoria: cat, criterios: state.criterios }).catch(() => {});
@@ -832,25 +1024,38 @@ async function iniciarCalificacion() {
     (res.puntuaciones || []).forEach(p => {
       const ronda = parseInt(p.ronda) || 1;
       if (!state.calificaciones[p.id_participante] || ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
+        const notasObj = p.notas_json || {};
+        const esFase2 = notasObj.fase === 2 || ronda === 2;
+        const fase1Total = esFase2 ? (parseFloat(notasObj.fase1Total) || 0) : parseFloat(p.total) || 0;
+        const fase2Total = esFase2 ? (parseFloat(notasObj.fase2Total) || 0) : 0;
         state.calificaciones[p.id_participante] = {
           total: parseFloat(p.total) || 0, ronda,
-          notas_json: p.notas_json ? JSON.stringify(p.notas_json) : '{}', guardado: true
+          notas_json: JSON.stringify(notasObj),
+          guardado: true, fase1Total, fase2Total,
+          fase2: esFase2
         };
         state.rondaActual[p.id_participante] = ronda + 1;
+        if (esFase2) state.lkClasificados.push(p.id_participante);
       }
     });
+    // Deduplicar clasificados
+    state.lkClasificados = [...new Set(state.lkClasificados)];
   } catch(e) {}
   loading(false);
   buildPaso2();
   setStep(2);
 }
 
-// ── PASO 2 ──
+// ── PASO 2 ────────────────────────────────────────────────────
 function buildPaso2() {
   document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[state.categoria];
+  const esLk = state.categoria === 'lk';
+  document.getElementById('lkCronometroBar').classList.toggle('show', esLk);
+  document.getElementById('lkFase2Trigger').style.display = esLk ? 'block' : 'none';
   renderListaRobots();
   document.getElementById('emptyFormState').style.display = 'block';
   document.getElementById('formCal').style.display = 'none';
+  document.getElementById('lkFase2Panel').classList.remove('show');
 }
 
 function renderListaRobots() {
@@ -870,12 +1075,17 @@ function renderListaRobots() {
   state.participantes.forEach(p => {
     const cal = state.calificaciones[p.id];
     const esCal = cal?.guardado;
+    const esFase2 = cal?.fase2;
     const isSelected = state.selectedId === p.id;
     const div = document.createElement('div');
     div.className = 'robot-item' + (esCal ? ' calificado' : '') + (isSelected ? ' selected' : '');
     div.onclick = () => seleccionarRobot(p.id);
+    let estadoIcon = '○';
+    if (isSelected) estadoIcon = '►';
+    else if (esFase2) estadoIcon = '🏁';
+    else if (esCal) estadoIcon = '✓';
     div.innerHTML = `
-      <div class="robot-estado">${esCal ? '✓' : isSelected ? '►' : '○'}</div>
+      <div class="robot-estado">${estadoIcon}</div>
       <div class="robot-info">
         <div class="robot-nombre">${p.robot || p.nombre}</div>
         <div class="robot-inst">${p.institucion || '—'}</div>
@@ -890,8 +1100,31 @@ function seleccionarRobot(id) {
   state.selectedId = id;
   const p = state.participantes.find(x => x.id === id);
   if (!p) return;
+
+  const esLk = state.categoria === 'lk';
+  const cal  = state.calificaciones[id];
+  const esFase2Clasificado = esLk && state.lkClasificados.includes(id);
+  const yaCalF1 = esLk && cal?.guardado && !cal?.fase2;
+  const yaCalF2 = esLk && cal?.fase2;
+
+  // Determinar fase activa para lk
+  let faseActual = 1;
+  if (esFase2Clasificado && !yaCalF2) faseActual = 2;
+  else if (yaCalF2) faseActual = 2;
+
+  // Criterios a mostrar
+  let criteriosActivos;
+  if (esLk) {
+    criteriosActivos = faseActual === 2
+      ? [...LK_CRITERIOS_F1, LK_CRITERIO_F2]
+      : LK_CRITERIOS_F1;
+  } else {
+    criteriosActivos = state.criterios;
+  }
+
   const ronda = state.rondaActual[id] || 1;
 
+  document.getElementById('lkFase2Panel').classList.remove('show');
   document.getElementById('emptyFormState').style.display = 'none';
   document.getElementById('formCal').style.display = 'block';
   document.getElementById('calRobotNombre').textContent = p.robot || p.nombre;
@@ -899,23 +1132,38 @@ function seleccionarRobot(id) {
   document.getElementById('calRobotId').textContent     = p.id;
   document.getElementById('calRondaBadge').textContent  = `Ronda ${ronda}`;
 
-  const cal = state.calificaciones[id];
+  const faseBadge = document.getElementById('calFaseBadge');
+  if (esLk) {
+    faseBadge.style.display = 'inline-flex';
+    faseBadge.className = `fase-badge fase-${faseActual}`;
+    faseBadge.textContent = `Fase ${faseActual}`;
+  } else {
+    faseBadge.style.display = 'none';
+  }
+
   document.getElementById('calEstadoBadge').innerHTML = cal?.guardado
-    ? '<span class="badge-calificado">✓ Calificado</span>'
+    ? (yaCalF2 ? '<span class="badge-fase2">🏁 F1+F2</span>' : '<span class="badge-calificado">✓ Fase 1</span>')
     : '<span class="badge-pendiente">⬜ Pendiente</span>';
 
   const criteriosCal = document.getElementById('criteriosCal');
   criteriosCal.innerHTML = '';
+
   let notasGuardadas = {};
   if (cal?.notas_json) { try { notasGuardadas = JSON.parse(cal.notas_json); } catch(e){} }
 
-  state.criterios.forEach((c, i) => {
-    const valGuardado = notasGuardadas[`c${i}`] ?? '';
+  criteriosActivos.forEach((c, i) => {
+    const esCriterioF2 = esLk && c.nombre === LK_CRITERIO_F2.nombre;
+    // F1 guardado y solo hay fase 1: mostrar valor previo readonly
+    const soloLectura = esLk && esCriterioF2 === false && faseActual === 2 && yaCalF1;
+    const valGuardado = esCriterioF2
+      ? (notasGuardadas.fase2Carrera ?? '')
+      : (notasGuardadas[`c${i}`] ?? '');
+
     const row = document.createElement('div');
     row.className = 'criterio-row';
     row.innerHTML = `
       <div class="criterio-info">
-        <div class="criterio-nombre">${c.nombre}</div>
+        <div class="criterio-nombre">${c.nombre}${esCriterioF2 ? ' <span style="color:var(--green);font-size:.7rem">(Fase 2)</span>' : ''}</div>
         ${c.descripcion ? `<div class="criterio-desc">${c.descripcion}</div>` : ''}
         <div class="criterio-peso-hint">0 – ${c.peso}</div>
       </div>
@@ -924,6 +1172,8 @@ function seleccionarRobot(id) {
           min="0" max="${c.peso}" step="0.5"
           value="${valGuardado}"
           data-idx="${i}" data-peso="${c.peso}"
+          data-f2="${esCriterioF2 ? '1' : '0'}"
+          ${soloLectura ? 'disabled' : ''}
           oninput="actualizarTotal()" placeholder="—">
         <span class="criterio-max">/ ${c.peso}</span>
       </div>
@@ -939,47 +1189,93 @@ function seleccionarRobot(id) {
 function actualizarTotal() {
   let suma = 0, max = 0;
   document.querySelectorAll('.criterio-nota-input').forEach(inp => {
-    suma += Math.min(parseFloat(inp.value) || 0, parseFloat(inp.dataset.peso) || 10);
-    max  += parseFloat(inp.dataset.peso) || 10;
+    if (!inp.disabled) {
+      suma += Math.min(parseFloat(inp.value) || 0, parseFloat(inp.dataset.peso) || 0);
+    } else {
+      suma += Math.min(parseFloat(inp.value) || 0, parseFloat(inp.dataset.peso) || 0);
+    }
+    max += parseFloat(inp.dataset.peso) || 0;
   });
   document.getElementById('totalValor').textContent = suma.toFixed(1);
   document.getElementById('totalDe').textContent    = `/ ${max}`;
 }
 
 async function guardarCalificacion() {
-  const id = state.selectedId;
+  const id  = state.selectedId;
   if (!id) return;
-  const p = state.participantes.find(x => x.id === id);
+  const p   = state.participantes.find(x => x.id === id);
+  const esLk = state.categoria === 'lk';
+  const esFase2Clasificado = esLk && state.lkClasificados.includes(id);
+  const calPrev = state.calificaciones[id];
+  const faseActual = esLk
+    ? (esFase2Clasificado && calPrev?.guardado && !calPrev?.fase2 ? 2
+       : calPrev?.fase2 ? 2 : 1)
+    : null;
+
   const inputs = document.querySelectorAll('.criterio-nota-input');
   let suma = 0, valido = true;
-  const notasJson = {}, criteriosJson = {};
+  const notasJson = {};
 
   inputs.forEach((inp, i) => {
+    if (inp.disabled) {
+      suma += parseFloat(inp.value) || 0;
+      if (!inp.dataset.f2 || inp.dataset.f2 === '0') notasJson[`c${i}`] = parseFloat(inp.value) || 0;
+      return;
+    }
     const v = parseFloat(inp.value), peso = parseFloat(inp.dataset.peso) || 10;
     if (isNaN(v) || v < 0 || v > peso) { valido = false; inp.style.borderColor = 'var(--red)'; return; }
     inp.style.borderColor = '';
-    notasJson[`c${i}`] = v;
-    criteriosJson[`c${i}`] = state.criterios[i]?.nombre || `C${i+1}`;
+    if (inp.dataset.f2 === '1') {
+      notasJson.fase2Carrera = v;
+      notasJson.fase = 2;
+    } else {
+      notasJson[`c${i}`] = v;
+    }
     suma += v;
   });
 
   if (!valido) { toast('Revisa los valores ingresados', 'error'); return; }
+
+  // Para lk: calcular totales por fase
+  let fase1Total = 0, fase2Total = 0, totalFinal = suma;
+  if (esLk) {
+    if (faseActual === 2) {
+      fase1Total = calPrev?.fase1Total || 0;
+      fase2Total = parseFloat(notasJson.fase2Carrera) || 0;
+      totalFinal = fase1Total + fase2Total;
+      notasJson.fase1Total = fase1Total;
+      notasJson.fase2Total = fase2Total;
+    } else {
+      fase1Total = suma;
+      notasJson.fase1Total = fase1Total;
+    }
+  }
 
   const ronda = state.rondaActual[id] || 1;
   const notas = document.getElementById('calNotas').value;
 
   loading(true, 'GUARDANDO...');
   try {
+    const criteriosJson = {};
+    state.criterios.forEach((c, i) => { criteriosJson[`c${i}`] = c.nombre; });
+    if (esLk && faseActual === 2) criteriosJson['f2'] = LK_CRITERIO_F2.nombre;
+
     const res = await gasPost({
       action: 'guardarPuntuacion',
       id_participante: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
       institucion: p.institucion || '', categoria: state.categoria,
       juez_email: 'operador@sucrebot2026', juez_nombre: 'Operador',
-      criterios: criteriosJson, notas: notasJson, total: suma,
+      criterios: criteriosJson, notas: notasJson, total: totalFinal,
       timestamp: new Date().toISOString()
     });
     if (res.ok) {
-      state.calificaciones[id] = { total: suma, ronda, notas_json: JSON.stringify(notasJson), guardado: true, notas };
+      state.calificaciones[id] = {
+        total: totalFinal, ronda, notas_json: JSON.stringify(notasJson),
+        guardado: true, notas,
+        fase1Total, fase2Total,
+        fase2: esLk ? (faseActual === 2) : false
+      };
+      state.rondaActual[id] = ronda + 1;
       toast('✅ Calificación guardada', 'success');
       renderListaRobots();
       seleccionarRobot(id);
@@ -989,13 +1285,74 @@ async function guardarCalificacion() {
 }
 
 function siguienteRobot() {
-  const idx = state.participantes.findIndex(p => p.id === state.selectedId);
-  let sig = state.participantes.find((p, i) => i > idx && !state.calificaciones[p.id]?.guardado);
-  if (!sig) sig = state.participantes.find(p => !state.calificaciones[p.id]?.guardado);
+  const esLk = state.categoria === 'lk';
+  let pendientes;
+  if (esLk && state.lkFase === 2) {
+    pendientes = state.participantes.filter(p =>
+      state.lkClasificados.includes(p.id) && !state.calificaciones[p.id]?.fase2
+    );
+  } else {
+    pendientes = state.participantes.filter(p => !state.calificaciones[p.id]?.guardado);
+  }
+  const idx = pendientes.findIndex(p => p.id === state.selectedId);
+  const sig = pendientes[idx + 1] || pendientes[0];
   if (sig) seleccionarRobot(sig.id);
-  else toast('Todos los robots han sido calificados ✅', 'success');
+  else toast('Todos los robots de esta fase han sido calificados ✅', 'success');
 }
 
+// ── FASE 2 CLASIFICADOS ───────────────────────────────────────
+function abrirClasificados() {
+  document.getElementById('formCal').style.display = 'none';
+  document.getElementById('emptyFormState').style.display = 'none';
+  document.getElementById('lkFase2Panel').classList.add('show');
+
+  // Ordenar por puntaje Fase 1
+  const ordenados = [...state.participantes]
+    .map(p => ({ ...p, fase1: state.calificaciones[p.id]?.fase1Total || 0 }))
+    .sort((a, b) => b.fase1 - a.fase1);
+
+  const grid = document.getElementById('clasificadosGrid');
+  grid.innerHTML = '';
+  ordenados.forEach(p => {
+    const checked = state.lkClasificados.includes(p.id);
+    const div = document.createElement('div');
+    div.className = 'clasificado-item' + (checked ? ' checked' : '');
+    div.dataset.id = p.id;
+    div.onclick = () => toggleClasificado(p.id, div);
+    div.innerHTML = `
+      <div class="clasificado-check">${checked ? '✓' : ''}</div>
+      <div>
+        <div class="clasificado-nombre">${p.robot || p.nombre}</div>
+        <div style="font-size:.75rem;color:var(--text-dim)">${p.institucion || '—'}</div>
+      </div>
+      <div class="clasificado-score">${(state.calificaciones[p.id]?.fase1Total || 0).toFixed(1)} / 70</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function toggleClasificado(id, el) {
+  el.classList.toggle('checked');
+  el.querySelector('.clasificado-check').textContent = el.classList.contains('checked') ? '✓' : '';
+}
+
+function confirmarClasificados() {
+  const seleccionados = [...document.querySelectorAll('.clasificado-item.checked')].map(el => el.dataset.id);
+  if (!seleccionados.length) { toast('Selecciona al menos un participante para Fase 2', 'error'); return; }
+  state.lkClasificados = seleccionados;
+  state.lkFase = 2;
+  document.getElementById('lkFase2Panel').classList.remove('show');
+  document.getElementById('emptyFormState').style.display = 'block';
+  renderListaRobots();
+  toast(`✅ ${seleccionados.length} clasificados para Fase 2`, 'success');
+}
+
+function cerrarClasificados() {
+  document.getElementById('lkFase2Panel').classList.remove('show');
+  document.getElementById('emptyFormState').style.display = 'block';
+}
+
+// ── RANKING ───────────────────────────────────────────────────
 function irARanking()  { cargarRanking(); setStep(3); }
 function irACalificar() { setStep(2); }
 
@@ -1023,6 +1380,7 @@ async function cerrarCategoria() {
       await gasPost({ action: 'finalizarCategoria',   categoria: CAT_NOMBRES[state.categoria] });
       await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
     } catch(e) {}
+    clearInterval(cronoInterval);
     localStorage.removeItem('panel_cal_sesion');
     resetearUI();
     loading(false);
@@ -1031,7 +1389,10 @@ async function cerrarCategoria() {
 }
 
 function resetearUI() {
-  state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[] };
+  state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[], lkFase:1, lkClasificados:[] };
+  clearInterval(cronoInterval);
+  cronoRunning = false;
+  resetCrono();
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
   document.getElementById('lkNota').classList.remove('show');
   document.getElementById('configuracionPanel').classList.remove('show');
@@ -1043,9 +1404,11 @@ function resetearUI() {
   setStep(1);
 }
 
-// ── PASO 3 ──
 async function cargarRanking() {
   loading(true, 'CALCULANDO RANKING...');
+  const esLk = state.categoria === 'lk';
+  document.getElementById('thF2Col').style.display = esLk ? '' : 'none';
+
   try {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: state.categoria });
     state.rankingData = res.ranking || [];
@@ -1056,6 +1419,19 @@ async function cargarRanking() {
     }).sort((a, b) => b.total - a.total);
   }
 
+  // Para lk enriquecer con datos de fase
+  if (esLk) {
+    state.rankingData = state.rankingData.map(r => {
+      const cal = state.calificaciones[r.id];
+      return {
+        ...r,
+        fase1Total: cal?.fase1Total ?? r.total,
+        fase2Total: cal?.fase2Total ?? 0,
+        fase2: cal?.fase2 ?? false
+      };
+    });
+  }
+
   const maxScore = state.rankingData[0]?.total || 1;
   document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[state.categoria]}`;
   document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados`;
@@ -1064,7 +1440,7 @@ async function cargarRanking() {
   tbody.innerHTML = '';
 
   if (!state.rankingData.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Sin calificaciones aún.</p></div></td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${esLk ? 7 : 6}"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Sin calificaciones aún.</p></div></td></tr>`;
     loading(false); return;
   }
 
@@ -1073,18 +1449,28 @@ async function cargarRanking() {
     const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
     const pct = maxScore > 0 ? (r.total / maxScore) * 100 : 0;
     const tr = document.createElement('tr');
+    const f2Cell = esLk
+      ? `<td style="font-family:'DM Mono';font-size:.8rem;color:${r.fase2 ? 'var(--green)' : 'var(--text-dim)'}">
+           ${r.fase2 ? r.fase2Total.toFixed(1) : '—'}
+         </td>`
+      : '';
+    const estadoBadge = r.total > 0
+      ? (esLk && r.fase2 ? '<span class="badge-fase2">🏁 Completo</span>' : '<span class="badge-calificado">✓ F1</span>')
+      : '<span class="badge-pendiente">Pendiente</span>';
+
     tr.innerHTML = `
       <td><span class="pos-badge ${posClass}">${pos}</span></td>
       <td style="font-weight:600">${r.robot || r.nombre}</td>
       <td style="color:var(--text-dim);font-size:.82rem">${r.institucion || '—'}</td>
+      <td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${esLk ? (r.fase1Total||0).toFixed(1) : ''}</td>
+      ${f2Cell}
       <td>
         <div class="score-bar-wrap">
           <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
           <div class="score-num">${parseFloat(r.total).toFixed(1)}</div>
         </div>
       </td>
-      <td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${r.rondas || '—'}</td>
-      <td>${r.total > 0 ? '<span class="badge-calificado">✓ Eval.</span>' : '<span class="badge-pendiente">Pendiente</span>'}</td>
+      <td>${estadoBadge}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -1102,10 +1488,7 @@ async function verRankingDesdePaso1() {
     } catch(e) {}
   }
   if (!state.criterios.length) {
-    try {
-      const resCrit = await gasGet({ action: 'getCriterios', categoria: state.categoria });
-      state.criterios = (resCrit.ok && resCrit.criterios?.length) ? resCrit.criterios : DEFAULTS_CRITERIOS[state.categoria];
-    } catch(e) { state.criterios = DEFAULTS_CRITERIOS[state.categoria]; }
+    state.criterios = state.categoria === 'lk' ? [...LK_CRITERIOS_F1] : DEFAULTS_CRITERIOS[state.categoria];
   }
   await cargarRanking();
   setStep(3);
@@ -1162,19 +1545,17 @@ async function guardarPodio() {
 async function exportarExcel() {
   if (!state.rankingData.length) { toast('No hay datos', 'error'); return; }
   loading(true, 'GENERANDO CSV...');
-  let puntuaciones = [];
-  try {
-    const res = await gasGet({ action: 'getPuntuaciones', categoria: state.categoria });
-    puntuaciones = res.puntuaciones || [];
-  } catch(e) {}
-  const mapaNotas = {};
-  puntuaciones.forEach(p => { if (!mapaNotas[p.id_participante]) mapaNotas[p.id_participante] = p.notas || {}; });
-  const header = ['#', 'Robot', 'Nombre', 'Institución', ...state.criterios.map(c => c.nombre), 'TOTAL'];
+  const esLk = state.categoria === 'lk';
+  const header = ['#', 'Robot', 'Nombre', 'Institución'];
+  if (esLk) { header.push('Fase 1 (70)', 'Fase 2 (30)'); }
+  else { header.push(...state.criterios.map(c => c.nombre)); }
+  header.push('TOTAL');
   const rows = [header];
   state.rankingData.forEach((r, i) => {
-    const notas = mapaNotas[r.id] || {};
-    const valCriterios = state.criterios.map((_, idx) => { const v = notas[`c${idx}`]; return v !== undefined ? v : ''; });
-    rows.push([i + 1, r.robot || r.nombre, r.nombre, r.institucion || '', ...valCriterios, r.total]);
+    const row = [i+1, r.robot || r.nombre, r.nombre, r.institucion || ''];
+    if (esLk) { row.push(r.fase1Total?.toFixed(1) || 0, r.fase2Total?.toFixed(1) || '—'); }
+    row.push(r.total);
+    rows.push(row);
   });
   const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -1185,7 +1566,7 @@ async function exportarExcel() {
   loading(false);
 }
 
-// ── RESTAURAR SESIÓN (F5) ──
+// ── RESTAURAR SESIÓN (F5) ─────────────────────────────────────
 async function restaurarSesion() {
   const safetyTimer = setTimeout(() => { localStorage.removeItem('panel_cal_sesion'); loading(false); }, 10000);
   try {
@@ -1210,7 +1591,9 @@ async function restaurarSesion() {
       state.participantes = todos.filter(p => p.categoria === CAT_NOMBRES[sesion.categoria] && p.aprobado === 'APROBADO');
     } catch(e) {}
 
-    if (sesion.criterios?.length) {
+    if (sesion.categoria === 'lk') {
+      state.criterios = [...LK_CRITERIOS_F1];
+    } else if (sesion.criterios?.length) {
       state.criterios = sesion.criterios;
     } else {
       try {
@@ -1228,18 +1611,30 @@ async function restaurarSesion() {
     document.getElementById('btnCerrarCat1').style.display = 'flex';
     document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
     document.getElementById('btnIniciarCal').disabled = false;
-    renderCriteriosConfig(state.criterios);
+    renderCriteriosConfig(sesion.categoria === 'lk' ? LK_CRITERIOS_F1 : state.criterios);
 
-    if (sesion.paso === 2 && sesion.criterios?.length) {
+    if (sesion.paso === 2) {
       try {
         const res = await gasGet({ action: 'getPuntuaciones', categoria: sesion.categoria });
         (res.puntuaciones || []).forEach(p => {
           const ronda = parseInt(p.ronda) || 1;
           if (!state.calificaciones[p.id_participante] || ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
-            state.calificaciones[p.id_participante] = { total: parseFloat(p.total) || 0, ronda, notas_json: p.notas_json ? JSON.stringify(p.notas_json) : '{}', guardado: true };
+            const notasObj = p.notas_json || {};
+            const esFase2 = notasObj.fase === 2 || ronda === 2;
+            state.calificaciones[p.id_participante] = {
+              total: parseFloat(p.total) || 0, ronda,
+              notas_json: JSON.stringify(notasObj),
+              guardado: true,
+              fase1Total: esFase2 ? (parseFloat(notasObj.fase1Total)||0) : parseFloat(p.total)||0,
+              fase2Total: esFase2 ? (parseFloat(notasObj.fase2Total)||0) : 0,
+              fase2: esFase2
+            };
             state.rondaActual[p.id_participante] = ronda + 1;
+            if (esFase2) state.lkClasificados.push(p.id_participante);
           }
         });
+        state.lkClasificados = [...new Set(state.lkClasificados)];
+        if (state.lkClasificados.length) state.lkFase = 2;
       } catch(e) {}
       buildPaso2(); setStep(2); loading(false);
       toast('Sesión restaurada — Calificando ' + CAT_NOMBRES[sesion.categoria] + ' ✅', 'success');
