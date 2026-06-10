@@ -767,7 +767,8 @@ function iniciarCrono() {
   document.getElementById('btn-dnf').style.display    = 'block';
   ocultarBotonesAccion();
   const CATS_SEG = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
-  if (!CATS_SEG.includes(categoriaActual)) enviarSerial('R');
+  const CATS_NO_R = [...CATS_SEG, ...CATS_PULSADOR];
+  if (!CATS_NO_R.includes(categoriaActual)) enviarSerial('R');
 }
 
 function detenerCrono() {
@@ -1386,7 +1387,6 @@ document.addEventListener('componentsLoaded', async function() {
   }
 
   function procesarMensaje(msg) {
-    console.log('[Serial]', JSON.stringify(msg), 'cat:', categoriaActual, 'corriendo:', !!cronoInterval);
     if (!msg) return;
     if (!CATS_SERIAL.includes(categoriaActual)) return;
     if (rondaActual===0) return;
