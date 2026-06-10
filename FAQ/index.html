@@ -6,6 +6,7 @@
     <title>Preguntas Frecuentes - SucreBot 2026</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Orbitron:wght@500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="../shared/js/config.js"></script>
     <link rel="stylesheet" href="../shared/css/styles.css">
     <link rel="stylesheet" href="../shared/css/mobile-fix.css">
     <style>
@@ -14,7 +15,6 @@
             color: #1a1c28 !important;
         }
 
-        /* ── Panel lateral izquierdo decorativo (igual que PARTICIPANTES) ── */
         .faq-wrapper::before {
             content: '';
             position: absolute;
@@ -39,7 +39,6 @@
             overflow: visible;
         }
 
-        /* ── Hero — mismo estilo que PARTICIPANTES ── */
         .page-hero {
             padding: 80px 0 32px;
             margin-bottom: 32px;
@@ -86,10 +85,7 @@
             margin-bottom: 20px;
         }
 
-        .page-hero h2 span {
-            color: #1a5ca8;
-            white-space: nowrap;
-        }
+        .page-hero h2 span { color: #1a5ca8; white-space: nowrap; }
 
         .page-hero h2::after {
             content: '';
@@ -102,20 +98,9 @@
             border-radius: 2px;
         }
 
-        .page-hero-sub {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 12px;
-        }
+        .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+        .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
 
-        .page-hero p {
-            font-size: 13px;
-            color: #7a7a8c;
-            letter-spacing: 0.5px;
-        }
-
-        /* ── Layout ── */
         .faq-layout {
             display: flex;
             align-items: flex-start;
@@ -126,12 +111,7 @@
             padding-right: 40px;
         }
 
-        .faq-container {
-            flex: 0 0 800px;
-            width: 800px;
-            position: relative;
-            z-index: 1;
-        }
+        .faq-container { flex: 0 0 800px; width: 800px; position: relative; z-index: 1; }
 
         .faq-robot {
             flex: 0 0 280px;
@@ -153,17 +133,34 @@
             animation: float-robot 4s ease-in-out infinite;
         }
 
-        @keyframes float-robot {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+        @keyframes float-robot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+        /* ── Categorías de preguntas ── */
+        .faq-section-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: #1a5ca8;
+            text-transform: uppercase;
+            margin: 28px 0 12px;
+            padding-left: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .faq-section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(26,92,168,0.3), transparent);
         }
 
-        /* ── Acordeón FAQ ── */
+        /* ── Acordeón ── */
         .faq-item {
             background: #1a5ca8;
             border-left: 4px solid #00d4ff;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             overflow: hidden;
             transition: all 0.3s ease;
             border: 1px solid #2b6bb8;
@@ -176,64 +173,112 @@
         }
 
         .faq-question {
-            padding: 20px 25px;
+            padding: 18px 22px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
             user-select: none;
+            gap: 12px;
         }
 
         .faq-question h3 {
             margin: 0;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #ffffff;
             font-weight: 700;
+            line-height: 1.4;
         }
 
         .faq-icon {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: #00d4ff;
             transition: transform 0.3s ease;
+            flex-shrink: 0;
         }
 
-        .faq-item.active .faq-icon {
-            transform: rotate(180deg);
-            color: #ffffff;
-        }
+        .faq-item.active .faq-icon { transform: rotate(180deg); color: #ffffff; }
 
         .faq-answer {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease, padding 0.3s ease;
-            padding: 0 25px;
+            transition: max-height 0.35s ease, padding 0.3s ease;
+            padding: 0 22px;
             background: #1e6ec0;
         }
 
         .faq-item.active .faq-answer {
-            max-height: 500px;
-            padding: 0 25px 20px 25px;
+            max-height: 600px;
+            padding: 0 22px 18px 22px;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .faq-answer p {
-            margin: 15px 0 0 0;
+            margin: 14px 0 0 0;
             color: #e8f0ff;
-            line-height: 1.7;
-            font-size: 1rem;
+            line-height: 1.75;
+            font-size: .95rem;
         }
 
-        .pending-info {
-            color: #fbbf24;
-            font-style: italic;
+        .faq-answer ul {
+            margin: 10px 0 0 0;
+            padding-left: 20px;
+            color: #e8f0ff;
+            line-height: 1.75;
+            font-size: .95rem;
+        }
+        .faq-answer ul li { margin-bottom: 4px; }
+
+        .faq-answer strong { color: #90dcff; }
+        .faq-answer a { color: #90dcff; text-decoration: underline; }
+
+        /* Tabla de precios */
+        .precio-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: .88rem;
+        }
+        .precio-tabla th {
+            font-family: 'Orbitron', monospace;
+            font-size: .6rem;
+            letter-spacing: 1.5px;
+            color: #90dcff;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+        .precio-tabla td {
+            padding: 9px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            color: #e8f0ff;
+            vertical-align: middle;
+        }
+        .precio-tabla tr:last-child td { border-bottom: none; }
+        .precio-descuento {
+            display: inline-block;
+            background: rgba(46,204,113,0.2);
+            color: #2ecc71;
+            border: 1px solid rgba(46,204,113,0.4);
+            border-radius: 20px;
+            font-family: 'Orbitron', monospace;
+            font-size: .55rem;
+            letter-spacing: 1px;
+            padding: 2px 8px;
+        }
+        .precio-valor {
+            font-family: 'Orbitron', monospace;
+            font-size: .9rem;
+            font-weight: 700;
+            color: #f0a500;
         }
 
         @media (max-width: 1100px) {
             .faq-layout { flex-direction: column; align-items: center; }
             .faq-robot { display: none; }
-            .faq-container { flex: 1; max-width: 100%; }
+            .faq-container { flex: 1; max-width: 100%; width: 100%; }
             .page-hero h2 { font-size: 2rem; }
-            .faq-question h3 { font-size: 1rem; }
+            .faq-question h3 { font-size: .95rem; }
             .faq-wrapper::before { display: none; }
             .faq-layout { padding-left: 0; padding-right: 0; }
             .page-hero { padding: 40px 0 24px; }
@@ -252,7 +297,6 @@
     <div class="faq-layout">
         <div class="faq-container">
 
-            <!-- ── Hero igual que PARTICIPANTES ── -->
             <div class="page-hero">
                 <div class="page-hero-badge">
                     <div class="page-hero-badge-dot"></div>
@@ -264,152 +308,189 @@
                 </div>
             </div>
 
-            <!-- FAQ 1 -->
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Quiénes pueden participar?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Pueden participar todas las personas interesadas en robótica y competencias tecnológicas, sin restricción de edad o nivel de experiencia.</p>
-                </div>
-            </div>
+            <!-- ── INSCRIPCIÓN ── -->
+            <div class="faq-section-label">📋 Inscripción y Costos</div>
 
-            <!-- FAQ 2 -->
             <div class="faq-item">
                 <div class="faq-question">
                     <h3>¿La inscripción tiene costo?</h3>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
+                    <p>Sí, la inscripción tiene un valor que varía según la fecha en que te registres. ¡Mientras antes te inscribas, mejor precio obtienes!</p>
+                    <table class="precio-tabla">
+                        <thead>
+                            <tr><th>PERÍODO</th><th>PRECIO</th><th>DESCUENTO</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Hasta el <strong>30 de junio</strong></td>
+                                <td><span class="precio-valor">$12</span></td>
+                                <td><span class="precio-descuento">40% OFF</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>1 al 6 de julio</strong></td>
+                                <td><span class="precio-valor">$15</span></td>
+                                <td><span class="precio-descuento">25% OFF</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>9 al 10 de julio</strong></td>
+                                <td><span class="precio-valor">$20</span></td>
+                                <td>Tarifa regular</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- FAQ 3 -->
             <div class="faq-item">
                 <div class="faq-question">
                     <h3>¿Cómo me registro?</h3>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
+                    <p>El registro se realiza directamente en esta plataforma. Haz clic en <strong>SucreBot 2026 → Registro</strong> en el menú principal, completa el formulario con tus datos, sube el comprobante de pago y el logo de tu institución. Una vez revisado por el equipo organizador, recibirás tu código QR de acceso al evento en el correo que registraste.</p>
                 </div>
             </div>
 
-            <!-- FAQ 4 -->
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cuáles son las categorías disponibles?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
-                </div>
-            </div>
-
-            <!-- FAQ 5 -->
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Puedo inscribirme en más de una categoría?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
-                </div>
-            </div>
-
-            <!-- FAQ 6 -->
             <div class="faq-item">
                 <div class="faq-question">
                     <h3>¿Cómo sé si mi inscripción fue exitosa?</h3>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
+                    <p>Después de completar el formulario verás un mensaje de confirmación con tu ID de participante. Tu registro quedará en estado <strong>En Revisión</strong> hasta que el equipo lo apruebe. Una vez aprobado, recibirás un correo con tu <strong>código QR</strong> de acceso. También puedes consultar el estado en <strong>Mi Registro</strong> dentro de la plataforma.</p>
                 </div>
             </div>
 
-            <!-- FAQ 7 -->
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Dónde veo mis resultados?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
-                </div>
-            </div>
-
-            <!-- FAQ 8 -->
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cómo obtengo mi diploma?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
-                </div>
-            </div>
-
-            <!-- FAQ 9 -->
             <div class="faq-item">
                 <div class="faq-question">
                     <h3>¿Puedo cambiar mi categoría después de registrarme?</h3>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
+                    <p>Los cambios de categoría deben solicitarse antes del cierre de inscripciones escribiendo a <strong>sucrebotclub@tecnologicosucre.edu.ec</strong> o contactando al WhatsApp <strong>0987887551</strong>. No se garantizan cambios una vez iniciado el proceso de aprobación.</p>
                 </div>
             </div>
 
-            <!-- FAQ 10 -->
+            <!-- ── CATEGORÍAS ── -->
+            <div class="faq-section-label">🤖 Categorías y Participación</div>
+
             <div class="faq-item">
                 <div class="faq-question">
-                    <h3>¿Dónde se realizará el evento?</h3>
+                    <h3>¿Quiénes pueden participar?</h3>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p class="pending-info">El lugar del evento será confirmado próximamente.</p>
+                    <p>Pueden participar todas las personas interesadas en robótica y tecnología, sin restricción de edad ni nivel de experiencia. El torneo cuenta con categorías <strong>Amateur</strong>, <strong>Pro</strong> y <strong>Open</strong> para adaptarse a diferentes niveles.</p>
                 </div>
             </div>
 
-            <!-- FAQ 11 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>¿Cuáles son las categorías disponibles?</h3>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>SucreBot 2026 ofrece las siguientes categorías:</p>
+                    <ul>
+                        <li><strong>🏅 Amateur:</strong> Insectos, Trepador (Amateur), Seguidor de línea ST (Amateur)</li>
+                        <li><strong>🏆 Pro:</strong> Seguidor de línea ST (Pro), Minisumo Autónomo, Minisumo RC, Bailarín, Batalla, Trepador (Pro), Robot Soccer</li>
+                        <li><strong>🌟 Open:</strong> Cubo Rubik, Lego Kids, Impacto Tecnológico</li>
+                    </ul>
+                    <p>Consulta el <strong>Reglamento</strong> para conocer las reglas específicas de cada categoría.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>¿Puedo inscribirme en más de una categoría?</h3>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Sí, puedes competir en más de una categoría. Cada inscripción es independiente y tiene su propio costo. Deberás completar un formulario de registro por cada categoría en la que desees participar.</p>
+                </div>
+            </div>
+
+            <!-- ── EVENTO ── -->
+            <div class="faq-section-label">📍 Evento y Lugar</div>
+
             <div class="faq-item">
                 <div class="faq-question">
                     <h3>¿Cuál es la fecha del evento?</h3>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p>El evento se realizará el <strong>16 de julio de 2026</strong>.</p>
+                    <p>La competencia nacional se realizará el <strong>16 de julio de 2026</strong>. ¡Marca la fecha en tu calendario!</p>
                 </div>
             </div>
 
-            <!-- FAQ 12 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>¿Dónde se realizará el evento?</h3>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>El evento se llevará a cabo en el <strong>Centro Múltiple de Institutos (CMI)</strong>, ubicado en:</p>
+                    <p>📍 <strong>Ciudad Mitad del Mundo – San Antonio de Pichincha</strong><br>
+                    (Antiguo edificio de la UNASUR)</p>
+                </div>
+            </div>
+
+            <!-- ── RESULTADOS Y DIPLOMAS ── -->
+            <div class="faq-section-label">🏆 Resultados y Diplomas</div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>¿Dónde veo mis resultados?</h3>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Los resultados se actualizan en tiempo real durante el evento en la sección <strong>Resultados</strong> de esta plataforma. Puedes consultarlos desde cualquier dispositivo con acceso a internet, sin necesidad de iniciar sesión.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>¿Cómo obtengo mi diploma?</h3>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Los diplomas se generan automáticamente al finalizar el evento y estarán disponibles en la sección <strong>Certificados</strong> de la plataforma. Podrás buscarlos por tu nombre o correo electrónico y descargarlos en formato PDF. Cada diploma incluye un <strong>código de verificación único</strong> para validar su autenticidad.</p>
+                </div>
+            </div>
+
+            <!-- ── REGLAMENTO Y CONTACTO ── -->
+            <div class="faq-section-label">📄 Reglamento y Contacto</div>
+
             <div class="faq-item">
                 <div class="faq-question">
                     <h3>¿Dónde descargo el reglamento?</h3>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
+                    <p>El reglamento completo está disponible en la sección <strong>Reglamento</strong> del menú principal de esta plataforma. Te recomendamos leerlo antes de registrarte para conocer las reglas específicas de tu categoría.</p>
                 </div>
             </div>
 
-            <!-- FAQ 13 -->
             <div class="faq-item">
                 <div class="faq-question">
                     <h3>¿Cómo contacto a los organizadores?</h3>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p class="pending-info">[Información por completar]</p>
+                    <p>Puedes contactarnos por cualquiera de estos canales:</p>
+                    <ul>
+                        <li>📲 <strong>WhatsApp:</strong> <a href="https://wa.me/593987887551">0987887551</a></li>
+                        <li>📧 <strong>Correo:</strong> <a href="mailto:vandrade@tecnologicosucre.edu.ec">vandrade@tecnologicosucre.edu.ec</a></li>
+                        <li>📧 <strong>Correo:</strong> <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></li>
+                    </ul>
+                    <p>Respondemos en horario de oficina de lunes a viernes.</p>
                 </div>
             </div>
 
         </div>
 
-        <!-- Imagen flotante del robot -->
         <div class="faq-robot">
             <img src="../shared/images/sucrebotpensando-removebg-preview.png" alt="Robot pensando FAQ" />
         </div>
@@ -418,7 +499,6 @@
 
 <div data-include="../shared/components/footer.html"></div>
 
-<script src="../shared/js/config.js"></script>
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 <script>
