@@ -107,12 +107,20 @@
     /* ── INSTITUCIÓN COMBO ── */
     .inst-combo { position: relative; }
     .inst-combo select { width: 100%; }
-    .inst-nueva-wrap { margin-top: 8px; display: none; animation: fadeIn .2s ease; }
+    .inst-nueva-wrap { margin-top: 8px; display: none; animation: fadeIn .2s ease; position: relative; }
     .inst-nueva-wrap.show { display: block; }
     .inst-nueva-wrap input { width: 100%; background: rgba(10,25,60,0.55); border: 1.5px solid var(--r-cyan); color: #e8f0ff; font-family: 'Exo 2', sans-serif; font-size: 14px; padding: 10px 14px 10px 36px; border-radius: 8px; outline: none; box-sizing: border-box; }
     .inst-nueva-wrap input::placeholder { color: rgba(255,255,255,0.3); }
     .inst-nueva-wrap input:focus { background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
-    .inst-loading { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(91,200,240,0.6); margin-top: 4px; letter-spacing: 0.05em; }
+
+    /* ── PROVINCIA + OTRO PAÍS (mismo patrón que institución) ── */
+    .prov-combo { position: relative; }
+    .prov-combo select { width: 100%; }
+    .prov-otra-wrap { margin-top: 8px; display: none; animation: fadeIn .2s ease; position: relative; }
+    .prov-otra-wrap.show { display: block; }
+    .prov-otra-wrap input { width: 100%; background: rgba(10,25,60,0.55); border: 1.5px solid var(--r-cyan); color: #e8f0ff; font-family: 'Exo 2', sans-serif; font-size: 14px; padding: 10px 14px 10px 36px; border-radius: 8px; outline: none; box-sizing: border-box; }
+    .prov-otra-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+    .prov-otra-wrap input:focus { background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
 
     /* ── CAMPO EQUIPO SOCCER ── */
     .soccer-equipo-wrap { display: none; margin-top: 4px; animation: fadeIn .25s ease; }
@@ -229,30 +237,39 @@
     </div>
     
     <div class="form-card">
-      <div class="form-title"><svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:var(--r-cyan-bright);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>REGISTRO DE PARTICIPANTE</div>
+      <div class="form-title">
+        <svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:var(--r-cyan-bright);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
+        REGISTRO DE PARTICIPANTE
+      </div>
 
       <div class="form-section-title">👤 Datos Personales</div>
 
-      <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px;">
+      <!-- Capitán + Miembro 2 (lado a lado) -->
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
         <div class="field">
-          <label>Nombre Completo</label>
+          <label>Nombre Completo <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(capitán)</span></label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           <input type="text" id="f-nombre" placeholder="Juan Pérez" tabindex="1">
         </div>
+        <div class="field">
+          <label>Miembro 2 <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(opcional)</span></label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="f-miembro2" placeholder="Nombre completo" tabindex="2">
+        </div>
       </div>
 
-      <!-- Institución — dropdown dinámico + campo libre -->
+      <!-- Institución -->
       <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px;">
         <div class="field">
           <label>Institución / Club</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <div class="inst-combo">
-            <select id="f-institucion-select" onchange="onInstitucionChange()" tabindex="2">
+            <select id="f-institucion-select" onchange="onInstitucionChange()" tabindex="3">
               <option value="">— Cargando instituciones... —</option>
             </select>
             <div class="inst-nueva-wrap" id="inst-nueva-wrap">
               <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--r-cyan);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              <input type="text" id="f-institucion-nueva" placeholder="Nombre completo de tu institución o club" style="padding-left:36px;" tabindex="3">
+              <input type="text" id="f-institucion-nueva" placeholder="Nombre completo de tu institución o club" tabindex="4">
             </div>
           </div>
         </div>
@@ -265,7 +282,7 @@
             Logo <span style="color:#e74c3c;font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(obligatorio)</span>
           </label>
           <div class="logo-drop-zone" id="logo-drop-zone"
-               tabindex="4"
+               tabindex="5"
                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();logoInput.click()}"
                title="Clic para subir logo del club o institución">
             <div class="logo-placeholder">
@@ -279,43 +296,51 @@
         </div>
       </div>
 
-      <!-- Provincia + Contacto -->
+      <!-- Provincia/País + Contacto -->
       <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
         <div class="field">
-          <label>Provincia</label>
+          <label>Provincia / País</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <select id="f-ciudad" tabindex="5">
-            <option value="">— Selecciona —</option>
-            <option value="Azuay">Azuay</option>
-            <option value="Bolívar">Bolívar</option>
-            <option value="Cañar">Cañar</option>
-            <option value="Carchi">Carchi</option>
-            <option value="Chimborazo">Chimborazo</option>
-            <option value="Cotopaxi">Cotopaxi</option>
-            <option value="El Oro">El Oro</option>
-            <option value="Esmeraldas">Esmeraldas</option>
-            <option value="Galápagos">Galápagos</option>
-            <option value="Guayas">Guayas</option>
-            <option value="Imbabura">Imbabura</option>
-            <option value="Loja">Loja</option>
-            <option value="Los Ríos">Los Ríos</option>
-            <option value="Manabí">Manabí</option>
-            <option value="Morona Santiago">Morona Santiago</option>
-            <option value="Napo">Napo</option>
-            <option value="Orellana">Orellana</option>
-            <option value="Pastaza">Pastaza</option>
-            <option value="Pichincha">Pichincha</option>
-            <option value="Santa Elena">Santa Elena</option>
-            <option value="Santo Domingo de los Tsáchilas">Santo Domingo de los Tsáchilas</option>
-            <option value="Sucumbíos">Sucumbíos</option>
-            <option value="Tungurahua">Tungurahua</option>
-            <option value="Zamora Chinchipe">Zamora Chinchipe</option>
-          </select>
+          <div class="prov-combo">
+            <select id="f-ciudad" onchange="onProvinciaChange()" tabindex="6">
+              <option value="">— Selecciona —</option>
+              <option value="Azuay">Azuay</option>
+              <option value="Bolívar">Bolívar</option>
+              <option value="Cañar">Cañar</option>
+              <option value="Carchi">Carchi</option>
+              <option value="Chimborazo">Chimborazo</option>
+              <option value="Cotopaxi">Cotopaxi</option>
+              <option value="El Oro">El Oro</option>
+              <option value="Esmeraldas">Esmeraldas</option>
+              <option value="Galápagos">Galápagos</option>
+              <option value="Guayas">Guayas</option>
+              <option value="Imbabura">Imbabura</option>
+              <option value="Loja">Loja</option>
+              <option value="Los Ríos">Los Ríos</option>
+              <option value="Manabí">Manabí</option>
+              <option value="Morona Santiago">Morona Santiago</option>
+              <option value="Napo">Napo</option>
+              <option value="Orellana">Orellana</option>
+              <option value="Pastaza">Pastaza</option>
+              <option value="Pichincha">Pichincha</option>
+              <option value="Santa Elena">Santa Elena</option>
+              <option value="Santo Domingo de los Tsáchilas">Santo Domingo de los Tsáchilas</option>
+              <option value="Sucumbíos">Sucumbíos</option>
+              <option value="Tungurahua">Tungurahua</option>
+              <option value="Zamora Chinchipe">Zamora Chinchipe</option>
+              <option disabled>──────────────────</option>
+              <option value="__otro__">🌍 Otro (fuera de Ecuador)...</option>
+            </select>
+            <div class="prov-otra-wrap" id="prov-otra-wrap">
+              <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--r-cyan);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <input type="text" id="f-ciudad-otra" placeholder="Ej: Bogotá, Colombia" tabindex="7">
+            </div>
+          </div>
         </div>
         <div class="field">
           <label>Contacto / WhatsApp</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.4A2 2 0 0 1 3.55 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l1.3-1.3a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <input type="tel" id="f-contacto" placeholder="0991234567" tabindex="6">
+          <input type="tel" id="f-contacto" placeholder="0991234567" tabindex="8">
         </div>
       </div>
 
@@ -324,7 +349,7 @@
         <div class="field">
           <label>Correo Electrónico</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
-          <input type="email" id="f-correo" placeholder="juan@gmail.com" tabindex="7">
+          <input type="email" id="f-correo" placeholder="juan@gmail.com" tabindex="9">
         </div>
       </div>
 
@@ -333,12 +358,12 @@
         <div class="field">
           <label>Nombre del Robot</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
-          <input type="text" id="f-robot" placeholder="RoboX-1" tabindex="8">
+          <input type="text" id="f-robot" placeholder="RoboX-1" tabindex="10">
         </div>
         <div class="field">
           <label>Categoría de Competencia</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-          <select id="f-categoria" onchange="onCategoriaChange()" tabindex="9">
+          <select id="f-categoria" onchange="onCategoriaChange()" tabindex="11">
             <option value="">— Selecciona —</option>
             <optgroup label="🏅 AMATEUR">
               <option value="Insectos">Insectos</option>
@@ -363,6 +388,7 @@
         </div>
       </div>
 
+      <!-- Soccer equipo -->
       <div class="soccer-equipo-wrap" id="soccerEquipoWrap">
         <div class="soccer-equipo-badge">
           ⚽ <span>En <strong>Robot soccer</strong> compites por equipo. El bracket se generará agrupando todos los robots del mismo equipo.</span>
@@ -371,7 +397,7 @@
           <div class="field">
             <label>Nombre del Equipo <span style="color:#e74c3c;font-family:'Exo 2',sans-serif;font-size:10px;letter-spacing:0;text-transform:none;font-weight:400;">(obligatorio)</span></label>
             <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <input type="text" id="f-equipo" placeholder="Ej: Los Titanes" tabindex="10">
+            <input type="text" id="f-equipo" placeholder="Ej: Los Titanes" tabindex="12">
           </div>
         </div>
       </div>
@@ -381,29 +407,12 @@
         <div class="field">
           <label>Número de Comprobante</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          <input type="text" id="f-comprobante" placeholder="Ej: 0012345678" style="font-family:'DM Mono',monospace;letter-spacing:1px;" tabindex="11">
+          <input type="text" id="f-comprobante" placeholder="Ej: 0012345678" style="font-family:'DM Mono',monospace;letter-spacing:1px;" tabindex="13">
         </div>
         <div class="field">
           <label>Imagen o PDF del Comprobante</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <input type="file" id="f-archivo" accept="image/*,.pdf" style="width:100%;padding-left:36px;box-sizing:border-box;" tabindex="12" />
-        </div>
-      </div>
-
-      <div class="form-section-title">👥 Integrantes del Equipo <span style="font-size:9px;opacity:0.6;font-family:'Exo 2',sans-serif;text-transform:none;letter-spacing:0;">(opcional)</span></div>
-      <div style="font-family:'Exo 2',sans-serif;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;">
-        Sus nombres aparecerán en los diplomas. El QR se envía únicamente al capitán.
-      </div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
-        <div class="field">
-          <label>Nombre — Miembro 2</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-miembro2" placeholder="Nombre completo" tabindex="13">
-        </div>
-        <div class="field">
-          <label>Nombre — Miembro 3</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-miembro3" placeholder="Nombre completo" tabindex="14">
+          <input type="file" id="f-archivo" accept="image/*,.pdf" style="width:100%;padding-left:36px;box-sizing:border-box;" tabindex="14" />
         </div>
       </div>
 
@@ -431,25 +440,18 @@
   // ── INSTITUCIÓN DROPDOWN DINÁMICO ──────────────────────────────
   const GAS_INST = 'https://script.google.com/macros/s/AKfycbyqMYRaEANLMMf4cc28mH-yiziqnXiEzeaEiF3bK8Jb5zm3xt_BaqgH2Gx6UJo287ypRQ/exec';
   const INST_CACHE_KEY = 'sucrebot_instituciones_cache';
-  const INST_TTL = 6 * 60 * 60 * 1000; // 6 horas
+  const INST_TTL = 6 * 60 * 60 * 1000;
 
   function poblarInstSelect(instituciones) {
     const sel = document.getElementById('f-institucion-select');
     sel.innerHTML = '<option value="">— Selecciona institución / club —</option>';
     instituciones.sort().forEach(inst => {
       const opt = document.createElement('option');
-      opt.value = inst;
-      opt.textContent = inst;
+      opt.value = inst; opt.textContent = inst;
       sel.appendChild(opt);
     });
-    const sep = document.createElement('option');
-    sep.disabled = true;
-    sep.textContent = '──────────────────';
-    sel.appendChild(sep);
-    const nueva = document.createElement('option');
-    nueva.value = '__nueva__';
-    nueva.textContent = '➕ Otra / Nueva institución...';
-    sel.appendChild(nueva);
+    const sep = document.createElement('option'); sep.disabled = true; sep.textContent = '──────────────────'; sel.appendChild(sep);
+    const nueva = document.createElement('option'); nueva.value = '__nueva__'; nueva.textContent = '➕ Otra / Nueva institución...'; sel.appendChild(nueva);
   }
 
   function cargarInstituciones() {
@@ -457,32 +459,21 @@
       const raw = localStorage.getItem(INST_CACHE_KEY);
       if (raw) {
         const cache = JSON.parse(raw);
-        if (Date.now() - cache.ts < INST_TTL) {
-          poblarInstSelect(cache.data);
-          return;
-        }
+        if (Date.now() - cache.ts < INST_TTL) { poblarInstSelect(cache.data); return; }
       }
     } catch(e) {}
-
     fetch(GAS_INST + '?action=getParticipantes')
       .then(r => r.json())
       .then(data => {
         if (!Array.isArray(data)) return;
-        const instituciones = [...new Set(
-          data.map(p => (p.institucion || '').trim()).filter(Boolean)
-        )];
+        const instituciones = [...new Set(data.map(p => (p.institucion || '').trim()).filter(Boolean))];
         poblarInstSelect(instituciones);
-        localStorage.setItem(INST_CACHE_KEY, JSON.stringify({
-          data: instituciones, ts: Date.now()
-        }));
+        localStorage.setItem(INST_CACHE_KEY, JSON.stringify({ data: instituciones, ts: Date.now() }));
       })
       .catch(() => {
         const sel = document.getElementById('f-institucion-select');
         sel.innerHTML = '<option value="">— Selecciona institución / club —</option>';
-        const nueva = document.createElement('option');
-        nueva.value = '__nueva__';
-        nueva.textContent = '➕ Otra / Nueva institución...';
-        sel.appendChild(nueva);
+        const nueva = document.createElement('option'); nueva.value = '__nueva__'; nueva.textContent = '➕ Otra / Nueva institución...'; sel.appendChild(nueva);
       });
   }
 
@@ -500,13 +491,30 @@
 
   function getInstitucionValue() {
     const sel = document.getElementById('f-institucion-select');
-    if (sel.value === '__nueva__') {
-      return document.getElementById('f-institucion-nueva').value.trim();
-    }
+    if (sel.value === '__nueva__') return document.getElementById('f-institucion-nueva').value.trim();
     return sel.value;
   }
 
   cargarInstituciones();
+
+  // ── PROVINCIA / OTRO PAÍS ──────────────────────────────────────
+  function onProvinciaChange() {
+    const sel = document.getElementById('f-ciudad');
+    const wrap = document.getElementById('prov-otra-wrap');
+    if (sel.value === '__otro__') {
+      wrap.classList.add('show');
+      document.getElementById('f-ciudad-otra').focus();
+    } else {
+      wrap.classList.remove('show');
+      document.getElementById('f-ciudad-otra').value = '';
+    }
+  }
+
+  function getCiudadValue() {
+    const sel = document.getElementById('f-ciudad');
+    if (sel.value === '__otro__') return document.getElementById('f-ciudad-otra').value.trim();
+    return sel.value;
+  }
 
   // ── LOGO ───────────────────────────────────────────────────────
   const dropZone     = document.getElementById('logo-drop-zone');
@@ -548,17 +556,15 @@
     dropZone.classList.remove('has-logo'); logoUploader.classList.remove('has-logo');
   }
 
+  // ── CATEGORÍA ──────────────────────────────────────────────────
   function onCategoriaChange() {
     const cat = document.getElementById('f-categoria').value;
     const wrap = document.getElementById('soccerEquipoWrap');
-    if (cat === 'Robot soccer') {
-      wrap.classList.add('show');
-    } else {
-      wrap.classList.remove('show');
-      document.getElementById('f-equipo').value = '';
-    }
+    if (cat === 'Robot soccer') wrap.classList.add('show');
+    else { wrap.classList.remove('show'); document.getElementById('f-equipo').value = ''; }
   }
 
+  // ── GAS HELPERS ────────────────────────────────────────────────
   async function gasPost(data) {
     const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(data), redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
     return r.json();
@@ -573,8 +579,8 @@
 
   async function subirLogoDrive(archivo, participanteId) {
     const base64 = await toBase64(archivo);
-    const ext    = archivo.name.split('.').pop() || 'png';
-    const resp   = await gasPost({ action: 'uploadLogo', base64, mimeType: archivo.type, fileName: 'LOGO-' + participanteId + '.' + ext });
+    const ext = archivo.name.split('.').pop() || 'png';
+    const resp = await gasPost({ action: 'uploadLogo', base64, mimeType: archivo.type, fileName: 'LOGO-' + participanteId + '.' + ext });
     if (resp.ok && resp.url) return resp.url;
     throw new Error(resp.error || 'Error al subir logo a Drive');
   }
@@ -588,10 +594,12 @@
     });
   }
 
+  // ── REGISTRAR ──────────────────────────────────────────────────
   async function registrarParticipante() {
     const nombre       = document.getElementById('f-nombre').value.trim();
+    const miembro2     = document.getElementById('f-miembro2').value.trim();
     const institucion  = getInstitucionValue();
-    const ciudad       = document.getElementById('f-ciudad').value.trim();
+    const ciudad       = getCiudadValue();
     const robot        = document.getElementById('f-robot').value.trim();
     const contacto     = document.getElementById('f-contacto').value.trim();
     const correo       = document.getElementById('f-correo').value.trim();
@@ -599,8 +607,6 @@
     const comprobante  = document.getElementById('f-comprobante').value.trim();
     const archivoInput = document.getElementById('f-archivo');
     const archivo      = archivoInput.files[0] || null;
-    const miembro2     = document.getElementById('f-miembro2').value.trim();
-    const miembro3     = document.getElementById('f-miembro3').value.trim();
     const logoArchivo  = logoInput.files[0] || null;
     const equipo       = document.getElementById('f-equipo').value.trim();
 
@@ -609,10 +615,13 @@
     if (document.getElementById('f-institucion-select').value === '__nueva__' && !institucion) {
       showToast('Escribe el nombre de tu institución o club', true); return;
     }
-    if (!ciudad)              { showToast('Selecciona una provincia', true); return; }
+    if (!ciudad)              { showToast('Selecciona una provincia o escribe tu país', true); return; }
+    if (document.getElementById('f-ciudad').value === '__otro__' && !ciudad) {
+      showToast('Escribe tu país o estado', true); return;
+    }
     if (!robot)               { showToast('El nombre del robot es obligatorio', true); return; }
     if (!contacto)            { showToast('El número de contacto es obligatorio', true); return; }
-    if (contacto.length < 10) { showToast('El número debe tener al menos 10 dígitos', true); return; }
+    if (contacto.length < 7)  { showToast('El número debe tener al menos 7 dígitos', true); return; }
     if (!correo)              { showToast('El correo electrónico es obligatorio', true); return; }
     if (!categoria)           { showToast('Selecciona una categoría', true); return; }
     if (categoria === 'Robot soccer' && !equipo) {
@@ -626,10 +635,11 @@
     btn.disabled = true; btn.textContent = '⏳ Registrando participante...';
 
     try {
+      // miembro3 se envía vacío — la columna sigue existiendo en el sheet
       const respuestaRegistro = await gasPost({
         action: 'setParticipante',
         id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, miembro3, comprobante, archivoUrl: '', logoUrl: '', equipo
+        miembro2, miembro3: '', comprobante, archivoUrl: '', logoUrl: '', equipo
       });
       if (!respuestaRegistro.ok || !respuestaRegistro.id) throw new Error('No se pudo generar el ID del participante');
 
@@ -649,9 +659,10 @@
       await gasPost({
         action: 'setParticipante',
         id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, miembro3, comprobante, archivoUrl, logoUrl, equipo
+        miembro2, miembro3: '', comprobante, archivoUrl, logoUrl, equipo
       });
 
+      // Actualizar cache de instituciones si es nueva
       if (document.getElementById('f-institucion-select').value === '__nueva__' && institucion) {
         try {
           const raw = localStorage.getItem(INST_CACHE_KEY);
@@ -671,9 +682,12 @@
 
       showToast('✅ Registrado con ID: ' + idGenerado, false);
 
-      ['f-nombre','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-miembro3','f-equipo']
+      // Reset del formulario
+      ['f-nombre','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-equipo']
         .forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-ciudad').value = '';
+      document.getElementById('f-ciudad-otra').value = '';
+      document.getElementById('prov-otra-wrap').classList.remove('show');
       document.getElementById('f-categoria').value = '';
       document.getElementById('f-institucion-select').value = '';
       document.getElementById('f-institucion-nueva').value = '';
