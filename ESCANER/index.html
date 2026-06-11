@@ -15,8 +15,9 @@
     body { background: #ffffff !important; color: #1a1a2e !important; }
     main { min-height: calc(100vh - 174px); background: #ffffff; }
     .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+
     .page-hero { padding: 56px 0 24px; border-bottom: 1px solid rgba(26,92,168,0.15); margin-bottom: 24px; }
-    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #fff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
     .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1.6s infinite; }
     @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
     .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
@@ -26,12 +27,112 @@
     .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
 
     .escaner-container { background: linear-gradient(135deg, #2a5a9e 0%, #1a4580 50%, #0f3566 100%); border-radius: 20px; padding: 36px 32px; margin-top: 24px; box-shadow: 0 12px 40px rgba(26,92,168,0.35); }
-    .video-card { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+
+    /* ── PASO 1: selección de categoría ── */
+    #paso1 { display: block; }
+    #paso2 { display: none; }
+
+    .step-label { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: rgba(255,255,255,0.55); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+    .step-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #fff; letter-spacing: 2px; margin-bottom: 24px; line-height: 1; }
+    .step-title span { color: #90caf9; }
+
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+    .cat-option {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 16px 14px;
+      cursor: pointer;
+      transition: all 0.18s;
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .cat-option:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.4); transform: translateY(-2px); }
+    .cat-option.selected {
+      background: rgba(255,255,255,0.22);
+      border-color: #90caf9;
+      box-shadow: 0 0 0 3px rgba(144,202,249,0.25);
+      transform: translateY(-2px);
+    }
+    .cat-option-emoji { font-size: 1.6rem; }
+    .cat-option-nombre {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+      text-align: center;
+    }
+    .cat-option.selected .cat-option-nombre { color: #90caf9; }
+
+    .btn-iniciar {
+      width: 100%;
+      background: #fff;
+      color: #1a4580;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .btn-iniciar.habilitado { opacity: 1; pointer-events: all; }
+    .btn-iniciar.habilitado:hover { background: #e8f0ff; transform: translateY(-1px); }
+
+    /* ── PASO 2: escáner ── */
+    .cat-activa-bar {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .cat-activa-info { display: flex; align-items: center; gap: 10px; }
+    .cat-activa-emoji { font-size: 1.3rem; }
+    .cat-activa-nombre {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .cat-activa-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .btn-cambiar-cat {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.8);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-cambiar-cat:hover { background: rgba(255,255,255,0.22); color: #fff; }
+
+    .video-card { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
     .video-label { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: #1a5ca8; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; font-weight: 700; }
-    #qr-reader { width: 100%; background: #0d2a4a; border-radius: 12px; overflow: hidden; min-height: 320px; position: relative; }
+    #qr-reader { width: 100%; background: #0d2a4a; border-radius: 12px; overflow: hidden; min-height: 300px; position: relative; }
     #qr-video { width: 100%; display: none; border-radius: 12px; }
-    #qr-placeholder { display: flex; align-items: center; justify-content: center; height: 320px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; font-size: 0.85rem; letter-spacing: 0.08em; flex-direction: column; gap: 12px; }
-    .btn-camera { width: 100%; margin-top: 16px; background: #1a5ca8; border: none; color: #fff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+    #qr-placeholder { display: flex; align-items: center; justify-content: center; height: 300px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; font-size: 0.85rem; letter-spacing: 0.08em; flex-direction: column; gap: 12px; }
+    .btn-camera { width: 100%; margin-top: 14px; background: #1a5ca8; border: none; color: #fff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 15px; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
     .btn-camera:hover { background: #0e4a8f; transform: translateY(-1px); }
     .btn-camera.active { background: #d93025; }
 
@@ -45,223 +146,75 @@
     .hist-robot { font-size: 0.9rem; font-weight: 700; color: #1a3a6e; }
     .hist-time { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: #1a5ca8; font-weight: 600; background: rgba(26,92,168,0.1); padding: 3px 8px; border-radius: 6px; }
     .hist-nombre { font-size: 0.75rem; color: #5a6478; }
-    .hist-cat { font-size: 0.68rem; color: #1a5ca8; font-weight: 600; margin-top: 2px; }
     .empty-hist { text-align: center; padding: 24px; color: #7a7a8c; font-size: 0.85rem; }
 
-    /* ══ PASE OVERLAY ══ */
+    /* ── PASE MODAL ── */
     #pase-overlay {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: rgba(0,0,0,0.72);
       z-index: 99999;
-      display: flex;
-      align-items: flex-end;      /* sheet desde abajo en móvil */
-      justify-content: center;
+      display: flex; align-items: flex-end; justify-content: center;
       padding: 0;
-      opacity: 0;
-      pointer-events: none;
+      opacity: 0; pointer-events: none;
       transition: opacity 0.25s ease;
-      /* ← bloquea scroll del fondo */
       overflow: hidden;
     }
-    #pase-overlay.visible {
-      opacity: 1;
-      pointer-events: all;
-    }
-    /* en desktop centrar */
-    @media (min-width: 600px) {
-      #pase-overlay { align-items: center; padding: 20px; }
-    }
+    #pase-overlay.visible { opacity: 1; pointer-events: all; }
+    @media (min-width: 600px) { #pase-overlay { align-items: center; padding: 20px; } }
 
     #pase-card {
-      width: 100%;
-      max-width: 440px;
+      width: 100%; max-width: 440px;
       border-radius: 24px 24px 0 0;
       overflow: hidden;
       transform: translateY(100%);
       transition: transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
-      /* fuente base del card — aísla del Bebas Neue de la página */
       font-family: 'Exo 2', 'DM Sans', Arial, sans-serif;
       font-size: 14px;
     }
-    @media (min-width: 600px) {
-      #pase-card { border-radius: 24px; max-height: 90vh; overflow-y: auto; }
-    }
-    #pase-overlay.visible #pase-card {
-      transform: translateY(0);
-    }
+    @media (min-width: 600px) { #pase-card { border-radius: 24px; max-height: 90vh; overflow-y: auto; } }
+    #pase-overlay.visible #pase-card { transform: translateY(0); }
 
-    /* drag handle móvil */
-    .pase-handle {
-      background: #1a4a8a;
-      display: flex;
-      justify-content: center;
-      padding: 10px 0 0;
-    }
-    .pase-handle-bar {
-      width: 40px; height: 4px;
-      background: rgba(255,255,255,0.3);
-      border-radius: 2px;
-    }
+    .pase-handle { background: #1a4a8a; display: flex; justify-content: center; padding: 10px 0 0; }
+    .pase-handle-bar { width: 40px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; }
     @media (min-width: 600px) { .pase-handle { display: none; } }
 
-    /* header */
-    .pase-header {
-      background: #1a4a8a;
-      padding: 16px 24px 20px;
-    }
-    .pase-evento {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: rgba(255,255,255,0.5);
-      text-transform: uppercase;
-      margin: 0 0 6px;
-      font-weight: 400;
-    }
-    .pase-titulo {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 28px;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      line-height: 1;
-      margin: 0 0 4px;
-    }
+    .pase-header { background: #1a4a8a; padding: 16px 24px 20px; }
+    .pase-evento { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin: 0 0 6px; font-weight: 400; }
+    .pase-titulo { font-family: 'Exo 2', sans-serif; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 2px; text-transform: uppercase; line-height: 1; margin: 0 0 4px; }
     .pase-titulo span { color: #90caf9; }
-    .pase-fecha {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: rgba(255,255,255,0.45);
-      margin: 0;
-    }
+    .pase-fecha { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.45); margin: 0; }
 
-    /* badge categoría — pegado al header sin salirse */
-    .pase-cat-row {
-      background: #16407a;
-      padding: 12px 24px 16px;
-    }
-    .pase-cat {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: #fff;
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: 0.5px;
-      padding: 8px 16px;
-      border-radius: 10px;
-      text-transform: uppercase;
-    }
+    .pase-cat-row { background: #16407a; padding: 12px 24px 16px; }
+    .pase-cat { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #fff; font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; padding: 8px 16px; border-radius: 10px; text-transform: uppercase; }
     .pase-cat-emoji { font-size: 16px; }
 
-    /* cuerpo */
-    .pase-body {
-      background: #fff;
-      padding: 20px 24px 8px;
-    }
-    .pase-lbl {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: #1a5ca8;
-      text-transform: uppercase;
-      font-weight: 700;
-      margin: 0 0 4px;
-      display: block;
-    }
-    .pase-robot {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 30px;
-      font-weight: 800;
-      color: #1a2a4a;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin: 0 0 16px;
-      line-height: 1.1;
-    }
-    .pase-persona {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 15px;
-      color: #2c3e6e;
-      font-weight: 600;
-      margin: 0 0 4px;
-    }
-    .pase-acomp {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 13px;
-      color: #5a6478;
-      font-weight: 500;
-      margin: 0 0 2px;
-    }
-    .pase-inst {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 13px;
-      color: #7a7a8c;
-      margin: 0 0 4px;
-    }
+    .pase-body { background: #fff; padding: 20px 24px 8px; }
+    .pase-lbl { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #1a5ca8; text-transform: uppercase; font-weight: 700; margin: 0 0 4px; display: block; }
+    .pase-robot { font-family: 'Exo 2', sans-serif; font-size: 30px; font-weight: 800; color: #1a2a4a; letter-spacing: 1px; text-transform: uppercase; margin: 0 0 16px; line-height: 1.1; }
+    .pase-persona { font-family: 'Exo 2', sans-serif; font-size: 15px; color: #2c3e6e; font-weight: 600; margin: 0 0 4px; }
+    .pase-acomp { font-family: 'Exo 2', sans-serif; font-size: 13px; color: #5a6478; font-weight: 500; margin: 0 0 2px; }
+    .pase-inst { font-family: 'Exo 2', sans-serif; font-size: 13px; color: #7a7a8c; margin: 0 0 4px; }
     .pase-divider { height: 1px; background: #e8eef5; margin: 14px 0; }
 
-    /* banner ya en pista */
-    .pase-ya-banner {
-      background: #fff8e1;
-      border: 1px solid #fbbf24;
-      border-radius: 10px;
-      padding: 10px 14px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .pase-ya-banner { background: #fff8e1; border: 1px solid #fbbf24; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
     .ya-icon { font-size: 20px; flex-shrink: 0; }
     .ya-text { font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; color: #7c5a00; margin: 0; }
     .ya-sub  { font-family: 'Exo 2', sans-serif; font-size: 11px; color: #a07020; margin: 0; }
 
-    /* footer */
-    .pase-footer {
-      background: #f4f6fa;
-      padding: 14px 24px 28px;
-      display: flex;
-      gap: 10px;
-    }
-    .btn-confirmar {
-      flex: 1;
-      background: #1e8c3a;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      padding: 14px 12px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-      letter-spacing: 0.3px;
-    }
+    .pase-cat-wrong { background: #fff0f0; border: 1px solid #f87171; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+    .wrong-icon { font-size: 20px; flex-shrink: 0; }
+    .wrong-text { font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; color: #991b1b; margin: 0; }
+    .wrong-sub  { font-family: 'Exo 2', sans-serif; font-size: 11px; color: #c0392b; margin: 0; }
+
+    .pase-footer { background: #f4f6fa; padding: 14px 24px 28px; display: flex; gap: 10px; }
+    .btn-confirmar { flex: 1; background: #1e8c3a; color: #fff; border: none; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 14px; padding: 14px 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s; letter-spacing: 0.3px; }
     .btn-confirmar:hover { background: #166d2c; transform: translateY(-1px); }
     .btn-confirmar.azul { background: #1a5ca8; }
     .btn-confirmar.azul:hover { background: #0e4a8f; }
-    .btn-cancelar {
-      flex: 0 0 auto;
-      background: #fff;
-      color: #5a6478;
-      border: 1px solid #d0d8e8;
-      border-radius: 12px;
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 600;
-      font-size: 14px;
-      padding: 14px 18px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    .btn-confirmar.disabled { background: #9ca3af; cursor: not-allowed; transform: none !important; }
+    .btn-cancelar { flex: 0 0 auto; background: #fff; color: #5a6478; border: 1px solid #d0d8e8; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-weight: 600; font-size: 14px; padding: 14px 18px; cursor: pointer; transition: all 0.2s; }
     .btn-cancelar:hover { background: #e8eef5; }
 
-    /* toast */
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 100000; opacity: 0; transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55); border: 2px solid rgba(0,255,136,0.4); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -269,12 +222,13 @@
       .wrapper { padding: 0 12px 40px; }
       .page-hero { padding: 20px 0 16px; margin-bottom: 16px; }
       .page-hero h2 { font-size: 2rem; }
-      .escaner-container { padding: 20px 12px; border-radius: 16px; margin-top: 12px; }
+      .escaner-container { padding: 20px 16px; border-radius: 16px; margin-top: 12px; }
       .video-card { padding: 16px; margin-bottom: 16px; }
       #qr-reader { min-height: 240px; }
       #qr-placeholder { height: 240px; font-size: 0.75rem; }
       .btn-camera { font-size: 0.85rem; padding: 14px; margin-top: 12px; }
       .hist-card { padding: 16px; }
+      .cat-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
     }
   </style>
 </head>
@@ -301,30 +255,61 @@
     </div>
 
     <div class="escaner-container">
-      <div class="video-card">
-        <div class="video-label">📷 ESCÁNER QR</div>
-        <div id="qr-reader">
-          <video id="qr-video" playsinline></video>
-          <div id="qr-placeholder">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-              <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-            <span>PRESIONA ACTIVAR CÁMARA</span>
-          </div>
+
+      <!-- ══ PASO 1: elegir categoría ══ -->
+      <div id="paso1">
+        <div class="step-label">Paso 1 de 2</div>
+        <div class="step-title">ELIGE LA <span>PISTA</span></div>
+
+        <div class="cat-grid" id="cat-grid">
+          <!-- generado por JS -->
         </div>
-        <button class="btn-camera" id="btn-camera" onclick="toggleScanner()">📷 Activar cámara</button>
+
+        <button class="btn-iniciar" id="btn-iniciar" onclick="irAlEscaner()">
+          📷 Iniciar escáner
+        </button>
       </div>
 
-      <div class="hist-card">
-        <div class="hist-header">
-          <div class="hist-title">EN PISTA HOY</div>
-          <span class="hist-count" id="hist-count">0</span>
+      <!-- ══ PASO 2: escáner ══ -->
+      <div id="paso2">
+        <!-- barra categoría activa -->
+        <div class="cat-activa-bar">
+          <div class="cat-activa-info">
+            <div class="cat-activa-emoji" id="cat-activa-emoji">🤖</div>
+            <div>
+              <div class="cat-activa-sub">Pista activa</div>
+              <div class="cat-activa-nombre" id="cat-activa-nombre">—</div>
+            </div>
+          </div>
+          <button class="btn-cambiar-cat" onclick="volverAlPaso1()">↩ Cambiar</button>
         </div>
-        <div id="historial">
-          <p class="empty-hist">Ningún participante escaneado aún</p>
+
+        <div class="video-card">
+          <div class="video-label">📷 ESCÁNER QR</div>
+          <div id="qr-reader">
+            <video id="qr-video" playsinline></video>
+            <div id="qr-placeholder">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span>PRESIONA ACTIVAR CÁMARA</span>
+            </div>
+          </div>
+          <button class="btn-camera" id="btn-camera" onclick="toggleScanner()">📷 Activar cámara</button>
+        </div>
+
+        <div class="hist-card">
+          <div class="hist-header">
+            <div class="hist-title">EN PISTA HOY</div>
+            <span class="hist-count" id="hist-count">0</span>
+          </div>
+          <div id="historial">
+            <p class="empty-hist">Ningún participante escaneado aún</p>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 </main>
@@ -335,23 +320,20 @@
 <!-- ══ PASE MODAL ══ -->
 <div id="pase-overlay" onclick="cerrarPaseSiOverlay(event)">
   <div id="pase-card">
-
     <div class="pase-handle"><div class="pase-handle-bar"></div></div>
-
     <div class="pase-header">
       <p class="pase-evento">SucreBot 2026 &middot; Club de Robótica Sucre</p>
       <p class="pase-titulo">PASE DE <span>ACCESO</span></p>
       <p class="pase-fecha" id="pase-fecha">16 de julio de 2026</p>
     </div>
-
     <div class="pase-cat-row">
-      <div class="pase-cat" id="pase-cat">
+      <div class="pase-cat">
         <span class="pase-cat-emoji" id="pase-cat-emoji">🤖</span>
         <span id="pase-cat-text">—</span>
       </div>
     </div>
-
     <div class="pase-body">
+      <!-- banner ya en pista -->
       <div class="pase-ya-banner" id="pase-ya-banner" style="display:none">
         <div class="ya-icon">⚠️</div>
         <div>
@@ -359,28 +341,30 @@
           <p class="ya-sub">Este participante ya fue registrado esta sesión</p>
         </div>
       </div>
+      <!-- banner categoría incorrecta -->
+      <div class="pase-cat-wrong" id="pase-cat-wrong" style="display:none">
+        <div class="wrong-icon">🚫</div>
+        <div>
+          <p class="wrong-text" id="wrong-text">Categoría incorrecta</p>
+          <p class="wrong-sub" id="wrong-sub">Este robot no pertenece a esta pista</p>
+        </div>
+      </div>
 
       <span class="pase-lbl">Robot</span>
       <p class="pase-robot" id="pase-robot">—</p>
-
       <div class="pase-divider"></div>
-
       <span class="pase-lbl">Capitán</span>
       <p class="pase-persona" id="pase-capitan">—</p>
-
       <div id="pase-acomp-wrap" style="display:none">
         <span class="pase-lbl" style="margin-top:10px; display:block;">Acompañante(s)</span>
         <div id="pase-acomp-lista"></div>
       </div>
-
       <div class="pase-divider"></div>
-
       <span class="pase-lbl">Institución</span>
       <p class="pase-inst" id="pase-inst">—</p>
     </div>
-
     <div class="pase-footer">
-      <button class="btn-confirmar verde" id="btn-confirmar" onclick="confirmarIngreso()">✅ Confirmar ingreso</button>
+      <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarIngreso()">✅ Confirmar ingreso</button>
       <button class="btn-cancelar" onclick="cerrarPase()">Cancelar</button>
     </div>
   </div>
@@ -392,21 +376,23 @@
 <script>
   const GAS_URL = CONFIG.GAS_URL();
 
-  const CAT_EMOJI = {
-    'Insectos':'🐛','Trepador (Amateur)':'🧗','Trepador (Pro)':'🧗',
-    'Seguidor de línea ST (Amateur)':'➡️','Seguidor de línea ST (Pro)':'➡️',
-    'Minisumo Autónomo':'🤖','Minisumo RC':'🕹️','Bailarín':'💃',
-    'Batalla':'⚔️','Impacto Tecnológico':'💡','Robot soccer':'⚽',
-    'Cubo Rubik':'🎲','Lego Kids':'🧱'
-  };
+  const CATEGORIAS = [
+    { nombre: 'Insectos',                        emoji: '🐛', ruta: 'ins'   },
+    { nombre: 'Trepador (Amateur)',               emoji: '🧗', ruta: 'trp_a' },
+    { nombre: 'Trepador (Pro)',                   emoji: '🧗', ruta: 'trp_p' },
+    { nombre: 'Seguidor de línea ST (Amateur)',   emoji: '➡️', ruta: 'sl_a'  },
+    { nombre: 'Seguidor de línea ST (Pro)',       emoji: '➡️', ruta: 'sl_p'  },
+    { nombre: 'Minisumo Autónomo',                emoji: '🤖', ruta: 'ms_a'  },
+    { nombre: 'Minisumo RC',                      emoji: '🕹️', ruta: 'ms_rc' },
+    { nombre: 'Bailarín',                         emoji: '💃', ruta: 'bai'   },
+    { nombre: 'Batalla',                          emoji: '⚔️', ruta: 'bat'   },
+    { nombre: 'Impacto Tecnológico',              emoji: '💡', ruta: 'dev'   },
+    { nombre: 'Robot soccer',                     emoji: '⚽', ruta: 'soc'   },
+    { nombre: 'Cubo Rubik',                       emoji: '🎲', ruta: 'cr'    },
+    { nombre: 'Lego Kids',                        emoji: '🧱', ruta: 'lk'    },
+  ];
 
-  const RUTAS_SCANNER = {
-    'Insectos':'ins','Trepador (Amateur)':'trp_a','Seguidor de línea ST (Amateur)':'sl_a',
-    'Seguidor de línea ST (Pro)':'sl_p','Minisumo Autónomo':'ms_a','Minisumo RC':'ms_rc',
-    'Bailarín':'bai','Batalla':'bat','Trepador (Pro)':'trp_p',
-    'Robot soccer':'soc','Cubo Rubik':'cr','Lego Kids':'lk','Impacto Tecnológico':'dev'
-  };
-
+  let categoriaSeleccionada = null;   // objeto de CATEGORIAS
   let codeReader = null, videoStream = null, scannerActivo = false;
   let participanteActual = null;
   let historial = [];
@@ -414,24 +400,70 @@
   let ultimoQrProcesado = null, tiempoUltimoQr = 0;
   let cacheParticipantes = [];
 
+  /* ── INIT ── */
   window.addEventListener('DOMContentLoaded', async () => {
-    // restaurar sesión
+    renderCatGrid();
     try {
       const saved = localStorage.getItem('escaner_en_pista');
       if (saved) {
-        const datos = JSON.parse(saved);
-        if (datos.ids) datos.ids.forEach(id => enPistaIds.add(id));
-        if (datos.historial) historial = datos.historial;
+        const d = JSON.parse(saved);
+        if (d.ids) d.ids.forEach(id => enPistaIds.add(id));
+        if (d.historial) historial = d.historial;
         renderHistorial();
+      }
+      // restaurar categoría si venía del paso 2
+      const savedCat = localStorage.getItem('escaner_categoria');
+      if (savedCat) {
+        const cat = CATEGORIAS.find(c => c.ruta === savedCat);
+        if (cat) seleccionarCategoria(cat, false); // false = no auto-avanzar
       }
     } catch(e) {}
     await actualizarCache();
     setInterval(actualizarCache, 5 * 60 * 1000);
-    // fecha de hoy en el pase
     document.getElementById('pase-fecha').textContent =
       new Date().toLocaleDateString('es-EC', { day:'numeric', month:'long', year:'numeric' });
   });
 
+  function renderCatGrid() {
+    const grid = document.getElementById('cat-grid');
+    grid.innerHTML = CATEGORIAS.map(cat => `
+      <div class="cat-option" id="cat-opt-${cat.ruta}" onclick="seleccionarCategoria(CATEGORIAS.find(c=>c.ruta==='${cat.ruta}'), true)">
+        <div class="cat-option-emoji">${cat.emoji}</div>
+        <div class="cat-option-nombre">${cat.nombre}</div>
+      </div>`).join('');
+  }
+
+  function seleccionarCategoria(cat, click = true) {
+    categoriaSeleccionada = cat;
+    // marcar seleccionada
+    document.querySelectorAll('.cat-option').forEach(el => el.classList.remove('selected'));
+    const opt = document.getElementById('cat-opt-' + cat.ruta);
+    if (opt) opt.classList.add('selected');
+    // habilitar botón
+    const btn = document.getElementById('btn-iniciar');
+    btn.classList.add('habilitado');
+    btn.textContent = `📷 Iniciar escáner — ${cat.emoji} ${cat.nombre}`;
+    localStorage.setItem('escaner_categoria', cat.ruta);
+  }
+
+  /* ── NAVEGACIÓN PASOS ── */
+  function irAlEscaner() {
+    if (!categoriaSeleccionada) return;
+    document.getElementById('paso1').style.display = 'none';
+    document.getElementById('paso2').style.display = 'block';
+    // actualizar barra categoría activa
+    document.getElementById('cat-activa-emoji').textContent = categoriaSeleccionada.emoji;
+    document.getElementById('cat-activa-nombre').textContent = categoriaSeleccionada.nombre;
+    renderHistorial(); // refrescar con los datos ya cargados
+  }
+
+  function volverAlPaso1() {
+    stopScanner();
+    document.getElementById('paso2').style.display = 'none';
+    document.getElementById('paso1').style.display = 'block';
+  }
+
+  /* ── CACHE PARTICIPANTES ── */
   async function actualizarCache() {
     try {
       const r = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getParticipantes' }));
@@ -495,14 +527,16 @@
       if (p.aprobado !== 'APROBADO') { showToast(`⚠️ ${p.nombre || p.robot} — no está aprobado`, true); return; }
       stopScanner();
       participanteActual = p;
-      mostrarPase(p);
+      // verificar si la categoría coincide
+      const catCorrecta = p.categoria === categoriaSeleccionada.nombre;
+      mostrarPase(p, catCorrecta);
     } catch(e) { showToast('❌ Error: ' + e.message, true); }
   }
 
   /* ── PASE ── */
-  function mostrarPase(p) {
+  function mostrarPase(p, catCorrecta) {
     const yaEnPista = enPistaIds.has(p.id);
-    const emoji = CAT_EMOJI[p.categoria] || '🤖';
+    const emoji = categoriaSeleccionada ? categoriaSeleccionada.emoji : '🤖';
 
     document.getElementById('pase-cat-emoji').textContent = emoji;
     document.getElementById('pase-cat-text').textContent  = p.categoria || '—';
@@ -513,26 +547,39 @@
     const acomps = [p.miembro2, p.miembro3].filter(m => m && String(m).trim() !== '' && String(m).trim() !== '0');
     const wrap = document.getElementById('pase-acomp-wrap');
     if (acomps.length) {
-      document.getElementById('pase-acomp-lista').innerHTML =
-        acomps.map(m => `<p class="pase-acomp">· ${m}</p>`).join('');
+      document.getElementById('pase-acomp-lista').innerHTML = acomps.map(m => `<p class="pase-acomp">· ${m}</p>`).join('');
       wrap.style.display = 'block';
     } else {
       wrap.style.display = 'none';
     }
 
-    const yaBanner    = document.getElementById('pase-ya-banner');
-    const btnConfirmar = document.getElementById('btn-confirmar');
-    if (yaEnPista) {
-      yaBanner.style.display = 'flex';
-      btnConfirmar.textContent = '🔄 Registrar de nuevo';
-      btnConfirmar.className   = 'btn-confirmar azul';
+    // banner ya en pista
+    document.getElementById('pase-ya-banner').style.display = (yaEnPista && catCorrecta) ? 'flex' : 'none';
+
+    // banner categoría incorrecta
+    const wrongBanner = document.getElementById('pase-cat-wrong');
+    if (!catCorrecta) {
+      document.getElementById('wrong-text').textContent = `Categoría incorrecta`;
+      document.getElementById('wrong-sub').textContent  =
+        `Este robot es de "${p.categoria}", no de "${categoriaSeleccionada.nombre}"`;
+      wrongBanner.style.display = 'flex';
     } else {
-      yaBanner.style.display = 'none';
-      btnConfirmar.textContent = '✅ Confirmar ingreso';
-      btnConfirmar.className   = 'btn-confirmar verde';
+      wrongBanner.style.display = 'none';
     }
 
-    // bloquear scroll del body
+    // botón confirmar
+    const btnConfirmar = document.getElementById('btn-confirmar');
+    if (!catCorrecta) {
+      btnConfirmar.textContent  = '🚫 No pertenece a esta pista';
+      btnConfirmar.className    = 'btn-confirmar disabled';
+    } else if (yaEnPista) {
+      btnConfirmar.textContent  = '🔄 Registrar de nuevo';
+      btnConfirmar.className    = 'btn-confirmar azul';
+    } else {
+      btnConfirmar.textContent  = '✅ Confirmar ingreso';
+      btnConfirmar.className    = 'btn-confirmar';
+    }
+
     document.body.style.overflow = 'hidden';
     document.getElementById('pase-overlay').classList.add('visible');
   }
@@ -548,16 +595,16 @@
   }
 
   async function confirmarIngreso() {
-    if (!participanteActual) return;
+    const btn = document.getElementById('btn-confirmar');
+    if (btn.classList.contains('disabled') || !participanteActual) return;
     const p = participanteActual;
     enPistaIds.add(p.id);
     agregarAlHistorial(p);
     guardarSesion();
     cerrarPase();
     showToast(`✓ ${p.robot || p.nombre} — ingresó a la pista`);
-    // setActivo opcional para compatibilidad con CRONOMETRO
     try {
-      const ruta = RUTAS_SCANNER[p.categoria] || 'general';
+      const ruta = categoriaSeleccionada ? categoriaSeleccionada.ruta : 'general';
       await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -574,8 +621,7 @@
   function agregarAlHistorial(p) {
     const hora = new Date().toLocaleTimeString('es-EC', { hour:'2-digit', minute:'2-digit' });
     const idx = historial.findIndex(h => h.id === p.id);
-    const entry = { id:p.id, robot:p.robot, nombre:p.nombre, hora, categoria:p.categoria,
-                    miembro2:p.miembro2, miembro3:p.miembro3 };
+    const entry = { id:p.id, robot:p.robot, nombre:p.nombre, hora, categoria:p.categoria };
     if (idx >= 0) historial.splice(idx, 1);
     historial.unshift(entry);
     if (historial.length > 50) historial = historial.slice(0, 50);
@@ -584,6 +630,7 @@
 
   function renderHistorial() {
     const c = document.getElementById('historial');
+    if (!c) return;
     document.getElementById('hist-count').textContent = historial.length;
     if (!historial.length) { c.innerHTML = '<p class="empty-hist">Ningún participante escaneado aún</p>'; return; }
     c.innerHTML = historial.map(h => `
@@ -593,7 +640,6 @@
           <div class="hist-time">${h.hora}</div>
         </div>
         <div class="hist-nombre">${h.nombre || '—'}</div>
-        <div class="hist-cat">${CAT_EMOJI[h.categoria]||'🤖'} ${h.categoria||'—'}</div>
       </div>`).join('');
   }
 
@@ -611,13 +657,10 @@
     if (t.includes('~')) { const id = t.split('~')[0].trim(); if (id) return id.toLowerCase(); }
     try { const j = JSON.parse(t); if (j && j.id) return String(j.id).trim(); } catch(e) {}
     if (t.includes('?id=') || t.includes('&id=')) {
-      const m = t.match(/[?&]id=([^&\s]+)/i);
-      if (m) return decodeURIComponent(m[1]).trim();
+      const m = t.match(/[?&]id=([^&\s]+)/i); if (m) return decodeURIComponent(m[1]).trim();
     }
-    const mE = t.match(/ID\s*[:=]\s*([^\|\n\r~]+)/i);
-    if (mE) return mE[1].trim();
-    const mP = t.match(/sb-\d{4}-[a-z_]+-\d{3}/i);
-    if (mP) return mP[0].toLowerCase().trim();
+    const mE = t.match(/ID\s*[:=]\s*([^\|\n\r~]+)/i); if (mE) return mE[1].trim();
+    const mP = t.match(/sb-\d{4}-[a-z_]+-\d{3}/i); if (mP) return mP[0].toLowerCase().trim();
     const l = t.replace(/[\r\n]+/g,'').trim();
     if (l && l.length < 50 && !l.includes(' ') && !l.includes('~')) return l.toLowerCase();
     return null;
