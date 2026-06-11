@@ -325,8 +325,15 @@ const GAS_URL = CONFIG.GAS_URL();
 const RUTAS = { 'Insectos':'ins','Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr' };
 const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)','Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
 const CATS_PULSADOR = ['Cubo Rubik'];
+const CATS_SEG      = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
 const CATS_SERIAL   = [...CATS_SENSOR,...CATS_PULSADOR];
-const AVISO_SENSOR  = { 'Trepador (Amateur)':{titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},'Trepador (Pro)':{titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},'Seguidor de línea ST (Amateur)':{titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},'Seguidor de línea ST (Pro)':{titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},'Cubo Rubik':{titulo:'PULSADORES REQUERIDOS (x2)',desc:'Conecta el Arduino. Suelta ambos pulsadores para iniciar. Presiona ambos para detener.'} };
+const AVISO_SENSOR  = {
+  'Trepador (Amateur)':             {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
+  'Trepador (Pro)':                 {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
+  'Seguidor de línea ST (Amateur)': {titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},
+  'Seguidor de línea ST (Pro)':     {titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},
+  'Cubo Rubik':                     {titulo:'PULSADORES REQUERIDOS (x2)',desc:'Conecta el Arduino. Suelta ambos pulsadores para iniciar. Presiona ambos para detener.'}
+};
 
 let categoriaActual=null,participanteActual=null,pollingInterval=null,cronoInterval=null,cronoInicio=null;
 let rondaActual=0,intentoActual=1,maxRondas=3,maxIntentos=2;
@@ -358,8 +365,17 @@ async function elegirCategoria(cat,ev){
 function renderSeleccion(){
   const lista=document.getElementById('participantesList');actualizarContadorSel();
   if(!presentes.length){lista.innerHTML='<div class="aviso-empty">⚠️ No hay participantes aprobados para esta categoría</div>';document.getElementById('btnIniciarCrono').disabled=true;return;}
-  lista.innerHTML=presentes.map(p=>{const sel=seleccionados.has(p.id);const safeId=p.id.replace(/[^a-z0-9]/gi,'_');return'<div class="part-item '+(sel?'checked':'')+'" onclick="toggleSel(''+p.id+'')" id="pitem-'+safeId+'"><div class="part-check">'+(sel?'✓':'')+'</div><div class="part-info"><div class="part-nombre">'+p.robot+'</div><div class="part-sub">'+p.nombre+(p.institucion?' · '+p.institucion:'')+'</div></div><div class="part-badge">🤖</div></div>';}).join('');
+  lista.innerHTML=presentes.map(p=>{
+    const sel=seleccionados.has(p.id);
+    const safeId=p.id.replace(/[^a-z0-9]/gi,'_');
+    return '<div class="part-item '+(sel?'checked':'')+'" onclick="toggleSel(\''+p.id+'\')" id="pitem-'+safeId+'">'
+      +'<div class="part-check">'+(sel?'✓':'')+'</div>'
+      +'<div class="part-info"><div class="part-nombre">'+p.robot+'</div>'
+      +'<div class="part-sub">'+p.nombre+(p.institucion?' · '+p.institucion:'')+'</div></div>'
+      +'<div class="part-badge">🤖</div></div>';
+  }).join('');
 }
+
 function toggleSel(id){if(seleccionados.has(id))seleccionados.delete(id);else seleccionados.add(id);const safeId=id.replace(/[^a-z0-9]/gi,'_');const el=document.getElementById('pitem-'+safeId);if(el){const sel=seleccionados.has(id);el.classList.toggle('checked',sel);el.querySelector('.part-check').textContent=sel?'✓':'';}actualizarContadorSel();}
 function actualizarContadorSel(){document.getElementById('selCount').textContent=seleccionados.size;document.getElementById('btnIniciarCrono').disabled=seleccionados.size===0;}
 function seleccionarTodos(){presentes.forEach(p=>seleccionados.add(p.id));renderSeleccion();}
@@ -464,7 +480,6 @@ function iniciarCrono(){
   document.getElementById('crono-display').className='crono-display running';
   document.getElementById('crono-status').textContent='EN MARCHA · Intento '+intentoActual+' de '+maxIntentos;
   document.getElementById('btn-dnf').style.display='block';ocultarBotonesAccion();
-  const CATS_SEG=['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
   const CATS_NO_R=[...CATS_SEG,...CATS_PULSADOR];
   if(!CATS_NO_R.includes(categoriaActual))enviarSerial('R');
 }
@@ -616,7 +631,8 @@ function cargarEstado(cat){
     document.getElementById('cfg-rondas').value=maxRondas;document.getElementById('cfg-intentos').value=maxIntentos;
     if(competenciaIniciada){document.getElementById('cfg-rondas').disabled=true;document.getElementById('cfg-intentos').disabled=true;document.getElementById('cfg-rondas').style.opacity='0.5';document.getElementById('cfg-intentos').style.opacity='0.5';document.getElementById('btn-iniciar-comp').classList.add('oculto');}
     actualizarBadges();renderRondas();actualizarContador();
-    if(rondaActual>=maxRondas&&getRonda(rondaActual).cerrada){const btn=document.getElementById('btn-cerrar-ronda');btn.disabled=true;btn.innerHTML='✓ Competencia finalizada';btn.style.opacity='0.5';document.getElementById('btn-excel').classList.add('visible');document.getElementById('btn-podio').classList.add('visible');}
+    const ultimaRondaCerrada=getRonda(rondaActual).cerrada||(rondaActual>=maxRondas&&getRonda(maxRondas).cerrada);
+    if(ultimaRondaCerrada){const btn=document.getElementById('btn-cerrar-ronda');btn.disabled=true;btn.innerHTML='✓ Competencia finalizada';btn.style.opacity='0.5';document.getElementById('btn-excel').classList.add('visible');document.getElementById('btn-podio').classList.add('visible');}
     return true;
   }catch(e){console.error('Error cargar estado:',e);return false;}
 }
@@ -653,10 +669,10 @@ async function guardarPodioCrono(){
       const full=presentes.find(p=>p.id===c.id)||{};
       const existing=mapaParticipantes.get(c.robot);
       if(!existing){
-            mapaParticipantes.set(c.robot,{...c,correo:c.correo||full.correo||'',miembro2:c.miembro2||full.miembro2||''});
+        mapaParticipantes.set(c.robot,{...c,correo:c.correo||full.correo||'',miembro2:c.miembro2||full.miembro2||''});
       }else{
         if(!c.esDNF&&c.tiempo!=='—'&&c.tiempo!=='DNF'&&tiempoASegundos(c.tiempo)<tiempoASegundos(existing.tiempo)){existing.tiempo=c.tiempo;existing.esDNF=false;}
-            if(!existing.miembro2)existing.miembro2=c.miembro2||full.miembro2||'';
+        if(!existing.miembro2)existing.miembro2=c.miembro2||full.miembro2||'';
         if(!existing.correo)existing.correo=c.correo||full.correo||'';
       }
     });
@@ -703,7 +719,7 @@ document.addEventListener('componentsLoaded',async function(){
       cargarEstado(catGuardada);iniciarPolling();setStep(3);showToast('✅ Categoría "'+catGuardada+'" restaurada');
       try{
         const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}));const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
-            presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
+        presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
       }catch(e){console.warn('No se pudieron recargar presentes tras F5:',e);}
     }
   }
@@ -720,21 +736,106 @@ document.addEventListener('componentsLoaded',async function(){
   const CATS_PULSADOR=['Cubo Rubik'];
   const CATS_SERIAL=[...CATS_SENSOR,...CATS_SEGUIDOR,...CATS_PULSADOR];
 
-  function inyectarBoton(){if(document.getElementById('btn-serial'))return;const btn=document.createElement('button');btn.id='btn-serial';btn.style.cssText='width:100%;padding:10px 14px;border-radius:8px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.03em;cursor:pointer;border:2px solid #4ab8e8;background:linear-gradient(135deg,#0e2a5a 0%,#1a3a6b 100%);color:#5bc8f0;transition:all 0.2s;display:none;margin-top:0;';btn.onmouseenter=()=>btn.style.transform='translateY(-2px)';btn.onmouseleave=()=>btn.style.transform='';btn.onclick=toggle;actualizarBoton(btn,false);const badges=document.querySelector('.badges-wrap');if(badges)badges.after(btn);}
-  function actualizarBoton(btn,conectado){if(!btn)return;if(conectado){btn.textContent='🟢 Dispositivo conectado';btn.style.borderColor='#3dd68c';btn.style.color='#3dd68c';btn.style.background='linear-gradient(135deg,#0a2a1a 0%,#0e3a22 100%)';}else{btn.textContent='🔌 Conectar dispositivo';btn.style.borderColor='#4ab8e8';btn.style.color='#5bc8f0';btn.style.background='linear-gradient(135deg,#0e2a5a 0%,#1a3a6b 100%)';}}
-  window.mostrarBotonSerial=function(visible){const btn=document.getElementById('btn-serial');if(!btn){if(visible)setTimeout(()=>window.mostrarBotonSerial(visible),200);return;}btn.style.display=visible?'block':'none';if(visible)actualizarBoton(btn,!!puerto);};
-  async function toggle(){if(puerto)await desconectar();else await conectar();}
-  async function conectar(){if(!('serial' in navigator)){showToast('❌ Web Serial solo funciona en Chrome',true);return;}try{puerto=await navigator.serial.requestPort();await puerto.open({baudRate:115200});const enc=new TextEncoderStream();enc.readable.pipeTo(puerto.writable);writer=enc.writable.getWriter();actualizarBoton(document.getElementById('btn-serial'),true);document.getElementById('aviso-sensor').classList.remove('visible');showToast('🟢 Dispositivo conectado');await new Promise(r=>setTimeout(r,2000));escuchar();}catch(e){puerto=null;writer=null;if(e.name!=='NotFoundError')showToast('❌ '+e.message,true);}}
-  async function desconectar(){try{if(writer){await writer.close();writer=null;}if(puerto){await puerto.close();puerto=null;}}catch(e){}actualizarBoton(document.getElementById('btn-serial'),false);if(categoriaActual&&CATS_SERIAL.includes(categoriaActual))document.getElementById('aviso-sensor').classList.add('visible');showToast('🔴 Dispositivo desconectado');}
-  async function escuchar(){const dec=new TextDecoderStream();puerto.readable.pipeTo(dec.writable);const lector=dec.readable.getReader();try{while(true){const{value,done}=await lector.read();if(done)break;buffer+=value;const lineas=buffer.split('\n');buffer=lineas.pop();for(const l of lineas)procesarMensaje(l.trim());}}catch(e){if(e.name!=='AbortError'){showToast('⚠️ Dispositivo desconectado',true);actualizarBoton(document.getElementById('btn-serial'),false);puerto=null;writer=null;}}}
-  function procesarMensaje(msg){
-    if(!msg)return;if(!CATS_SERIAL.includes(categoriaActual))return;if(rondaActual===0)return;if(!participanteActual)return;
-    if(msg==='STOP'&&CATS_SENSOR.includes(categoriaActual)){if(cronoInterval){detenerCrono();showToast('✅ Meta detectada');}return;}
-    if(CATS_SEGUIDOR.includes(categoriaActual)){if(msg==='START'&&!cronoInterval){iniciarCrono();showToast('▶ Sensor: inicio detectado');return;}if(msg==='STOP'&&cronoInterval){detenerCrono();showToast('✅ Sensor: meta detectada');return;}return;}
-    if(CATS_PULSADOR.includes(categoriaActual)){if(msg==='START'&&!cronoInterval){iniciarCrono();showToast('▶ Pulsadores: inicio');return;}if(msg==='STOP'&&cronoInterval){detenerCrono();showToast('✅ Pulsadores: tiempo detenido');return;}return;}
+  function inyectarBoton(){
+    if(document.getElementById('btn-serial'))return;
+    const btn=document.createElement('button');
+    btn.id='btn-serial';
+    btn.style.cssText=`width:100%;padding:10px 14px;border-radius:8px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.03em;cursor:pointer;border:2px solid #4ab8e8;background:linear-gradient(135deg,#0e2a5a 0%,#1a3a6b 100%);color:#5bc8f0;transition:all 0.2s;display:none;margin-top:0;`;
+    btn.onmouseenter=()=>btn.style.transform='translateY(-2px)';
+    btn.onmouseleave=()=>btn.style.transform='';
+    btn.onclick=toggle;
+    actualizarBoton(btn,false);
+    const badges=document.querySelector('.badges-wrap');
+    if(badges)badges.after(btn);
   }
+
+  function actualizarBoton(btn,conectado){
+    if(!btn)return;
+    if(conectado){btn.textContent='🟢 Dispositivo conectado';btn.style.borderColor='#3dd68c';btn.style.color='#3dd68c';btn.style.background='linear-gradient(135deg,#0a2a1a 0%,#0e3a22 100%)';}
+    else{btn.textContent='🔌 Conectar dispositivo';btn.style.borderColor='#4ab8e8';btn.style.color='#5bc8f0';btn.style.background='linear-gradient(135deg,#0e2a5a 0%,#1a3a6b 100%)';}
+  }
+
+  window.mostrarBotonSerial=function(visible){
+    const btn=document.getElementById('btn-serial');
+    if(!btn){if(visible)setTimeout(()=>window.mostrarBotonSerial(visible),200);return;}
+    btn.style.display=visible?'block':'none';
+    if(visible)actualizarBoton(btn,!!puerto);
+  };
+
+  async function toggle(){if(puerto)await desconectar();else await conectar();}
+
+  async function conectar(){
+    if(!('serial' in navigator)){showToast('❌ Web Serial solo funciona en Chrome',true);return;}
+    try{
+      puerto=await navigator.serial.requestPort();
+      await puerto.open({baudRate:115200});
+      const enc=new TextEncoderStream();
+      enc.readable.pipeTo(puerto.writable);
+      writer=enc.writable.getWriter();
+      actualizarBoton(document.getElementById('btn-serial'),true);
+      document.getElementById('aviso-sensor').classList.remove('visible');
+      showToast('🟢 Dispositivo conectado');
+      await new Promise(r=>setTimeout(r,2000));
+      escuchar();
+    }catch(e){
+      puerto=null;writer=null;
+      if(e.name!=='NotFoundError')showToast('❌ '+e.message,true);
+    }
+  }
+
+  async function desconectar(){
+    try{if(writer){await writer.close();writer=null;}if(puerto){await puerto.close();puerto=null;}}catch(e){}
+    actualizarBoton(document.getElementById('btn-serial'),false);
+    if(categoriaActual&&CATS_SERIAL.includes(categoriaActual))document.getElementById('aviso-sensor').classList.add('visible');
+    showToast('🔴 Dispositivo desconectado');
+  }
+
+  async function escuchar(){
+    const dec=new TextDecoderStream();
+    puerto.readable.pipeTo(dec.writable);
+    const lector=dec.readable.getReader();
+    try{
+      while(true){
+        const{value,done}=await lector.read();
+        if(done)break;
+        buffer+=value;
+        const lineas=buffer.split('\n');
+        buffer=lineas.pop();
+        for(const l of lineas)procesarMensaje(l.trim());
+      }
+    }catch(e){
+      if(e.name!=='AbortError'){
+        showToast('⚠️ Dispositivo desconectado',true);
+        actualizarBoton(document.getElementById('btn-serial'),false);
+        puerto=null;writer=null;
+      }
+    }
+  }
+
+  function procesarMensaje(msg){
+    if(!msg)return;
+    if(!CATS_SERIAL.includes(categoriaActual))return;
+    if(rondaActual===0)return;
+    if(!participanteActual)return;
+    if(msg==='STOP'&&CATS_SENSOR.includes(categoriaActual)){if(cronoInterval){detenerCrono();showToast('✅ Meta detectada');}return;}
+    if(CATS_SEGUIDOR.includes(categoriaActual)){
+      if(msg==='START'&&!cronoInterval){iniciarCrono();showToast('▶ Sensor: inicio detectado');return;}
+      if(msg==='STOP'&&cronoInterval){detenerCrono();showToast('✅ Sensor: meta detectada');return;}
+      return;
+    }
+    if(CATS_PULSADOR.includes(categoriaActual)){
+      if(msg==='START'&&!cronoInterval){iniciarCrono();showToast('▶ Pulsadores: inicio');return;}
+      if(msg==='STOP'&&cronoInterval){detenerCrono();showToast('✅ Pulsadores: tiempo detenido');return;}
+      return;
+    }
+  }
+
   window.enviarSerial=async function(cmd){if(!writer)return;try{await writer.write(cmd);}catch(e){}};
-  document.addEventListener('componentsLoaded',()=>{inyectarBoton();if(categoriaActual&&CATS_SERIAL.includes(categoriaActual))setTimeout(()=>window.mostrarBotonSerial(true),300);});
+
+  document.addEventListener('componentsLoaded',()=>{
+    inyectarBoton();
+    if(categoriaActual&&CATS_SERIAL.includes(categoriaActual))setTimeout(()=>window.mostrarBotonSerial(true),300);
+  });
   if(document.readyState==='complete')setTimeout(()=>{inyectarBoton();},500);
 })();
 </script>
