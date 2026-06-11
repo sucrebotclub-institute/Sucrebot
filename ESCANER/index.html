@@ -31,12 +31,10 @@
     #qr-reader { width: 100%; background: #0d2a4a; border-radius: 12px; overflow: hidden; min-height: 320px; position: relative; }
     #qr-video { width: 100%; display: none; border-radius: 12px; }
     #qr-placeholder { display: flex; align-items: center; justify-content: center; height: 320px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; font-size: 0.85rem; letter-spacing: 0.08em; flex-direction: column; gap: 12px; }
-    .btn-camera { width: 100%; margin-top: 16px; background: #1a5ca8; border: none; color: #fff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(26,92,168,0.3); }
+    .btn-camera { width: 100%; margin-top: 16px; background: #1a5ca8; border: none; color: #fff; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
     .btn-camera:hover { background: #0e4a8f; transform: translateY(-1px); }
     .btn-camera.active { background: #d93025; }
-    .btn-camera.active:hover { background: #b71c1c; }
 
-    /* ── historial ── */
     .hist-card { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
     .hist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #f0f4f8; }
     .hist-title { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: #1a5ca8; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; }
@@ -50,166 +48,233 @@
     .hist-cat { font-size: 0.68rem; color: #1a5ca8; font-weight: 600; margin-top: 2px; }
     .empty-hist { text-align: center; padding: 24px; color: #7a7a8c; font-size: 0.85rem; }
 
-    /* ── PASE MODAL ── */
-    .pase-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 9999; padding: 20px;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.3s ease;
+    /* ══ PASE OVERLAY ══ */
+    #pase-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      z-index: 99999;
+      display: flex;
+      align-items: flex-end;      /* sheet desde abajo en móvil */
+      justify-content: center;
+      padding: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      /* ← bloquea scroll del fondo */
+      overflow: hidden;
     }
-    .pase-overlay.visible { opacity: 1; pointer-events: all; }
-    .pase-card {
-      width: 100%; max-width: 420px;
-      border-radius: 24px; overflow: hidden;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-      transform: scale(0.88) translateY(20px);
-      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    #pase-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
     }
-    .pase-overlay.visible .pase-card { transform: scale(1) translateY(0); }
+    /* en desktop centrar */
+    @media (min-width: 600px) {
+      #pase-overlay { align-items: center; padding: 20px; }
+    }
 
-    /* encabezado azul */
+    #pase-card {
+      width: 100%;
+      max-width: 440px;
+      border-radius: 24px 24px 0 0;
+      overflow: hidden;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
+      /* fuente base del card — aísla del Bebas Neue de la página */
+      font-family: 'Exo 2', 'DM Sans', Arial, sans-serif;
+      font-size: 14px;
+    }
+    @media (min-width: 600px) {
+      #pase-card { border-radius: 24px; max-height: 90vh; overflow-y: auto; }
+    }
+    #pase-overlay.visible #pase-card {
+      transform: translateY(0);
+    }
+
+    /* drag handle móvil */
+    .pase-handle {
+      background: #1a4a8a;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0 0;
+    }
+    .pase-handle-bar {
+      width: 40px; height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+    }
+    @media (min-width: 600px) { .pase-handle { display: none; } }
+
+    /* header */
     .pase-header {
-      background: linear-gradient(135deg, #1a5ca8 0%, #0d3572 100%);
-      padding: 28px 28px 20px;
-      position: relative;
+      background: #1a4a8a;
+      padding: 16px 24px 20px;
     }
-    .pase-evento { font-family: 'Orbitron', monospace; font-size: 0.6rem; letter-spacing: 4px; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; }
-    .pase-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: #fff; letter-spacing: 3px; line-height: 1; }
-    .pase-titulo span { color: #64b5f6; }
-    .pase-fecha { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
-
-    /* badge categoría */
-    .pase-cat-wrap { padding: 0 28px; margin-top: -16px; }
-    .pase-cat {
-      display: inline-block;
-      background: #fff;
-      color: #1a3a6e;
+    .pase-evento {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      margin: 0 0 6px;
+      font-weight: 400;
+    }
+    .pase-titulo {
       font-family: 'Exo 2', sans-serif;
+      font-size: 28px;
       font-weight: 800;
-      font-size: 0.9rem;
-      letter-spacing: 1px;
-      padding: 10px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      color: #fff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      line-height: 1;
+      margin: 0 0 4px;
+    }
+    .pase-titulo span { color: #90caf9; }
+    .pase-fecha {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      margin: 0;
+    }
+
+    /* badge categoría — pegado al header sin salirse */
+    .pase-cat-row {
+      background: #16407a;
+      padding: 12px 24px 16px;
+    }
+    .pase-cat {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      padding: 8px 16px;
+      border-radius: 10px;
       text-transform: uppercase;
     }
-    .pase-cat-emoji { margin-right: 6px; font-size: 1rem; }
+    .pase-cat-emoji { font-size: 16px; }
 
-    /* cuerpo blanco */
+    /* cuerpo */
     .pase-body {
       background: #fff;
-      padding: 20px 28px 8px;
+      padding: 20px 24px 8px;
     }
-    .pase-section-label {
+    .pase-lbl {
       font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.15em;
+      font-size: 10px;
+      letter-spacing: 2px;
       color: #1a5ca8;
       text-transform: uppercase;
       font-weight: 700;
-      margin-bottom: 6px;
-      margin-top: 16px;
+      margin: 0 0 4px;
+      display: block;
     }
-    .pase-section-label:first-child { margin-top: 0; }
     .pase-robot {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.9rem;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
       color: #1a2a4a;
-      letter-spacing: 2px;
-      line-height: 1.05;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin: 0 0 16px;
+      line-height: 1.1;
     }
     .pase-persona {
       font-family: 'Exo 2', sans-serif;
-      font-size: 0.95rem;
+      font-size: 15px;
       color: #2c3e6e;
       font-weight: 600;
+      margin: 0 0 4px;
     }
     .pase-acomp {
       font-family: 'Exo 2', sans-serif;
-      font-size: 0.88rem;
+      font-size: 13px;
       color: #5a6478;
       font-weight: 500;
+      margin: 0 0 2px;
     }
     .pase-inst {
       font-family: 'Exo 2', sans-serif;
-      font-size: 0.82rem;
+      font-size: 13px;
       color: #7a7a8c;
+      margin: 0 0 4px;
     }
-    .pase-divider { height: 1px; background: #e8eef5; margin: 16px 0; }
+    .pase-divider { height: 1px; background: #e8eef5; margin: 14px 0; }
 
-    /* estado ya-en-pista */
+    /* banner ya en pista */
     .pase-ya-banner {
-      background: #fff3cd;
-      border: 2px solid #fbbf24;
+      background: #fff8e1;
+      border: 1px solid #fbbf24;
       border-radius: 10px;
-      padding: 10px 16px;
-      margin: 0 0 12px;
-      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .pase-ya-banner .ya-icon { font-size: 1.4rem; }
-    .pase-ya-banner .ya-text { font-family: 'Exo 2', sans-serif; font-size: 0.85rem; font-weight: 700; color: #856404; }
-    .pase-ya-banner .ya-sub  { font-size: 0.75rem; color: #a07020; font-weight: 400; }
+    .ya-icon { font-size: 20px; flex-shrink: 0; }
+    .ya-text { font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; color: #7c5a00; margin: 0; }
+    .ya-sub  { font-family: 'Exo 2', sans-serif; font-size: 11px; color: #a07020; margin: 0; }
 
-    /* footer botones */
+    /* footer */
     .pase-footer {
-      background: #f8fafc;
-      padding: 16px 28px 24px;
-      display: flex; gap: 12px;
+      background: #f4f6fa;
+      padding: 14px 24px 28px;
+      display: flex;
+      gap: 10px;
     }
-    .btn-pase-ok {
+    .btn-confirmar {
       flex: 1;
-      background: linear-gradient(135deg, #1a5ca8, #0d3572);
+      background: #1e8c3a;
       color: #fff;
       border: none;
       border-radius: 12px;
       font-family: 'Exo 2', sans-serif;
       font-weight: 700;
-      font-size: 0.9rem;
-      padding: 14px;
+      font-size: 14px;
+      padding: 14px 12px;
       cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      white-space: nowrap;
       transition: all 0.2s;
+      letter-spacing: 0.3px;
     }
-    .btn-pase-ok:hover { background: linear-gradient(135deg, #2368b8, #1a4a8a); transform: translateY(-1px); }
-    .btn-pase-ok.verde { background: linear-gradient(135deg, #00c853, #009624); }
-    .btn-pase-ok.verde:hover { background: linear-gradient(135deg, #00e060, #00b02a); }
-    .btn-pase-cancel {
+    .btn-confirmar:hover { background: #166d2c; transform: translateY(-1px); }
+    .btn-confirmar.azul { background: #1a5ca8; }
+    .btn-confirmar.azul:hover { background: #0e4a8f; }
+    .btn-cancelar {
       flex: 0 0 auto;
-      background: #e8eef5;
+      background: #fff;
       color: #5a6478;
-      border: none;
+      border: 1px solid #d0d8e8;
       border-radius: 12px;
       font-family: 'Exo 2', sans-serif;
       font-weight: 600;
-      font-size: 0.85rem;
-      padding: 14px 20px;
+      font-size: 14px;
+      padding: 14px 18px;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-pase-cancel:hover { background: #d0d8e8; }
+    .btn-cancelar:hover { background: #e8eef5; }
 
     /* toast */
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55); border: 2px solid rgba(0,255,136,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 100000; opacity: 0; transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55); border: 2px solid rgba(0,255,136,0.4); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     @media (max-width: 768px) {
       .wrapper { padding: 0 12px 40px; }
       .page-hero { padding: 20px 0 16px; margin-bottom: 16px; }
       .page-hero h2 { font-size: 2rem; }
-      .page-hero p { font-size: 11px; }
       .escaner-container { padding: 20px 12px; border-radius: 16px; margin-top: 12px; }
       .video-card { padding: 16px; margin-bottom: 16px; }
       #qr-reader { min-height: 240px; }
       #qr-placeholder { height: 240px; font-size: 0.75rem; }
       .btn-camera { font-size: 0.85rem; padding: 14px; margin-top: 12px; }
       .hist-card { padding: 16px; }
-      .pase-card { max-width: 100%; }
-      .pase-titulo { font-size: 1.8rem; }
-      .pase-robot { font-size: 1.6rem; }
-      .pase-header, .pase-body, .pase-footer { padding-left: 20px; padding-right: 20px; }
-      .pase-cat-wrap { padding: 0 20px; }
     }
   </style>
 </head>
@@ -267,54 +332,56 @@
 <div data-include="../shared/components/footer.html"></div>
 <div class="toast" id="toast"></div>
 
-<!-- ══════════════════════════════════════
-     PASE MODAL
-═══════════════════════════════════════ -->
-<div class="pase-overlay" id="pase-overlay" onclick="cerrarPaseSiOverlay(event)">
-  <div class="pase-card" id="pase-card">
+<!-- ══ PASE MODAL ══ -->
+<div id="pase-overlay" onclick="cerrarPaseSiOverlay(event)">
+  <div id="pase-card">
+
+    <div class="pase-handle"><div class="pase-handle-bar"></div></div>
 
     <div class="pase-header">
-      <div class="pase-evento">SucreBot 2026 · Club de Robótica Sucre</div>
-      <div class="pase-titulo">PASE DE <span>ACCESO</span></div>
-      <div class="pase-fecha" id="pase-fecha">16 de julio de 2026</div>
+      <p class="pase-evento">SucreBot 2026 &middot; Club de Robótica Sucre</p>
+      <p class="pase-titulo">PASE DE <span>ACCESO</span></p>
+      <p class="pase-fecha" id="pase-fecha">16 de julio de 2026</p>
     </div>
 
-    <div class="pase-cat-wrap">
-      <div class="pase-cat" id="pase-cat"><span class="pase-cat-emoji">🤖</span>—</div>
+    <div class="pase-cat-row">
+      <div class="pase-cat" id="pase-cat">
+        <span class="pase-cat-emoji" id="pase-cat-emoji">🤖</span>
+        <span id="pase-cat-text">—</span>
+      </div>
     </div>
 
     <div class="pase-body">
-      <!-- banner ya-en-pista (solo visible si ya escaneado) -->
       <div class="pase-ya-banner" id="pase-ya-banner" style="display:none">
         <div class="ya-icon">⚠️</div>
         <div>
-          <div class="ya-text">YA INGRESÓ A LA PISTA</div>
-          <div class="ya-sub">Este participante ya fue registrado esta sesión</div>
+          <p class="ya-text">Ya ingresó a la pista</p>
+          <p class="ya-sub">Este participante ya fue registrado esta sesión</p>
         </div>
       </div>
 
-      <div class="pase-section-label">Robot</div>
-      <div class="pase-robot" id="pase-robot">—</div>
+      <span class="pase-lbl">Robot</span>
+      <p class="pase-robot" id="pase-robot">—</p>
 
       <div class="pase-divider"></div>
 
-      <div class="pase-section-label">Capitán</div>
-      <div class="pase-persona" id="pase-capitan">—</div>
+      <span class="pase-lbl">Capitán</span>
+      <p class="pase-persona" id="pase-capitan">—</p>
 
       <div id="pase-acomp-wrap" style="display:none">
-        <div class="pase-section-label" style="margin-top:10px">Acompañante(s)</div>
+        <span class="pase-lbl" style="margin-top:10px; display:block;">Acompañante(s)</span>
         <div id="pase-acomp-lista"></div>
       </div>
 
       <div class="pase-divider"></div>
 
-      <div class="pase-section-label">Institución</div>
-      <div class="pase-inst" id="pase-inst">—</div>
+      <span class="pase-lbl">Institución</span>
+      <p class="pase-inst" id="pase-inst">—</p>
     </div>
 
     <div class="pase-footer">
-      <button class="btn-pase-ok verde" id="btn-confirmar" onclick="confirmarIngreso()">✅ Confirmar ingreso</button>
-      <button class="btn-pase-cancel" onclick="cerrarPase()">Cancelar</button>
+      <button class="btn-confirmar verde" id="btn-confirmar" onclick="confirmarIngreso()">✅ Confirmar ingreso</button>
+      <button class="btn-cancelar" onclick="cerrarPase()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -325,185 +392,154 @@
 <script>
   const GAS_URL = CONFIG.GAS_URL();
 
-  // Emojis por categoría
   const CAT_EMOJI = {
-    'Insectos': '🐛', 'Trepador (Amateur)': '🧗', 'Trepador (Pro)': '🧗',
-    'Seguidor de línea ST (Amateur)': '➡️', 'Seguidor de línea ST (Pro)': '➡️',
-    'Minisumo Autónomo': '🤖', 'Minisumo RC': '🕹️', 'Bailarín': '💃',
-    'Batalla': '⚔️', 'Impacto Tecnológico': '💡', 'Robot soccer': '⚽',
-    'Cubo Rubik': '🎲', 'Lego Kids': '🧱'
+    'Insectos':'🐛','Trepador (Amateur)':'🧗','Trepador (Pro)':'🧗',
+    'Seguidor de línea ST (Amateur)':'➡️','Seguidor de línea ST (Pro)':'➡️',
+    'Minisumo Autónomo':'🤖','Minisumo RC':'🕹️','Bailarín':'💃',
+    'Batalla':'⚔️','Impacto Tecnológico':'💡','Robot soccer':'⚽',
+    'Cubo Rubik':'🎲','Lego Kids':'🧱'
   };
 
   const RUTAS_SCANNER = {
-    'Insectos': 'ins', 'Trepador (Amateur)': 'trp_a', 'Seguidor de línea ST (Amateur)': 'sl_a',
-    'Seguidor de línea ST (Pro)': 'sl_p', 'Minisumo Autónomo': 'ms_a', 'Minisumo RC': 'ms_rc',
-    'Bailarín': 'bai', 'Batalla': 'bat', 'Trepador (Pro)': 'trp_p',
-    'Robot soccer': 'soc', 'Cubo Rubik': 'cr', 'Lego Kids': 'lk', 'Impacto Tecnológico': 'dev'
+    'Insectos':'ins','Trepador (Amateur)':'trp_a','Seguidor de línea ST (Amateur)':'sl_a',
+    'Seguidor de línea ST (Pro)':'sl_p','Minisumo Autónomo':'ms_a','Minisumo RC':'ms_rc',
+    'Bailarín':'bai','Batalla':'bat','Trepador (Pro)':'trp_p',
+    'Robot soccer':'soc','Cubo Rubik':'cr','Lego Kids':'lk','Impacto Tecnológico':'dev'
   };
 
-  let codeReader = null;
-  let videoStream = null;
-  let scannerActivo = false;
+  let codeReader = null, videoStream = null, scannerActivo = false;
   let participanteActual = null;
-  let historial = [];          // [{id, robot, nombre, hora, categoria, miembro2, miembro3}]
-  let enPistaIds = new Set();  // IDs ya confirmados esta sesión
-  let ultimoQrProcesado = null;
-  let tiempoUltimoQr = 0;
-
+  let historial = [];
+  let enPistaIds = new Set();
+  let ultimoQrProcesado = null, tiempoUltimoQr = 0;
   let cacheParticipantes = [];
-  let ultimaActualizacionCache = 0;
-  const INTERVALO_CACHE = 5 * 60 * 1000;
 
   window.addEventListener('DOMContentLoaded', async () => {
-    // Restaurar sesión de localStorage
-    const saved = localStorage.getItem('escaner_en_pista');
-    if (saved) {
-      try {
+    // restaurar sesión
+    try {
+      const saved = localStorage.getItem('escaner_en_pista');
+      if (saved) {
         const datos = JSON.parse(saved);
         if (datos.ids) datos.ids.forEach(id => enPistaIds.add(id));
         if (datos.historial) historial = datos.historial;
         renderHistorial();
-      } catch(e) {}
-    }
+      }
+    } catch(e) {}
     await actualizarCache();
-    setInterval(actualizarCache, INTERVALO_CACHE);
-    // Actualizar fecha del pase
-    const hoy = new Date();
-    const opciones = { day: 'numeric', month: 'long', year: 'numeric' };
-    document.getElementById('pase-fecha').textContent = hoy.toLocaleDateString('es-EC', opciones);
+    setInterval(actualizarCache, 5 * 60 * 1000);
+    // fecha de hoy en el pase
+    document.getElementById('pase-fecha').textContent =
+      new Date().toLocaleDateString('es-EC', { day:'numeric', month:'long', year:'numeric' });
   });
 
   async function actualizarCache() {
     try {
       const r = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getParticipantes' }));
-      const participantes = await r.json();
-      if (Array.isArray(participantes) && participantes.length > 0) {
-        cacheParticipantes = participantes;
-        localStorage.setItem('participantes_cache', JSON.stringify(participantes));
+      const data = await r.json();
+      if (Array.isArray(data) && data.length > 0) {
+        cacheParticipantes = data;
+        localStorage.setItem('participantes_cache', JSON.stringify(data));
       }
-      ultimaActualizacionCache = Date.now();
-    } catch (e) {
-      const cached = localStorage.getItem('participantes_cache');
-      if (cached) cacheParticipantes = JSON.parse(cached);
+    } catch(e) {
+      const c = localStorage.getItem('participantes_cache');
+      if (c) cacheParticipantes = JSON.parse(c);
     }
   }
 
-  // ─────────────────────────────────────────
-  //  SCANNER
-  // ─────────────────────────────────────────
+  /* ── SCANNER ── */
   async function toggleScanner() {
-    if (scannerActivo) stopScanner();
-    else await iniciarScanner();
+    if (scannerActivo) stopScanner(); else await iniciarScanner();
   }
 
   async function iniciarScanner() {
     try {
       codeReader = new ZXing.BrowserMultiFormatReader();
       const devices = await codeReader.listVideoInputDevices();
-      if (devices.length === 0) { showToast('No se detectaron cámaras', true); return; }
+      if (!devices.length) { showToast('No se detectaron cámaras', true); return; }
       const back = devices.find(d => /back|rear|environment|trasera/i.test(d.label));
-      const deviceId = back ? back.deviceId : (devices.length > 1 ? devices[devices.length - 1].deviceId : devices[0].deviceId);
+      const deviceId = back ? back.deviceId : (devices.length > 1 ? devices[devices.length-1].deviceId : devices[0].deviceId);
       document.getElementById('qr-placeholder').style.display = 'none';
       document.getElementById('qr-video').style.display = 'block';
-      codeReader.decodeFromVideoDevice(deviceId, 'qr-video', (result) => {
-        if (result) procesarQR(result.text);
-      });
+      codeReader.decodeFromVideoDevice(deviceId, 'qr-video', r => { if (r) procesarQR(r.text); });
       videoStream = document.getElementById('qr-video').srcObject;
       scannerActivo = true;
       const btn = document.getElementById('btn-camera');
       btn.textContent = '⏸ Detener cámara';
       btn.classList.add('active');
-    } catch (e) {
-      showToast('Error al iniciar la cámara', true);
-    }
+    } catch(e) { showToast('Error al iniciar la cámara', true); }
   }
 
   function stopScanner() {
     if (codeReader) codeReader.reset();
     if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-    const video = document.getElementById('qr-video');
-    if (video.srcObject) video.srcObject = null;
-    video.style.display = 'none';
+    const v = document.getElementById('qr-video');
+    if (v.srcObject) v.srcObject = null;
+    v.style.display = 'none';
     document.getElementById('qr-placeholder').style.display = 'flex';
     scannerActivo = false;
-    const btn = document.getElementById('btn-camera');
-    btn.textContent = '📷 Activar cámara';
-    btn.classList.remove('active');
+    document.getElementById('btn-camera').textContent = '📷 Activar cámara';
+    document.getElementById('btn-camera').classList.remove('active');
   }
 
-  // ─────────────────────────────────────────
-  //  PROCESAR QR
-  // ─────────────────────────────────────────
+  /* ── PROCESAR QR ── */
   async function procesarQR(qrData) {
     const ahora = Date.now();
     if (qrData === ultimoQrProcesado && (ahora - tiempoUltimoQr) < 1200) return;
     ultimoQrProcesado = qrData;
     tiempoUltimoQr = ahora;
-
     try {
       const codigo = extraerIdDelQR(qrData);
       if (!codigo) { showToast('⚠️ QR inválido', true); return; }
-
       const p = cacheParticipantes.find(x => x.id === codigo);
       if (!p) { showToast('⚠️ ID no registrado en el sistema', true); return; }
-
-      if (p.aprobado !== 'APROBADO') {
-        showToast(`⚠️ ${p.nombre || p.robot} — no está aprobado`, true);
-        return;
-      }
-
+      if (p.aprobado !== 'APROBADO') { showToast(`⚠️ ${p.nombre || p.robot} — no está aprobado`, true); return; }
       stopScanner();
       participanteActual = p;
       mostrarPase(p);
-
-    } catch (e) {
-      showToast('❌ Error: ' + e.message, true);
-    }
+    } catch(e) { showToast('❌ Error: ' + e.message, true); }
   }
 
-  // ─────────────────────────────────────────
-  //  PASE MODAL
-  // ─────────────────────────────────────────
+  /* ── PASE ── */
   function mostrarPase(p) {
     const yaEnPista = enPistaIds.has(p.id);
-
-    // categoría badge
     const emoji = CAT_EMOJI[p.categoria] || '🤖';
-    document.getElementById('pase-cat').innerHTML = `<span class="pase-cat-emoji">${emoji}</span>${p.categoria || '—'}`;
-    document.getElementById('pase-robot').textContent = p.robot || '—';
-    document.getElementById('pase-capitan').textContent = p.nombre || '—';
-    document.getElementById('pase-inst').textContent = p.institucion || '—';
 
-    // acompañantes
-    const acompWrap = document.getElementById('pase-acomp-wrap');
-    const acompLista = document.getElementById('pase-acomp-lista');
-    const acomps = [p.miembro2, p.miembro3].filter(m => m && String(m).trim() !== '');
-    if (acomps.length > 0) {
-      acompLista.innerHTML = acomps.map(m => `<div class="pase-acomp">· ${m}</div>`).join('');
-      acompWrap.style.display = 'block';
+    document.getElementById('pase-cat-emoji').textContent = emoji;
+    document.getElementById('pase-cat-text').textContent  = p.categoria || '—';
+    document.getElementById('pase-robot').textContent     = p.robot || '—';
+    document.getElementById('pase-capitan').textContent   = p.nombre || '—';
+    document.getElementById('pase-inst').textContent      = p.institucion || '—';
+
+    const acomps = [p.miembro2, p.miembro3].filter(m => m && String(m).trim() !== '' && String(m).trim() !== '0');
+    const wrap = document.getElementById('pase-acomp-wrap');
+    if (acomps.length) {
+      document.getElementById('pase-acomp-lista').innerHTML =
+        acomps.map(m => `<p class="pase-acomp">· ${m}</p>`).join('');
+      wrap.style.display = 'block';
     } else {
-      acompWrap.style.display = 'none';
+      wrap.style.display = 'none';
     }
 
-    // banner ya en pista
-    const yaBanner = document.getElementById('pase-ya-banner');
+    const yaBanner    = document.getElementById('pase-ya-banner');
     const btnConfirmar = document.getElementById('btn-confirmar');
     if (yaEnPista) {
       yaBanner.style.display = 'flex';
       btnConfirmar.textContent = '🔄 Registrar de nuevo';
-      btnConfirmar.className = 'btn-pase-ok'; // azul
+      btnConfirmar.className   = 'btn-confirmar azul';
     } else {
       yaBanner.style.display = 'none';
       btnConfirmar.textContent = '✅ Confirmar ingreso';
-      btnConfirmar.className = 'btn-pase-ok verde';
+      btnConfirmar.className   = 'btn-confirmar verde';
     }
 
-    // mostrar overlay
+    // bloquear scroll del body
+    document.body.style.overflow = 'hidden';
     document.getElementById('pase-overlay').classList.add('visible');
   }
 
   function cerrarPase() {
     document.getElementById('pase-overlay').classList.remove('visible');
+    document.body.style.overflow = '';
     participanteActual = null;
   }
 
@@ -514,63 +550,50 @@
   async function confirmarIngreso() {
     if (!participanteActual) return;
     const p = participanteActual;
-
-    // Marcar en pista
     enPistaIds.add(p.id);
     agregarAlHistorial(p);
     guardarSesion();
-
     cerrarPase();
     showToast(`✓ ${p.robot || p.nombre} — ingresó a la pista`);
-
-    // setActivo para compatibilidad con CRONOMETRO (opcional, no crítico)
+    // setActivo opcional para compatibilidad con CRONOMETRO
     try {
       const ruta = RUTAS_SCANNER[p.categoria] || 'general';
       await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'setActivo', ruta,
-          participante: {
-            id: p.id, robot: p.robot, nombre: p.nombre || '',
-            institucion: p.institucion || '', ciudad: p.ciudad || '',
-            categoria: p.categoria || '', timestamp: Date.now()
-          }
-        }),
+        body: JSON.stringify({ action:'setActivo', ruta, participante:{
+          id:p.id, robot:p.robot, nombre:p.nombre||'', institucion:p.institucion||'',
+          ciudad:p.ciudad||'', categoria:p.categoria||'', timestamp:Date.now()
+        }}),
         redirect: 'follow'
       });
-    } catch(e) { /* silencioso */ }
+    } catch(e) {}
   }
 
-  // ─────────────────────────────────────────
-  //  HISTORIAL
-  // ─────────────────────────────────────────
+  /* ── HISTORIAL ── */
   function agregarAlHistorial(p) {
-    const hora = new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
-    const existeIdx = historial.findIndex(h => h.id === p.id);
-    const entry = { id: p.id, robot: p.robot, nombre: p.nombre, hora, categoria: p.categoria,
-                    miembro2: p.miembro2, miembro3: p.miembro3 };
-    if (existeIdx >= 0) historial.splice(existeIdx, 1);
+    const hora = new Date().toLocaleTimeString('es-EC', { hour:'2-digit', minute:'2-digit' });
+    const idx = historial.findIndex(h => h.id === p.id);
+    const entry = { id:p.id, robot:p.robot, nombre:p.nombre, hora, categoria:p.categoria,
+                    miembro2:p.miembro2, miembro3:p.miembro3 };
+    if (idx >= 0) historial.splice(idx, 1);
     historial.unshift(entry);
     if (historial.length > 50) historial = historial.slice(0, 50);
     renderHistorial();
   }
 
   function renderHistorial() {
-    const container = document.getElementById('historial');
+    const c = document.getElementById('historial');
     document.getElementById('hist-count').textContent = historial.length;
-    if (historial.length === 0) {
-      container.innerHTML = '<p class="empty-hist">Ningún participante escaneado aún</p>';
-      return;
-    }
-    container.innerHTML = historial.map(h => `
+    if (!historial.length) { c.innerHTML = '<p class="empty-hist">Ningún participante escaneado aún</p>'; return; }
+    c.innerHTML = historial.map(h => `
       <div class="hist-item">
         <div class="hist-item-top">
           <div class="hist-robot">${h.robot || '—'}</div>
           <div class="hist-time">${h.hora}</div>
         </div>
         <div class="hist-nombre">${h.nombre || '—'}</div>
-        <div class="hist-cat">${CAT_EMOJI[h.categoria] || '🤖'} ${h.categoria || '—'}</div>
+        <div class="hist-cat">${CAT_EMOJI[h.categoria]||'🤖'} ${h.categoria||'—'}</div>
       </div>`).join('');
   }
 
@@ -581,24 +604,22 @@
     }));
   }
 
-  // ─────────────────────────────────────────
-  //  UTILS
-  // ─────────────────────────────────────────
+  /* ── UTILS ── */
   function extraerIdDelQR(rawText) {
     if (!rawText) return null;
-    let texto = String(rawText).trim();
-    if (texto.includes('~')) { const id = texto.split('~')[0].trim(); if (id) return id.toLowerCase(); }
-    try { const j = JSON.parse(texto); if (j && j.id) return String(j.id).trim(); } catch(e) {}
-    if (texto.includes('?id=') || texto.includes('&id=')) {
-      const m = texto.match(/[?&]id=([^&\s]+)/i);
+    let t = String(rawText).trim();
+    if (t.includes('~')) { const id = t.split('~')[0].trim(); if (id) return id.toLowerCase(); }
+    try { const j = JSON.parse(t); if (j && j.id) return String(j.id).trim(); } catch(e) {}
+    if (t.includes('?id=') || t.includes('&id=')) {
+      const m = t.match(/[?&]id=([^&\s]+)/i);
       if (m) return decodeURIComponent(m[1]).trim();
     }
-    const mEtiqueta = texto.match(/ID\s*[:=]\s*([^\|\n\r~]+)/i);
-    if (mEtiqueta) return mEtiqueta[1].trim();
-    const mPatron = texto.match(/sb-\d{4}-[a-z_]+-\d{3}/i);
-    if (mPatron) return mPatron[0].toLowerCase().trim();
-    const limpio = texto.replace(/[\r\n]+/g, '').trim();
-    if (limpio && limpio.length < 50 && !limpio.includes(' ') && !limpio.includes('~')) return limpio.toLowerCase();
+    const mE = t.match(/ID\s*[:=]\s*([^\|\n\r~]+)/i);
+    if (mE) return mE[1].trim();
+    const mP = t.match(/sb-\d{4}-[a-z_]+-\d{3}/i);
+    if (mP) return mP[0].toLowerCase().trim();
+    const l = t.replace(/[\r\n]+/g,'').trim();
+    if (l && l.length < 50 && !l.includes(' ') && !l.includes('~')) return l.toLowerCase();
     return null;
   }
 
