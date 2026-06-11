@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Participantes</title> 
+  <title>SucreBot — Participantes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -382,14 +382,23 @@
     }catch(e){btn.disabled=false;btn.textContent='✔ Aplicar cambio';showToast('Error: '+(e.message||'Desconocido'),true);}
   }
 
+  // índice para el modal — evita serializar objetos completos en el onclick
+  let _participantesIndex = [];
+
   function cargarListaLocal() {
     const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
+    _participantesIndex = lista; // guardar referencia para el modal
     actualizarEstadisticas(lista);
     const filtro=document.getElementById('filtro-categoria').value;
     const busqueda=document.getElementById('busqueda-input').value.toLowerCase();
     let filtrados=lista;
     if(filtro!=='todos')filtrados=filtrados.filter(p=>p.categoria===filtro);
-    if(busqueda)filtrados=filtrados.filter(p=>(p.nombre||'').toLowerCase().includes(busqueda)||(p.robot||'').toLowerCase().includes(busqueda)||(p.institucion||'').toLowerCase().includes(busqueda)||(p.id||'').toLowerCase().includes(busqueda));
+    if(busqueda)filtrados=filtrados.filter(p=>
+      (p.nombre||'').toLowerCase().includes(busqueda)||
+      (p.robot||'').toLowerCase().includes(busqueda)||
+      (p.institucion||'').toLowerCase().includes(busqueda)||
+      (p.id||'').toLowerCase().includes(busqueda)
+    );
     const tbody=document.getElementById('tabla-body');
     if(filtrados.length===0){tbody.innerHTML='<tr><td colspan="5" class="vacio-msg">No se encontraron participantes</td></tr>';return;}
     tbody.innerHTML=filtrados.map(p=>{
@@ -398,8 +407,12 @@
       else if(p.aprobado==='NO CUMPLE'){estadoClass='nocumple';estadoTexto='NO CUMPLE';}
       const nivel=CATEGORIAS_NIVEL[p.categoria]||'pro';
       const nombres=[p.nombre,p.miembro2].map(strVal).filter(Boolean);
-      const nombresHtml=nombres.map((n,i)=>i===0?'<div style="font-weight:700;">'+n+'</div>':'<div style="font-size:0.8em;opacity:0.75;margin-top:2px;">+ '+n+'</div>').join('');
-      return '<tr onclick='abrirModalRevisar('+JSON.stringify(p).replace(/'/g,"&apos;")+')'>'+
+      const nombresHtml=nombres.map((n,i)=>
+        i===0?'<div style="font-weight:700;">'+n+'</div>'
+             :'<div style="font-size:0.8em;opacity:0.75;margin-top:2px;">+ '+n+'</div>'
+      ).join('');
+      // FIX: usar data-id para evitar problemas con comillas en JSON dentro del onclick
+      return '<tr data-pid="'+p.id.replace(/"/g,'&quot;')+'" class="fila-participante">'+
         '<td>'+(p.robot||'—')+'</td>'+
         '<td><span class="categoria-badge '+nivel+'">'+(p.categoria||'—')+'</span></td>'+
         '<td>'+nombresHtml+'</td>'+
@@ -407,13 +420,21 @@
         '<td><span class="estado-badge '+estadoClass+'">'+estadoTexto+'</span></td>'+
         '</tr>';
     }).join('');
+    // Delegación de eventos — un solo listener en tbody
+    tbody.querySelectorAll('.fila-participante').forEach(tr=>{
+      tr.addEventListener('click',()=>{
+        const pid=tr.getAttribute('data-pid');
+        const p=_participantesIndex.find(x=>x.id===pid);
+        if(p)abrirModalRevisar(p);
+      });
+    });
   }
 
   function actualizarEstadisticas(lista) {
     let totalPersonas=0;
     lista.forEach(p=>{
       totalPersonas++;
-        if(strVal(p.miembro2))totalPersonas++;
+      if(strVal(p.miembro2))totalPersonas++;
     });
     document.getElementById('stat-personas').textContent=totalPersonas;
     document.getElementById('stat-robots').textContent=lista.length;
@@ -455,7 +476,10 @@
 
   function refrescarDatos() {
     const btn=document.querySelector('.btn-refrescar');btn.disabled=true;const iconoOriginal=btn.innerHTML;btn.innerHTML='⏳ Actualizando...';
-    gasGet({action:'getParticipantes'}).then(arr=>{if(Array.isArray(arr)){localStorage.setItem('participantes',JSON.stringify(arr));cargarListaLocal();showToast('✅ Datos actualizados');}}).catch(e=>showToast('❌ Error: '+(e.message||'Desconocido'),true)).finally(()=>{btn.disabled=false;btn.innerHTML=iconoOriginal;});
+    gasGet({action:'getParticipantes'}).then(arr=>{
+      if(Array.isArray(arr)){localStorage.setItem('participantes',JSON.stringify(arr));cargarListaLocal();showToast('✅ Datos actualizados');}
+    }).catch(e=>showToast('❌ Error: '+(e.message||'Desconocido'),true))
+      .finally(()=>{btn.disabled=false;btn.innerHTML=iconoOriginal;});
   }
 
   let participanteEnRevision=null;
@@ -481,7 +505,6 @@
     document.getElementById('rev-correo').textContent=p.correo||'—';
     document.getElementById('rev-contacto').textContent=p.contacto||'—';
 
-    // CAMBIO 3: solo m2, sin m3
     const m2=strVal(p.miembro2);
     document.getElementById('rev-seccion-equipo').style.display=m2?'block':'none';
     document.getElementById('rev-campo-miembro2').style.display=m2?'flex':'none';
@@ -507,9 +530,7 @@
 
   async function noCumpleRequisitos() {
     if(!participanteEnRevision)return;
-    const razon=prompt('Razón por la que no cumple con los requisitos:
-
-(Se mostrará al participante)');
+    const razon=prompt('Razón por la que no cumple con los requisitos:\n\n(Se mostrará al participante)');
     if(!razon||!razon.trim()){showToast('⚠️ Debes especificar una razón',true);return;}
     const btn=document.getElementById('btn-eliminar');btn.disabled=true;btn.innerHTML='⏳ Procesando...';
     try{
@@ -561,7 +582,10 @@
     }catch(e){btn.disabled=false;btn.innerHTML='↩ Marcar pendiente';showToast('Error: '+(e.message||JSON.stringify(e)),true);}
   }
 
-  document.addEventListener('click',e=>{if(e.target===document.getElementById('modal-revisar'))cerrarModalRevisar();if(e.target===document.getElementById('modal-inst'))cerrarModalInst();});
+  document.addEventListener('click',e=>{
+    if(e.target===document.getElementById('modal-revisar'))cerrarModalRevisar();
+    if(e.target===document.getElementById('modal-inst'))cerrarModalInst();
+  });
 
   function showToast(msg,error=false) {
     const t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=error?'rgba(255,59,59,0.4)':'rgba(0,255,136,0.4)';t.style.color=error?'#ff3b3b':'#00ff88';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
@@ -570,7 +594,32 @@
   document.getElementById('filtro-categoria').addEventListener('change',cargarListaLocal);
   document.getElementById('busqueda-input').addEventListener('input',cargarListaLocal);
 
-  gasGet({action:'getParticipantes'}).then(arr=>{if(Array.isArray(arr)){localStorage.setItem('participantes',JSON.stringify(arr));cargarListaLocal();}else{localStorage.setItem('participantes',JSON.stringify([]));cargarListaLocal();}}).catch(e=>{console.error('Error al cargar:',e);cargarListaLocal();showToast('⚠️ Error al cargar datos',true);});
+  // Carga inicial: esperar a que componentsLoaded se dispare para asegurar que CONFIG esté listo
+  document.addEventListener('componentsLoaded', function() {
+    const savedUser = localStorage.getItem('sucrebot_user');
+    if(!savedUser) { window.location.href = '../INICIO/'; return; }
+
+    // Mostrar datos en cache inmediatamente si existen
+    const cached = localStorage.getItem('participantes');
+    if(cached) {
+      try { const arr=JSON.parse(cached); if(Array.isArray(arr)&&arr.length>0) cargarListaLocal(); } catch(e){}
+    }
+
+    // Siempre recargar desde GAS al entrar
+    gasGet({action:'getParticipantes'}).then(arr=>{
+      if(Array.isArray(arr)){
+        localStorage.setItem('participantes',JSON.stringify(arr));
+        cargarListaLocal();
+      } else {
+        localStorage.setItem('participantes',JSON.stringify([]));
+        cargarListaLocal();
+      }
+    }).catch(e=>{
+      console.error('Error al cargar participantes:',e);
+      cargarListaLocal(); // mostrar lo que haya en cache
+      showToast('⚠️ Error al cargar datos desde el servidor',true);
+    });
+  });
 </script>
 </body>
 </html>
