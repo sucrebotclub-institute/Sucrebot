@@ -48,6 +48,10 @@
     .cat-tab.active { background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-color: #1a5ca8; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(26,92,168,0.3); transform: translateY(-2px); }
     .cat-tab.tiene-datos { position: relative; }
     .cat-tab.tiene-datos::before { content: ''; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: pulse-dot 2s ease-in-out infinite; }
+    /* Tab especial para ranking instituciones */
+    .cat-tab.tab-instituciones { flex: 0 0 130px; width: 130px; background: linear-gradient(135deg, #1a3a6e, #0e2a5a); border-color: #ffd700; color: #ffd700; }
+    .cat-tab.tab-instituciones:hover { background: linear-gradient(135deg, #2a4a7e, #1a3a6e); border-color: #ffd700; color: #ffe566; }
+    .cat-tab.tab-instituciones.active { background: linear-gradient(135deg, #1a3a6e, #0e2a5a); border-color: #ffd700; color: #ffd700; box-shadow: 0 4px 16px rgba(255,215,0,0.3); }
     @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
 
     .tabla-wrap { flex: 1; overflow: auto; display: flex; flex-direction: column; }
@@ -154,6 +158,37 @@
     .lk-fase-badge.f1 { background: rgba(240,165,0,0.15); color: #f0a500; border: 1px solid rgba(240,165,0,0.35); }
     .lk-fase-badge.f2 { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.35); }
 
+    /* RANKING INSTITUCIONES */
+    .inst-ranking-wrap { flex: 1; overflow: auto; }
+    .inst-ranking-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; margin-bottom: 16px; background: linear-gradient(135deg, #0e2a5a, #1a3a6e); border-radius: 10px; }
+    .inst-ranking-header-icon { font-size: 1.8rem; }
+    .inst-ranking-header-title { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 2px; color: #ffd700; }
+    .inst-ranking-header-sub { font-family: var(--font-mono); font-size: 0.65rem; color: rgba(255,255,255,0.6); letter-spacing: 2px; margin-top: 2px; }
+    .inst-ranking-puntos-info { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; }
+    .inst-pts-badge { font-family: var(--font-mono); font-size: 0.62rem; padding: 4px 10px; border-radius: 10px; font-weight: 700; }
+    .inst-pts-badge.oro    { background: rgba(255,215,0,0.15); color: #ffd700; border: 1px solid rgba(255,215,0,0.35); }
+    .inst-pts-badge.plata  { background: rgba(192,192,192,0.12); color: #c0c0c0; border: 1px solid rgba(192,192,192,0.3); }
+    .inst-pts-badge.bronce { background: rgba(205,127,50,0.12); color: #cd7f32; border: 1px solid rgba(205,127,50,0.3); }
+    .td-inst-nombre { min-width: 240px; }
+    .inst-nombre-text { font-size: 1.2rem; font-weight: 700; color: #0e2a5a; }
+    .inst-medallas { display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+    .inst-medalla-chip { font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 8px; border-radius: 8px; font-weight: 700; }
+    .inst-medalla-chip.oro    { background: rgba(255,215,0,0.12); color: #b8860b; border: 1px solid rgba(255,215,0,0.3); }
+    .inst-medalla-chip.plata  { background: rgba(192,192,192,0.1); color: #707070; border: 1px solid rgba(192,192,192,0.25); }
+    .inst-medalla-chip.bronce { background: rgba(205,127,50,0.1); color: #8b4513; border: 1px solid rgba(205,127,50,0.25); }
+    .td-inst-puntos { text-align: center; min-width: 140px; }
+    .inst-pts-num { font-family: var(--font-display); font-size: 2.2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; }
+    tr.pos-1 .inst-pts-num { font-size: 2.4rem; color: #b8860b; }
+    tr.pos-2 .inst-pts-num { color: #606060; }
+    tr.pos-3 .inst-pts-num { color: #8b4513; }
+    .inst-pts-label { font-family: var(--font-mono); font-size: 0.6rem; color: #94a3b8; margin-top: 2px; }
+    .td-inst-bar { min-width: 200px; }
+    .inst-bar-bg { width: 100%; height: 10px; background: #e8edf3; border-radius: 5px; overflow: hidden; }
+    .inst-bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #1a5ca8, #5bc8f0); transition: width 0.8s ease; }
+    tr.pos-1 .inst-bar-fill { background: linear-gradient(90deg, #d4a017, #ffd700); }
+    tr.pos-2 .inst-bar-fill { background: linear-gradient(90deg, #808080, #c0c0c0); }
+    tr.pos-3 .inst-bar-fill { background: linear-gradient(90deg, #8b4513, #cd7f32); }
+
     @media (max-width: 768px) {
       .screen { padding: 12px 16px 32px; }
       .cat-tabs { display: none; }
@@ -164,6 +199,7 @@
       .page-header-title { font-size: 2rem; }
       .ronda-label { font-size: 1.4rem; }
       .score-bar-wrap { min-width: 120px; }
+      .td-inst-bar { display: none; }
     }
   </style>
 </head>
@@ -213,6 +249,7 @@
         <option value="lk">Lego Kids</option>
         <option value="dev">Impacto Tecnológico</option>
       </optgroup>
+      <option value="instituciones">🏆 Ranking Instituciones</option>
     </select>
 
     <div class="tabla-wrap" id="tv-tabla-wrap">
@@ -234,17 +271,12 @@
     const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
     const GAS_URL  = CONFIG.GAS_URL();
 
-    // ── CAMBIO 1: lk agregado a CATS_CALIFICACION ──
     const CATS_CALIFICACION = new Set(['bai', 'bat', 'dev', 'lk']);
     const CATS_BRACKET      = new Set(['ms_a', 'ms_rc', 'soc']);
 
     const RUTA_CAT_GAS = { ms_a: 'ms_a', ms_rc: 'ms_rc', soc: 'soc' };
     const CAT_ICONO    = { ms_a: '🤖', ms_rc: '🕹️', soc: '⚽' };
-
-    // ── CAMBIO 2: lk agregado a CAT_ICON ──
-    const CAT_ICON = { bai: '🕺', bat: '⚔️', dev: '💡', lk: '🧱' };
-
-    // Máximo de puntaje por categoría de calificación
+    const CAT_ICON     = { bai: '🕺', bat: '⚔️', dev: '💡', lk: '🧱' };
     const CAT_MAX_SCORE = { bai: 25, bat: 25, dev: 25, lk: 100 };
 
     const GRUPOS = [
@@ -316,6 +348,9 @@
     } catch(e) {}
 
     function categoriaTieneDatos(ruta) {
+      if (ruta === 'instituciones') {
+        return datosJSON && datosJSON.ranking_instituciones && datosJSON.ranking_instituciones.length > 0;
+      }
       if (CATS_BRACKET.has(ruta)) {
         const b = bracketCache[ruta];
         return b && b.fases && b.fases.length > 0;
@@ -338,6 +373,13 @@
           </button>`;
         });
       });
+      // Tab instituciones siempre visible al final
+      const instActiva  = categoriaActiva === 'instituciones';
+      const instDatos   = categoriaTieneDatos('instituciones');
+      html += `<button class="cat-tab tab-instituciones ${instDatos ? 'tiene-datos' : ''} ${instActiva ? 'active' : ''}"
+        data-ruta="instituciones" onclick="seleccionarManual('instituciones')">
+        🏆 Ranking Instituciones
+      </button>`;
       container.innerHTML = html;
       rutasConDatos = Object.keys(RUTAS_NOMBRE).filter(categoriaTieneDatos);
     }
@@ -350,9 +392,10 @@
       const sel = document.getElementById('cat-select-mobile');
       if (sel) sel.value = ruta;
 
-      if (CATS_BRACKET.has(ruta))           renderizarBracketGeneral(ruta);
-      else if (CATS_CALIFICACION.has(ruta)) renderizarCalificacion(ruta);
-      else                                  renderizarTabla(ruta);
+      if (ruta === 'instituciones')              renderizarInstituciones();
+      else if (CATS_BRACKET.has(ruta))           renderizarBracketGeneral(ruta);
+      else if (CATS_CALIFICACION.has(ruta))      renderizarCalificacion(ruta);
+      else                                        renderizarTabla(ruta);
     }
 
     function seleccionarManual(ruta) { seleccionarCategoria(ruta); }
@@ -362,6 +405,93 @@
         <div class="empty-state">
           <div class="empty-icon">🏁</div>
           <div class="empty-text">ESPERANDO RESULTADOS...</div>
+        </div>`;
+    }
+
+    // ── RANKING INSTITUCIONES ────────────────────────────────────
+
+    function renderizarInstituciones() {
+      document.getElementById('tv-ronda').textContent = 'RANKING';
+      document.getElementById('tv-cat').textContent   = 'INSTITUCIONES';
+
+      const wrap    = document.getElementById('tv-tabla-wrap');
+      const ranking = (datosJSON && datosJSON.ranking_instituciones) || [];
+
+      if (ranking.length === 0) {
+        wrap.innerHTML = `
+          <div class="inst-ranking-wrap">
+            <div class="inst-ranking-header">
+              <span class="inst-ranking-header-icon">🏆</span>
+              <div>
+                <div class="inst-ranking-header-title">RANKING DE INSTITUCIONES</div>
+                <div class="inst-ranking-header-sub">PUNTOS POR PODIO · 1º=25 · 2º=15 · 3º=10</div>
+              </div>
+            </div>
+            <div class="empty-state">
+              <div class="empty-icon">🏛️</div>
+              <div class="empty-text">AÚN NO HAY PODIOS REGISTRADOS</div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const maxPts = ranking[0].puntos || 1;
+
+      const filas = ranking.map((inst, i) => {
+        const pos       = i + 1;
+        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
+        const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
+        const emoji     = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+        const pct       = Math.round((inst.puntos / maxPts) * 100);
+
+        const medallas = [
+          inst.oros    > 0 ? `<span class="inst-medalla-chip oro">🥇 ${inst.oros}</span>` : '',
+          inst.platas  > 0 ? `<span class="inst-medalla-chip plata">🥈 ${inst.platas}</span>` : '',
+          inst.bronces > 0 ? `<span class="inst-medalla-chip bronce">🥉 ${inst.bronces}</span>` : ''
+        ].filter(Boolean).join('');
+
+        return `
+          <tr class="row-altura ${claseRow}">
+            <td class="td-pos"><span class="pos-circle ${claseCirc}">${emoji}</span></td>
+            <td class="td-inst-nombre">
+              <div class="inst-nombre-text">${inst.institucion}</div>
+              <div class="inst-medallas">${medallas}</div>
+            </td>
+            <td class="td-inst-puntos">
+              <div class="inst-pts-num">${inst.puntos}</div>
+              <div class="inst-pts-label">pts</div>
+            </td>
+            <td class="td-inst-bar">
+              <div class="inst-bar-bg">
+                <div class="inst-bar-fill" style="width:${pct}%"></div>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      wrap.innerHTML = `
+        <div class="inst-ranking-wrap">
+          <div class="inst-ranking-header">
+            <span class="inst-ranking-header-icon">🏆</span>
+            <div>
+              <div class="inst-ranking-header-title">RANKING DE INSTITUCIONES</div>
+              <div class="inst-ranking-header-sub">PUNTOS POR PODIO · 1º=25 · 2º=15 · 3º=10</div>
+            </div>
+            <div class="inst-ranking-puntos-info">
+              <span class="inst-pts-badge oro">🥇 25 pts</span>
+              <span class="inst-pts-badge plata">🥈 15 pts</span>
+              <span class="inst-pts-badge bronce">🥉 10 pts</span>
+            </div>
+          </div>
+          <table>
+            <thead><tr>
+              <th class="c">#</th>
+              <th>Institución / Club</th>
+              <th class="c">Puntos</th>
+              <th>Progreso</th>
+            </tr></thead>
+            <tbody>${filas}</tbody>
+          </table>
         </div>`;
     }
 
@@ -475,8 +605,6 @@
       const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
       const icon      = CAT_ICON[ruta] || '🏆';
       const esLk      = ruta === 'lk';
-
-      // ── CAMBIO 3: MAX_TOTAL dinámico ──
       const MAX_TOTAL = CAT_MAX_SCORE[ruta] || 25;
 
       document.getElementById('tv-ronda').textContent = esLk ? 'LEGO KIDS' : 'CALIFICACIÓN';
@@ -503,7 +631,6 @@
         return;
       }
 
-      // Para lk: indicador de fases si hay datos
       const hayFase2 = esLk && ranking.some(p => (parseFloat(p.total) || 0) > 70);
       const fasesInfo = esLk ? `
         <div class="lk-fases-wrap">
@@ -519,7 +646,6 @@
         const total     = parseFloat(p.total) || 0;
         const pct       = Math.min((total / MAX_TOTAL) * 100, 100);
 
-        // Para lk: mostrar desglose F1/F2 si aplica
         let desglose = '';
         if (esLk && p.fase1Total !== undefined) {
           desglose = `<div style="font-family:var(--font-mono);font-size:0.6rem;color:#94a3b8;margin-top:4px;">
@@ -672,9 +798,10 @@
         const primera = rutasConDatos[0] || null;
         if (primera) { categoriaActiva = primera; seleccionarCategoria(primera); }
       } else {
-        if (CATS_BRACKET.has(categoriaActiva))           renderizarBracketGeneral(categoriaActiva);
-        else if (CATS_CALIFICACION.has(categoriaActiva)) renderizarCalificacion(categoriaActiva);
-        else                                             renderizarTabla(categoriaActiva);
+        if (categoriaActiva === 'instituciones')           renderizarInstituciones();
+        else if (CATS_BRACKET.has(categoriaActiva))        renderizarBracketGeneral(categoriaActiva);
+        else if (CATS_CALIFICACION.has(categoriaActiva))   renderizarCalificacion(categoriaActiva);
+        else                                               renderizarTabla(categoriaActiva);
       }
     }
 
