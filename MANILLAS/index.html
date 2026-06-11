@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Manillas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="../shared/js/config.js"></script>
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <style>
+    body { background: #f0f4fa !important; color: #1a1a2e !important; }
+    main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+
+    .page-hero { padding: 40px 0 28px; border-bottom: 1px solid rgba(26,92,168,0.15); margin-bottom: 28px; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #fff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1.6s infinite; }
+    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; line-height: 1; }
+    .page-hero h2 span { color: #1a5ca8; }
+    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; margin-top: 8px; }
+
+    /* stats bar */
+    .stats-bar { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-pill { background: #fff; border: 1px solid #e0eaf5; border-radius: 12px; padding: 12px 20px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(26,92,168,0.08); }
+    .stat-pill-icon { font-size: 1.2rem; }
+    .stat-pill-label { font-family: 'DM Mono', monospace; font-size: 10px; color: #7a7a8c; letter-spacing: 0.1em; text-transform: uppercase; }
+    .stat-pill-value { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: #1a3a6e; line-height: 1; }
+    .stat-pill-value.verde { color: #1e8c3a; }
+    .stat-pill-value.naranja { color: #c27803; }
+
+    /* controles */
+    .controles { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .ctrl-select, .ctrl-input { background: #fff; border: 1.5px solid #d0dae8; color: #1a3a6e; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: 10px; outline: none; transition: border-color 0.2s; }
+    .ctrl-select:focus, .ctrl-input:focus { border-color: #1a5ca8; }
+    .ctrl-select { cursor: pointer; min-width: 200px; }
+    .ctrl-input { flex: 1; min-width: 220px; }
+    .ctrl-select option, .ctrl-select optgroup { background: #fff; color: #1a3a6e; }
+    .btn-refrescar { background: #1a5ca8; border: none; color: #fff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+    .btn-refrescar:hover { background: #0e4a8f; }
+    .btn-refrescar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* lista */
+    .lista-container { display: flex; flex-direction: column; gap: 10px; }
+
+    .p-card {
+      background: #fff;
+      border: 1.5px solid #e0eaf5;
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(26,92,168,0.06);
+    }
+    .p-card.entregada {
+      background: #f0faf4;
+      border-color: #86efac;
+    }
+    .p-card:hover { box-shadow: 0 4px 16px rgba(26,92,168,0.12); transform: translateY(-1px); }
+
+    .p-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a5ca8, #0d3572);
+      color: #fff;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      letter-spacing: 1px;
+    }
+    .p-card.entregada .p-avatar { background: linear-gradient(135deg, #1e8c3a, #0f5a24); }
+
+    .p-info { flex: 1; min-width: 0; }
+    .p-robot { font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 800; color: #1a2a4a; }
+    .p-nombre { font-family: 'Exo 2', sans-serif; font-size: 12px; color: #5a6478; margin-top: 2px; }
+    .p-miembro2 { font-family: 'Exo 2', sans-serif; font-size: 11px; color: #8a94a8; margin-top: 1px; }
+    .p-cat { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 8px; margin-top: 4px; }
+    .p-cat.amateur { background: #fef9c3; color: #7c5e00; }
+    .p-cat.pro     { background: #dbeafe; color: #1e40af; }
+    .p-cat.extra   { background: #f3e8ff; color: #6b21a8; }
+
+    .p-estado {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700;
+      padding: 6px 14px; border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .p-estado.pendiente { background: #fff3cd; color: #7c5a00; }
+    .p-estado.entregada { background: #dcfce7; color: #166534; }
+
+    .btn-entregar {
+      background: linear-gradient(135deg, #1e8c3a, #166d2c);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-entregar:hover { background: linear-gradient(135deg, #25a847, #1e8c3a); transform: translateY(-1px); }
+    .btn-entregar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-entregada-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1e8c3a;
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .vacio { text-align: center; padding: 60px 20px; color: #7a7a8c; font-family: 'DM Mono', monospace; font-size: 13px; }
+
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120px); background: rgba(0,0,0,0.92); color: #00ff88; padding: 16px 28px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 14px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55); border: 2px solid rgba(0,255,136,0.4); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 768px) {
+      main { padding-top: 174px; }
+      .wrapper { padding: 0 12px 40px; }
+      .page-hero { padding: 24px 0 20px; }
+      .page-hero h2 { font-size: 2rem; }
+      .controles { flex-direction: column; }
+      .ctrl-select, .ctrl-input, .btn-refrescar { width: 100%; box-sizing: border-box; }
+      .p-card { flex-wrap: wrap; gap: 10px; }
+      .btn-entregar { width: 100%; justify-content: center; }
+      .stats-bar { gap: 10px; }
+      .stat-pill { flex: 1; min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<main>
+  <div class="wrapper">
+    <div class="page-hero">
+      <div class="page-hero-badge">
+        <div class="page-hero-badge-dot"></div>
+        SUCREBOT 2026 · CONTROL DE ACCESO
+      </div>
+      <h2>ENTREGA DE <span>MANILLAS</span></h2>
+      <p>Solo participantes aprobados · Un clic para marcar como entregada</p>
+    </div>
+
+    <!-- stats -->
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <div class="stat-pill-icon">👥</div>
+        <div>
+          <div class="stat-pill-label">Total aprobados</div>
+          <div class="stat-pill-value" id="stat-total">—</div>
+        </div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-icon">✅</div>
+        <div>
+          <div class="stat-pill-label">Entregadas</div>
+          <div class="stat-pill-value verde" id="stat-entregadas">—</div>
+        </div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-icon">⏳</div>
+        <div>
+          <div class="stat-pill-label">Pendientes</div>
+          <div class="stat-pill-value naranja" id="stat-pendientes">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- controles -->
+    <div class="controles">
+      <select class="ctrl-select" id="filtro-cat">
+        <option value="todos">🏆 Todas las categorías</option>
+        <optgroup label="🏅 AMATEUR">
+          <option value="Insectos">Insectos</option>
+          <option value="Trepador (Amateur)">Trepador (Amateur)</option>
+          <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+        </optgroup>
+        <optgroup label="🏆 PRO">
+          <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+          <option value="Minisumo Autónomo">Minisumo Autónomo</option>
+          <option value="Minisumo RC">Minisumo RC</option>
+          <option value="Bailarín">Bailarín</option>
+          <option value="Batalla">Batalla</option>
+          <option value="Trepador (Pro)">Trepador (Pro)</option>
+          <option value="Robot soccer">Robot soccer</option>
+        </optgroup>
+        <optgroup label="🌟 OPEN">
+          <option value="Cubo Rubik">Cubo Rubik</option>
+          <option value="Lego Kids">Lego Kids</option>
+          <option value="Impacto Tecnológico">Impacto Tecnológico</option>
+        </optgroup>
+        <optgroup label="🔍 ESTADO">
+          <option value="__pendientes__">⏳ Solo pendientes</option>
+          <option value="__entregadas__">✅ Solo entregadas</option>
+        </optgroup>
+      </select>
+      <input type="text" class="ctrl-input" id="busqueda" placeholder="🔍 Buscar por nombre, robot o institución...">
+      <button class="btn-refrescar" id="btn-refrescar" onclick="refrescar()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        Refrescar
+      </button>
+    </div>
+
+    <!-- lista -->
+    <div class="lista-container" id="lista"></div>
+  </div>
+</main>
+
+<div data-include="../shared/components/footer.html"></div>
+<div class="toast" id="toast"></div>
+
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
+<script>
+  const GAS_URL = CONFIG.GAS_URL();
+
+  const NIVEL = {
+    'Insectos':'amateur','Trepador (Amateur)':'amateur','Seguidor de línea ST (Amateur)':'amateur',
+    'Seguidor de línea ST (Pro)':'pro','Minisumo Autónomo':'pro','Minisumo RC':'pro',
+    'Bailarín':'pro','Batalla':'pro','Trepador (Pro)':'pro','Robot soccer':'pro',
+    'Cubo Rubik':'extra','Lego Kids':'extra','Impacto Tecnológico':'extra'
+  };
+
+  let participantes = [];   // solo aprobados
+  let entregando = new Set(); // IDs en proceso
+
+  async function gasGet(params) {
+    const r = await fetch(GAS_URL + '?' + new URLSearchParams(params));
+    return r.json();
+  }
+  async function gasPost(data) {
+    const r = await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(data), redirect:'follow' });
+    return r.json();
+  }
+
+  document.addEventListener('componentsLoaded', () => {
+    const savedUser = localStorage.getItem('sucrebot_user');
+    if (!savedUser) { window.location.href = '../INICIO/'; return; }
+    cargarDesdeCache();
+    refrescar();
+  });
+
+  function cargarDesdeCache() {
+    const raw = localStorage.getItem('participantes');
+    if (!raw) return;
+    try {
+      const arr = JSON.parse(raw);
+      participantes = arr.filter(p => p.aprobado === 'APROBADO');
+      renderLista();
+    } catch(e) {}
+  }
+
+  async function refrescar() {
+    const btn = document.getElementById('btn-refrescar');
+    btn.disabled = true; btn.textContent = '⏳ Cargando...';
+    try {
+      const arr = await gasGet({ action: 'getParticipantes' });
+      if (Array.isArray(arr)) {
+        localStorage.setItem('participantes', JSON.stringify(arr));
+        participantes = arr.filter(p => p.aprobado === 'APROBADO');
+        renderLista();
+      }
+    } catch(e) { showToast('Error al cargar datos', true); }
+    finally { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> Refrescar'; }
+  }
+
+  function renderLista() {
+    const filtro   = document.getElementById('filtro-cat').value;
+    const busqueda = document.getElementById('busqueda').value.toLowerCase().trim();
+
+    let lista = participantes;
+
+    if (filtro === '__pendientes__') {
+      lista = lista.filter(p => p.manilla !== 'ENTREGADA');
+    } else if (filtro === '__entregadas__') {
+      lista = lista.filter(p => p.manilla === 'ENTREGADA');
+    } else if (filtro !== 'todos') {
+      lista = lista.filter(p => p.categoria === filtro);
+    }
+
+    if (busqueda) {
+      lista = lista.filter(p =>
+        (p.robot||'').toLowerCase().includes(busqueda) ||
+        (p.nombre||'').toLowerCase().includes(busqueda) ||
+        (p.institucion||'').toLowerCase().includes(busqueda) ||
+        (p.miembro2||'').toLowerCase().includes(busqueda)
+      );
+    }
+
+    // stats siempre sobre todos los aprobados
+    const totalAprobados  = participantes.length;
+    const totalEntregadas = participantes.filter(p => p.manilla === 'ENTREGADA').length;
+    document.getElementById('stat-total').textContent      = totalAprobados;
+    document.getElementById('stat-entregadas').textContent = totalEntregadas;
+    document.getElementById('stat-pendientes').textContent = totalAprobados - totalEntregadas;
+
+    const container = document.getElementById('lista');
+    if (!lista.length) {
+      container.innerHTML = '<div class="vacio">No se encontraron participantes</div>';
+      return;
+    }
+
+    // pendientes primero, luego entregadas
+    lista.sort((a, b) => {
+      const aE = a.manilla === 'ENTREGADA' ? 1 : 0;
+      const bE = b.manilla === 'ENTREGADA' ? 1 : 0;
+      return aE - bE || (a.categoria||'').localeCompare(b.categoria||'') || (a.robot||'').localeCompare(b.robot||'');
+    });
+
+    container.innerHTML = lista.map(p => {
+      const entregada = p.manilla === 'ENTREGADA';
+      const nivel     = NIVEL[p.categoria] || 'pro';
+      const iniciales = (p.robot || p.nombre || '?').slice(0, 2).toUpperCase();
+      const m2        = (p.miembro2 && String(p.miembro2).trim() && String(p.miembro2).trim() !== '0')
+                        ? String(p.miembro2).trim() : null;
+      return `
+        <div class="p-card ${entregada ? 'entregada' : ''}" id="card-${p.id}">
+          <div class="p-avatar">${iniciales}</div>
+          <div class="p-info">
+            <div class="p-robot">${p.robot || '—'}</div>
+            <div class="p-nombre">${p.nombre || '—'} · ${p.institucion || '—'}</div>
+            ${m2 ? `<div class="p-miembro2">+ ${m2}</div>` : ''}
+            <span class="p-cat ${nivel}">${p.categoria || '—'}</span>
+          </div>
+          ${entregada
+            ? `<div class="btn-entregada-label">✅ Entregada</div>`
+            : `<button class="btn-entregar" onclick="entregarManilla('${p.id}')" id="btn-${p.id}">🎫 Entregar</button>`
+          }
+        </div>`;
+    }).join('');
+  }
+
+  async function entregarManilla(id) {
+    if (entregando.has(id)) return;
+    entregando.add(id);
+
+    const btn = document.getElementById('btn-' + id);
+    if (btn) { btn.disabled = true; btn.textContent = '⏳...'; }
+
+    try {
+      const resp = await gasPost({ action: 'marcarManilla', id: id });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+
+      // actualizar local
+      const p = participantes.find(x => x.id === id);
+      if (p) p.manilla = 'ENTREGADA';
+
+      // actualizar cache
+      try {
+        const raw = localStorage.getItem('participantes');
+        if (raw) {
+          const arr = JSON.parse(raw);
+          const idx = arr.findIndex(x => x.id === id);
+          if (idx >= 0) arr[idx].manilla = 'ENTREGADA';
+          localStorage.setItem('participantes', JSON.stringify(arr));
+        }
+      } catch(e) {}
+
+      const card = document.getElementById('card-' + id);
+      if (card) {
+        card.classList.add('entregada');
+        const btnEl = document.getElementById('btn-' + id);
+        if (btnEl) btnEl.outerHTML = `<div class="btn-entregada-label">✅ Entregada</div>`;
+        const avatar = card.querySelector('.p-avatar');
+        if (avatar) avatar.style.background = 'linear-gradient(135deg, #1e8c3a, #0f5a24)';
+      }
+
+      // actualizar stats
+      const totalEntregadas = participantes.filter(p => p.manilla === 'ENTREGADA').length;
+      document.getElementById('stat-entregadas').textContent = totalEntregadas;
+      document.getElementById('stat-pendientes').textContent = participantes.length - totalEntregadas;
+
+      showToast(`✅ Manilla entregada — ${p ? (p.robot || p.nombre) : id}`);
+    } catch(e) {
+      showToast('Error: ' + e.message, true);
+      if (btn) { btn.disabled = false; btn.textContent = '🎫 Entregar'; }
+    } finally {
+      entregando.delete(id);
+    }
+  }
+
+  document.getElementById('filtro-cat').addEventListener('change', renderLista);
+  document.getElementById('busqueda').addEventListener('input', renderLista);
+
+  function showToast(msg, error = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.color = error ? '#ff8080' : '#00ff88';
+    t.style.borderColor = error ? 'rgba(255,100,100,0.4)' : 'rgba(0,255,136,0.4)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+</script>
+</body>
+</html>
