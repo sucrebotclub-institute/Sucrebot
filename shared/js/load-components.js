@@ -133,45 +133,22 @@ async function loadComponents() {
     await waitForGoogleSDK();
     console.log('✅ Google OAuth SDK cargado y listo');
     
-    // 2. Cargar componentes HTML
+    // 3. Cargar componentes HTML
     console.log('📦 Cargando componentes HTML...');
     await loadHTMLComponents();
     console.log('✅ Componentes HTML cargados');
     
-    // 3. Cargar auth.js (detectar ruta relativa)
+    // 4. Cargar auth.js
+    // Todas las páginas SucreBot viven en subcarpetas → siempre ../shared/
+    // Solo usar ./shared/ si estamos en la raíz del sitio (ej: /Sucrebot/)
     console.log('📦 Cargando auth.js...');
-    
-    // Detectar la ruta correcta según la ubicación de la página
-    const currentPath = window.location.pathname;
-    let authPath;
-    
-    if (currentPath.includes('/INICIO/')) {
-      authPath = '../shared/js/auth.js';
-    } else if (currentPath.includes('/FAQ/') || 
-               currentPath.includes('/REGISTRO/') || 
-               currentPath.includes('/REGLAMENTO/') ||
-               currentPath.includes('/PARTICIPANTES_REGISTRADOS/') ||
-               currentPath.includes('/MI-REGISTRO/') ||
-               currentPath.includes('/MIS-CERTIFICADOS/') ||
-               currentPath.includes('/ESCANER/') ||
-               currentPath.includes('/CRONOMETRO/') ||
-               currentPath.includes('/CRONOMETRO-SOCCER/') ||
-               currentPath.includes('/ESCANER-SOCCER/') ||
-               currentPath.includes('/PANTALLA/') ||
-               currentPath.includes('/RESULTADOS/') ||
-               currentPath.includes('/GENERAR-CERTIFICADOS/') ||
-               currentPath.includes('/CERTIFICADOS/') ||
-               currentPath.includes('/PANEL-CALIFICACION/')) {
-      authPath = '../shared/js/auth.js';
-    } else {
-      // Por defecto (raíz o páginas no especificadas)
-      authPath = './shared/js/auth.js';
-    }
-    
+    const segmentos = window.location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+    const enRaiz = segmentos.length <= 1; // e.g. /Sucrebot/ → 1 segmento
+    const authPath = enRaiz ? './shared/js/auth.js' : '../shared/js/auth.js';
     await loadScript(authPath, false, false);
     console.log('✅ auth.js cargado');
     
-    // 4. Disparar evento cuando TODO esté listo
+    // 5. Disparar evento cuando TODO esté listo
     document.dispatchEvent(new CustomEvent('componentsLoaded'));
     console.log('🎉 Sistema completamente inicializado');
     
