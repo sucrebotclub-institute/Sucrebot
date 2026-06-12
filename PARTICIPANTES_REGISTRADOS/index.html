@@ -58,6 +58,12 @@
     .busqueda-input::placeholder { color:rgba(255,255,255,0.6); }
     .btn-refrescar { background:var(--p-cyan); border:none; color:var(--p-surface); font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
     .btn-refrescar:hover { background:var(--p-cyan-bright); transform:translateY(-1px); }
+    /* cache info bar */
+    .cache-info-bar { font-family:'DM Mono',monospace; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.08em; margin-bottom:12px; display:none; }
+    /* paginación */
+    .btn-ver-mas { width:100%; background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.2); color:#fff; font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; padding:12px; border-radius:10px; cursor:pointer; margin-top:8px; transition:all 0.2s; }
+    .btn-ver-mas:hover { background:rgba(255,255,255,0.18); }
+    .pag-info { font-family:'DM Mono',monospace; font-size:10px; color:rgba(255,255,255,0.45); text-align:center; margin-top:8px; letter-spacing:0.08em; }
     .tabla-participantes { width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.2); }
     .tabla-participantes thead { background:linear-gradient(135deg,#0a2545 0%,#051729 100%); color:#ffffff; }
     .tabla-participantes th { padding:16px; text-align:left; font-family:'Orbitron',monospace; font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; border-bottom:2px solid rgba(255,255,255,0.1); }
@@ -166,7 +172,6 @@
     <div class="main-layout">
       <div class="content-wrapper">
 
-        <!-- GESTOR DE INSTITUCIONES -->
         <div class="inst-gestor staff-only" id="inst-gestor" style="display:none;">
           <div class="inst-gestor-title">🏛️ Gestionar Instituciones / Clubes</div>
           <div class="inst-gestor-sub" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
@@ -176,7 +181,6 @@
           <div class="inst-lista" id="inst-lista"><div class="inst-empty">Cargando...</div></div>
         </div>
 
-        <!-- TABLA -->
         <div class="participantes-container">
           <div class="controles">
             <div class="controles-left">
@@ -209,18 +213,18 @@
               Refrescar
             </button>
           </div>
+          <div class="cache-info-bar" id="cache-info-bar"></div>
           <div class="tabla-wrapper">
             <table class="tabla-participantes">
               <thead>
-                <tr>
-                  <th>ROBOT</th><th>CATEGORÍA</th><th>NOMBRES</th><th>INSTITUCIÓN</th><th>ESTADO</th>
-                </tr>
+                <tr><th>ROBOT</th><th>CATEGORÍA</th><th>NOMBRES</th><th>INSTITUCIÓN</th><th>ESTADO</th></tr>
               </thead>
               <tbody id="tabla-body">
                 <tr><td colspan="5" class="vacio-msg">⏳ CARGANDO PARTICIPANTES...</td></tr>
               </tbody>
             </table>
           </div>
+          <div class="pag-info" id="pag-info"></div>
         </div>
       </div>
 
@@ -315,12 +319,15 @@
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 
 <script>
-  const GAS_URL = CONFIG.GAS_URL();
+  const GAS_URL      = CONFIG.GAS_URL();
+  const CACHE_KEY    = 'participantes';
+  const CACHE_TS_KEY = 'participantes_ts';
+  const CACHE_TTL    = 10 * 60 * 1000; // 10 minutos
+  const PAGE_SIZE    = 30;
 
   const CATEGORIAS_NIVEL = {
     'Insectos':'amateur','Trepador (Amateur)':'amateur','Seguidor de línea ST (Amateur)':'amateur',
@@ -328,7 +335,6 @@
     'Bailarín':'pro','Batalla':'pro','Trepador (Pro)':'pro','Robot soccer':'pro',
     'Cubo Rubik':'extra','Lego Kids':'extra','Impacto Tecnológico':'extra'
   };
-
   const TODAS_CATEGORIAS = [
     'Insectos','Trepador (Amateur)','Seguidor de línea ST (Amateur)',
     'Seguidor de línea ST (Pro)','Minisumo Autónomo','Minisumo RC',
@@ -336,82 +342,120 @@
     'Cubo Rubik','Lego Kids','Impacto Tecnológico'
   ];
 
+  let listaFiltrada  = [];
+  let paginaActual   = 1;
+  let _participantesIndex = [];
+
   function strVal(v) { if(v===null||v===undefined)return ''; return String(v).trim(); }
   function gasGet(params) { const qs=new URLSearchParams(params).toString(); return fetch(GAS_URL+'?'+qs).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}); }
   async function gasPost(data) { const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(data),redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'}});return r.json(); }
+  function limpiarCacheInstituciones() { localStorage.removeItem('sucrebot_instituciones_cache'); showToast('✅ Cache del dropdown limpiado'); }
+  function esStaff() { const s=localStorage.getItem('sucrebot_user');if(!s)return false;try{const u=JSON.parse(s);return window.STAFF_EMAILS&&window.STAFF_EMAILS.includes(u.email);}catch(e){return false;} }
 
-  function limpiarCacheInstituciones() { localStorage.removeItem('sucrebot_instituciones_cache'); showToast('✅ Cache del dropdown limpiado — se recargará desde GAS en el próximo registro'); }
+  document.addEventListener('componentsLoaded', function() {
+    const savedUser = localStorage.getItem('sucrebot_user');
+    if (!savedUser) { window.location.href = '../INICIO/'; return; }
 
-  function esStaff() {
-    const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser)return false;
-    try{const u=JSON.parse(savedUser);return window.STAFF_EMAILS&&window.STAFF_EMAILS.includes(u.email);}catch(e){return false;}
+    const ahora      = Date.now();
+    const tsGuardado = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0');
+    const cacheValido = (ahora - tsGuardado) < CACHE_TTL;
+
+    // mostrar cache inmediatamente
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const arr = JSON.parse(cached);
+        if (Array.isArray(arr) && arr.length > 0) {
+          _participantesIndex = arr;
+          cargarListaLocal();
+          mostrarCacheInfo(tsGuardado);
+        }
+      } catch(e) {}
+    }
+
+    if (cacheValido && cached) {
+      // cache vigente — no llamar a GAS
+      return;
+    }
+
+    // cache vencido o vacío — refrescar desde GAS
+    gasGet({action:'getParticipantes'}).then(arr => {
+      if (Array.isArray(arr)) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(arr));
+        localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+        _participantesIndex = arr;
+        cargarListaLocal();
+        mostrarCacheInfo(Date.now());
+      }
+    }).catch(e => {
+      console.error('Error al cargar participantes:', e);
+      if (!cached) showToast('⚠️ Error al cargar datos desde el servidor', true);
+    });
+  });
+
+  function mostrarCacheInfo(ts) {
+    const el = document.getElementById('cache-info-bar');
+    if (!el) return;
+    const min = Math.floor((Date.now() - ts) / 60000);
+    el.style.display = 'block';
+    el.textContent = min < 1 ? '● Datos actualizados ahora mismo' : `● Datos en cache — actualizados hace ${min} min`;
   }
 
-  function renderizarInstitucionesGestor() {
-    const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
-    const conteo={};
-    lista.forEach(p=>{const inst=strVal(p.institucion)||'(sin institución)';conteo[inst]=(conteo[inst]||0)+1;});
-    const ordenadas=Object.entries(conteo).sort((a,b)=>b[1]-a[1]);
-    const contenedor=document.getElementById('inst-lista');
-    if(ordenadas.length===0){contenedor.innerHTML='<div class="inst-empty">No hay instituciones registradas aún.</div>';return;}
-    contenedor.innerHTML=ordenadas.map(([nombre,n])=>`<div class="inst-row"><div class="inst-count">${n}</div><div class="inst-name">${nombre}</div><button class="inst-btn-editar" onclick='abrirModalInst(${JSON.stringify(nombre)},${n})'>✏ Editar / Fusionar</button></div>`).join('');
+  function refrescarDatos() {
+    const btn=document.querySelector('.btn-refrescar');btn.disabled=true;const iconoOriginal=btn.innerHTML;btn.innerHTML='⏳ Actualizando...';
+    gasGet({action:'getParticipantes'}).then(arr=>{
+      if(Array.isArray(arr)){
+        localStorage.setItem(CACHE_KEY, JSON.stringify(arr));
+        localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+        _participantesIndex = arr;
+        paginaActual = 1;
+        cargarListaLocal();
+        mostrarCacheInfo(Date.now());
+        showToast('✅ Datos actualizados');
+      }
+    }).catch(e=>showToast('❌ Error: '+(e.message||'Desconocido'),true))
+      .finally(()=>{btn.disabled=false;btn.innerHTML=iconoOriginal;});
   }
-
-  let instEditando=null;
-  function abrirModalInst(nombre,count) {
-    instEditando=nombre;document.getElementById('inst-modal-nombre-actual').textContent=nombre;document.getElementById('inst-modal-input').value=nombre;document.getElementById('inst-modal-count').textContent=count;document.getElementById('inst-btn-guardar').disabled=false;document.getElementById('inst-btn-guardar').textContent='✔ Aplicar cambio';document.getElementById('modal-inst').classList.add('show');setTimeout(()=>document.getElementById('inst-modal-input').focus(),100);
-  }
-  function cerrarModalInst() { instEditando=null; document.getElementById('modal-inst').classList.remove('show'); }
-
-  async function guardarInstitucion() {
-    const nuevoNombre=document.getElementById('inst-modal-input').value.trim();
-    if(!nuevoNombre){showToast('⚠️ Escribe el nuevo nombre',true);return;}
-    if(nuevoNombre===instEditando){cerrarModalInst();return;}
-    const btn=document.getElementById('inst-btn-guardar');btn.disabled=true;btn.textContent='⏳ Aplicando...';
-    try{
-      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
-      const afectados=lista.filter(p=>strVal(p.institucion)===instEditando);
-      let errores=0;
-      for(const p of afectados){try{await gasGet({action:'actualizarParticipante',id:p.id,institucion:nuevoNombre});}catch(e){errores++;}}
-      const listaActualizada=lista.map(p=>strVal(p.institucion)===instEditando?{...p,institucion:nuevoNombre}:p);
-      localStorage.setItem('participantes',JSON.stringify(listaActualizada));
-      try{const raw=localStorage.getItem('sucrebot_instituciones_cache');if(raw){const cache=JSON.parse(raw);cache.data=[...new Set(cache.data.map(i=>i===instEditando?nuevoNombre:i))];localStorage.setItem('sucrebot_instituciones_cache',JSON.stringify(cache));}}catch(e){}
-      cerrarModalInst();cargarListaLocal();renderizarInstitucionesGestor();
-      if(errores>0)showToast(`⚠️ ${afectados.length-errores}/${afectados.length} actualizados. Recarga para reintentar.`,true);
-      else showToast(`✅ "${nuevoNombre}" aplicado a ${afectados.length} participante${afectados.length!==1?'s':''}`);
-    }catch(e){btn.disabled=false;btn.textContent='✔ Aplicar cambio';showToast('Error: '+(e.message||'Desconocido'),true);}
-  }
-
-  // índice para el modal — evita serializar objetos completos en el onclick
-  let _participantesIndex = [];
 
   function cargarListaLocal() {
-    const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
-    _participantesIndex = lista; // guardar referencia para el modal
+    const lista = _participantesIndex;
     actualizarEstadisticas(lista);
-    const filtro=document.getElementById('filtro-categoria').value;
-    const busqueda=document.getElementById('busqueda-input').value.toLowerCase();
-    let filtrados=lista;
-    if(filtro!=='todos')filtrados=filtrados.filter(p=>p.categoria===filtro);
-    if(busqueda)filtrados=filtrados.filter(p=>
-      (p.nombre||'').toLowerCase().includes(busqueda)||
-      (p.robot||'').toLowerCase().includes(busqueda)||
-      (p.institucion||'').toLowerCase().includes(busqueda)||
+    const filtro   = document.getElementById('filtro-categoria').value;
+    const busqueda = document.getElementById('busqueda-input').value.toLowerCase();
+    listaFiltrada = lista;
+    if (filtro !== 'todos') listaFiltrada = listaFiltrada.filter(p => p.categoria === filtro);
+    if (busqueda) listaFiltrada = listaFiltrada.filter(p =>
+      (p.nombre||'').toLowerCase().includes(busqueda) ||
+      (p.robot||'').toLowerCase().includes(busqueda) ||
+      (p.institucion||'').toLowerCase().includes(busqueda) ||
       (p.id||'').toLowerCase().includes(busqueda)
     );
-    const tbody=document.getElementById('tabla-body');
-    if(filtrados.length===0){tbody.innerHTML='<tr><td colspan="5" class="vacio-msg">No se encontraron participantes</td></tr>';return;}
-    tbody.innerHTML=filtrados.map(p=>{
-      let estadoClass='pendiente',estadoTexto='EN REVISIÓN';
+    paginaActual = 1;
+    renderPagina();
+  }
+
+  function renderPagina() {
+    const tbody   = document.getElementById('tabla-body');
+    const pagInfo = document.getElementById('pag-info');
+    if (!listaFiltrada.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="vacio-msg">No se encontraron participantes</td></tr>';
+      pagInfo.textContent = '';
+      return;
+    }
+    const hasta  = paginaActual * PAGE_SIZE;
+    const pagina = listaFiltrada.slice(0, hasta);
+    const quedan = listaFiltrada.length - hasta;
+
+    tbody.innerHTML = pagina.map(p => {
+      let estadoClass='pendiente', estadoTexto='EN REVISIÓN';
       if(p.aprobado==='APROBADO'){estadoClass='aprobado';estadoTexto='APROBADO';}
       else if(p.aprobado==='NO CUMPLE'){estadoClass='nocumple';estadoTexto='NO CUMPLE';}
-      const nivel=CATEGORIAS_NIVEL[p.categoria]||'pro';
-      const nombres=[p.nombre,p.miembro2].map(strVal).filter(Boolean);
-      const nombresHtml=nombres.map((n,i)=>
-        i===0?'<div style="font-weight:700;">'+n+'</div>'
-             :'<div style="font-size:0.8em;opacity:0.75;margin-top:2px;">+ '+n+'</div>'
+      const nivel = CATEGORIAS_NIVEL[p.categoria] || 'pro';
+      const nombres = [p.nombre, p.miembro2].map(strVal).filter(Boolean);
+      const nombresHtml = nombres.map((n,i) =>
+        i===0 ? '<div style="font-weight:700;">'+n+'</div>'
+              : '<div style="font-size:0.8em;opacity:0.75;margin-top:2px;">+ '+n+'</div>'
       ).join('');
-      // FIX: usar data-id para evitar problemas con comillas en JSON dentro del onclick
       return '<tr data-pid="'+p.id.replace(/"/g,'&quot;')+'" class="fila-participante">'+
         '<td>'+(p.robot||'—')+'</td>'+
         '<td><span class="categoria-badge '+nivel+'">'+(p.categoria||'—')+'</span></td>'+
@@ -420,22 +464,37 @@
         '<td><span class="estado-badge '+estadoClass+'">'+estadoTexto+'</span></td>'+
         '</tr>';
     }).join('');
-    // Delegación de eventos — un solo listener en tbody
-    tbody.querySelectorAll('.fila-participante').forEach(tr=>{
-      tr.addEventListener('click',()=>{
-        const pid=tr.getAttribute('data-pid');
-        const p=_participantesIndex.find(x=>x.id===pid);
-        if(p)abrirModalRevisar(p);
+
+    // ver más dentro del tbody como fila
+    if (quedan > 0) {
+      tbody.innerHTML += `<tr><td colspan="5" style="padding:0;">
+        <button class="btn-ver-mas" onclick="verMas()">
+          Ver ${Math.min(quedan, PAGE_SIZE)} más · ${listaFiltrada.length} total
+        </button></td></tr>`;
+    }
+
+    pagInfo.textContent = quedan > 0
+      ? `Mostrando ${pagina.length} de ${listaFiltrada.length} participantes`
+      : `${listaFiltrada.length} participante${listaFiltrada.length!==1?'s':''}`;
+
+    // eventos click
+    tbody.querySelectorAll('.fila-participante').forEach(tr => {
+      tr.addEventListener('click', () => {
+        const pid = tr.getAttribute('data-pid');
+        const p   = _participantesIndex.find(x => x.id === pid);
+        if (p) abrirModalRevisar(p);
       });
     });
   }
 
+  function verMas() {
+    paginaActual++;
+    renderPagina();
+  }
+
   function actualizarEstadisticas(lista) {
     let totalPersonas=0;
-    lista.forEach(p=>{
-      totalPersonas++;
-      if(strVal(p.miembro2))totalPersonas++;
-    });
+    lista.forEach(p=>{totalPersonas++;if(strVal(p.miembro2))totalPersonas++;});
     document.getElementById('stat-personas').textContent=totalPersonas;
     document.getElementById('stat-robots').textContent=lista.length;
     const equipos=lista.filter(p=>strVal(p.miembro2)).length;
@@ -444,11 +503,9 @@
     if(solos>0)detalle.push(solos+' individual'+(solos>1?'es':''));
     if(equipos>0)detalle.push(equipos+' equipo'+(equipos>1?'s':''));
     document.getElementById('stat-personas-detalle').textContent=detalle.join(' · ')||'—';
-
     const staff=esStaff();
     document.querySelectorAll('.staff-only').forEach(el=>{el.style.display=staff?'':' none';});
     if(!staff)return;
-
     const aprobados=lista.filter(p=>p.aprobado==='APROBADO').length;
     const pendientes=lista.filter(p=>p.aprobado!=='APROBADO'&&p.aprobado!=='NO CUMPLE').length;
     const nocumple=lista.filter(p=>p.aprobado==='NO CUMPLE').length;
@@ -474,26 +531,45 @@
     renderizarInstitucionesGestor();
   }
 
-  function refrescarDatos() {
-    const btn=document.querySelector('.btn-refrescar');btn.disabled=true;const iconoOriginal=btn.innerHTML;btn.innerHTML='⏳ Actualizando...';
-    gasGet({action:'getParticipantes'}).then(arr=>{
-      if(Array.isArray(arr)){localStorage.setItem('participantes',JSON.stringify(arr));cargarListaLocal();showToast('✅ Datos actualizados');}
-    }).catch(e=>showToast('❌ Error: '+(e.message||'Desconocido'),true))
-      .finally(()=>{btn.disabled=false;btn.innerHTML=iconoOriginal;});
+  function renderizarInstitucionesGestor() {
+    const lista=_participantesIndex;
+    const conteo={};
+    lista.forEach(p=>{const inst=strVal(p.institucion)||'(sin institución)';conteo[inst]=(conteo[inst]||0)+1;});
+    const ordenadas=Object.entries(conteo).sort((a,b)=>b[1]-a[1]);
+    const contenedor=document.getElementById('inst-lista');
+    if(ordenadas.length===0){contenedor.innerHTML='<div class="inst-empty">No hay instituciones registradas aún.</div>';return;}
+    contenedor.innerHTML=ordenadas.map(([nombre,n])=>`<div class="inst-row"><div class="inst-count">${n}</div><div class="inst-name">${nombre}</div><button class="inst-btn-editar" onclick='abrirModalInst(${JSON.stringify(nombre)},${n})'>✏ Editar / Fusionar</button></div>`).join('');
+  }
+
+  let instEditando=null;
+  function abrirModalInst(nombre,count){instEditando=nombre;document.getElementById('inst-modal-nombre-actual').textContent=nombre;document.getElementById('inst-modal-input').value=nombre;document.getElementById('inst-modal-count').textContent=count;document.getElementById('inst-btn-guardar').disabled=false;document.getElementById('inst-btn-guardar').textContent='✔ Aplicar cambio';document.getElementById('modal-inst').classList.add('show');setTimeout(()=>document.getElementById('inst-modal-input').focus(),100);}
+  function cerrarModalInst(){instEditando=null;document.getElementById('modal-inst').classList.remove('show');}
+
+  async function guardarInstitucion(){
+    const nuevoNombre=document.getElementById('inst-modal-input').value.trim();
+    if(!nuevoNombre){showToast('⚠️ Escribe el nuevo nombre',true);return;}
+    if(nuevoNombre===instEditando){cerrarModalInst();return;}
+    const btn=document.getElementById('inst-btn-guardar');btn.disabled=true;btn.textContent='⏳ Aplicando...';
+    try{
+      const lista=_participantesIndex;
+      const afectados=lista.filter(p=>strVal(p.institucion)===instEditando);
+      let errores=0;
+      for(const p of afectados){try{await gasGet({action:'actualizarParticipante',id:p.id,institucion:nuevoNombre});}catch(e){errores++;}}
+      const listaActualizada=lista.map(p=>strVal(p.institucion)===instEditando?{...p,institucion:nuevoNombre}:p);
+      _participantesIndex=listaActualizada;
+      localStorage.setItem(CACHE_KEY,JSON.stringify(listaActualizada));
+      try{const raw=localStorage.getItem('sucrebot_instituciones_cache');if(raw){const cache=JSON.parse(raw);cache.data=[...new Set(cache.data.map(i=>i===instEditando?nuevoNombre:i))];localStorage.setItem('sucrebot_instituciones_cache',JSON.stringify(cache));}}catch(e){}
+      cerrarModalInst();cargarListaLocal();renderizarInstitucionesGestor();
+      if(errores>0)showToast(`⚠️ ${afectados.length-errores}/${afectados.length} actualizados.`,true);
+      else showToast(`✅ "${nuevoNombre}" aplicado a ${afectados.length} participante${afectados.length!==1?'s':''}`);
+    }catch(e){btn.disabled=false;btn.textContent='✔ Aplicar cambio';showToast('Error: '+(e.message||'Desconocido'),true);}
   }
 
   let participanteEnRevision=null;
+  function construirTextoQR(p){const partes=[p.id];if(strVal(p.nombre))partes.push(strVal(p.nombre));if(strVal(p.miembro2))partes.push(strVal(p.miembro2));return partes.join('~');}
+  function generarUrlQR(p){return 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data='+encodeURIComponent(construirTextoQR(p));}
 
-  function construirTextoQR(p) {
-    const partes=[p.id];
-    if(strVal(p.nombre))partes.push(strVal(p.nombre));
-    if(strVal(p.miembro2))partes.push(strVal(p.miembro2));
-    return partes.join('~');
-  }
-
-  function generarUrlQR(p) { return 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data='+encodeURIComponent(construirTextoQR(p)); }
-
-  function abrirModalRevisar(p) {
+  function abrirModalRevisar(p){
     if(!esStaff()){showToast('⚠️ Solo personal autorizado',true);return;}
     participanteEnRevision=p;
     document.getElementById('rev-id').textContent=p.id||'—';
@@ -504,12 +580,10 @@
     document.getElementById('rev-ciudad').textContent=p.ciudad||'—';
     document.getElementById('rev-correo').textContent=p.correo||'—';
     document.getElementById('rev-contacto').textContent=p.contacto||'—';
-
     const m2=strVal(p.miembro2);
     document.getElementById('rev-seccion-equipo').style.display=m2?'block':'none';
     document.getElementById('rev-campo-miembro2').style.display=m2?'flex':'none';
     if(m2)document.getElementById('rev-miembro2').textContent=m2;
-
     const imgEl=document.getElementById('rev-comprobante'),linkEl=document.getElementById('rev-comprobante-link');
     if(p.archivoUrl){const m=p.archivoUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);imgEl.src=m?'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w800':p.archivoUrl;imgEl.style.display='block';linkEl.href=p.archivoUrl;linkEl.style.display='inline-block';}
     else{imgEl.style.display='none';linkEl.style.display='none';}
@@ -525,25 +599,23 @@
     document.getElementById('btn-desaprobar').innerHTML='↩ Marcar pendiente';
     document.getElementById('modal-revisar').classList.add('show');
   }
+  function cerrarModalRevisar(){participanteEnRevision=null;document.getElementById('modal-revisar').classList.remove('show');}
 
-  function cerrarModalRevisar() { participanteEnRevision=null; document.getElementById('modal-revisar').classList.remove('show'); }
-
-  async function noCumpleRequisitos() {
+  async function noCumpleRequisitos(){
     if(!participanteEnRevision)return;
     const razon=prompt('Razón por la que no cumple con los requisitos:\n\n(Se mostrará al participante)');
     if(!razon||!razon.trim()){showToast('⚠️ Debes especificar una razón',true);return;}
     const btn=document.getElementById('btn-eliminar');btn.disabled=true;btn.innerHTML='⏳ Procesando...';
     try{
       await gasGet({action:'noCumpleRequisitos',id:participanteEnRevision.id,razon:razon.trim()});
-      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
-      const idx=lista.findIndex(x=>x.id===participanteEnRevision.id);
-      if(idx>=0){lista[idx].aprobado='NO CUMPLE';lista[idx].razonRechazo=razon.trim();}
-      localStorage.setItem('participantes',JSON.stringify(lista));
+      const idx=_participantesIndex.findIndex(x=>x.id===participanteEnRevision.id);
+      if(idx>=0){_participantesIndex[idx].aprobado='NO CUMPLE';_participantesIndex[idx].razonRechazo=razon.trim();}
+      localStorage.setItem(CACHE_KEY,JSON.stringify(_participantesIndex));
       cerrarModalRevisar();cargarListaLocal();showToast('✖ Marcado como no cumple requisitos');
     }catch(e){btn.disabled=false;btn.innerHTML='✖ No cumple';showToast('Error: '+(e.message||JSON.stringify(e)),true);}
   }
 
-  async function aprobarParticipante() {
+  async function aprobarParticipante(){
     if(!participanteEnRevision)return;
     const p=participanteEnRevision;
     const btn=document.getElementById('btn-aprobar');btn.disabled=true;btn.innerHTML='⏳ Aprobando...';
@@ -552,14 +624,14 @@
       btn.innerHTML='⏳ Enviando QR...';
       const resp=await gasPost({action:'enviarQR',correo:p.correo,nombre:p.nombre,robot:p.robot,categoria:p.categoria,institucion:p.institucion,ciudad:p.ciudad,qrUrl:generarUrlQR(p),id:p.id});
       if(!resp.ok)throw new Error(resp.error||'Error al enviar correo');
-      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
-      const idx=lista.findIndex(x=>x.id===p.id);if(idx>=0)lista[idx].aprobado='APROBADO';
-      localStorage.setItem('participantes',JSON.stringify(lista));
+      const idx=_participantesIndex.findIndex(x=>x.id===p.id);
+      if(idx>=0)_participantesIndex[idx].aprobado='APROBADO';
+      localStorage.setItem(CACHE_KEY,JSON.stringify(_participantesIndex));
       cerrarModalRevisar();cargarListaLocal();showToast('✔ Aprobado — QR enviado a '+p.correo);
     }catch(e){btn.disabled=false;btn.innerHTML='✔ Aprobar y enviar QR';showToast('Error: '+(e.message||JSON.stringify(e)),true);}
   }
 
-  async function reenviarQR() {
+  async function reenviarQR(){
     if(!participanteEnRevision)return;
     const p=participanteEnRevision;
     const btn=document.getElementById('btn-reenviar');btn.disabled=true;btn.innerHTML='⏳ Enviando...';
@@ -570,14 +642,14 @@
     }catch(e){btn.disabled=false;btn.innerHTML='📧 Reenviar QR';showToast('Error: '+(e.message||JSON.stringify(e)),true);}
   }
 
-  async function desaprobarParticipante() {
+  async function desaprobarParticipante(){
     if(!participanteEnRevision)return;
     const btn=document.getElementById('btn-desaprobar');btn.disabled=true;btn.innerHTML='⏳ Procesando...';
     try{
       await gasGet({action:'desaprobarParticipante',id:participanteEnRevision.id});
-      const lista=JSON.parse(localStorage.getItem('participantes')||'[]');
-      const idx=lista.findIndex(x=>x.id===participanteEnRevision.id);if(idx>=0)lista[idx].aprobado='EN REVISION';
-      localStorage.setItem('participantes',JSON.stringify(lista));
+      const idx=_participantesIndex.findIndex(x=>x.id===participanteEnRevision.id);
+      if(idx>=0)_participantesIndex[idx].aprobado='EN REVISION';
+      localStorage.setItem(CACHE_KEY,JSON.stringify(_participantesIndex));
       cerrarModalRevisar();cargarListaLocal();showToast('↩ Participante marcado como pendiente');
     }catch(e){btn.disabled=false;btn.innerHTML='↩ Marcar pendiente';showToast('Error: '+(e.message||JSON.stringify(e)),true);}
   }
@@ -586,40 +658,10 @@
     if(e.target===document.getElementById('modal-revisar'))cerrarModalRevisar();
     if(e.target===document.getElementById('modal-inst'))cerrarModalInst();
   });
-
-  function showToast(msg,error=false) {
-    const t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=error?'rgba(255,59,59,0.4)':'rgba(0,255,136,0.4)';t.style.color=error?'#ff3b3b':'#00ff88';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
-  }
-
   document.getElementById('filtro-categoria').addEventListener('change',cargarListaLocal);
   document.getElementById('busqueda-input').addEventListener('input',cargarListaLocal);
 
-  // Carga inicial: esperar a que componentsLoaded se dispare para asegurar que CONFIG esté listo
-  document.addEventListener('componentsLoaded', function() {
-    const savedUser = localStorage.getItem('sucrebot_user');
-    if(!savedUser) { window.location.href = '../INICIO/'; return; }
-
-    // Mostrar datos en cache inmediatamente si existen
-    const cached = localStorage.getItem('participantes');
-    if(cached) {
-      try { const arr=JSON.parse(cached); if(Array.isArray(arr)&&arr.length>0) cargarListaLocal(); } catch(e){}
-    }
-
-    // Siempre recargar desde GAS al entrar
-    gasGet({action:'getParticipantes'}).then(arr=>{
-      if(Array.isArray(arr)){
-        localStorage.setItem('participantes',JSON.stringify(arr));
-        cargarListaLocal();
-      } else {
-        localStorage.setItem('participantes',JSON.stringify([]));
-        cargarListaLocal();
-      }
-    }).catch(e=>{
-      console.error('Error al cargar participantes:',e);
-      cargarListaLocal(); // mostrar lo que haya en cache
-      showToast('⚠️ Error al cargar datos desde el servidor',true);
-    });
-  });
+  function showToast(msg,error=false){const t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=error?'rgba(255,59,59,0.4)':'rgba(0,255,136,0.4)';t.style.color=error?'#ff3b3b':'#00ff88';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 </script>
 </body>
 </html>
