@@ -6,6 +6,9 @@
 const STAFF_EMAILS = CONFIG.STAFF_EMAILS;
 window.STAFF_EMAILS = STAFF_EMAILS;
 
+// Token compartido con GAS — debe coincidir exactamente con STAFF_TOKEN en Code.gs
+const STAFF_TOKEN_VALUE = 'SucreBot2026-CMI-Sucre-x7k9mQ';
+
 // ── FUNCIÓN: Parsear JWT de Google
 function parseJwt(token) {
   const base64Url = token.split('.')[1];
@@ -43,6 +46,13 @@ function activarSesion(data) {
   if (userAvatar && data.picture) userAvatar.src = data.picture;
   
   const isStaff = STAFF_EMAILS.includes(data.email);
+
+  // ── Guardar/limpiar token staff según rol ──────────────────
+  if (isStaff) {
+    localStorage.setItem('sucrebot_staff_token', STAFF_TOKEN_VALUE);
+  } else {
+    localStorage.removeItem('sucrebot_staff_token');
+  }
   
   const navStaff        = document.getElementById('navStaff');
   const navOrganizacion = document.getElementById('navOrganizacion');
@@ -50,13 +60,11 @@ function activarSesion(data) {
   const navPartLink     = document.getElementById('navPartLink');
   
   if (isStaff) {
-    // STAFF: mostrar Jueces + Organización, ocultar Mi Cuenta simple
     if (navStaff)        navStaff.style.display        = 'block';
     if (navOrganizacion) navOrganizacion.style.display = 'block';
     if (navPartLink)     navPartLink.style.display     = 'none';
     if (navPartDropdown) navPartDropdown.style.display = 'none';
   } else {
-    // PARTICIPANTE: ocultar Jueces + Organización, mostrar Mi Cuenta dropdown
     if (navStaff)        navStaff.style.display        = 'none';
     if (navOrganizacion) navOrganizacion.style.display = 'none';
     if (navPartLink)     navPartLink.style.display     = 'none';
@@ -67,6 +75,7 @@ function activarSesion(data) {
 // ── FUNCIÓN: Cerrar sesión (DEBE SER GLOBAL para onclick)
 window.cerrarSesion = function() {
   localStorage.removeItem('sucrebot_user');
+  localStorage.removeItem('sucrebot_staff_token'); // ── limpiar token staff
   
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.disableAutoSelect();
@@ -167,6 +176,7 @@ window.cambiarCuenta = function() {
   }
   
   localStorage.removeItem('sucrebot_user');
+  localStorage.removeItem('sucrebot_staff_token'); // ── limpiar token staff
   
   const btnLogin        = document.getElementById('btnLogin');
   const userInfo        = document.getElementById('userInfo');
@@ -215,6 +225,7 @@ document.addEventListener('componentsLoaded', function() {
     } catch(e) {
       console.error('Error al restaurar sesión:', e);
       localStorage.removeItem('sucrebot_user');
+      localStorage.removeItem('sucrebot_staff_token');
     }
   }
   
