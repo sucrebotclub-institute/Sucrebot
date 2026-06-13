@@ -95,7 +95,11 @@
 </nav>
 
 <style>
+  /* Móvil: clase .open controla visibilidad del dropdown */
   @media (max-width: 768px) {
+    .dropdown-menu.open {
+      display: block !important;
+    }
     .subdropdown-trigger {
       padding-left: 24px;
       background: rgba(10, 40, 90, 0.5);
@@ -105,24 +109,50 @@
 </style>
 
 <script>
-  function cerrarTodosLosDropdowns() {
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = '');
+  var _isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+  function cerrarTodosLosDropdowns(excepto) {
+    document.querySelectorAll('.dropdown-menu').forEach(function(m) {
+      if (m !== excepto) {
+        m.classList.remove('open');
+        m.style.display = '';
+      }
+    });
   }
 
   function initDropdown(triggerId, menuId) {
-    const trigger = document.getElementById(triggerId);
-    const menu    = document.getElementById(menuId);
+    var trigger = document.getElementById(triggerId);
+    var menu    = document.getElementById(menuId);
     if (!trigger || !menu) return;
-    let t;
-    trigger.addEventListener('mouseenter', () => { clearTimeout(t); menu.style.display = 'block'; });
-    trigger.addEventListener('mouseleave', () => { t = setTimeout(() => menu.style.display = '', 180); });
-    menu.addEventListener('mouseenter', () => clearTimeout(t));
-    menu.addEventListener('mouseleave', () => { t = setTimeout(() => menu.style.display = '', 180); });
-    trigger.querySelector('a').addEventListener('touchend', (e) => {
+    var t;
+
+    // Desktop: hover con mouse
+    trigger.addEventListener('mouseenter', function() {
+      if (_isMobile) return;
+      clearTimeout(t);
+      menu.style.display = 'block';
+    });
+    trigger.addEventListener('mouseleave', function() {
+      if (_isMobile) return;
+      t = setTimeout(function() { menu.style.display = ''; }, 180);
+    });
+    menu.addEventListener('mouseenter', function() {
+      if (_isMobile) return;
+      clearTimeout(t);
+    });
+    menu.addEventListener('mouseleave', function() {
+      if (_isMobile) return;
+      t = setTimeout(function() { menu.style.display = ''; }, 180);
+    });
+
+    // Móvil: touch toggle con clase .open
+    trigger.querySelector('a').addEventListener('touchend', function(e) {
+      if (!_isMobile) return;
       e.preventDefault();
-      const open = menu.style.display === 'block';
-      cerrarTodosLosDropdowns();
-      if (!open) menu.style.display = 'block';
+      e.stopPropagation();
+      var estaAbierto = menu.classList.contains('open');
+      cerrarTodosLosDropdowns(null);
+      if (!estaAbierto) menu.classList.add('open');
     });
   }
 
@@ -132,9 +162,17 @@
   initDropdown('navPartDropdown', 'menuParticipantes');
   initDropdown('navStaff',        'menuStaff');
 
-  document.addEventListener('touchend', (e) => {
+  // Cerrar al tocar fuera de cualquier dropdown
+  document.addEventListener('touchend', function(e) {
+    if (!_isMobile) return;
     if (!e.target.closest('.nav-dropdown') && e.target.id !== 'navPartLink') {
-      cerrarTodosLosDropdowns();
+      cerrarTodosLosDropdowns(null);
     }
+  });
+
+  // Actualizar flag si cambia el tamaño de ventana
+  window.matchMedia('(max-width: 768px)').addEventListener('change', function(e) {
+    _isMobile = e.matches;
+    cerrarTodosLosDropdowns(null);
   });
 </script>
