@@ -72,6 +72,42 @@
     .reg-aviso p:last-child { margin-bottom: 0; }
     .reg-aviso strong { color: #1a5ca8; }
     .reg-aviso .aviso-email { color: #1a5ca8; font-family: 'DM Mono', monospace; font-size: 10.5px; }
+
+    /* ── DATOS BANCARIOS ── */
+    .banco-card {
+      margin-top: 20px;
+      width: 75%;
+      background: linear-gradient(135deg, #0a2a5a 0%, #1a3a6b 100%);
+      border: 1.5px solid rgba(91,200,240,0.25);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-sizing: border-box;
+    }
+    .banco-card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--r-cyan-bright);
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .banco-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 11.5px;
+    }
+    .banco-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .banco-label { color: rgba(255,255,255,0.5); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .banco-value { color: #e8f0ff; font-weight: 600; text-align: right; }
+    .banco-value.mono { font-family: 'DM Mono', monospace; color: var(--r-cyan-bright); font-size: 12px; letter-spacing: 1px; }
     
     /* ── CARD FORMULARIO ── */
     .form-card { 
@@ -113,7 +149,7 @@
     .inst-nueva-wrap input::placeholder { color: rgba(255,255,255,0.3); }
     .inst-nueva-wrap input:focus { background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
 
-    /* ── PROVINCIA + OTRO PAÍS (mismo patrón que institución) ── */
+    /* ── PROVINCIA + OTRO PAÍS ── */
     .prov-combo { position: relative; }
     .prov-combo select { width: 100%; }
     .prov-otra-wrap { margin-top: 8px; display: none; animation: fadeIn .2s ease; position: relative; }
@@ -147,7 +183,36 @@
     .logo-uploader.has-logo .logo-remove-btn { display: block; }
     #f-logo { display: none; }
 
-    /* ── PANEL PRECIOS (flotante, no afecta el flex) ── */
+    /* ── PANEL PAGO INLINE (dentro del form) ── */
+    .pago-info {
+      background: rgba(10,25,60,0.5);
+      border: 1px solid rgba(91,200,240,0.2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .pago-info-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--r-cyan-bright);
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pago-info-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+    .pago-info-rows { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+    .pago-info-row { display: flex; align-items: baseline; gap: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; }
+    .pago-info-key { color: rgba(255,255,255,0.45); font-size: 10px; white-space: nowrap; flex-shrink: 0; }
+    .pago-info-val { color: #e8f0ff; font-weight: 600; }
+    .pago-info-val.mono { font-family: 'DM Mono', monospace; color: var(--r-cyan-bright); letter-spacing: 1px; }
+
+    /* ── PANEL PRECIOS (flotante) ── */
     @keyframes float-panel { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
     @keyframes pulse-activo { 0%,100%{box-shadow:0 0 18px rgba(251,191,36,0.3)} 50%{box-shadow:0 0 32px rgba(251,191,36,0.6)} }
     @keyframes slide-in-1 { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
@@ -236,6 +301,9 @@
         max-width: calc(100vw - 24px);
         bottom: 20px;
       }
+      .pago-info { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .pago-info-divider { display: none; }
+      .banco-card { width: 100%; }
     }
   </style>
 </head>
@@ -267,6 +335,33 @@
         <p><strong>📧 Correo electrónico:</strong> Verifica que esté bien escrito — a esa dirección se enviará tu <strong>código QR</strong> de acceso al evento.</p>
         <p><strong style="color:#1a5ca8;">✅ ¿No recibiste el correo?</strong> Revisa tu carpeta de <em>spam</em> o escríbenos a<br><span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span></p>
       </div>
+
+      <!-- DATOS BANCARIOS -->
+      <div class="banco-card">
+        <div class="banco-card-title">
+          🏦 Cuenta para el pago
+        </div>
+        <div class="banco-row">
+          <span class="banco-label">Banco</span>
+          <span class="banco-value">Banco Pichincha</span>
+        </div>
+        <div class="banco-row">
+          <span class="banco-label">Tipo</span>
+          <span class="banco-value">Cuenta de Ahorros</span>
+        </div>
+        <div class="banco-row">
+          <span class="banco-label">N.° Cuenta</span>
+          <span class="banco-value mono">2215952522</span>
+        </div>
+        <div class="banco-row">
+          <span class="banco-label">C.I.</span>
+          <span class="banco-value mono">1719651190</span>
+        </div>
+        <div class="banco-row">
+          <span class="banco-label">Titular</span>
+          <span class="banco-value">Christian Ortega</span>
+        </div>
+      </div>
     </div>
     
     <div class="form-card">
@@ -277,7 +372,6 @@
 
       <div class="form-section-title">👤 Datos Personales</div>
 
-      <!-- Capitán + Miembro 2 (lado a lado) -->
       <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
         <div class="field">
           <label>Nombre Completo <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(capitán)</span></label>
@@ -291,7 +385,6 @@
         </div>
       </div>
 
-      <!-- Institución -->
       <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px;">
         <div class="field">
           <label>Institución / Club</label>
@@ -308,7 +401,6 @@
         </div>
       </div>
 
-      <!-- Logo -->
       <div style="margin-bottom:14px;">
         <div class="logo-uploader" id="logo-uploader">
           <label class="logo-label">
@@ -329,7 +421,6 @@
         </div>
       </div>
 
-      <!-- Provincia/País + Contacto -->
       <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
         <div class="field">
           <label>Provincia / País</label>
@@ -377,7 +468,6 @@
         </div>
       </div>
 
-      <!-- Correo -->
       <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:4px;">
         <div class="field">
           <label>Correo Electrónico</label>
@@ -421,7 +511,6 @@
         </div>
       </div>
 
-      <!-- Soccer equipo -->
       <div class="soccer-equipo-wrap" id="soccerEquipoWrap">
         <div class="soccer-equipo-badge">
           ⚽ <span>En <strong>Robot soccer</strong> compites por equipo. El bracket se generará agrupando todos los robots del mismo equipo.</span>
@@ -436,6 +525,27 @@
       </div>
 
       <div class="form-section-title">📎 Comprobante de Pago</div>
+
+      <!-- DATOS BANCARIOS INLINE -->
+      <div class="pago-info">
+        <div class="pago-info-label">🏦 Pagar a:</div>
+        <div class="pago-info-divider"></div>
+        <div class="pago-info-rows">
+          <div class="pago-info-row">
+            <span class="pago-info-key">Banco</span>
+            <span class="pago-info-val">Banco Pichincha · Cta. Ahorros</span>
+          </div>
+          <div class="pago-info-row">
+            <span class="pago-info-key">N.° Cuenta</span>
+            <span class="pago-info-val mono">2215952522</span>
+          </div>
+          <div class="pago-info-row">
+            <span class="pago-info-key">Titular</span>
+            <span class="pago-info-val">Christian Ortega &nbsp;·&nbsp; C.I. <span class="mono">1719651190</span></span>
+          </div>
+        </div>
+      </div>
+
       <div class="form-grid grid-comprobante" style="grid-template-columns: 1fr 1fr;">
         <div class="field">
           <label>Número de Comprobante</label>
@@ -455,7 +565,7 @@
       </button>
     </div>
 
-    <!-- Panel de precios — flotante, no afecta el flex -->
+    <!-- Panel de precios flotante -->
     <div class="precios-panel" id="precios-panel">
       <div class="precios-panel-title">💰 Inscripción</div>
       <div class="precio-item" id="precio-1">
@@ -492,7 +602,6 @@
   let toastTimer = null;
   const GAS_URL = CONFIG.GAS_URL();
 
-  // ── INSTITUCIÓN DROPDOWN DINÁMICO ──────────────────────────────
   const GAS_INST = 'https://script.google.com/macros/s/AKfycbyqMYRaEANLMMf4cc28mH-yiziqnXiEzeaEiF3bK8Jb5zm3xt_BaqgH2Gx6UJo287ypRQ/exec';
   const INST_CACHE_KEY = 'sucrebot_instituciones_cache';
   const INST_TTL = 6 * 60 * 60 * 1000;
@@ -552,7 +661,6 @@
 
   cargarInstituciones();
 
-  // ── PROVINCIA / OTRO PAÍS ──────────────────────────────────────
   function onProvinciaChange() {
     const sel = document.getElementById('f-ciudad');
     const wrap = document.getElementById('prov-otra-wrap');
@@ -571,7 +679,6 @@
     return sel.value;
   }
 
-  // ── LOGO ───────────────────────────────────────────────────────
   const dropZone     = document.getElementById('logo-drop-zone');
   const logoInput    = document.getElementById('f-logo');
   const logoPreview  = document.getElementById('logo-preview');
@@ -611,7 +718,6 @@
     dropZone.classList.remove('has-logo'); logoUploader.classList.remove('has-logo');
   }
 
-  // ── CATEGORÍA ──────────────────────────────────────────────────
   function onCategoriaChange() {
     const cat = document.getElementById('f-categoria').value;
     const wrap = document.getElementById('soccerEquipoWrap');
@@ -619,7 +725,6 @@
     else { wrap.classList.remove('show'); document.getElementById('f-equipo').value = ''; }
   }
 
-  // ── GAS HELPERS ────────────────────────────────────────────────
   async function gasPost(data) {
     const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(data), redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
     return r.json();
@@ -649,7 +754,6 @@
     });
   }
 
-  // ── REGISTRAR ──────────────────────────────────────────────────
   async function registrarParticipante() {
     const nombre       = document.getElementById('f-nombre').value.trim();
     const miembro2     = document.getElementById('f-miembro2').value.trim();
@@ -690,7 +794,6 @@
     btn.disabled = true; btn.textContent = '⏳ Registrando participante...';
 
     try {
-      // miembro3 se envía vacío — la columna sigue existiendo en el sheet
       const respuestaRegistro = await gasPost({
         action: 'setParticipante',
         id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
@@ -717,7 +820,6 @@
         miembro2, miembro3: '', comprobante, archivoUrl, logoUrl, equipo
       });
 
-      // Actualizar cache de instituciones si es nueva
       if (document.getElementById('f-institucion-select').value === '__nueva__' && institucion) {
         try {
           const raw = localStorage.getItem(INST_CACHE_KEY);
@@ -737,7 +839,6 @@
 
       showToast('✅ Registrado con ID: ' + idGenerado, false);
 
-      // Reset del formulario
       ['f-nombre','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-equipo']
         .forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-ciudad').value = '';
@@ -758,11 +859,9 @@
     }
   }
 
-  // ── RESALTAR PRECIO ACTIVO ──────────────────────────────────
   (function() {
     const hoy = new Date();
     const año = hoy.getFullYear();
-    // Períodos (año dinámico)
     const periodos = [
       { id: 'precio-1', desde: new Date(año, 0, 1),   hasta: new Date(año, 5, 30, 23, 59) },
       { id: 'precio-2', desde: new Date(año, 6, 1),   hasta: new Date(año, 6, 6,  23, 59) },
@@ -778,7 +877,6 @@
       }
     });
   })();
-
 
   function showToast(msg, error = false) {
     const t = document.getElementById('toast');
