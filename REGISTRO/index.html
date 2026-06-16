@@ -185,32 +185,38 @@
 
     /* ── PANEL PAGO INLINE (dentro del form) ── */
     .pago-info {
-      background: rgba(10,25,60,0.5);
-      border: 1px solid rgba(91,200,240,0.2);
-      border-radius: 10px;
-      padding: 12px 16px;
+      background: linear-gradient(135deg, #0a2a5a 0%, #1a3a6b 100%);
+      border: 1.5px solid rgba(91,200,240,0.25);
+      border-radius: 12px;
+      padding: 14px 16px;
       margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      box-sizing: border-box;
     }
     .pago-info-label {
       font-family: 'Orbitron', monospace;
       font-size: 9px;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       color: var(--r-cyan-bright);
       font-weight: 700;
       text-transform: uppercase;
-      white-space: nowrap;
-      flex-shrink: 0;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .pago-info-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
-    .pago-info-rows { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
-    .pago-info-row { display: flex; align-items: baseline; gap: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; }
-    .pago-info-key { color: rgba(255,255,255,0.45); font-size: 10px; white-space: nowrap; flex-shrink: 0; }
-    .pago-info-val { color: #e8f0ff; font-weight: 600; }
-    .pago-info-val.mono { font-family: 'DM Mono', monospace; color: var(--r-cyan-bright); letter-spacing: 1px; }
+    .pago-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 11.5px;
+    }
+    .pago-info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .pago-info-key { color: rgba(255,255,255,0.5); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pago-info-val { color: #e8f0ff; font-weight: 600; text-align: right; }
+    .pago-info-val.mono { font-family: 'DM Mono', monospace; color: var(--r-cyan-bright); font-size: 12px; letter-spacing: 1px; }
 
     /* ── PANEL PRECIOS (flotante) ── */
     @keyframes float-panel { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -301,8 +307,6 @@
         max-width: calc(100vw - 24px);
         bottom: 20px;
       }
-      .pago-info { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .pago-info-divider { display: none; }
       .banco-card { width: 100%; }
     }
   </style>
@@ -528,21 +532,26 @@
 
       <!-- DATOS BANCARIOS INLINE -->
       <div class="pago-info">
-        <div class="pago-info-label">🏦 Pagar a:</div>
-        <div class="pago-info-divider"></div>
-        <div class="pago-info-rows">
-          <div class="pago-info-row">
-            <span class="pago-info-key">Banco</span>
-            <span class="pago-info-val">Banco Pichincha · Cta. Ahorros</span>
-          </div>
-          <div class="pago-info-row">
-            <span class="pago-info-key">N.° Cuenta</span>
-            <span class="pago-info-val mono">2215952522</span>
-          </div>
-          <div class="pago-info-row">
-            <span class="pago-info-key">Titular</span>
-            <span class="pago-info-val">Christian Ortega &nbsp;·&nbsp; C.I. <span class="mono">1719651190</span></span>
-          </div>
+        <div class="pago-info-label">🏦 Cuenta para el pago</div>
+        <div class="pago-info-row">
+          <span class="pago-info-key">Banco</span>
+          <span class="pago-info-val">Banco Pichincha</span>
+        </div>
+        <div class="pago-info-row">
+          <span class="pago-info-key">Tipo</span>
+          <span class="pago-info-val">Cuenta de Ahorros</span>
+        </div>
+        <div class="pago-info-row">
+          <span class="pago-info-key">N.° Cuenta</span>
+          <span class="pago-info-val mono">2215952522</span>
+        </div>
+        <div class="pago-info-row">
+          <span class="pago-info-key">C.I.</span>
+          <span class="pago-info-val mono">1719651190</span>
+        </div>
+        <div class="pago-info-row">
+          <span class="pago-info-key">Titular</span>
+          <span class="pago-info-val">Christian Ortega</span>
         </div>
       </div>
 
