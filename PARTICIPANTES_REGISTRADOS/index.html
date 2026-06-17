@@ -85,8 +85,31 @@
     .btn-refrescar { background:var(--p-cyan); border:none; color:var(--p-surface); font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
     .btn-refrescar:hover { background:var(--p-cyan-bright); transform:translateY(-1px); }
     .cache-info-bar { font-family:'DM Mono',monospace; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.08em; margin-bottom:12px; display:none; }
-    .btn-ver-mas { width:100%; background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.2); color:#fff; font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; padding:12px; border-radius:10px; cursor:pointer; margin-top:8px; transition:all 0.2s; }
-    .btn-ver-mas:hover { background:rgba(255,255,255,0.18); }
+
+    /* ── BOTÓN VER MÁS — visible y diferenciado ── */
+    .btn-ver-mas {
+      width:100%;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border: none;
+      color: #1a0a00;
+      font-family:'Orbitron',monospace;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:1.5px;
+      padding:14px;
+      border-radius:10px;
+      cursor:pointer;
+      margin-top:12px;
+      transition:all 0.2s;
+      text-transform:uppercase;
+      box-shadow: 0 4px 16px rgba(245,158,11,0.4);
+    }
+    .btn-ver-mas:hover {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      transform:translateY(-2px);
+      box-shadow: 0 8px 24px rgba(245,158,11,0.5);
+    }
+
     .pag-info { font-family:'DM Mono',monospace; font-size:10px; color:rgba(255,255,255,0.45); text-align:center; margin-top:8px; letter-spacing:0.08em; }
     .tabla-participantes { width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.2); }
     .tabla-participantes thead { background:linear-gradient(135deg,#0a2545 0%,#051729 100%); color:#ffffff; }
@@ -528,7 +551,8 @@
         '</tr>';
     }).join('');
     if (quedan > 0) {
-      tbody.innerHTML += `<tr><td colspan="5" style="padding:0;"><button class="btn-ver-mas" onclick="verMas()">Ver ${Math.min(quedan,PAGE_SIZE)} más · ${listaFiltrada.length} total</button></td></tr>`;
+      const sig = Math.min(quedan, PAGE_SIZE);
+      tbody.innerHTML += `<tr><td colspan="5" style="padding:8px 0 4px;"><button class="btn-ver-mas" onclick="verMas()">▼ Ver ${sig} más · ${listaFiltrada.length} total</button></td></tr>`;
     }
     pagInfo.textContent = quedan > 0
       ? `Mostrando ${pagina.length} de ${listaFiltrada.length} participantes`
