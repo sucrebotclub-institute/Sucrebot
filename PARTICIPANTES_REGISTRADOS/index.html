@@ -34,7 +34,6 @@
     .main-layout { display:flex; gap:24px; align-items:flex-start; }
     .content-wrapper { flex:1; min-width:0; }
 
-    /* Panel categorías más compacto */
     .cats-panel { flex:0 0 220px; background:linear-gradient(135deg,var(--p-surface-3) 0%,var(--p-surface-2) 100%); border-radius:16px; padding:16px; box-shadow:0 8px 32px rgba(26,92,168,0.35); position:sticky; top:188px; align-self:flex-start; }
     .cats-panel-title { font-family:'Orbitron',monospace; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--p-cyan-bright); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
     .cats-section-label { font-family:'Orbitron',monospace; font-size:7px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.4); padding:5px 0 2px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:5px; margin-top:8px; }
@@ -54,7 +53,6 @@
     .cats-stat-mini-lbl { font-family:'DM Mono',monospace; font-size:7px; color:rgba(255,255,255,0.5); letter-spacing:0.08em; margin-top:2px; }
     .cats-stat-mini-lbl.aprobado { color:#00ff88; }
 
-    /* Panel instituciones */
     .inst-gestor { background:linear-gradient(135deg,var(--p-surface-3) 0%,var(--p-surface-2) 50%,var(--p-surface) 100%); border-radius:20px; padding:28px 32px; box-shadow:0 12px 40px rgba(26,92,168,0.35); margin-bottom:24px; }
     .inst-gestor-title { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--p-cyan-bright); margin-bottom:6px; display:flex; align-items:center; gap:10px; }
     .inst-gestor-sub { font-family:'Exo 2',sans-serif; font-size:12px; color:rgba(255,255,255,0.55); margin-bottom:20px; }
@@ -70,45 +68,65 @@
     .inst-btn-editar:hover { background:rgba(91,200,240,0.3); border-color:var(--p-cyan); }
     .inst-empty { font-family:'DM Mono',monospace; font-size:12px; color:rgba(255,255,255,0.4); text-align:center; padding:24px; }
 
-    /* Tabla */
     .participantes-container { background:linear-gradient(135deg,var(--p-surface-3) 0%,var(--p-surface-2) 50%,var(--p-surface) 100%); border-radius:20px; padding:36px 32px; box-shadow:0 12px 40px rgba(26,92,168,0.35); position:relative; overflow:hidden; margin-bottom:24px; }
     .participantes-container > * { position:relative; z-index:1; }
-    .controles { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; gap:16px; flex-wrap:wrap; }
-    .controles-left { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .filtro-categoria,.busqueda-input { background:rgba(255,255,255,0.15); border:1.5px solid rgba(255,255,255,0.25); color:#ffffff; font-family:'Exo 2',sans-serif; font-size:13px; font-weight:600; padding:8px 14px; border-radius:8px; outline:none; transition:all 0.2s; }
-    .filtro-categoria { cursor:pointer; min-width:200px; }
-    .filtro-categoria:focus,.busqueda-input:focus { border-color:var(--p-cyan); background:rgba(255,255,255,0.25); }
-    .filtro-categoria optgroup { background:var(--p-surface); color:var(--p-cyan-bright); font-family:'DM Mono',monospace; font-size:11px; font-weight:700; letter-spacing:0.08em; }
-    .filtro-categoria option { background:var(--p-surface-2); color:#ffffff; font-weight:500; }
-    .busqueda-input { width:240px; }
+
+    /* Controles — dos filas */
+    .controles { display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+    .controles-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .controles-row-right { justify-content:flex-end; }
+
+    .filtro-select, .busqueda-input {
+      background:rgba(255,255,255,0.15);
+      border:1.5px solid rgba(255,255,255,0.25);
+      color:#ffffff;
+      font-family:'Exo 2',sans-serif;
+      font-size:13px;
+      font-weight:600;
+      padding:8px 14px;
+      border-radius:8px;
+      outline:none;
+      transition:all 0.2s;
+    }
+    .filtro-select { cursor:pointer; }
+    .filtro-select:focus, .busqueda-input:focus { border-color:var(--p-cyan); background:rgba(255,255,255,0.25); }
+    .filtro-select optgroup { background:var(--p-surface); color:var(--p-cyan-bright); font-family:'DM Mono',monospace; font-size:11px; font-weight:700; }
+    .filtro-select option { background:var(--p-surface-2); color:#ffffff; font-weight:500; }
+    .busqueda-input { flex:1; min-width:180px; }
     .busqueda-input::placeholder { color:rgba(255,255,255,0.6); }
-    .btn-refrescar { background:var(--p-cyan); border:none; color:var(--p-surface); font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
+
+    /* Filtro estado con colores */
+    .filtro-estado { min-width:160px; }
+    .filtro-estado option[value="todos"]       { color:#ffffff; }
+    .filtro-estado option[value="APROBADO"]    { color:#00ff88; }
+    .filtro-estado option[value="EN REVISION"] { color:#f59e0b; }
+    .filtro-estado option[value="NO CUMPLE"]   { color:#ff3b3b; }
+
+    /* Pill de estado activo */
+    .estado-filtro-pill {
+      display:inline-flex; align-items:center; gap:6px;
+      font-family:'DM Mono',monospace; font-size:11px; font-weight:700;
+      padding:5px 12px; border-radius:20px; letter-spacing:0.5px;
+      border:none; cursor:pointer; transition:all 0.2s; white-space:nowrap;
+    }
+    .estado-filtro-pill.todos    { background:rgba(255,255,255,0.15); color:#fff; }
+    .estado-filtro-pill.aprobado { background:rgba(0,255,136,0.2); color:#00ff88; border:1px solid rgba(0,255,136,0.4); }
+    .estado-filtro-pill.revision { background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.4); }
+    .estado-filtro-pill.nocumple { background:rgba(255,59,59,0.2); color:#ff3b3b; border:1px solid rgba(255,59,59,0.4); }
+
+    .btn-refrescar { background:var(--p-cyan); border:none; color:var(--p-surface); font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:6px; white-space:nowrap; }
     .btn-refrescar:hover { background:var(--p-cyan-bright); transform:translateY(-1px); }
     .cache-info-bar { font-family:'DM Mono',monospace; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.08em; margin-bottom:12px; display:none; }
 
-    /* ── BOTÓN VER MÁS — visible y diferenciado ── */
     .btn-ver-mas {
-      width:100%;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      border: none;
-      color: #1a0a00;
-      font-family:'Orbitron',monospace;
-      font-size:12px;
-      font-weight:700;
-      letter-spacing:1.5px;
-      padding:14px;
-      border-radius:10px;
-      cursor:pointer;
-      margin-top:12px;
-      transition:all 0.2s;
-      text-transform:uppercase;
-      box-shadow: 0 4px 16px rgba(245,158,11,0.4);
+      width:100%; background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
+      border:none; color:#1a0a00; font-family:'Orbitron',monospace;
+      font-size:12px; font-weight:700; letter-spacing:1.5px;
+      padding:14px; border-radius:10px; cursor:pointer; margin-top:12px;
+      transition:all 0.2s; text-transform:uppercase;
+      box-shadow:0 4px 16px rgba(245,158,11,0.4);
     }
-    .btn-ver-mas:hover {
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      transform:translateY(-2px);
-      box-shadow: 0 8px 24px rgba(245,158,11,0.5);
-    }
+    .btn-ver-mas:hover { background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 100%); transform:translateY(-2px); box-shadow:0 8px 24px rgba(245,158,11,0.5); }
 
     .pag-info { font-family:'DM Mono',monospace; font-size:10px; color:rgba(255,255,255,0.45); text-align:center; margin-top:8px; letter-spacing:0.08em; }
     .tabla-participantes { width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.2); }
@@ -135,7 +153,6 @@
     .estado-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
     .vacio-msg { text-align:center; padding:60px 20px; color:rgba(255,255,255,0.7); font-family:'DM Mono',monospace; font-size:13px; letter-spacing:0.1em; }
 
-    /* Modales */
     .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
     .modal-overlay.show { display:flex; }
     .modal-card { background:#ffffff; border-radius:16px; width:90%; max-width:640px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.4); }
@@ -167,7 +184,6 @@
     .modal-btn-desaprobar:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 8px 24px rgba(194,120,3,0.4); }
     .modal-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
 
-    /* Manilla en modal */
     .manilla-status { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; border-radius:12px; border:2px solid; }
     .manilla-status.entregada { background:#f0faf4; border-color:#86efac; }
     .manilla-status.pendiente-m { background:#fff8f0; border-color:#fed7aa; }
@@ -181,7 +197,6 @@
     .btn-entregar-manilla:hover { background:linear-gradient(135deg,#25a847,#1e8c3a); transform:translateY(-1px); }
     .btn-entregar-manilla:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
 
-    /* Modal institución */
     .modal-card-inst { background:#ffffff; border-radius:16px; width:90%; max-width:520px; box-shadow:0 24px 64px rgba(0,0,0,0.4); }
     .inst-modal-body { padding:24px; }
     .inst-modal-info { background:#f0f6ff; border:1px solid #c8deff; border-radius:10px; padding:12px 16px; margin-bottom:18px; font-family:'Exo 2',sans-serif; font-size:13px; color:#1a3a6e; }
@@ -203,7 +218,7 @@
 
     @media(max-width:1100px){ .cats-panel { display:none; } }
     @media(max-width:768px){
-      .wrapper{padding:0 16px 60px 16px;} .page-hero{padding:40px 0 24px;} .main-layout{flex-direction:column;gap:24px;} .controles{flex-direction:column;align-items:stretch;} .controles-left{flex-direction:column;width:100%;} .filtro-categoria,.busqueda-input,.btn-refrescar{width:100%;box-sizing:border-box;} .participantes-container,.inst-gestor{padding:16px 12px;border-radius:12px;} .tabla-wrapper{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;} .tabla-participantes{min-width:600px;font-size:12px;} .tabla-participantes th,.tabla-participantes td{padding:10px 8px;} .modal-grid{grid-template-columns:1fr;} .modal-actions{grid-template-columns:1fr;} .manilla-status{flex-direction:column;align-items:flex-start;gap:10px;} .btn-entregar-manilla{width:100%;justify-content:center;}
+      .wrapper{padding:0 16px 60px 16px;} .page-hero{padding:40px 0 24px;} .main-layout{flex-direction:column;gap:24px;} .controles-row{flex-direction:column;align-items:stretch;} .filtro-select,.busqueda-input,.btn-refrescar{width:100%;box-sizing:border-box;} .participantes-container,.inst-gestor{padding:16px 12px;border-radius:12px;} .tabla-wrapper{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;} .tabla-participantes{min-width:600px;font-size:12px;} .tabla-participantes th,.tabla-participantes td{padding:10px 8px;} .modal-grid{grid-template-columns:1fr;} .modal-actions{grid-template-columns:1fr;} .manilla-status{flex-direction:column;align-items:flex-start;gap:10px;} .btn-entregar-manilla{width:100%;justify-content:center;}
     }
   </style>
 </head>
@@ -237,8 +252,9 @@
 
         <div class="participantes-container">
           <div class="controles">
-            <div class="controles-left">
-              <select class="filtro-categoria" id="filtro-categoria">
+            <!-- Fila 1: categoría + búsqueda + refrescar -->
+            <div class="controles-row">
+              <select class="filtro-select" id="filtro-categoria">
                 <option value="todos">🏆 Todas las categorías</option>
                 <optgroup label="🏅 AMATEUR">
                   <option value="Insectos">Insectos</option>
@@ -261,13 +277,23 @@
                 </optgroup>
               </select>
               <input type="text" class="busqueda-input" id="busqueda-input" placeholder="🔍 Buscar nombre, robot, ID...">
+              <button class="btn-refrescar" onclick="refrescarDatos()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                Refrescar
+              </button>
             </div>
-            <button class="btn-refrescar" onclick="refrescarDatos()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-              Refrescar
-            </button>
+            <!-- Fila 2: filtro estado -->
+            <div class="controles-row">
+              <select class="filtro-select filtro-estado" id="filtro-estado">
+                <option value="todos">● Todos los estados</option>
+                <option value="EN REVISION">⏳ En revisión</option>
+                <option value="APROBADO">✔ Aprobados</option>
+                <option value="NO CUMPLE">✖ No cumple</option>
+              </select>
+              <div class="cache-info-bar" id="cache-info-bar" style="display:none;margin:0;align-self:center;"></div>
+            </div>
           </div>
-          <div class="cache-info-bar" id="cache-info-bar"></div>
+
           <div class="tabla-wrapper">
             <table class="tabla-participantes">
               <thead>
@@ -312,13 +338,10 @@
   <div class="modal-card">
     <div class="modal-header"><h3>📋 REVISAR PARTICIPANTE</h3><button class="modal-close" onclick="cerrarModalRevisar()">×</button></div>
     <div class="modal-body">
-
-      <!-- MANILLA — solo visible para aprobados -->
       <div class="modal-section" id="rev-seccion-manilla" style="display:none;">
         <div class="modal-section-title">🎫 Manilla de Acceso</div>
         <div id="rev-manilla-status"></div>
       </div>
-
       <div class="modal-section" id="rev-seccion-equipo" style="display:none;">
         <div class="modal-section-title">👥 Integrantes del Equipo</div>
         <div class="modal-grid">
@@ -404,8 +427,8 @@
   const CATS_PRO     = ['Seguidor de línea ST (Pro)','Minisumo Autónomo','Minisumo RC','Bailarín','Batalla','Trepador (Pro)','Robot soccer'];
   const CATS_OPEN    = ['Cubo Rubik','Lego Kids','Impacto Tecnológico'];
 
-  let listaFiltrada  = [];
-  let paginaActual   = 1;
+  let listaFiltrada       = [];
+  let paginaActual        = 1;
   let _participantesIndex = [];
 
   function strVal(v) { if(v===null||v===undefined)return ''; return String(v).trim(); }
@@ -417,7 +440,7 @@
   document.addEventListener('componentsLoaded', function() {
     const savedUser = localStorage.getItem('sucrebot_user');
     if (!savedUser) { window.location.href = '../INICIO/'; return; }
-    const ahora = Date.now();
+    const ahora      = Date.now();
     const tsGuardado = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0');
     const cacheValido = (ahora - tsGuardado) < CACHE_TTL;
     const cached = localStorage.getItem(CACHE_KEY);
@@ -468,13 +491,23 @@
   }
 
   function cargarListaLocal() {
-    const lista = _participantesIndex;
+    const lista    = _participantesIndex;
     actualizarEstadisticas(lista);
     renderizarCategorias(lista);
-    const filtro   = document.getElementById('filtro-categoria').value;
-    const busqueda = document.getElementById('busqueda-input').value.toLowerCase();
+    const filtroCategoria = document.getElementById('filtro-categoria').value;
+    const filtroEstado    = document.getElementById('filtro-estado').value;
+    const busqueda        = document.getElementById('busqueda-input').value.toLowerCase();
     listaFiltrada = lista;
-    if (filtro !== 'todos') listaFiltrada = listaFiltrada.filter(p => p.categoria === filtro);
+    if (filtroCategoria !== 'todos') listaFiltrada = listaFiltrada.filter(p => p.categoria === filtroCategoria);
+    if (filtroEstado !== 'todos') {
+      listaFiltrada = listaFiltrada.filter(p => {
+        const aprobado = strVal(p.aprobado);
+        if (filtroEstado === 'EN REVISION') return aprobado !== 'APROBADO' && aprobado !== 'NO CUMPLE';
+        if (filtroEstado === 'APROBADO')    return aprobado === 'APROBADO';
+        if (filtroEstado === 'NO CUMPLE')   return aprobado === 'NO CUMPLE';
+        return true;
+      });
+    }
     if (busqueda) listaFiltrada = listaFiltrada.filter(p =>
       (p.nombre||'').toLowerCase().includes(busqueda) ||
       (p.robot||'').toLowerCase().includes(busqueda) ||
@@ -491,8 +524,8 @@
     panel.style.display = 'block';
     const aprobados  = lista.filter(p => p.aprobado === 'APROBADO').length;
     const pendientes = lista.filter(p => p.aprobado !== 'APROBADO' && p.aprobado !== 'NO CUMPLE').length;
-    document.getElementById('cp-total').textContent     = lista.length;
-    document.getElementById('cp-aprobados').textContent = aprobados;
+    document.getElementById('cp-total').textContent      = lista.length;
+    document.getElementById('cp-aprobados').textContent  = aprobados;
     document.getElementById('cp-pendientes').textContent = pendientes;
     const catConteo = {}, catAprobados = {};
     lista.forEach(p => {
@@ -506,12 +539,11 @@
         const total = catConteo[cat] || 0;
         const apro  = catAprobados[cat] || 0;
         const tiene = total > 0;
-        html += `
-          <div class="cat-row">
-            <div class="cat-dot ${tiene ? 'tiene' : 'vacio'}"></div>
-            <div class="cat-nombre">${cat}</div>
-            ${tiene ? `<div class="cat-count">${apro}/${total}</div>` : `<div class="cat-count vacio">—</div>`}
-          </div>`;
+        html += `<div class="cat-row">
+          <div class="cat-dot ${tiene ? 'tiene' : 'vacio'}"></div>
+          <div class="cat-nombre">${cat}</div>
+          ${tiene ? `<div class="cat-count">${apro}/${total}</div>` : `<div class="cat-count vacio">—</div>`}
+        </div>`;
       });
       return html;
     };
@@ -533,9 +565,10 @@
     const pagina = listaFiltrada.slice(0, hasta);
     const quedan = listaFiltrada.length - hasta;
     tbody.innerHTML = pagina.map(p => {
+      const aprobado = strVal(p.aprobado);
       let estadoClass='pendiente', estadoTexto='EN REVISIÓN';
-      if(p.aprobado==='APROBADO'){estadoClass='aprobado';estadoTexto='APROBADO';}
-      else if(p.aprobado==='NO CUMPLE'){estadoClass='nocumple';estadoTexto='NO CUMPLE';}
+      if(aprobado==='APROBADO'){estadoClass='aprobado';estadoTexto='APROBADO';}
+      else if(aprobado==='NO CUMPLE'){estadoClass='nocumple';estadoTexto='NO CUMPLE';}
       const nivel = CATEGORIAS_NIVEL[p.categoria] || 'pro';
       const nombres = [p.nombre, p.miembro2].map(strVal).filter(Boolean);
       const nombresHtml = nombres.map((n,i) =>
@@ -615,36 +648,15 @@
   function generarUrlQR(p){return 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data='+encodeURIComponent(construirTextoQR(p));}
 
   function renderManillaStatus(p) {
-    const seccion = document.getElementById('rev-seccion-manilla');
+    const seccion   = document.getElementById('rev-seccion-manilla');
     const container = document.getElementById('rev-manilla-status');
     if (p.aprobado !== 'APROBADO') { seccion.style.display = 'none'; return; }
     seccion.style.display = 'block';
     const entregada = p.manilla === 'ENTREGADA';
     if (entregada) {
-      container.innerHTML = `
-        <div class="manilla-status entregada">
-          <div class="manilla-status-info">
-            <div class="manilla-status-icon">✅</div>
-            <div>
-              <div class="manilla-status-text">Manilla entregada</div>
-              <div class="manilla-status-sub">El participante ya recibió su manilla de acceso</div>
-            </div>
-          </div>
-        </div>`;
+      container.innerHTML = `<div class="manilla-status entregada"><div class="manilla-status-info"><div class="manilla-status-icon">✅</div><div><div class="manilla-status-text">Manilla entregada</div><div class="manilla-status-sub">El participante ya recibió su manilla de acceso</div></div></div></div>`;
     } else {
-      container.innerHTML = `
-        <div class="manilla-status pendiente-m">
-          <div class="manilla-status-info">
-            <div class="manilla-status-icon">🎫</div>
-            <div>
-              <div class="manilla-status-text">Manilla pendiente</div>
-              <div class="manilla-status-sub">Aún no se ha entregado la manilla</div>
-            </div>
-          </div>
-          <button class="btn-entregar-manilla" id="btn-manilla-modal" onclick="entregarManillaDesdeModal()">
-            🎫 Entregar manilla
-          </button>
-        </div>`;
+      container.innerHTML = `<div class="manilla-status pendiente-m"><div class="manilla-status-info"><div class="manilla-status-icon">🎫</div><div><div class="manilla-status-text">Manilla pendiente</div><div class="manilla-status-sub">Aún no se ha entregado la manilla</div></div></div><button class="btn-entregar-manilla" id="btn-manilla-modal" onclick="entregarManillaDesdeModal()">🎫 Entregar manilla</button></div>`;
     }
   }
 
@@ -758,8 +770,9 @@
     if(e.target===document.getElementById('modal-revisar'))cerrarModalRevisar();
     if(e.target===document.getElementById('modal-inst'))cerrarModalInst();
   });
-  document.getElementById('filtro-categoria').addEventListener('change',cargarListaLocal);
-  document.getElementById('busqueda-input').addEventListener('input',cargarListaLocal);
+  document.getElementById('filtro-categoria').addEventListener('change', cargarListaLocal);
+  document.getElementById('filtro-estado').addEventListener('change', cargarListaLocal);
+  document.getElementById('busqueda-input').addEventListener('input', cargarListaLocal);
 
   function showToast(msg,error=false){const t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=error?'rgba(255,59,59,0.4)':'rgba(0,255,136,0.4)';t.style.color=error?'#ff3b3b':'#00ff88';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 </script>
