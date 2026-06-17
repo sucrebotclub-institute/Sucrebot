@@ -48,7 +48,6 @@
     .cat-tab.active { background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-color: #1a5ca8; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(26,92,168,0.3); transform: translateY(-2px); }
     .cat-tab.tiene-datos { position: relative; }
     .cat-tab.tiene-datos::before { content: ''; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: #5bc8f0; box-shadow: 0 0 8px #5bc8f0; animation: pulse-dot 2s ease-in-out infinite; }
-    /* Tab especial para ranking instituciones */
     .cat-tab.tab-instituciones { flex: 0 0 130px; width: 130px; background: linear-gradient(135deg, #1a3a6e, #0e2a5a); border-color: #ffd700; color: #ffd700; }
     .cat-tab.tab-instituciones:hover { background: linear-gradient(135deg, #2a4a7e, #1a3a6e); border-color: #ffd700; color: #ffe566; }
     .cat-tab.tab-instituciones.active { background: linear-gradient(135deg, #1a3a6e, #0e2a5a); border-color: #ffd700; color: #ffd700; box-shadow: 0 4px 16px rgba(255,215,0,0.3); }
@@ -59,18 +58,38 @@
     thead tr { background: linear-gradient(135deg, #1a5ca8, #2474cc); }
     thead th { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; color: #ffffff; padding: 10px 18px; text-align: left; border-bottom: 2px solid #5bc8f0; font-weight: 600; }
     thead th.c { text-align: center; }
-    tbody tr { border-bottom: 1px solid #e8edf3; transition: background 0.3s; }
+    tbody tr { border-bottom: 1px solid #d0daea; transition: background 0.2s; }
     tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: rgba(91,200,240,0.05); }
-    tr.pos-1 { background: linear-gradient(90deg, rgba(255,215,0,0.08), rgba(255,215,0,0.03)); }
-    tr.pos-2 { background: linear-gradient(90deg, rgba(192,192,192,0.08), rgba(192,192,192,0.03)); }
-    tr.pos-3 { background: linear-gradient(90deg, rgba(205,127,50,0.08), rgba(205,127,50,0.03)); }
+
+    /* ── PODIO ── */
+    tr.pos-1 {
+      background: linear-gradient(90deg, rgba(255,215,0,0.22) 0%, rgba(255,215,0,0.10) 60%, rgba(255,215,0,0.04) 100%);
+      border-left: 4px solid #FFD700;
+    }
+    tr.pos-2 {
+      background: linear-gradient(90deg, rgba(192,192,192,0.20) 0%, rgba(192,192,192,0.09) 60%, rgba(192,192,192,0.03) 100%);
+      border-left: 4px solid #C0C0C0;
+    }
+    tr.pos-3 {
+      background: linear-gradient(90deg, rgba(205,127,50,0.20) 0%, rgba(205,127,50,0.09) 60%, rgba(205,127,50,0.03) 100%);
+      border-left: 4px solid #CD7F32;
+    }
+
+    /* ── ALTERNANCIA 4to en adelante ── */
+    tr.row-par  { background: #eef4fc; border-left: 4px solid transparent; }
+    tr.row-impar { background: #ffffff; border-left: 4px solid transparent; }
+    tr.row-par:hover  { background: #ddeaf8; }
+    tr.row-impar:hover { background: #f0f6ff; }
+    tr.pos-1:hover { background: linear-gradient(90deg, rgba(255,215,0,0.30) 0%, rgba(255,215,0,0.14) 60%, rgba(255,215,0,0.06) 100%); }
+    tr.pos-2:hover { background: linear-gradient(90deg, rgba(192,192,192,0.28) 0%, rgba(192,192,192,0.12) 60%, rgba(192,192,192,0.05) 100%); }
+    tr.pos-3:hover { background: linear-gradient(90deg, rgba(205,127,50,0.28) 0%, rgba(205,127,50,0.12) 60%, rgba(205,127,50,0.05) 100%); }
+
     td { padding: 0 18px; vertical-align: middle; }
     .td-pos { width: 72px; text-align: center; }
     .pos-circle { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-family: var(--font-display); font-size: 1.4rem; }
-    .pc-1 { background: rgba(255,215,0,0.15); color: var(--results-gold); border: 2px solid rgba(255,215,0,0.4); box-shadow: 0 0 16px rgba(255,215,0,0.2); }
-    .pc-2 { background: rgba(192,192,192,0.12); color: var(--results-silver); border: 2px solid rgba(192,192,192,0.35); }
-    .pc-3 { background: rgba(205,127,50,0.12); color: var(--results-bronze); border: 2px solid rgba(205,127,50,0.35); }
+    .pc-1 { background: rgba(255,215,0,0.20); color: #b8860b; border: 2px solid rgba(255,215,0,0.6); box-shadow: 0 0 16px rgba(255,215,0,0.35); }
+    .pc-2 { background: rgba(192,192,192,0.18); color: #606060; border: 2px solid rgba(192,192,192,0.55); box-shadow: 0 0 10px rgba(192,192,192,0.25); }
+    .pc-3 { background: rgba(205,127,50,0.18); color: #8b4513; border: 2px solid rgba(205,127,50,0.55); box-shadow: 0 0 10px rgba(205,127,50,0.25); }
     .pc-n { background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid #e2e8f0; }
     .td-robot { min-width: 200px; }
     .robot-name { font-size: 1.3rem; font-weight: 700; color: #0e2a5a; letter-spacing: 0.01em; line-height: 1.2; }
@@ -78,7 +97,7 @@
     .td-mejor { text-align: center; min-width: 150px; }
     .tiempo-valor { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; }
     .tiempo-valor.dnf { color: #c82020; font-size: 1.4rem; }
-    tr.pos-1 .tiempo-valor { font-size: 2.2rem; color: #2474cc; }
+    tr.pos-1 .tiempo-valor { font-size: 2.2rem; color: #b8860b; }
     .td-ronda { min-width: 140px; }
     .ronda-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
     .row-altura { height: 88px; }
@@ -92,11 +111,13 @@
     .score-bar-wrap { display: flex; align-items: center; gap: 10px; min-width: 200px; }
     .score-bar-bg { flex: 1; height: 8px; background: #e8edf3; border-radius: 4px; overflow: hidden; }
     .score-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #1a5ca8, #5bc8f0); transition: width 0.6s ease; }
-    tr.pos-1 .score-bar-fill { background: linear-gradient(90deg, #d4a017, #ffd700); }
+    tr.pos-1 .score-bar-fill { background: linear-gradient(90deg, #c8900a, #ffd700); }
     tr.pos-2 .score-bar-fill { background: linear-gradient(90deg, #7a7a7a, #c0c0c0); }
     tr.pos-3 .score-bar-fill { background: linear-gradient(90deg, #7a4a1a, #cd7f32); }
     .score-num { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; min-width: 60px; text-align: right; }
-    tr.pos-1 .score-num { font-size: 2.2rem; color: #2474cc; }
+    tr.pos-1 .score-num { font-size: 2.2rem; color: #b8860b; }
+    tr.pos-2 .score-num { color: #606060; }
+    tr.pos-3 .score-num { color: #8b4513; }
 
     /* BRACKET GENERAL */
     .bracket-wrap { flex: 1; overflow-x: auto; }
@@ -185,7 +206,7 @@
     .td-inst-bar { min-width: 200px; }
     .inst-bar-bg { width: 100%; height: 10px; background: #e8edf3; border-radius: 5px; overflow: hidden; }
     .inst-bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #1a5ca8, #5bc8f0); transition: width 0.8s ease; }
-    tr.pos-1 .inst-bar-fill { background: linear-gradient(90deg, #d4a017, #ffd700); }
+    tr.pos-1 .inst-bar-fill { background: linear-gradient(90deg, #c8900a, #ffd700); }
     tr.pos-2 .inst-bar-fill { background: linear-gradient(90deg, #808080, #c0c0c0); }
     tr.pos-3 .inst-bar-fill { background: linear-gradient(90deg, #8b4513, #cd7f32); }
 
@@ -313,6 +334,12 @@
     const RUTAS_NOMBRE = {};
     GRUPOS.forEach(g => g.rutas.forEach(r => { RUTAS_NOMBRE[r.ruta] = r.nombre; }));
 
+    // Devuelve clase de alternancia para filas 4+
+    function claseAlterna(pos) {
+      // pos es 1-based; para pos >= 4 alternamos par/impar
+      return pos % 2 === 0 ? 'row-par' : 'row-impar';
+    }
+
     function tiempoASegundos(t) {
       if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity;
       const p = t.split(':').map(Number);
@@ -373,9 +400,8 @@
           </button>`;
         });
       });
-      // Tab instituciones siempre visible al final
-      const instActiva  = categoriaActiva === 'instituciones';
-      const instDatos   = categoriaTieneDatos('instituciones');
+      const instActiva = categoriaActiva === 'instituciones';
+      const instDatos  = categoriaTieneDatos('instituciones');
       html += `<button class="cat-tab tab-instituciones ${instDatos ? 'tiene-datos' : ''} ${instActiva ? 'active' : ''}"
         data-ruta="instituciones" onclick="seleccionarManual('instituciones')">
         🏆 Ranking Instituciones
@@ -439,7 +465,7 @@
 
       const filas = ranking.map((inst, i) => {
         const pos       = i + 1;
-        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
+        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : claseAlterna(pos);
         const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
         const emoji     = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
         const pct       = Math.round((inst.puntos / maxPts) * 100);
@@ -640,7 +666,7 @@
 
       const filas = ranking.map((p, i) => {
         const pos       = i + 1;
-        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '';
+        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : claseAlterna(pos);
         const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
         const emoji     = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
         const total     = parseFloat(p.total) || 0;
@@ -738,7 +764,7 @@
 
       const filas = clasificados.map((c, i) => {
         const pos       = i + 1;
-        const claseRow  = c.esDNF ? '' : (pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : '');
+        const claseRow  = c.esDNF ? claseAlterna(pos) : (pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : claseAlterna(pos));
         const claseCirc = c.esDNF ? 'pc-n' : (pos === 1 ? 'pc-1' : pos === 2 ? 'pc-2' : pos === 3 ? 'pc-3' : 'pc-n');
         const emoji     = (!c.esDNF && pos === 1) ? '🥇' : (!c.esDNF && pos === 2) ? '🥈' : (!c.esDNF && pos === 3) ? '🥉' : (c.esDNF ? '—' : pos);
         const tClase    = c.esDNF ? 'tiempo-valor dnf' : 'tiempo-valor';
