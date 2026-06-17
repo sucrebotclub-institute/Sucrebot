@@ -516,7 +516,28 @@
   }
 
   // ── Registro — nuevo orden: uploads PRIMERO, luego setParticipante ──
+  const BTN_HTML_ORIGINAL = `<svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg> REGISTRAR PARTICIPANTE`;
+  let _registrando = false; // guard anti-doble-submit
+
+  function limpiarFormulario() {
+    ['f-nombre','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-equipo']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-ciudad').value = '';
+    document.getElementById('f-ciudad-otra').value = '';
+    document.getElementById('prov-otra-wrap').classList.remove('show');
+    document.getElementById('f-categoria').value = '';
+    document.getElementById('f-institucion-select').value = '';
+    document.getElementById('f-institucion-nueva').value = '';
+    document.getElementById('inst-nueva-wrap').classList.remove('show');
+    document.getElementById('soccerEquipoWrap').classList.remove('show');
+    document.getElementById('f-archivo').value = '';
+    quitarLogo();
+  }
+
   async function registrarParticipante() {
+    // Protección doble-submit
+    if (_registrando) return;
+
     const nombre       = document.getElementById('f-nombre').value.trim();
     const miembro2     = document.getElementById('f-miembro2').value.trim();
     const institucion  = getInstitucionValue();
@@ -553,44 +574,29 @@
     if (!archivo)    { showToast('Debes adjuntar el comprobante de pago', true); return; }
     if (!logoArchivo){ showToast('El logo de tu institución o club es obligatorio', true); return; }
 
+    // Bloquear
+    _registrando = true;
     const btn = document.querySelector('.btn-register');
     btn.disabled = true;
 
     try {
       // ── PASO 1: Subir comprobante a Drive ──────────────────────
-      btn.textContent = '⏳ Subiendo comprobante...';
-      let archivoUrl = '';
-      try {
-        const base64Comp = await toBase64(archivo);
-        // Usamos un nombre temporal con timestamp para que sea único
-        const nombreTemp = 'TRANSFERENCIA-TEMP-' + Date.now();
-        const respComp = await gasPost({ action: 'uploadComprobante', base64: base64Comp, mimeType: archivo.type, fileName: nombreTemp });
-        if (!respComp.ok || !respComp.url) throw new Error(respComp.error || 'Error al subir comprobante');
-        archivoUrl = respComp.url;
-      } catch(e) {
-        showToast('Error al subir comprobante: ' + e.message, true);
-        btn.disabled = false; btn.textContent = 'REGISTRAR PARTICIPANTE';
-        return;
-      }
+      btn.innerHTML = '⏳ Subiendo comprobante...';
+      const base64Comp = await toBase64(archivo);
+      const respComp = await gasPost({ action: 'uploadComprobante', base64: base64Comp, mimeType: archivo.type, fileName: 'TRANSFERENCIA-TEMP-' + Date.now() });
+      if (!respComp.ok || !respComp.url) throw new Error(respComp.error || 'Error al subir comprobante');
+      const archivoUrl = respComp.url;
 
       // ── PASO 2: Subir logo a Drive ─────────────────────────────
-      btn.textContent = '⏳ Subiendo logo del club...';
-      let logoUrl = '';
-      try {
-        const base64Logo = await toBase64(logoArchivo);
-        const ext = logoArchivo.name.split('.').pop() || 'png';
-        const nombreLogoTemp = 'LOGO-TEMP-' + Date.now() + '.' + ext;
-        const respLogo = await gasPost({ action: 'uploadLogo', base64: base64Logo, mimeType: logoArchivo.type, fileName: nombreLogoTemp });
-        if (!respLogo.ok || !respLogo.url) throw new Error(respLogo.error || 'Error al subir logo');
-        logoUrl = respLogo.url;
-      } catch(e) {
-        showToast('Error al subir logo: ' + e.message, true);
-        btn.disabled = false; btn.textContent = 'REGISTRAR PARTICIPANTE';
-        return;
-      }
+      btn.innerHTML = '⏳ Subiendo logo del club...';
+      const base64Logo = await toBase64(logoArchivo);
+      const ext = logoArchivo.name.split('.').pop() || 'png';
+      const respLogo = await gasPost({ action: 'uploadLogo', base64: base64Logo, mimeType: logoArchivo.type, fileName: 'LOGO-TEMP-' + Date.now() + '.' + ext });
+      if (!respLogo.ok || !respLogo.url) throw new Error(respLogo.error || 'Error al subir logo');
+      const logoUrl = respLogo.url;
 
-      // ── PASO 3: Registrar participante con URLs ya disponibles ─
-      btn.textContent = '⏳ Registrando participante...';
+      // ── PASO 3: Registrar participante con URLs ya listas ──────
+      btn.innerHTML = '⏳ Finalizando registro...';
       const respRegistro = await gasPost({
         action: 'setParticipante',
         id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
@@ -610,30 +616,22 @@
       }
 
       // Actualizar cache participantes local
-      const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
-      lista.push({ id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria, equipo });
-      localStorage.setItem('participantes', JSON.stringify(lista));
+      try {
+        const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
+        lista.push({ id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria, equipo });
+        localStorage.setItem('participantes', JSON.stringify(lista));
+      } catch(e) {}
 
+      // Limpiar ANTES del toast para que el usuario vea el form limpio
+      limpiarFormulario();
       showToast('✅ Registrado con ID: ' + idGenerado, false);
 
-      // Limpiar formulario
-      ['f-nombre','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-equipo']
-        .forEach(id => document.getElementById(id).value = '');
-      document.getElementById('f-ciudad').value = '';
-      document.getElementById('f-ciudad-otra').value = '';
-      document.getElementById('prov-otra-wrap').classList.remove('show');
-      document.getElementById('f-categoria').value = '';
-      document.getElementById('f-institucion-select').value = '';
-      document.getElementById('f-institucion-nueva').value = '';
-      document.getElementById('inst-nueva-wrap').classList.remove('show');
-      document.getElementById('soccerEquipoWrap').classList.remove('show');
-      archivoInput.value = '';
-      quitarLogo();
-
     } catch(e) {
-      showToast('Error al registrar: ' + e.message, true);
+      showToast('Error: ' + e.message, true);
     } finally {
-      btn.disabled = false; btn.textContent = 'REGISTRAR PARTICIPANTE';
+      _registrando = false;
+      btn.disabled = false;
+      btn.innerHTML = BTN_HTML_ORIGINAL;
     }
   }
 
