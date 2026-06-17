@@ -29,40 +29,57 @@
       --red:         #e74c3c;
       --gold:        #f0a500;
       --gold-dark:   #c98a00;
+      --violet:      #7c3aed;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: #f0f4fa !important;
-      font-family: 'Exo 2', sans-serif;
-      color: #1a2a4a;
-      padding-top: 0 !important;
-    }
-
+    body { background: #f0f4fa !important; font-family: 'Exo 2', sans-serif; color: #1a2a4a; padding-top: 0 !important; }
     main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
 
-    .stepper-wrap {
-      display: flex; justify-content: center; align-items: center;
-      gap: 0; padding: 28px 20px 0; max-width: 600px; margin: 0 auto;
+    /* ── JUEZ SELECTOR ── */
+    .juez-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(5,21,48,0.92); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center; z-index: 9800; flex-direction: column;
     }
-    .step-item {
-      display: flex; flex-direction: column; align-items: center;
-      flex: 1; position: relative; cursor: default;
+    .juez-overlay.show { display: flex; }
+    .juez-box {
+      background: var(--panel-bg); border: 1px solid var(--panel-border2);
+      border-radius: 20px; padding: 40px 48px; text-align: center; max-width: 480px; width: 90%;
     }
-    .step-item:not(:last-child)::after {
-      content:''; position:absolute; top: 18px; left: calc(50% + 20px);
-      width: calc(100% - 40px); height: 2px;
-      background: #c8d4e8; transition: background .4s; z-index: 0;
+    .juez-box-title { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 3px; color: var(--cyan); margin-bottom: 6px; }
+    .juez-box-sub { font-size: .85rem; color: var(--text-dim); margin-bottom: 32px; }
+    .juez-cards { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .juez-card {
+      width: 120px; padding: 20px 12px; border-radius: 14px;
+      background: var(--panel-bg2); border: 2px solid var(--panel-border);
+      cursor: pointer; transition: all .25s; text-align: center;
     }
+    .juez-card:hover { border-color: var(--cyan); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(91,200,240,0.2); }
+    .juez-card-num { font-family: 'Bebas Neue'; font-size: 2.4rem; color: var(--cyan); line-height: 1; margin-bottom: 6px; }
+    .juez-card-lbl { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+
+    /* ── JUEZ BADGE (visible arriba) ── */
+    .juez-badge-bar {
+      display: none; align-items: center; gap: 12px;
+      background: var(--panel-bg2); border: 1px solid var(--panel-border2);
+      border-radius: 10px; padding: 10px 18px; margin-bottom: 20px;
+    }
+    .juez-badge-bar.show { display: flex; }
+    .juez-badge-icon { font-size: 1.2rem; }
+    .juez-badge-txt { font-family: 'Orbitron'; font-size: .7rem; letter-spacing: 1.5px; color: var(--cyan); }
+    .juez-badge-cambiar {
+      margin-left: auto; background: transparent; border: 1px solid var(--panel-border2);
+      color: var(--text-dim); font-family: 'DM Mono'; font-size: .65rem; padding: 4px 10px;
+      border-radius: 6px; cursor: pointer; transition: all .2s;
+    }
+    .juez-badge-cambiar:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    /* ── STEPPER ── */
+    .stepper-wrap { display: flex; justify-content: center; align-items: center; gap: 0; padding: 28px 20px 0; max-width: 600px; margin: 0 auto; }
+    .step-item { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; cursor: default; }
+    .step-item:not(:last-child)::after { content:''; position:absolute; top: 18px; left: calc(50% + 20px); width: calc(100% - 40px); height: 2px; background: #c8d4e8; transition: background .4s; z-index: 0; }
     .step-item.done:not(:last-child)::after { background: #1a5ca8; }
-    .step-dot {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 2px solid #c8d4e8; background: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Orbitron'; font-size: .7rem; font-weight: 700;
-      color: #8a9ab8; transition: all .3s; z-index: 1;
-    }
+    .step-dot { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #c8d4e8; background: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: .7rem; font-weight: 700; color: #8a9ab8; transition: all .3s; z-index: 1; }
     .step-item.active .step-dot { border-color: #5bc8f0; background: #1a5ca8; color: #fff; box-shadow: 0 0 12px rgba(91,200,240,0.4); }
     .step-item.done .step-dot { border-color: #2ecc71; background: #2ecc71; color: #fff; }
     .step-label { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1px; color: #8a9ab8; margin-top: 6px; text-align: center; }
@@ -70,109 +87,76 @@
     .step-item.done .step-label { color: #2ecc71; }
 
     .panel-wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
-
     .step-panel { display: none; animation: fadeUp .35s ease; }
     .step-panel.active { display: block; }
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-    .panel-card {
-      background: var(--panel-bg); border: 1px solid var(--panel-border);
-      border-radius: 14px; padding: 24px; max-width: none !important; color: var(--text-main);
-    }
-    .panel-card-title {
-      font-family: 'Orbitron'; font-size: .75rem; letter-spacing: 2px;
-      color: var(--cyan); text-transform: uppercase; margin-bottom: 20px;
-      display: flex; align-items: center; gap: 8px;
-    }
+    .panel-card { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; padding: 24px; color: var(--text-main); }
+    .panel-card-title { font-family: 'Orbitron'; font-size: .75rem; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
     .panel-card-title::before { content:''; width: 3px; height: 16px; background: var(--cyan); border-radius: 2px; }
 
-    .cat-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 28px;
-    }
+    /* ── CATEGORÍAS ── */
+    .cat-cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
     @media(max-width:900px){ .cat-cards-grid { grid-template-columns: repeat(2, 1fr); } }
     @media(max-width:500px){ .cat-cards-grid { grid-template-columns: 1fr; } }
-
-    .cat-card {
-      background: var(--panel-bg2); border: 2px solid var(--panel-border);
-      border-radius: 14px; padding: 24px 16px; text-align: center;
-      cursor: pointer; transition: all .25s; position: relative; overflow: hidden;
-    }
-    .cat-card::before {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(91,200,240,0.06), transparent);
-      opacity: 0; transition: opacity .25s;
-    }
+    .cat-card { background: var(--panel-bg2); border: 2px solid var(--panel-border); border-radius: 14px; padding: 24px 16px; text-align: center; cursor: pointer; transition: all .25s; position: relative; overflow: hidden; }
     .cat-card:hover { border-color: var(--panel-border2); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
-    .cat-card:hover::before { opacity: 1; }
     .cat-card.selected { border-color: var(--cyan); background: rgba(26,92,168,0.25); box-shadow: 0 0 20px rgba(91,200,240,0.2); }
-    .cat-card.selected::before { opacity: 1; }
-
     .cat-card-emoji { font-size: 2rem; margin-bottom: 12px; display: block; }
     .cat-card-nombre { font-family: 'Orbitron'; font-size: .7rem; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; margin-bottom: 6px; }
     .cat-card-desc { font-size: .73rem; color: var(--text-dim); margin-bottom: 12px; line-height: 1.4; }
-    .cat-card-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-family: 'Orbitron'; font-size: .52rem; letter-spacing: 1.5px;
-      padding: 3px 10px; border-radius: 20px; border: 1px solid var(--panel-border2);
-      color: var(--text-dim); background: transparent;
-    }
+    .cat-card-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .52rem; letter-spacing: 1.5px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--panel-border2); color: var(--text-dim); }
     .cat-card.selected .cat-card-badge { border-color: var(--cyan); color: var(--cyan); background: rgba(91,200,240,0.1); }
 
-    .cat-bloqueada-badge {
-      display: none; align-items: center; gap: 8px;
-      background: rgba(91,200,240,0.1); border: 1px solid rgba(91,200,240,0.3);
-      border-radius: 8px; padding: 8px 14px; margin-top: 10px;
-      font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; color: var(--cyan);
-    }
-    .cat-bloqueada-badge.show { display: flex; }
-    .cat-lock-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    /* ── BAT multi-juez badge ── */
+    .cat-card.bat-card .cat-card-badge { border-color: rgba(240,165,0,0.4); color: var(--gold); background: rgba(240,165,0,0.08); }
 
+    .lk-nota { display: none; background: rgba(91,200,240,0.08); border: 1px solid rgba(91,200,240,0.25); border-radius: 10px; padding: 12px 16px; margin-top: 14px; font-size: .82rem; color: var(--text-dim); line-height: 1.6; }
+    .lk-nota.show { display: block; }
+    .lk-nota strong { color: var(--cyan); }
+
+    /* ── BAT info nota ── */
+    .bat-nota { display: none; background: rgba(240,165,0,0.08); border: 1px solid rgba(240,165,0,0.3); border-radius: 10px; padding: 12px 16px; margin-top: 14px; font-size: .82rem; color: #f5c842; line-height: 1.6; }
+    .bat-nota.show { display: block; }
+    .bat-nota strong { color: var(--gold); }
+
+    /* ── CONFIG GRID ── */
     .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media(max-width:700px){ .config-grid { grid-template-columns: 1fr; } }
-
     .form-group { margin-bottom: 16px; }
     .form-label { display: block; font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
     .form-control { width: 100%; background: var(--panel-bg2); border: 1px solid var(--panel-border2); border-radius: 8px; padding: 10px 14px; color: var(--text-main); font-family: 'Exo 2'; font-size: .95rem; outline: none; transition: border-color .2s; }
     .form-control:focus { border-color: var(--cyan); }
-
     .criterios-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     .criterios-table th { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; color: var(--text-dim); padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--panel-border); }
     .criterios-table td { padding: 6px 6px; vertical-align: middle; }
-    .criterios-table tr:hover td { background: rgba(91,200,240,0.04); }
-
     .crit-input { background: var(--panel-bg3); border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px 10px; color: var(--text-main); font-family: 'Exo 2'; font-size: .88rem; width: 100%; outline: none; }
     .crit-input:focus { border-color: var(--cyan); }
-
     .btn-icon { background: transparent; border: 1.5px solid rgba(255,255,255,0.55); border-radius: 5px; cursor: pointer; padding: 3px 7px; color: #fff; font-size: .85rem; line-height: 1; transition: all .2s; }
     .btn-icon:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
-
     .btn-agregar { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 1.5px; padding: 8px 18px; border-radius: 8px; cursor: pointer; transition: all .2s; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-agregar:hover { background: var(--cyan); color: #071e45; font-weight: 700; box-shadow: 0 4px 14px rgba(91,200,240,0.35); }
+    .btn-agregar:hover { background: var(--cyan); color: #071e45; font-weight: 700; }
 
+    /* ── BOTONES ── */
     .btn { display: inline-flex; align-items: center; gap: 8px; font-family: 'Orbitron'; font-size: .7rem; letter-spacing: 1.5px; padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; transition: all .2s; text-transform: uppercase; }
     .btn-primary { background: var(--blue); color: #fff; }
-    .btn-primary:hover { background: #1e6bc4; box-shadow: 0 4px 16px rgba(26,92,168,0.4); }
+    .btn-primary:hover { background: #1e6bc4; }
     .btn-primary:disabled { background: #2a2e42; color: var(--text-dim); cursor: not-allowed; }
     .btn-outline { background: transparent; color: var(--cyan); border: 1px solid var(--cyan); }
     .btn-outline:hover { background: rgba(91,200,240,0.08); }
     .btn-green { background: var(--green); color: #fff; }
-    .btn-green:hover { background: #27ae60; box-shadow: 0 4px 16px rgba(46,204,113,0.3); }
+    .btn-green:hover { background: #27ae60; }
     .btn-green:disabled { background: #2a2e42; color: var(--text-dim); cursor: not-allowed; }
     .btn-danger { background: var(--red); color: #fff; }
     .btn-danger:hover { background: #c0392b; }
     .btn-sm { padding: 7px 14px; font-size: .62rem; }
-    .btn-violet { background: #7c3aed; border: 2px solid #6d28d9; color: #fff; font-weight: 700; }
-    .btn-violet:hover { background: #8b5cf6; border-color: #7c3aed; box-shadow: 0 4px 16px rgba(124,58,237,0.45); transform: translateY(-1px); }
-    .btn-violet:active { transform: translateY(0); }
+    .btn-violet { background: var(--violet); border: 2px solid #6d28d9; color: #fff; font-weight: 700; }
+    .btn-violet:hover { background: #8b5cf6; }
     .btn-ranking { background: var(--gold); border: 2px solid var(--gold-dark); color: #1a1a1a; font-weight: 700; }
-    .btn-ranking:hover { background: #f5b420; border-color: var(--gold); box-shadow: 0 4px 16px rgba(240,165,0,0.45); transform: translateY(-1px); }
-    .btn-ranking:active { transform: translateY(0); }
+    .btn-ranking:hover { background: #f5b420; }
     .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
 
+    /* ── PASO 2: split ── */
     .calificar-split { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
     @media(max-width:800px) { .calificar-split { grid-template-columns: 1fr; } }
 
@@ -199,11 +183,17 @@
     .robot-inst { font-size: .72rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .robot-score { font-family: 'DM Mono'; font-size: .8rem; color: var(--green); flex-shrink: 0; }
 
+    /* ── FORM CALIFICACIÓN ── */
     .form-cal { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; padding: 24px; color: var(--text-main); }
     .form-cal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--panel-border); flex-wrap: wrap; gap: 12px; }
     .form-cal-robot { font-family: 'Bebas Neue'; font-size: 1.8rem; letter-spacing: 2px; color: var(--cyan); line-height: 1; }
     .form-cal-inst { font-size: .85rem; color: var(--text-dim); margin-top: 4px; }
     .form-cal-id { font-family: 'DM Mono'; font-size: .7rem; color: var(--text-dim); background: var(--panel-bg2); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--panel-border); }
+    .ronda-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; background: rgba(26,92,168,0.25); color: var(--cyan); border: 1px solid rgba(91,200,240,0.3); border-radius: 20px; padding: 4px 12px; }
+    .juez-round-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; background: rgba(240,165,0,0.15); color: var(--gold); border: 1px solid rgba(240,165,0,0.35); border-radius: 20px; padding: 4px 12px; }
+    .fase-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; border-radius: 20px; padding: 4px 12px; }
+    .fase-badge.fase-1 { background: rgba(240,165,0,0.15); color: var(--gold); border: 1px solid rgba(240,165,0,0.3); }
+    .fase-badge.fase-2 { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 
     .criterios-cal { margin-bottom: 24px; }
     .criterio-row { display: grid; grid-template-columns: 1fr 140px; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--panel-border); }
@@ -215,52 +205,48 @@
     .criterio-nota-input { width: 72px; text-align: center; background: var(--panel-bg2); border: 1.5px solid var(--panel-border2); border-radius: 8px; padding: 8px 6px; color: var(--text-main); font-family: 'Orbitron'; font-size: 1.1rem; font-weight: 700; outline: none; transition: border-color .2s; }
     .criterio-nota-input:focus { border-color: var(--cyan); }
     .criterio-max { font-family: 'DM Mono'; font-size: .7rem; color: var(--text-dim); }
-    .criterio-nota-input:disabled { opacity: .4; cursor: not-allowed; }
 
     .total-box { display: flex; align-items: center; justify-content: space-between; background: var(--panel-bg2); border: 1px solid var(--panel-border2); border-radius: 10px; padding: 14px 20px; margin-bottom: 16px; }
     .total-label { font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
     .total-valor { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 2px; color: var(--cyan); }
     .total-de { font-family: 'DM Mono'; font-size: .75rem; color: var(--text-dim); }
-
     textarea.form-control { resize: vertical; min-height: 60px; font-size: .88rem; }
-    .ronda-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; background: rgba(26,92,168,0.25); color: var(--cyan); border: 1px solid rgba(91,200,240,0.3); border-radius: 20px; padding: 4px 12px; }
-    .fase-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Orbitron'; font-size: .62rem; letter-spacing: 1.5px; border-radius: 20px; padding: 4px 12px; }
-    .fase-badge.fase-1 { background: rgba(240,165,0,0.15); color: var(--gold); border: 1px solid rgba(240,165,0,0.3); }
-    .fase-badge.fase-2 { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 
+    /* ── RANKING ── */
     .ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .ranking-title { font-family: 'Bebas Neue'; font-size: 1.6rem; letter-spacing: 2px; color: var(--cyan); }
     .ranking-table { width: 100%; border-collapse: collapse; }
     .ranking-table th { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; color: var(--text-dim); padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--panel-border); }
     .ranking-table td { padding: 12px 12px; border-bottom: 1px solid rgba(91,200,240,0.06); font-size: .9rem; color: var(--text-main); }
     .ranking-table tr:hover td { background: rgba(91,200,240,0.04); }
-
     .pos-badge { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-weight: 700; font-size: .75rem; }
     .pos-1 { background: linear-gradient(135deg,#f9d423,#e65c00); color: #fff; }
     .pos-2 { background: linear-gradient(135deg,#bdc3c7,#2c3e50); color: #fff; }
     .pos-3 { background: linear-gradient(135deg,#cd7f32,#7b3f00); color: #fff; }
     .pos-n { background: var(--panel-bg2); color: var(--text-dim); border: 1px solid var(--panel-border); }
-
     .score-bar-wrap { display: flex; align-items: center; gap: 8px; }
     .score-bar { flex: 1; height: 6px; background: var(--panel-border); border-radius: 3px; overflow: hidden; min-width: 60px; }
     .score-bar-fill { height: 100%; border-radius: 3px; background: var(--cyan); }
     .score-num { font-family: 'DM Mono'; font-size: .8rem; color: var(--cyan); min-width: 40px; }
+    .jueces-pip { display: inline-flex; gap: 4px; align-items: center; }
+    .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--panel-border); }
+    .pip.filled { background: var(--gold); }
 
     .badge-pendiente { display: inline-block; font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1px; padding: 3px 8px; border-radius: 10px; background: rgba(243,156,18,0.15); color: var(--orange); border: 1px solid rgba(243,156,18,0.3); }
     .badge-calificado { display: inline-block; font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1px; padding: 3px 8px; border-radius: 10px; background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
     .badge-fase2 { display: inline-block; font-family: 'Orbitron'; font-size: .55rem; letter-spacing: 1px; padding: 3px 8px; border-radius: 10px; background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
 
+    /* ── MISC ── */
     #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--panel-bg); border: 1px solid var(--panel-border2); color: var(--text-main); padding: 12px 24px; border-radius: 10px; font-family: 'Exo 2'; font-size: .9rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: transform .3s; z-index: 9999; white-space: nowrap; }
     #toast.show { transform: translateX(-50%) translateY(0); }
     #toast.success { border-color: rgba(46,204,113,0.5); }
-    #toast.error { border-color: rgba(231,76,60,0.5); }
+    #toast.error   { border-color: rgba(231,76,60,0.5); }
 
     .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(14,18,30,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 9000; flex-direction: column; gap: 16px; }
     .loading-overlay.show { display: flex; }
     .spinner { width: 40px; height: 40px; border: 3px solid var(--panel-border); border-top-color: var(--cyan); border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-txt { font-family: 'Orbitron'; font-size: .7rem; color: var(--cyan); letter-spacing: 2px; }
-
     .empty-state { text-align: center; padding: 48px 20px; color: var(--text-dim); }
     .empty-state-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: .5; }
     .empty-state p { font-size: .9rem; }
@@ -273,15 +259,10 @@
     .modal-msg { font-size: .9rem; color: var(--text-dim); margin-bottom: 24px; line-height: 1.6; white-space: pre-line; }
     .modal-btns { display: flex; gap: 12px; justify-content: center; }
 
-    @media(max-width:600px) {
-      .criterio-row { grid-template-columns: 1fr; gap: 8px; }
-      .criterio-input-wrap { justify-content: flex-start; }
-      .form-cal-header { flex-direction: column; }
-    }
-
     .pc-hero { text-align: center; padding: 48px 20px 36px; }
     .pc-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 16px; }
     .pc-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
     .pc-hero-title { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: #1a3a6e; position: relative; margin-bottom: 8px; }
     .pc-hero-title span { color: #1a5ca8; }
     .pc-hero-title::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, #5bc8f0, transparent); }
@@ -290,43 +271,10 @@
     .participantes-info-panel { display: none; }
     .participantes-info-panel.show { display: block; margin-top: 20px; }
 
-    /* ── LEGO KIDS ── */
-    .lk-nota {
-      display: none;
-      background: rgba(91,200,240,0.08);
-      border: 1px solid rgba(91,200,240,0.25);
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-top: 14px;
-      font-size: .82rem;
-      color: var(--text-dim);
-      line-height: 1.6;
-    }
-    .lk-nota.show { display: block; }
-    .lk-nota strong { color: var(--cyan); }
-
-    /* ── CRONÓMETRO FASE 1 ── */
-    .lk-cronometro-bar {
-      display: none;
-      align-items: center;
-      gap: 16px;
-      background: var(--panel-bg2);
-      border: 1px solid var(--panel-border2);
-      border-radius: 12px;
-      padding: 14px 20px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
+    /* ── LK CRONOMETRO ── */
+    .lk-cronometro-bar { display: none; align-items: center; gap: 16px; background: var(--panel-bg2); border: 1px solid var(--panel-border2); border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; flex-wrap: wrap; }
     .lk-cronometro-bar.show { display: flex; }
-    .lk-crono-display {
-      font-family: 'Orbitron';
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--cyan);
-      letter-spacing: 4px;
-      min-width: 120px;
-      transition: color .3s;
-    }
+    .lk-crono-display { font-family: 'Orbitron'; font-size: 2rem; font-weight: 700; color: var(--cyan); letter-spacing: 4px; min-width: 120px; transition: color .3s; }
     .lk-crono-display.warning { color: var(--orange); }
     .lk-crono-display.danger  { color: var(--red); animation: blink-red .8s infinite; }
     @keyframes blink-red { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -336,30 +284,25 @@
     .lk-crono-progress-fill { height: 100%; border-radius: 3px; background: var(--cyan); transition: width 1s linear, background .3s; }
     .lk-crono-btn { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; transition: all .2s; }
     .lk-crono-btn.start { background: var(--green); color: #fff; }
-    .lk-crono-btn.start:hover { background: #27ae60; }
     .lk-crono-btn.pause { background: var(--orange); color: #fff; }
-    .lk-crono-btn.pause:hover { background: #d68910; }
     .lk-crono-badge { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 20px; background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 
-    /* ── FASE 2 CLASIFICADOS ── */
-    .lk-fase2-panel {
-      display: none;
-      margin-top: 20px;
-    }
+    .lk-fase2-panel { display: none; margin-top: 20px; }
     .lk-fase2-panel.show { display: block; }
     .clasificados-grid { display: grid; gap: 8px; margin-top: 12px; }
-    .clasificado-item {
-      display: flex; align-items: center; gap: 12px;
-      background: var(--panel-bg2); border: 1px solid var(--panel-border);
-      border-radius: 10px; padding: 12px 16px; cursor: pointer;
-      transition: all .2s;
-    }
+    .clasificado-item { display: flex; align-items: center; gap: 12px; background: var(--panel-bg2); border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 16px; cursor: pointer; transition: all .2s; }
     .clasificado-item:hover { border-color: var(--panel-border2); }
     .clasificado-item.checked { border-color: var(--green); background: rgba(46,204,113,0.08); }
     .clasificado-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--panel-border2); background: var(--panel-bg3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; font-size: .8rem; }
     .clasificado-item.checked .clasificado-check { background: var(--green); border-color: var(--green); }
     .clasificado-nombre { font-weight: 600; font-size: .9rem; color: var(--text-main); }
     .clasificado-score { font-family: 'DM Mono'; font-size: .78rem; color: var(--cyan); margin-left: auto; }
+
+    @media(max-width:600px) {
+      .criterio-row { grid-template-columns: 1fr; gap: 8px; }
+      .criterio-input-wrap { justify-content: flex-start; }
+      .form-cal-header { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
@@ -371,6 +314,7 @@
 
 <div id="toast"></div>
 
+<!-- Modal confirmación -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal-box">
     <div class="modal-icon" id="modalIcon">⚠️</div>
@@ -379,6 +323,28 @@
     <div class="modal-btns">
       <button class="btn btn-outline btn-sm" onclick="cerrarModal()">Cancelar</button>
       <button class="btn btn-danger btn-sm" id="modalConfirmBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SELECTOR DE JUEZ ── -->
+<div class="juez-overlay" id="juezOverlay">
+  <div class="juez-box">
+    <div class="juez-box-title">⚔️ BATALLA</div>
+    <div class="juez-box-sub">Selecciona tu identidad como juez para esta sesión</div>
+    <div class="juez-cards">
+      <div class="juez-card" onclick="seleccionarJuez(1)">
+        <div class="juez-card-num">1</div>
+        <div class="juez-card-lbl">Juez 1</div>
+      </div>
+      <div class="juez-card" onclick="seleccionarJuez(2)">
+        <div class="juez-card-num">2</div>
+        <div class="juez-card-lbl">Juez 2</div>
+      </div>
+      <div class="juez-card" onclick="seleccionarJuez(3)">
+        <div class="juez-card-num">3</div>
+        <div class="juez-card-lbl">Juez 3</div>
+      </div>
     </div>
   </div>
 </div>
@@ -402,62 +368,42 @@
 </div>
 
 <div class="stepper-wrap">
-  <div class="step-item active" id="step-dot-1">
-    <div class="step-dot">1</div>
-    <div class="step-label">Categoría</div>
-  </div>
-  <div class="step-item" id="step-dot-2">
-    <div class="step-dot">2</div>
-    <div class="step-label">Calificar</div>
-  </div>
-  <div class="step-item" id="step-dot-3">
-    <div class="step-dot">3</div>
-    <div class="step-label">Ranking</div>
-  </div>
+  <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
+  <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Calificar</div></div>
+  <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label">Ranking</div></div>
 </div>
 
 <div class="panel-wrap">
 
-  <!-- PASO 1 -->
+  <!-- ══ PASO 1 ══ -->
   <div class="step-panel active" id="panel-1">
-
     <div class="panel-card" style="margin-bottom:20px">
       <div class="panel-card-title">Seleccionar Categoría</div>
       <div class="cat-cards-grid">
-
         <div class="cat-card" id="card-bai" onclick="seleccionarCategoria('bai')">
           <span class="cat-card-emoji">🩺</span>
           <div class="cat-card-nombre">Bailarín</div>
           <div class="cat-card-desc">Coreografía · Sincronía · Creatividad</div>
           <div class="cat-card-badge">CRITERIOS</div>
         </div>
-
         <div class="cat-card" id="card-dev" onclick="seleccionarCategoria('dev')">
           <span class="cat-card-emoji">💡</span>
           <div class="cat-card-nombre">Impacto Tecnológico</div>
           <div class="cat-card-desc">Innovación · Funcionalidad · Impacto Social</div>
           <div class="cat-card-badge">CRITERIOS</div>
         </div>
-
-        <div class="cat-card" id="card-bat" onclick="seleccionarCategoria('bat')">
+        <div class="cat-card bat-card" id="card-bat" onclick="seleccionarCategoria('bat')">
           <span class="cat-card-emoji">⚔️</span>
           <div class="cat-card-nombre">Batalla</div>
           <div class="cat-card-desc">Estrategia · Construcción · Desempeño</div>
-          <div class="cat-card-badge">CRITERIOS</div>
+          <div class="cat-card-badge">⚖ 3 JUECES · PROMEDIO</div>
         </div>
-
         <div class="cat-card" id="card-lk" onclick="seleccionarCategoria('lk')">
           <span class="cat-card-emoji">🧱</span>
           <div class="cat-card-nombre">Lego Kids</div>
           <div class="cat-card-desc">Ensamble · Funcionalidad · Tiempo de carrera</div>
           <div class="cat-card-badge">CRITERIOS · 100 PTS</div>
         </div>
-
-      </div>
-
-      <div class="cat-bloqueada-badge" id="catBloqueadaBadge">
-        <div class="cat-lock-dot"></div>
-        <span id="catBloqueadaTxt">CATEGORÍA BLOQUEADA EN ESTE PC</span>
       </div>
 
       <div class="lk-nota" id="lkNota">
@@ -467,10 +413,17 @@
         <strong>Fase 2</strong> (carrera): ingresar <strong>Tiempo de carrera (0–30 pts)</strong> solo a clasificados.
         Puntaje final = Fase 1 + Fase 2 = <strong>100 pts máx</strong>.
       </div>
+
+      <div class="bat-nota" id="batNota">
+        ⚔️ <strong>Batalla — 3 jueces simultáneos:</strong>
+        Cada juez califica desde su propio dispositivo usando los mismos criterios.
+        El puntaje final de cada robot es el <strong>promedio de los 3 jueces</strong>.
+        No hay bloqueo — pueden estar los 3 abiertos al mismo tiempo.
+      </div>
     </div>
 
     <div class="participantes-info-panel" id="configuracionPanel">
-      <div class="config-grid">
+      <config-grid class="config-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
 
         <div class="panel-card">
           <div class="panel-card-title">Participantes</div>
@@ -485,7 +438,7 @@
             </div>
           </div>
           <div id="avisoSinParticipantes" style="display:none;background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.35);border-radius:8px;padding:10px 16px;margin-bottom:10px;font-size:.82rem;color:#f39c12;">
-            ⚠️ Sin participantes aprobados aún — podrás calificar cuando se aprueben registros.
+            ⚠️ Sin participantes aprobados aún.
           </div>
           <div style="font-family:'Exo 2';font-size:.82rem;color:var(--text-dim)" id="listPreview"></div>
         </div>
@@ -493,9 +446,7 @@
         <div class="panel-card">
           <div class="panel-card-title">Criterios de Evaluación</div>
           <table class="criterios-table">
-            <thead>
-              <tr><th>CRITERIO</th><th>DESCRIPCIÓN</th><th></th></tr>
-            </thead>
+            <thead><tr><th>CRITERIO</th><th>DESCRIPCIÓN</th><th></th></tr></thead>
             <tbody id="criteriosTbody"></tbody>
           </table>
           <div class="btn-row" style="margin-top:14px">
@@ -503,38 +454,33 @@
           </div>
         </div>
 
-      </div>
+      </config-grid>
 
-      <div class="btn-row" style="margin-top:24px;justify-content:space-between">
-        <button class="btn btn-danger" id="btnCerrarCat1" onclick="cerrarCategoriaPaso1()" style="display:none">
-          🔒 Cerrar Categoría
-        </button>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <button class="btn btn-ranking" id="btnVerRankingP1" onclick="verRankingDesdePaso1()" style="display:none">
-            📊 Ver Ranking
-          </button>
-          <button class="btn btn-green" id="btnIniciarCal" onclick="iniciarCalificacion()" disabled>
-            Iniciar Calificación →
-          </button>
-        </div>
+      <div class="btn-row" style="margin-top:24px;justify-content:flex-end">
+        <button class="btn btn-ranking" id="btnVerRankingP1" onclick="verRankingDesdePaso1()" style="display:none">📊 Ver Ranking</button>
+        <button class="btn btn-green" id="btnIniciarCal" onclick="iniciarCalificacion()" disabled>Iniciar Calificación →</button>
       </div>
     </div>
-
   </div>
 
-  <!-- PASO 2 -->
+  <!-- ══ PASO 2 ══ -->
   <div class="step-panel" id="panel-2">
 
-    <!-- Cronómetro Fase 1 Lego Kids -->
+    <!-- Juez badge -->
+    <div class="juez-badge-bar" id="juezBadgeBar">
+      <div class="juez-badge-icon">⚖️</div>
+      <div class="juez-badge-txt" id="juezBadgeTxt">—</div>
+      <button class="juez-badge-cambiar" onclick="pedirJuez()">Cambiar juez</button>
+    </div>
+
+    <!-- Cronómetro LK Fase 1 -->
     <div class="lk-cronometro-bar" id="lkCronometroBar">
       <div>
         <div class="lk-crono-label">⏱ FASE 1 — ENSAMBLE</div>
         <div class="lk-crono-display" id="lkCronoDisplay">45:00</div>
       </div>
       <div class="lk-crono-progress-wrap">
-        <div class="lk-crono-progress">
-          <div class="lk-crono-progress-fill" id="lkCronoFill" style="width:100%"></div>
-        </div>
+        <div class="lk-crono-progress"><div class="lk-crono-progress-fill" id="lkCronoFill" style="width:100%"></div></div>
         <div style="font-family:'DM Mono';font-size:.65rem;color:var(--text-dim);margin-top:4px" id="lkCronoSub">45 minutos para calificar Ensamble y Funcionalidad</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -545,39 +491,28 @@
     </div>
 
     <div class="calificar-split">
-
       <div class="lista-robots">
         <div class="lista-header">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <div class="lista-header-title" id="listaCatLabel">—</div>
             <button class="btn btn-outline btn-sm" onclick="volverAConfigurar()" style="padding:4px 10px;font-size:.55rem">← Config</button>
           </div>
-          <div class="lista-progress">
-            <span id="progCal">0</span> / <span id="progTotal">0</span> calificados
-          </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" id="progBar" style="width:0%"></div>
-          </div>
-          <!-- Botón Fase 2 solo para lk -->
+          <div class="lista-progress"><span id="progCal">0</span> / <span id="progTotal">0</span> calificados</div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progBar" style="width:0%"></div></div>
           <div id="lkFase2Trigger" style="display:none;margin-top:10px">
-            <button class="btn btn-green btn-sm" style="width:100%;justify-content:center;" onclick="abrirClasificados()">
-              🏁 Clasificar a Fase 2
-            </button>
+            <button class="btn btn-green btn-sm" style="width:100%;justify-content:center;" onclick="abrirClasificados()">🏁 Clasificar a Fase 2</button>
           </div>
         </div>
         <div class="robots-list" id="robotsList"></div>
       </div>
 
       <div id="formCalWrap">
-        <!-- Panel vacío -->
         <div class="panel-card" id="emptyFormState">
           <div class="empty-state">
             <div class="empty-state-icon">👈</div>
             <p>Selecciona un robot de la lista para comenzar a calificar.</p>
           </div>
         </div>
-
-        <!-- Formulario calificación -->
         <div class="form-cal" id="formCal" style="display:none">
           <div class="form-cal-header">
             <div>
@@ -586,6 +521,7 @@
               <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                 <div class="form-cal-id" id="calRobotId">—</div>
                 <div class="ronda-badge" id="calRondaBadge">Ronda 1</div>
+                <div class="juez-round-badge" id="calJuezBadge" style="display:none">Juez —</div>
                 <div class="fase-badge fase-1" id="calFaseBadge" style="display:none">Fase 1</div>
               </div>
             </div>
@@ -610,7 +546,6 @@
           <div class="btn-row" style="justify-content:space-between">
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-ranking btn-sm" onclick="irARanking()">📊 Ver Ranking</button>
-              <button class="btn btn-danger btn-sm" onclick="cerrarCategoria()">🔒 Cerrar</button>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-violet btn-sm" onclick="siguienteRobot()">→ Siguiente</button>
@@ -619,13 +554,11 @@
           </div>
         </div>
 
-        <!-- Panel selección clasificados Fase 2 -->
+        <!-- Panel clasificados Fase 2 LK -->
         <div class="lk-fase2-panel" id="lkFase2Panel">
           <div class="panel-card">
             <div class="panel-card-title">🏁 Clasificar a Fase 2 — Carrera</div>
-            <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px;">
-              Selecciona los participantes que pasan a la Fase 2 (carrera). Recibirán puntaje adicional de <strong style="color:var(--cyan)">Tiempo de carrera (0–30 pts)</strong>.
-            </p>
+            <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px;">Selecciona los participantes que pasan a Fase 2 (carrera). Recibirán <strong style="color:var(--cyan)">Tiempo de carrera (0–30 pts)</strong> adicional.</p>
             <div class="clasificados-grid" id="clasificadosGrid"></div>
             <div class="btn-row" style="justify-content:space-between;margin-top:20px">
               <button class="btn btn-outline btn-sm" onclick="cerrarClasificados()">← Cancelar</button>
@@ -633,18 +566,17 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- PASO 3 -->
+  <!-- ══ PASO 3 ══ -->
   <div class="step-panel" id="panel-3">
     <div class="panel-card">
       <div class="ranking-header">
         <div>
           <div class="ranking-title" id="rankingTitle">RANKING — —</div>
-          <div style="font-family:'DM Mono';font-size:.75rem;color:var(--text-dim)" id="rankingStats">— participantes evaluados</div>
+          <div style="font-family:'DM Mono';font-size:.75rem;color:var(--text-dim)" id="rankingStats">—</div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="irACalificar()">← Volver a Calificar</button>
@@ -655,10 +587,16 @@
       <div style="overflow-x:auto">
         <table class="ranking-table">
           <thead>
-            <tr><th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th><th>F1 (70)</th><th id="thF2Col" style="display:none">F2 (30)</th><th>TOTAL</th><th>ESTADO</th></tr>
+            <tr>
+              <th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th>
+              <th id="thF1Col">PUNTOS</th>
+              <th id="thF2Col" style="display:none">F2 (30)</th>
+              <th id="thJuecesCol" style="display:none">JUECES</th>
+              <th>TOTAL</th><th>ESTADO</th>
+            </tr>
           </thead>
           <tbody id="rankingTbody">
-            <tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Aún no hay calificaciones registradas.</p></div></td></tr>
+            <tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Aún no hay calificaciones registradas.</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -670,29 +608,20 @@
 </main>
 
 <div data-include="../shared/components/footer.html"></div>
-
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 
 <script>
 const GAS = CONFIG.GAS_URL();
-
 const ALL_CATS = ['bai','dev','bat','lk'];
+const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico', bat:'Batalla', lk:'Lego Kids' };
+const MAX_JUECES_BAT = 3;
 
-const CAT_NOMBRES = {
-  bai: 'Bailarín',
-  dev: 'Impacto Tecnológico',
-  bat: 'Batalla',
-  lk:  'Lego Kids'
-};
-
-// Criterios Fase 1 de Lego Kids (Ensamble + Funcionalidad)
 const LK_CRITERIOS_F1 = [
-  { nombre: 'Ensamble completo', descripcion: 'Cumplimiento del instructivo de ensamble (Fase 1)', peso: 50 },
-  { nombre: 'Funcionalidad',     descripcion: 'El prototipo funciona correctamente (Fase 1)',       peso: 20 },
+  { nombre: 'Ensamble completo',  descripcion: 'Cumplimiento del instructivo de ensamble (Fase 1)', peso: 50 },
+  { nombre: 'Funcionalidad',      descripcion: 'El prototipo funciona correctamente (Fase 1)',       peso: 20 },
 ];
-// Criterio Fase 2 de Lego Kids
-const LK_CRITERIO_F2  = { nombre: 'Tiempo de carrera', descripcion: 'Puntaje según tiempo de recorrido (Fase 2)', peso: 30 };
+const LK_CRITERIO_F2 = { nombre: 'Tiempo de carrera', descripcion: 'Puntaje según tiempo de recorrido (Fase 2)', peso: 30 };
 
 const DEFAULTS_CRITERIOS = {
   bai: [
@@ -716,32 +645,26 @@ const DEFAULTS_CRITERIOS = {
     { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño del robot',          peso: 5 },
     { nombre: 'Control',           descripcion: 'Precisión y maniobrabilidad del robot',      peso: 5 },
   ],
-  lk: LK_CRITERIOS_F1  // configuración muestra solo criterios F1
+  lk: LK_CRITERIOS_F1
 };
 
 let state = {
-  step: 1,
-  categoria: '',
-  criterios: [],
-  participantes: [],
-  calificaciones: {},    // id → { total, ronda, notas_json, guardado, fase1Total, fase2Total, fase2: bool }
-  selectedId: null,
-  rondaActual: {},
-  rankingData: [],
-  lkFase: 1,            // 1 o 2 — solo para lk
-  lkClasificados: [],   // ids que pasan a fase 2
+  step: 1, categoria: '', criterios: [],
+  participantes: [], calificaciones: {},
+  selectedId: null, rondaActual: {}, rankingData: [],
+  lkFase: 1, lkClasificados: [],
+  // Batalla
+  juezActual: null,   // 1, 2, o 3
+  juezEmail: null,    // 'juez1@bat', 'juez2@bat', 'juez3@bat'
 };
 
-// ── CRONÓMETRO FASE 1 LK ──────────────────────────────────────
-const LK_DURACION = 45 * 60; // 45 minutos en segundos
-let cronoSegundos   = LK_DURACION;
-let cronoInterval   = null;
-let cronoRunning    = false;
+// ── CRONÓMETRO LK ─────────────────────────────────────────────
+const LK_DURACION = 45 * 60;
+let cronoSegundos = LK_DURACION, cronoInterval = null, cronoRunning = false;
 
 function toggleCrono() {
   if (cronoRunning) {
-    clearInterval(cronoInterval);
-    cronoRunning = false;
+    clearInterval(cronoInterval); cronoRunning = false;
     document.getElementById('lkCronoBtn').textContent = '▶ Reanudar';
     document.getElementById('lkCronoBtn').className = 'lk-crono-btn start';
   } else {
@@ -752,47 +675,30 @@ function toggleCrono() {
     cronoInterval = setInterval(tickCrono, 1000);
   }
 }
-
 function tickCrono() {
   cronoSegundos--;
   renderCrono();
   if (cronoSegundos <= 0) {
-    clearInterval(cronoInterval);
-    cronoRunning = false;
+    clearInterval(cronoInterval); cronoRunning = false;
     document.getElementById('lkCronoBtn').style.display = 'none';
     document.getElementById('lkCronoBadge').style.display = 'inline-flex';
     document.getElementById('lkCronoSub').textContent = '¡Tiempo de Fase 1 agotado! Procede a clasificar para Fase 2.';
-    // Alerta audible del navegador
     try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.frequency.value = 880; gain.gain.setValueAtTime(0.3, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5); osc.start(); osc.stop(ctx.currentTime + 1.5); } catch(e){}
-    toast('⏰ ¡Tiempo de Fase 1 agotado! Procede a clasificar.', 'info');
+    toast('⏰ ¡Tiempo de Fase 1 agotado!', 'info');
   }
 }
-
 function renderCrono() {
-  const min = Math.floor(cronoSegundos / 60);
-  const seg = cronoSegundos % 60;
-  const txt = `${String(min).padStart(2,'0')}:${String(seg).padStart(2,'0')}`;
-  const el  = document.getElementById('lkCronoDisplay');
-  el.textContent = txt;
+  const min = Math.floor(cronoSegundos / 60), seg = cronoSegundos % 60;
+  const el = document.getElementById('lkCronoDisplay');
+  el.textContent = `${String(min).padStart(2,'0')}:${String(seg).padStart(2,'0')}`;
   const pct = (cronoSegundos / LK_DURACION) * 100;
   document.getElementById('lkCronoFill').style.width = pct + '%';
-  if (cronoSegundos <= 60) {
-    el.className = 'lk-crono-display danger';
-    document.getElementById('lkCronoFill').style.background = 'var(--red)';
-  } else if (cronoSegundos <= 5 * 60) {
-    el.className = 'lk-crono-display warning';
-    document.getElementById('lkCronoFill').style.background = 'var(--orange)';
-  } else {
-    el.className = 'lk-crono-display';
-    document.getElementById('lkCronoFill').style.background = 'var(--cyan)';
-  }
+  if (cronoSegundos <= 60) { el.className = 'lk-crono-display danger'; document.getElementById('lkCronoFill').style.background = 'var(--red)'; }
+  else if (cronoSegundos <= 5*60) { el.className = 'lk-crono-display warning'; document.getElementById('lkCronoFill').style.background = 'var(--orange)'; }
+  else { el.className = 'lk-crono-display'; document.getElementById('lkCronoFill').style.background = 'var(--cyan)'; }
 }
-
 function resetCrono() {
-  clearInterval(cronoInterval);
-  cronoRunning = false;
-  cronoSegundos = LK_DURACION;
-  renderCrono();
+  clearInterval(cronoInterval); cronoRunning = false; cronoSegundos = LK_DURACION; renderCrono();
   document.getElementById('lkCronoBtn').textContent = '▶ Iniciar';
   document.getElementById('lkCronoBtn').className = 'lk-crono-btn start';
   document.getElementById('lkCronoBtn').style.display = '';
@@ -800,46 +706,20 @@ function resetCrono() {
   document.getElementById('lkCronoSub').textContent = '45 minutos para calificar Ensamble y Funcionalidad';
 }
 
-// ── UTILITIES ─────────────────────────────────────────────────
-function loading(show, txt = 'CARGANDO...') {
-  document.getElementById('loadingOverlay').classList.toggle('show', show);
-  document.getElementById('loadingTxt').textContent = txt;
-}
-
+// ── UTILIDADES ────────────────────────────────────────────────
+function loading(show, txt='CARGANDO...') { document.getElementById('loadingOverlay').classList.toggle('show', show); document.getElementById('loadingTxt').textContent = txt; }
 let toastTimer;
-function toast(msg, type = 'info') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `show ${type}`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
-}
-
+function toast(msg, type='info') { const el = document.getElementById('toast'); el.textContent = msg; el.className = `show ${type}`; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3500); }
 function setStep(n) {
   state.step = n;
   [1,2,3].forEach(i => {
-    document.getElementById(`step-dot-${i}`).className =
-      'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
-    document.getElementById(`panel-${i}`).className =
-      'step-panel' + (i === n ? ' active' : '');
+    document.getElementById(`step-dot-${i}`).className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
+    document.getElementById(`panel-${i}`).className = 'step-panel' + (i === n ? ' active' : '');
   });
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-async function gasGet(params) {
-  const url = GAS + '?' + new URLSearchParams(params);
-  const r = await fetch(url);
-  return r.json();
-}
-async function gasPost(body) {
-  const r = await fetch(GAS, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(body),
-    redirect: 'follow'
-  });
-  return r.json();
-}
+async function gasGet(params) { const r = await fetch(GAS + '?' + new URLSearchParams(params)); return r.json(); }
+async function gasPost(body) { const r = await fetch(GAS, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({...body, staffToken:'SucreBot2026-CMI-Sucre-x7k9mQ'}), redirect:'follow' }); return r.json(); }
 
 let _modalCb = null;
 function confirmar(icon, title, msg, btnLabel, type, cb) {
@@ -852,81 +732,106 @@ function confirmar(icon, title, msg, btnLabel, type, cb) {
   _modalCb = cb;
   document.getElementById('confirmModal').classList.add('show');
 }
-function cerrarModal() {
-  document.getElementById('confirmModal').classList.remove('show');
-  _modalCb = null;
+function cerrarModal() { document.getElementById('confirmModal').classList.remove('show'); _modalCb = null; }
+document.getElementById('modalConfirmBtn').onclick = () => { const cb = _modalCb; cerrarModal(); if (cb) cb(); };
+
+// ── SELECTOR DE JUEZ (solo para bat) ─────────────────────────
+function pedirJuez() {
+  document.getElementById('juezOverlay').classList.add('show');
 }
-document.getElementById('modalConfirmBtn').onclick = () => {
-  const cb = _modalCb;
-  cerrarModal();
-  if (cb) cb();
-};
+function seleccionarJuez(num) {
+  state.juezActual = num;
+  state.juezEmail  = `juez${num}@bat`;
+  document.getElementById('juezOverlay').classList.remove('show');
+  // Mostrar badge
+  const bar = document.getElementById('juezBadgeBar');
+  bar.classList.add('show');
+  document.getElementById('juezBadgeTxt').textContent = `JUEZ ${num} — BATALLA`;
+  // Si ya estamos en paso 2, actualizar badge en form
+  document.getElementById('calJuezBadge').textContent = `Juez ${num}`;
+  // Recargar calificaciones propias del juez y re-renderizar
+  if (state.step === 2) {
+    cargarCalificacionesJuez().then(() => {
+      renderListaRobots();
+      if (state.selectedId) seleccionarRobot(state.selectedId);
+    });
+  }
+  toast(`✅ Identificado como Juez ${num}`, 'success');
+}
+
+async function cargarCalificacionesJuez() {
+  if (!state.juezEmail) return;
+  try {
+    const res = await gasGet({ action: 'getPuntuaciones', categoria: state.categoria });
+    // Solo las calificaciones del juez actual
+    const mias = (res.puntuaciones || []).filter(p => p.juez_email === state.juezEmail);
+    mias.forEach(p => {
+      state.calificaciones[p.id_participante] = {
+        total: parseFloat(p.total) || 0,
+        notas_json: JSON.stringify(p.notas || {}),
+        guardado: true, notas: ''
+      };
+    });
+  } catch(e) {}
+}
 
 // ── PASO 1 ────────────────────────────────────────────────────
 async function seleccionarCategoria(cat) {
   if (state.categoria && state.categoria !== cat) {
-    gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] }).catch(() => {});
+    if (state.categoria !== 'bat') {
+      gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] }).catch(() => {});
+    }
     localStorage.removeItem('panel_cal_sesion');
-    state.calificaciones = {};
-    state.rondaActual = {};
-    state.lkFase = 1;
-    state.lkClasificados = [];
+    state.calificaciones = {}; state.rondaActual = {}; state.lkFase = 1; state.lkClasificados = [];
+    state.juezActual = null; state.juezEmail = null;
+    document.getElementById('juezBadgeBar').classList.remove('show');
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
   document.getElementById('lkNota').classList.toggle('show', cat === 'lk');
+  document.getElementById('batNota').classList.toggle('show', cat === 'bat');
 
   state.categoria = cat;
   document.getElementById('configuracionPanel').classList.add('show');
   document.getElementById('btnIniciarCal').disabled = true;
-  document.getElementById('btnCerrarCat1').style.display = 'none';
   document.getElementById('btnVerRankingP1').style.display = 'none';
-  document.getElementById('catBloqueadaBadge').classList.remove('show');
   document.getElementById('avisoSinParticipantes').style.display = 'none';
 
   loading(true, 'CARGANDO...');
-
   try {
     const res = await gasGet({ action: 'getCriterios', categoria: cat });
-    // Para lk en config solo mostramos criterios F1
     const critConfig = cat === 'lk'
       ? LK_CRITERIOS_F1
       : ((res.ok && res.criterios?.length) ? res.criterios : DEFAULTS_CRITERIOS[cat]);
     renderCriteriosConfig(critConfig);
-  } catch(e) {
-    renderCriteriosConfig(cat === 'lk' ? LK_CRITERIOS_F1 : DEFAULTS_CRITERIOS[cat]);
-  }
+  } catch(e) { renderCriteriosConfig(cat === 'lk' ? LK_CRITERIOS_F1 : DEFAULTS_CRITERIOS[cat]); }
 
   try {
     const res2 = await gasGet({ action: 'getParticipantes' });
     const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
-    const filtrados = todos.filter(p => p.categoria === CAT_NOMBRES[cat] && p.aprobado === 'APROBADO');
-    state.participantes = filtrados;
-    document.getElementById('countAprobados').textContent = filtrados.length;
+    state.participantes = todos.filter(p => p.categoria === CAT_NOMBRES[cat] && p.aprobado === 'APROBADO');
+    document.getElementById('countAprobados').textContent = state.participantes.length;
     document.getElementById('countCalificados').textContent = 0;
-    if (filtrados.length === 0) {
+    if (!state.participantes.length) {
       document.getElementById('avisoSinParticipantes').style.display = 'block';
       document.getElementById('listPreview').innerHTML = '';
     } else {
-      document.getElementById('avisoSinParticipantes').style.display = 'none';
-      const preview = filtrados.slice(0, 5).map(p =>
+      const preview = state.participantes.slice(0, 5).map(p =>
         `<span style="color:var(--text-main)">• ${p.robot}</span> <span style="color:var(--text-dim);font-size:.78rem">(${p.nombre})</span>`
       ).join('<br>');
       document.getElementById('listPreview').innerHTML = preview +
-        (filtrados.length > 5 ? `<br><span style="color:var(--text-dim)">... y ${filtrados.length - 5} más</span>` : '');
+        (state.participantes.length > 5 ? `<br><span style="color:var(--text-dim)">... y ${state.participantes.length - 5} más</span>` : '');
     }
   } catch(e) { toast('Error cargando participantes', 'error'); }
 
-  try {
-    await gasPost({ action: 'bloquearCategoria', categoria: CAT_NOMBRES[cat], usuario: 'panel-calificacion' });
-  } catch(e) {}
+  // Bloqueo solo para categorías NO-bat
+  if (cat !== 'bat') {
+    try { await gasPost({ action: 'bloquearCategoria', categoria: CAT_NOMBRES[cat], usuario: 'panel-calificacion' }); } catch(e) {}
+  }
 
   localStorage.setItem('panel_cal_sesion', JSON.stringify({ categoria: cat, criterios: null, paso: 1 }));
   loading(false);
 
-  document.getElementById('catBloqueadaTxt').textContent = `${CAT_NOMBRES[cat].toUpperCase()} — BLOQUEADA EN ESTE PC`;
-  document.getElementById('catBloqueadaBadge').classList.add('show');
-  document.getElementById('btnCerrarCat1').style.display = 'flex';
   document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
   document.getElementById('btnIniciarCal').disabled = false;
 }
@@ -938,40 +843,27 @@ function renderCriteriosConfig(criterios) {
     const tr = document.createElement('tr');
     tr.dataset.idx = i;
     tr.innerHTML = `
-      <td><input class="crit-input" data-field="nombre" value="${c.nombre || ''}" placeholder="Nombre"></td>
-      <td><input class="crit-input" data-field="descripcion" value="${c.descripcion || ''}" placeholder="Descripción"></td>
-      <td><button class="btn-icon" onclick="quitarCriterio(${i})">✕</button></td>
-    `;
+      <td><input class="crit-input" data-field="nombre" value="${c.nombre||''}" placeholder="Nombre"></td>
+      <td><input class="crit-input" data-field="descripcion" value="${c.descripcion||''}" placeholder="Descripción"></td>
+      <td><button class="btn-icon" onclick="quitarCriterio(${i})">✕</button></td>`;
     tbody.appendChild(tr);
   });
 }
-
 function agregarCriterio() {
   const tbody = document.getElementById('criteriosTbody');
   const idx = tbody.children.length;
-  const tr = document.createElement('tr');
-  tr.dataset.idx = idx;
-  tr.innerHTML = `
-    <td><input class="crit-input" data-field="nombre" placeholder="Nuevo criterio"></td>
-    <td><input class="crit-input" data-field="descripcion" placeholder="Descripción"></td>
-    <td><button class="btn-icon" onclick="quitarCriterio(${idx})">✕</button></td>
-  `;
+  const tr = document.createElement('tr'); tr.dataset.idx = idx;
+  tr.innerHTML = `<td><input class="crit-input" data-field="nombre" placeholder="Nuevo criterio"></td><td><input class="crit-input" data-field="descripcion" placeholder="Descripción"></td><td><button class="btn-icon" onclick="quitarCriterio(${idx})">✕</button></td>`;
   tbody.appendChild(tr);
 }
-
 function quitarCriterio(idx) {
-  const tbody = document.getElementById('criteriosTbody');
-  tbody.querySelectorAll('tr').forEach(r => { if (parseInt(r.dataset.idx) === idx) r.remove(); });
-  tbody.querySelectorAll('tr').forEach((r, i) => {
-    r.dataset.idx = i;
-    r.querySelector('.btn-icon').setAttribute('onclick', `quitarCriterio(${i})`);
-  });
+  document.querySelectorAll('#criteriosTbody tr').forEach(r => { if (parseInt(r.dataset.idx) === idx) r.remove(); });
+  document.querySelectorAll('#criteriosTbody tr').forEach((r, i) => { r.dataset.idx = i; r.querySelector('.btn-icon').setAttribute('onclick', `quitarCriterio(${i})`); });
 }
-
 function leerCriteriosConfig() {
   const criterios = [];
   document.querySelectorAll('#criteriosTbody tr').forEach(r => {
-    const nombre      = r.querySelector('[data-field="nombre"]').value.trim();
+    const nombre = r.querySelector('[data-field="nombre"]').value.trim();
     const descripcion = r.querySelector('[data-field="descripcion"]').value.trim();
     const esDef = DEFAULTS_CRITERIOS[state.categoria] || [];
     const defMatch = esDef.find(d => d.nombre === nombre);
@@ -981,77 +873,98 @@ function leerCriteriosConfig() {
   return criterios;
 }
 
-function cerrarCategoriaPaso1() {
-  confirmar('🔒', 'CERRAR CATEGORÍA',
-    `¿Confirmas cerrar ${CAT_NOMBRES[state.categoria]}? Se liberará el bloqueo y volverás al inicio.`,
-    'Cerrar', 'danger',
-    async () => {
-      loading(true, 'CERRANDO...');
-      try {
-        await gasPost({ action: 'finalizarCategoria',   categoria: CAT_NOMBRES[state.categoria] });
-        await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
-      } catch(e) {}
-      clearInterval(cronoInterval);
-      localStorage.removeItem('panel_cal_sesion');
-      resetearUI();
-      loading(false);
-      toast('Categoría cerrada', 'success');
-    }
-  );
-}
-
 async function iniciarCalificacion() {
   const cat = state.categoria;
   if (!cat) { toast('Selecciona una categoría', 'error'); return; }
 
-  // Para lk siempre usamos los criterios F1 internamente
   if (cat === 'lk') {
-    state.criterios = [...LK_CRITERIOS_F1];
-    state.lkFase = 1;
+    state.criterios = [...LK_CRITERIOS_F1]; state.lkFase = 1;
   } else {
     state.criterios = leerCriteriosConfig();
     if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
   }
 
-  if (!state.participantes.length) toast('⚠️ Sin participantes aprobados aún', 'info');
+  if (cat !== 'bat') {
+    gasPost({ action: 'guardarCriterios', categoria: cat, criterios: state.criterios }).catch(() => {});
+  }
 
-  gasPost({ action: 'guardarCriterios', categoria: cat, criterios: state.criterios }).catch(() => {});
+  // Para bat: pedir juez antes de pasar al paso 2
+  if (cat === 'bat') {
+    if (!state.juezActual) {
+      pedirJuez();
+      // Esperamos a que el juez se seleccione — el botón del overlay llama a seleccionarJuez()
+      // que luego llama a construirPaso2 manualmente
+      _pendingIniciarCal = true;
+      return;
+    }
+  }
+
   localStorage.setItem('panel_cal_sesion', JSON.stringify({ categoria: cat, criterios: state.criterios, paso: 2 }));
 
-  loading(true, 'INICIANDO CALIFICACIÓN...');
-  try {
-    const res = await gasGet({ action: 'getPuntuaciones', categoria: cat });
-    (res.puntuaciones || []).forEach(p => {
-      const ronda = parseInt(p.ronda) || 1;
-      if (!state.calificaciones[p.id_participante] || ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
-        const notasObj = p.notas_json || {};
-        const esFase2 = notasObj.fase === 2 || ronda === 2;
-        const fase1Total = esFase2 ? (parseFloat(notasObj.fase1Total) || 0) : parseFloat(p.total) || 0;
-        const fase2Total = esFase2 ? (parseFloat(notasObj.fase2Total) || 0) : 0;
-        state.calificaciones[p.id_participante] = {
-          total: parseFloat(p.total) || 0, ronda,
-          notas_json: JSON.stringify(notasObj),
-          guardado: true, fase1Total, fase2Total,
-          fase2: esFase2
-        };
-        state.rondaActual[p.id_participante] = ronda + 1;
-        if (esFase2) state.lkClasificados.push(p.id_participante);
-      }
-    });
-    // Deduplicar clasificados
-    state.lkClasificados = [...new Set(state.lkClasificados)];
-  } catch(e) {}
-  loading(false);
+  if (cat !== 'bat') {
+    loading(true, 'INICIANDO CALIFICACIÓN...');
+    try {
+      const res = await gasGet({ action: 'getPuntuaciones', categoria: cat });
+      (res.puntuaciones || []).forEach(p => {
+        const ronda = parseInt(p.ronda) || 1;
+        if (!state.calificaciones[p.id_participante] || ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
+          const notasObj = p.notas || {};
+          const esFase2 = notasObj.fase === 2 || ronda === 2;
+          state.calificaciones[p.id_participante] = {
+            total: parseFloat(p.total)||0, ronda, notas_json: JSON.stringify(notasObj),
+            guardado: true,
+            fase1Total: esFase2 ? (parseFloat(notasObj.fase1Total)||0) : parseFloat(p.total)||0,
+            fase2Total: esFase2 ? (parseFloat(notasObj.fase2Total)||0) : 0,
+            fase2: esFase2
+          };
+          state.rondaActual[p.id_participante] = ronda + 1;
+          if (esFase2) state.lkClasificados.push(p.id_participante);
+        }
+      });
+      state.lkClasificados = [...new Set(state.lkClasificados)];
+    } catch(e) {}
+    loading(false);
+  } else {
+    // bat: cargar las calificaciones propias del juez
+    await cargarCalificacionesJuez();
+  }
+
   buildPaso2();
   setStep(2);
 }
+
+// Pendiente iniciar cal cuando juez aún no fue seleccionado
+let _pendingIniciarCal = false;
+const _origSeleccionarJuez = seleccionarJuez;
+seleccionarJuez = async function(num) {
+  _origSeleccionarJuez(num);
+  if (_pendingIniciarCal) {
+    _pendingIniciarCal = false;
+    await cargarCalificacionesJuez();
+    localStorage.setItem('panel_cal_sesion', JSON.stringify({ categoria: state.categoria, criterios: state.criterios, paso: 2 }));
+    buildPaso2();
+    setStep(2);
+  }
+};
 
 // ── PASO 2 ────────────────────────────────────────────────────
 function buildPaso2() {
   document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[state.categoria];
   const esLk = state.categoria === 'lk';
+  const esBat = state.categoria === 'bat';
   document.getElementById('lkCronometroBar').classList.toggle('show', esLk);
   document.getElementById('lkFase2Trigger').style.display = esLk ? 'block' : 'none';
+  // Mostrar badge juez para bat
+  const juezBar = document.getElementById('juezBadgeBar');
+  if (esBat && state.juezActual) {
+    juezBar.classList.add('show');
+    document.getElementById('juezBadgeTxt').textContent = `JUEZ ${state.juezActual} — BATALLA`;
+    document.getElementById('calJuezBadge').style.display = 'inline-flex';
+    document.getElementById('calJuezBadge').textContent = `Juez ${state.juezActual}`;
+  } else {
+    juezBar.classList.remove('show');
+    document.getElementById('calJuezBadge').style.display = 'none';
+  }
   renderListaRobots();
   document.getElementById('emptyFormState').style.display = 'block';
   document.getElementById('formCal').style.display = 'none';
@@ -1090,8 +1003,7 @@ function renderListaRobots() {
         <div class="robot-nombre">${p.robot || p.nombre}</div>
         <div class="robot-inst">${p.institucion || '—'}</div>
       </div>
-      ${esCal ? `<div class="robot-score">${(cal.total || 0).toFixed(1)}</div>` : ''}
-    `;
+      ${esCal ? `<div class="robot-score">${(cal.total||0).toFixed(1)}</div>` : ''}`;
     lista.appendChild(div);
   });
 }
@@ -1101,26 +1013,19 @@ function seleccionarRobot(id) {
   const p = state.participantes.find(x => x.id === id);
   if (!p) return;
 
-  const esLk = state.categoria === 'lk';
-  const cal  = state.calificaciones[id];
+  const esLk  = state.categoria === 'lk';
+  const esBat = state.categoria === 'bat';
+  const cal   = state.calificaciones[id];
   const esFase2Clasificado = esLk && state.lkClasificados.includes(id);
   const yaCalF1 = esLk && cal?.guardado && !cal?.fase2;
   const yaCalF2 = esLk && cal?.fase2;
-
-  // Determinar fase activa para lk
   let faseActual = 1;
   if (esFase2Clasificado && !yaCalF2) faseActual = 2;
   else if (yaCalF2) faseActual = 2;
 
-  // Criterios a mostrar
   let criteriosActivos;
-  if (esLk) {
-    criteriosActivos = faseActual === 2
-      ? [...LK_CRITERIOS_F1, LK_CRITERIO_F2]
-      : LK_CRITERIOS_F1;
-  } else {
-    criteriosActivos = state.criterios;
-  }
+  if (esLk) criteriosActivos = faseActual === 2 ? [...LK_CRITERIOS_F1, LK_CRITERIO_F2] : LK_CRITERIOS_F1;
+  else criteriosActivos = state.criterios;
 
   const ronda = state.rondaActual[id] || 1;
 
@@ -1130,57 +1035,48 @@ function seleccionarRobot(id) {
   document.getElementById('calRobotNombre').textContent = p.robot || p.nombre;
   document.getElementById('calRobotInst').textContent   = p.institucion || '—';
   document.getElementById('calRobotId').textContent     = p.id;
-  document.getElementById('calRondaBadge').textContent  = `Ronda ${ronda}`;
+  document.getElementById('calRondaBadge').textContent  = esBat ? `Mi calificación` : `Ronda ${ronda}`;
+  document.getElementById('calRondaBadge').style.display = esBat ? 'none' : 'inline-flex';
+
+  const juezBadge = document.getElementById('calJuezBadge');
+  if (esBat && state.juezActual) { juezBadge.style.display = 'inline-flex'; juezBadge.textContent = `Juez ${state.juezActual}`; }
+  else juezBadge.style.display = 'none';
 
   const faseBadge = document.getElementById('calFaseBadge');
-  if (esLk) {
-    faseBadge.style.display = 'inline-flex';
-    faseBadge.className = `fase-badge fase-${faseActual}`;
-    faseBadge.textContent = `Fase ${faseActual}`;
-  } else {
-    faseBadge.style.display = 'none';
-  }
+  if (esLk) { faseBadge.style.display = 'inline-flex'; faseBadge.className = `fase-badge fase-${faseActual}`; faseBadge.textContent = `Fase ${faseActual}`; }
+  else faseBadge.style.display = 'none';
 
   document.getElementById('calEstadoBadge').innerHTML = cal?.guardado
-    ? (yaCalF2 ? '<span class="badge-fase2">🏁 F1+F2</span>' : '<span class="badge-calificado">✓ Fase 1</span>')
+    ? (yaCalF2 ? '<span class="badge-fase2">🏁 F1+F2</span>' : '<span class="badge-calificado">✓ Calificado</span>')
     : '<span class="badge-pendiente">⬜ Pendiente</span>';
 
   const criteriosCal = document.getElementById('criteriosCal');
   criteriosCal.innerHTML = '';
-
   let notasGuardadas = {};
   if (cal?.notas_json) { try { notasGuardadas = JSON.parse(cal.notas_json); } catch(e){} }
 
   criteriosActivos.forEach((c, i) => {
     const esCriterioF2 = esLk && c.nombre === LK_CRITERIO_F2.nombre;
-    // F1 guardado y solo hay fase 1: mostrar valor previo readonly
-    const soloLectura = esLk && esCriterioF2 === false && faseActual === 2 && yaCalF1;
-    const valGuardado = esCriterioF2
-      ? (notasGuardadas.fase2Carrera ?? '')
-      : (notasGuardadas[`c${i}`] ?? '');
-
+    const soloLectura  = esLk && !esCriterioF2 && faseActual === 2 && yaCalF1;
+    const valGuardado  = esCriterioF2 ? (notasGuardadas.fase2Carrera ?? '') : (notasGuardadas[`c${i}`] ?? '');
     const row = document.createElement('div');
     row.className = 'criterio-row';
     row.innerHTML = `
-      <div class="criterio-info">
+      <div>
         <div class="criterio-nombre">${c.nombre}${esCriterioF2 ? ' <span style="color:var(--green);font-size:.7rem">(Fase 2)</span>' : ''}</div>
         ${c.descripcion ? `<div class="criterio-desc">${c.descripcion}</div>` : ''}
         <div class="criterio-peso-hint">0 – ${c.peso}</div>
       </div>
       <div class="criterio-input-wrap">
-        <input class="criterio-nota-input" type="number"
-          min="0" max="${c.peso}" step="0.5"
-          value="${valGuardado}"
-          data-idx="${i}" data-peso="${c.peso}"
+        <input class="criterio-nota-input" type="number" min="0" max="${c.peso}" step="0.5"
+          value="${valGuardado}" data-idx="${i}" data-peso="${c.peso}"
           data-f2="${esCriterioF2 ? '1' : '0'}"
           ${soloLectura ? 'disabled' : ''}
           oninput="actualizarTotal()" placeholder="—">
         <span class="criterio-max">/ ${c.peso}</span>
-      </div>
-    `;
+      </div>`;
     criteriosCal.appendChild(row);
   });
-
   document.getElementById('calNotas').value = cal?.notas || '';
   actualizarTotal();
   renderListaRobots();
@@ -1189,70 +1085,62 @@ function seleccionarRobot(id) {
 function actualizarTotal() {
   let suma = 0, max = 0;
   document.querySelectorAll('.criterio-nota-input').forEach(inp => {
-    if (!inp.disabled) {
-      suma += Math.min(parseFloat(inp.value) || 0, parseFloat(inp.dataset.peso) || 0);
-    } else {
-      suma += Math.min(parseFloat(inp.value) || 0, parseFloat(inp.dataset.peso) || 0);
-    }
-    max += parseFloat(inp.dataset.peso) || 0;
+    suma += Math.min(parseFloat(inp.value) || 0, parseFloat(inp.dataset.peso) || 0);
+    max  += parseFloat(inp.dataset.peso) || 0;
   });
   document.getElementById('totalValor').textContent = suma.toFixed(1);
   document.getElementById('totalDe').textContent    = `/ ${max}`;
 }
 
 async function guardarCalificacion() {
-  const id  = state.selectedId;
+  const id = state.selectedId;
   if (!id) return;
-  const p   = state.participantes.find(x => x.id === id);
-  const esLk = state.categoria === 'lk';
-  const esFase2Clasificado = esLk && state.lkClasificados.includes(id);
+
+  // Bat: necesita juez
+  if (state.categoria === 'bat' && !state.juezActual) {
+    toast('Selecciona tu identidad de juez primero', 'error');
+    pedirJuez(); return;
+  }
+
+  const p = state.participantes.find(x => x.id === id);
+  const esLk  = state.categoria === 'lk';
+  const esBat = state.categoria === 'bat';
   const calPrev = state.calificaciones[id];
   const faseActual = esLk
-    ? (esFase2Clasificado && calPrev?.guardado && !calPrev?.fase2 ? 2
-       : calPrev?.fase2 ? 2 : 1)
-    : null;
+    ? (state.lkClasificados.includes(id) && calPrev?.guardado && !calPrev?.fase2 ? 2
+       : calPrev?.fase2 ? 2 : 1) : null;
 
   const inputs = document.querySelectorAll('.criterio-nota-input');
   let suma = 0, valido = true;
   const notasJson = {};
 
   inputs.forEach((inp, i) => {
-    if (inp.disabled) {
-      suma += parseFloat(inp.value) || 0;
-      if (!inp.dataset.f2 || inp.dataset.f2 === '0') notasJson[`c${i}`] = parseFloat(inp.value) || 0;
-      return;
-    }
+    if (inp.disabled) { suma += parseFloat(inp.value) || 0; if (inp.dataset.f2 !== '1') notasJson[`c${i}`] = parseFloat(inp.value)||0; return; }
     const v = parseFloat(inp.value), peso = parseFloat(inp.dataset.peso) || 10;
     if (isNaN(v) || v < 0 || v > peso) { valido = false; inp.style.borderColor = 'var(--red)'; return; }
     inp.style.borderColor = '';
-    if (inp.dataset.f2 === '1') {
-      notasJson.fase2Carrera = v;
-      notasJson.fase = 2;
-    } else {
-      notasJson[`c${i}`] = v;
-    }
+    if (inp.dataset.f2 === '1') { notasJson.fase2Carrera = v; notasJson.fase = 2; }
+    else notasJson[`c${i}`] = v;
     suma += v;
   });
-
   if (!valido) { toast('Revisa los valores ingresados', 'error'); return; }
 
-  // Para lk: calcular totales por fase
   let fase1Total = 0, fase2Total = 0, totalFinal = suma;
   if (esLk) {
     if (faseActual === 2) {
       fase1Total = calPrev?.fase1Total || 0;
       fase2Total = parseFloat(notasJson.fase2Carrera) || 0;
       totalFinal = fase1Total + fase2Total;
-      notasJson.fase1Total = fase1Total;
-      notasJson.fase2Total = fase2Total;
-    } else {
-      fase1Total = suma;
-      notasJson.fase1Total = fase1Total;
-    }
+      notasJson.fase1Total = fase1Total; notasJson.fase2Total = fase2Total;
+    } else { fase1Total = suma; notasJson.fase1Total = fase1Total; }
   }
 
   const ronda = state.rondaActual[id] || 1;
   const notas = document.getElementById('calNotas').value;
+
+  // Determinar juez_email y juez_nombre
+  const juezEmail  = esBat ? state.juezEmail  : 'operador@sucrebot2026';
+  const juezNombre = esBat ? `Juez ${state.juezActual}` : 'Operador';
 
   loading(true, 'GUARDANDO...');
   try {
@@ -1264,18 +1152,17 @@ async function guardarCalificacion() {
       action: 'guardarPuntuacion',
       id_participante: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
       institucion: p.institucion || '', categoria: state.categoria,
-      juez_email: 'operador@sucrebot2026', juez_nombre: 'Operador',
+      juez_email: juezEmail, juez_nombre: juezNombre,
       criterios: criteriosJson, notas: notasJson, total: totalFinal,
       timestamp: new Date().toISOString()
     });
     if (res.ok) {
       state.calificaciones[id] = {
         total: totalFinal, ronda, notas_json: JSON.stringify(notasJson),
-        guardado: true, notas,
-        fase1Total, fase2Total,
+        guardado: true, notas, fase1Total, fase2Total,
         fase2: esLk ? (faseActual === 2) : false
       };
-      state.rondaActual[id] = ronda + 1;
+      if (!esBat) state.rondaActual[id] = ronda + 1;
       toast('✅ Calificación guardada', 'success');
       renderListaRobots();
       seleccionarRobot(id);
@@ -1287,127 +1174,69 @@ async function guardarCalificacion() {
 function siguienteRobot() {
   const esLk = state.categoria === 'lk';
   let pendientes;
-  if (esLk && state.lkFase === 2) {
-    pendientes = state.participantes.filter(p =>
-      state.lkClasificados.includes(p.id) && !state.calificaciones[p.id]?.fase2
-    );
-  } else {
+  if (esLk && state.lkFase === 2)
+    pendientes = state.participantes.filter(p => state.lkClasificados.includes(p.id) && !state.calificaciones[p.id]?.fase2);
+  else
     pendientes = state.participantes.filter(p => !state.calificaciones[p.id]?.guardado);
-  }
   const idx = pendientes.findIndex(p => p.id === state.selectedId);
   const sig = pendientes[idx + 1] || pendientes[0];
   if (sig) seleccionarRobot(sig.id);
-  else toast('Todos los robots de esta fase han sido calificados ✅', 'success');
+  else toast('Todos los robots han sido calificados ✅', 'success');
 }
 
-// ── FASE 2 CLASIFICADOS ───────────────────────────────────────
+// ── LK FASE 2 ─────────────────────────────────────────────────
 function abrirClasificados() {
   document.getElementById('formCal').style.display = 'none';
   document.getElementById('emptyFormState').style.display = 'none';
   document.getElementById('lkFase2Panel').classList.add('show');
-
-  // Ordenar por puntaje Fase 1
-  const ordenados = [...state.participantes]
-    .map(p => ({ ...p, fase1: state.calificaciones[p.id]?.fase1Total || 0 }))
-    .sort((a, b) => b.fase1 - a.fase1);
-
+  const ordenados = [...state.participantes].map(p => ({ ...p, fase1: state.calificaciones[p.id]?.fase1Total || 0 })).sort((a, b) => b.fase1 - a.fase1);
   const grid = document.getElementById('clasificadosGrid');
   grid.innerHTML = '';
   ordenados.forEach(p => {
     const checked = state.lkClasificados.includes(p.id);
     const div = document.createElement('div');
-    div.className = 'clasificado-item' + (checked ? ' checked' : '');
-    div.dataset.id = p.id;
+    div.className = 'clasificado-item' + (checked ? ' checked' : ''); div.dataset.id = p.id;
     div.onclick = () => toggleClasificado(p.id, div);
-    div.innerHTML = `
-      <div class="clasificado-check">${checked ? '✓' : ''}</div>
-      <div>
-        <div class="clasificado-nombre">${p.robot || p.nombre}</div>
-        <div style="font-size:.75rem;color:var(--text-dim)">${p.institucion || '—'}</div>
-      </div>
-      <div class="clasificado-score">${(state.calificaciones[p.id]?.fase1Total || 0).toFixed(1)} / 70</div>
-    `;
+    div.innerHTML = `<div class="clasificado-check">${checked ? '✓' : ''}</div><div><div class="clasificado-nombre">${p.robot||p.nombre}</div><div style="font-size:.75rem;color:var(--text-dim)">${p.institucion||'—'}</div></div><div class="clasificado-score">${(state.calificaciones[p.id]?.fase1Total||0).toFixed(1)} / 70</div>`;
     grid.appendChild(div);
   });
 }
-
-function toggleClasificado(id, el) {
-  el.classList.toggle('checked');
-  el.querySelector('.clasificado-check').textContent = el.classList.contains('checked') ? '✓' : '';
-}
-
+function toggleClasificado(id, el) { el.classList.toggle('checked'); el.querySelector('.clasificado-check').textContent = el.classList.contains('checked') ? '✓' : ''; }
 function confirmarClasificados() {
-  const seleccionados = [...document.querySelectorAll('.clasificado-item.checked')].map(el => el.dataset.id);
-  if (!seleccionados.length) { toast('Selecciona al menos un participante para Fase 2', 'error'); return; }
-  state.lkClasificados = seleccionados;
-  state.lkFase = 2;
+  const sel = [...document.querySelectorAll('.clasificado-item.checked')].map(el => el.dataset.id);
+  if (!sel.length) { toast('Selecciona al menos un participante', 'error'); return; }
+  state.lkClasificados = sel; state.lkFase = 2;
   document.getElementById('lkFase2Panel').classList.remove('show');
   document.getElementById('emptyFormState').style.display = 'block';
   renderListaRobots();
-  toast(`✅ ${seleccionados.length} clasificados para Fase 2`, 'success');
+  toast(`✅ ${sel.length} clasificados para Fase 2`, 'success');
 }
-
-function cerrarClasificados() {
-  document.getElementById('lkFase2Panel').classList.remove('show');
-  document.getElementById('emptyFormState').style.display = 'block';
-}
+function cerrarClasificados() { document.getElementById('lkFase2Panel').classList.remove('show'); document.getElementById('emptyFormState').style.display = 'block'; }
 
 // ── RANKING ───────────────────────────────────────────────────
 function irARanking()  { cargarRanking(); setStep(3); }
 function irACalificar() { setStep(2); }
 
 function volverAConfigurar() {
-  confirmar('⚙️', 'VOLVER A CONFIGURAR', 'Volverás al paso 1. El bloqueo de categoría se mantiene activo.', 'Volver', 'danger', () => {
-    const sesion = JSON.parse(localStorage.getItem('panel_cal_sesion') || '{}');
-    sesion.paso = 1;
-    localStorage.setItem('panel_cal_sesion', JSON.stringify(sesion));
+  confirmar('⚙️','VOLVER A CONFIGURAR','Volverás al paso 1.','Volver','danger', () => {
     ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === state.categoria));
     document.getElementById('lkNota').classList.toggle('show', state.categoria === 'lk');
+    document.getElementById('batNota').classList.toggle('show', state.categoria === 'bat');
     document.getElementById('configuracionPanel').classList.add('show');
-    document.getElementById('catBloqueadaTxt').textContent = `${CAT_NOMBRES[state.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
-    document.getElementById('catBloqueadaBadge').classList.add('show');
-    document.getElementById('btnCerrarCat1').style.display = 'flex';
     document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
     document.getElementById('btnIniciarCal').disabled = false;
     setStep(1);
   });
 }
 
-async function cerrarCategoria() {
-  confirmar('🔒', 'CERRAR CATEGORÍA', `¿Confirmas cerrar ${CAT_NOMBRES[state.categoria]}? Se liberará el bloqueo.`, 'Cerrar', 'danger', async () => {
-    loading(true, 'CERRANDO...');
-    try {
-      await gasPost({ action: 'finalizarCategoria',   categoria: CAT_NOMBRES[state.categoria] });
-      await gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] });
-    } catch(e) {}
-    clearInterval(cronoInterval);
-    localStorage.removeItem('panel_cal_sesion');
-    resetearUI();
-    loading(false);
-    toast('Categoría cerrada', 'success');
-  });
-}
-
-function resetearUI() {
-  state = { step:1, categoria:'', criterios:[], participantes:[], calificaciones:{}, selectedId:null, rondaActual:{}, rankingData:[], lkFase:1, lkClasificados:[] };
-  clearInterval(cronoInterval);
-  cronoRunning = false;
-  resetCrono();
-  ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
-  document.getElementById('lkNota').classList.remove('show');
-  document.getElementById('configuracionPanel').classList.remove('show');
-  document.getElementById('btnIniciarCal').disabled = true;
-  document.getElementById('btnCerrarCat1').style.display = 'none';
-  document.getElementById('btnVerRankingP1').style.display = 'none';
-  document.getElementById('catBloqueadaBadge').classList.remove('show');
-  document.getElementById('criteriosTbody').innerHTML = '';
-  setStep(1);
-}
-
 async function cargarRanking() {
   loading(true, 'CALCULANDO RANKING...');
-  const esLk = state.categoria === 'lk';
-  document.getElementById('thF2Col').style.display = esLk ? '' : 'none';
+  const esLk  = state.categoria === 'lk';
+  const esBat = state.categoria === 'bat';
+
+  document.getElementById('thF1Col').textContent    = esLk ? 'F1 (70)' : 'PUNTOS';
+  document.getElementById('thF2Col').style.display  = esLk ? '' : 'none';
+  document.getElementById('thJuecesCol').style.display = esBat ? '' : 'none';
 
   try {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: state.categoria });
@@ -1415,32 +1244,25 @@ async function cargarRanking() {
   } catch(e) {
     state.rankingData = state.participantes.map(p => {
       const cal = state.calificaciones[p.id];
-      return { id: p.id, nombre: p.nombre, robot: p.robot || p.nombre, institucion: p.institucion, total: cal?.total || 0, rondas: cal ? 1 : 0 };
-    }).sort((a, b) => b.total - a.total);
-  }
-
-  // Para lk enriquecer con datos de fase
-  if (esLk) {
-    state.rankingData = state.rankingData.map(r => {
-      const cal = state.calificaciones[r.id];
-      return {
-        ...r,
-        fase1Total: cal?.fase1Total ?? r.total,
-        fase2Total: cal?.fase2Total ?? 0,
-        fase2: cal?.fase2 ?? false
-      };
-    });
+      return { id: p.id, nombre: p.nombre, robot: p.robot||p.nombre, institucion: p.institucion, total: cal?.total||0, rondas: cal?1:0 };
+    }).sort((a,b) => b.total - a.total);
   }
 
   const maxScore = state.rankingData[0]?.total || 1;
   document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[state.categoria]}`;
-  document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados`;
+
+  if (esBat) {
+    document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes · promedio de ${MAX_JUECES_BAT} jueces`;
+  } else {
+    document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados`;
+  }
 
   const tbody = document.getElementById('rankingTbody');
   tbody.innerHTML = '';
+  const colspan = 5 + (esLk ? 1 : 0) + (esBat ? 1 : 0);
 
   if (!state.rankingData.length) {
-    tbody.innerHTML = `<tr><td colspan="${esLk ? 7 : 6}"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Sin calificaciones aún.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${colspan}"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Sin calificaciones aún.</p></div></td></tr>`;
     loading(false); return;
   }
 
@@ -1449,29 +1271,39 @@ async function cargarRanking() {
     const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
     const pct = maxScore > 0 ? (r.total / maxScore) * 100 : 0;
     const tr = document.createElement('tr');
+
+    // Columna jueces para bat
+    let juecesCell = '';
+    if (esBat) {
+      const juecesCount = r.jueces || 0;
+      const pips = [1,2,3].map(n => `<div class="pip ${n <= juecesCount ? 'filled' : ''}"></div>`).join('');
+      juecesCell = `<td><div class="jueces-pip">${pips}</div><div style="font-family:'DM Mono';font-size:.68rem;color:var(--text-dim);margin-top:3px">${juecesCount}/${MAX_JUECES_BAT}</div></td>`;
+    }
+
     const f2Cell = esLk
-      ? `<td style="font-family:'DM Mono';font-size:.8rem;color:${r.fase2 ? 'var(--green)' : 'var(--text-dim)'}">
-           ${r.fase2 ? r.fase2Total.toFixed(1) : '—'}
-         </td>`
+      ? `<td style="font-family:'DM Mono';font-size:.8rem;color:${r.fase2 ? 'var(--green)':'var(--text-dim)'}">${r.fase2 ? (r.fase2Total||0).toFixed(1) : '—'}</td>`
       : '';
-    const estadoBadge = r.total > 0
-      ? (esLk && r.fase2 ? '<span class="badge-fase2">🏁 Completo</span>' : '<span class="badge-calificado">✓ F1</span>')
-      : '<span class="badge-pendiente">Pendiente</span>';
+
+    const estadoBadge = esBat
+      ? `<span class="${(r.jueces||0) >= MAX_JUECES_BAT ? 'badge-calificado' : 'badge-pendiente'}">${(r.jueces||0) >= MAX_JUECES_BAT ? '✓ Completo' : `${r.jueces||0}/${MAX_JUECES_BAT} jueces`}</span>`
+      : (r.total > 0 ? (esLk && r.fase2 ? '<span class="badge-fase2">🏁 Completo</span>' : '<span class="badge-calificado">✓</span>') : '<span class="badge-pendiente">Pendiente</span>');
+
+    const f1Val = esLk ? (r.fase1Total||0).toFixed(1) : '—';
 
     tr.innerHTML = `
       <td><span class="pos-badge ${posClass}">${pos}</span></td>
-      <td style="font-weight:600">${r.robot || r.nombre}</td>
-      <td style="color:var(--text-dim);font-size:.82rem">${r.institucion || '—'}</td>
-      <td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${esLk ? (r.fase1Total||0).toFixed(1) : ''}</td>
+      <td style="font-weight:600">${r.robot||r.nombre}</td>
+      <td style="color:var(--text-dim);font-size:.82rem">${r.institucion||'—'}</td>
+      <td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${esLk ? f1Val : ''}</td>
       ${f2Cell}
+      ${juecesCell}
       <td>
         <div class="score-bar-wrap">
           <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
           <div class="score-num">${parseFloat(r.total).toFixed(1)}</div>
         </div>
       </td>
-      <td>${estadoBadge}</td>
-    `;
+      <td>${estadoBadge}</td>`;
     tbody.appendChild(tr);
   });
   loading(false);
@@ -1487,9 +1319,7 @@ async function verRankingDesdePaso1() {
       state.participantes = todos.filter(p => p.categoria === CAT_NOMBRES[state.categoria] && p.aprobado === 'APROBADO');
     } catch(e) {}
   }
-  if (!state.criterios.length) {
-    state.criterios = state.categoria === 'lk' ? [...LK_CRITERIOS_F1] : DEFAULTS_CRITERIOS[state.categoria];
-  }
+  if (!state.criterios.length) state.criterios = state.categoria === 'lk' ? [...LK_CRITERIOS_F1] : DEFAULTS_CRITERIOS[state.categoria];
   await cargarRanking();
   setStep(3);
 }
@@ -1502,42 +1332,35 @@ async function guardarPodio() {
   state.rankingData.forEach(r => {
     const p = state.participantes.find(x => x.id === r.id) || {};
     totalDiplomas++;
-    if ((p.miembro2 || '').trim()) totalDiplomas++;
-    if ((p.miembro3 || '').trim()) totalDiplomas++;
+    if ((p.miembro2||'').trim()) totalDiplomas++;
   });
 
-  confirmar('🏆', 'GUARDAR TODOS LOS COMPETIDORES',
+  confirmar('🏆','GUARDAR TODOS LOS COMPETIDORES',
     `¿Guardar los ${total} equipos de ${catNombre}?\n${totalDiplomas} diplomas en total.\nTOP 3 con su posición, el resto como Participación.`,
-    'Guardar todos', 'success',
+    'Guardar todos','success',
     async () => {
       loading(true, 'GUARDANDO COMPETIDORES...');
-      const TIPOS_PODIO = ['GANADOR', 'SUBCAMPEÓN', 'TERCER LUGAR'];
+      const TIPOS_PODIO = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
       for (let i = 0; i < state.rankingData.length; i++) {
         const r = state.rankingData[i];
         const p = state.participantes.find(x => x.id === r.id) || {};
         const tipo = i < 3 ? TIPOS_PODIO[i] : 'participacion';
-        const capitan = (p.nombre || r.nombre || '').trim();
-        const m2 = (p.miembro2 || '').trim();
-        const m3 = (p.miembro3 || '').trim();
+        const capitan = (p.nombre||r.nombre||'').trim();
+        const m2 = (p.miembro2||'').trim();
         const miembros = [];
-        if (capitan) miembros.push({ nombre: capitan, correo: p.correo || r.correo || '' });
+        if (capitan) miembros.push({ nombre: capitan, correo: p.correo||'' });
         if (m2) miembros.push({ nombre: m2, correo: '' });
-        if (m3) miembros.push({ nombre: m3, correo: '' });
-        if (!miembros.length) miembros.push({ nombre: r.nombre || '', correo: '' });
+        if (!miembros.length) miembros.push({ nombre: r.nombre||'', correo: '' });
         for (const miembro of miembros) {
           try {
-            await gasPost({
-              action: 'guardarCertificado',
-              id_participante: r.id, correo: miembro.correo,
-              nombre: miembro.nombre, nombre_completo: miembro.nombre,
-              categoria: catNombre, institucion: p.institucion || r.institucion || '',
-              tipo_certificado: tipo, evento: 'SucreBot 2026'
-            });
-          } catch(e) { console.warn('guardarCertificado error:', miembro.nombre, e); }
+            await gasPost({ action:'guardarCertificado', id_participante:r.id, correo:miembro.correo,
+              nombre:miembro.nombre, nombre_completo:miembro.nombre, categoria:catNombre,
+              institucion:p.institucion||r.institucion||'', tipo_certificado:tipo, evento:'SucreBot 2026' });
+          } catch(e) {}
         }
       }
       loading(false);
-      toast(`✅ ${totalDiplomas} diplomas guardados en certificados`, 'success');
+      toast(`✅ ${totalDiplomas} diplomas guardados`, 'success');
     }
   );
 }
@@ -1545,115 +1368,35 @@ async function guardarPodio() {
 async function exportarExcel() {
   if (!state.rankingData.length) { toast('No hay datos', 'error'); return; }
   loading(true, 'GENERANDO CSV...');
-  const esLk = state.categoria === 'lk';
-  const header = ['#', 'Robot', 'Nombre', 'Institución'];
-  if (esLk) { header.push('Fase 1 (70)', 'Fase 2 (30)'); }
-  else { header.push(...state.criterios.map(c => c.nombre)); }
+  const esLk  = state.categoria === 'lk';
+  const esBat = state.categoria === 'bat';
+  const header = ['#','Robot','Nombre','Institución'];
+  if (esLk)  header.push('Fase 1 (70)','Fase 2 (30)');
+  if (esBat) header.push('Jueces');
+  else       header.push(...state.criterios.map(c => c.nombre));
   header.push('TOTAL');
   const rows = [header];
   state.rankingData.forEach((r, i) => {
-    const row = [i+1, r.robot || r.nombre, r.nombre, r.institucion || ''];
-    if (esLk) { row.push(r.fase1Total?.toFixed(1) || 0, r.fase2Total?.toFixed(1) || '—'); }
-    row.push(r.total);
+    const row = [i+1, r.robot||r.nombre, r.nombre, r.institucion||''];
+    if (esLk)  row.push((r.fase1Total||0).toFixed(1), r.fase2 ? (r.fase2Total||0).toFixed(1) : '—');
+    if (esBat) row.push(`${r.jueces||0}/${MAX_JUECES_BAT}`);
+    row.push(parseFloat(r.total).toFixed(2));
     rows.push(row);
   });
-  const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = `ranking_${CAT_NOMBRES[state.categoria]}_${Date.now()}.csv`; a.click();
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`ranking_${CAT_NOMBRES[state.categoria]}_${Date.now()}.csv`; a.click();
   URL.revokeObjectURL(url);
   loading(false);
 }
 
-// ── RESTAURAR SESIÓN (F5) ─────────────────────────────────────
-async function restaurarSesion() {
-  const safetyTimer = setTimeout(() => { localStorage.removeItem('panel_cal_sesion'); loading(false); }, 10000);
-  try {
-    const raw = localStorage.getItem('panel_cal_sesion');
-    if (!raw) { clearTimeout(safetyTimer); loading(false); return; }
-    let sesion;
-    try { sesion = JSON.parse(raw); } catch(e) { clearTimeout(safetyTimer); loading(false); return; }
-    if (!sesion.categoria) { clearTimeout(safetyTimer); loading(false); return; }
-
-    try {
-      const res = await gasGet({ action: 'getCategoriasActivas' });
-      const activas = res.activas || res.categorias || (Array.isArray(res) ? res : []);
-      const activa = activas.find(a => a.categoria === CAT_NOMBRES[sesion.categoria]);
-      if (!activa) { localStorage.removeItem('panel_cal_sesion'); clearTimeout(safetyTimer); loading(false); return; }
-    } catch(e) { localStorage.removeItem('panel_cal_sesion'); clearTimeout(safetyTimer); loading(false); return; }
-
-    state.categoria = sesion.categoria;
-
-    try {
-      const res2 = await gasGet({ action: 'getParticipantes' });
-      const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
-      state.participantes = todos.filter(p => p.categoria === CAT_NOMBRES[sesion.categoria] && p.aprobado === 'APROBADO');
-    } catch(e) {}
-
-    if (sesion.categoria === 'lk') {
-      state.criterios = [...LK_CRITERIOS_F1];
-    } else if (sesion.criterios?.length) {
-      state.criterios = sesion.criterios;
-    } else {
-      try {
-        const resCrit = await gasGet({ action: 'getCriterios', categoria: sesion.categoria });
-        state.criterios = (resCrit.ok && resCrit.criterios?.length) ? resCrit.criterios : DEFAULTS_CRITERIOS[sesion.categoria];
-      } catch(e) { state.criterios = DEFAULTS_CRITERIOS[sesion.categoria]; }
-    }
-
-    ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === sesion.categoria));
-    document.getElementById('lkNota').classList.toggle('show', sesion.categoria === 'lk');
-    document.getElementById('configuracionPanel').classList.add('show');
-    document.getElementById('countAprobados').textContent = state.participantes.length;
-    document.getElementById('catBloqueadaTxt').textContent = `${CAT_NOMBRES[sesion.categoria].toUpperCase()} — BLOQUEADA EN ESTE PC`;
-    document.getElementById('catBloqueadaBadge').classList.add('show');
-    document.getElementById('btnCerrarCat1').style.display = 'flex';
-    document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
-    document.getElementById('btnIniciarCal').disabled = false;
-    renderCriteriosConfig(sesion.categoria === 'lk' ? LK_CRITERIOS_F1 : state.criterios);
-
-    if (sesion.paso === 2) {
-      try {
-        const res = await gasGet({ action: 'getPuntuaciones', categoria: sesion.categoria });
-        (res.puntuaciones || []).forEach(p => {
-          const ronda = parseInt(p.ronda) || 1;
-          if (!state.calificaciones[p.id_participante] || ronda > (state.calificaciones[p.id_participante].ronda || 0)) {
-            const notasObj = p.notas_json || {};
-            const esFase2 = notasObj.fase === 2 || ronda === 2;
-            state.calificaciones[p.id_participante] = {
-              total: parseFloat(p.total) || 0, ronda,
-              notas_json: JSON.stringify(notasObj),
-              guardado: true,
-              fase1Total: esFase2 ? (parseFloat(notasObj.fase1Total)||0) : parseFloat(p.total)||0,
-              fase2Total: esFase2 ? (parseFloat(notasObj.fase2Total)||0) : 0,
-              fase2: esFase2
-            };
-            state.rondaActual[p.id_participante] = ronda + 1;
-            if (esFase2) state.lkClasificados.push(p.id_participante);
-          }
-        });
-        state.lkClasificados = [...new Set(state.lkClasificados)];
-        if (state.lkClasificados.length) state.lkFase = 2;
-      } catch(e) {}
-      buildPaso2(); setStep(2); loading(false);
-      toast('Sesión restaurada — Calificando ' + CAT_NOMBRES[sesion.categoria] + ' ✅', 'success');
-    } else {
-      setStep(1); loading(false);
-      toast('Sesión restaurada — ' + CAT_NOMBRES[sesion.categoria] + ' bloqueada ✅', 'success');
-    }
-  } catch(e) { localStorage.removeItem('panel_cal_sesion'); loading(false); }
-  finally { clearTimeout(safetyTimer); }
-}
-
+// ── INIT ──────────────────────────────────────────────────────
 document.addEventListener('componentsLoaded', () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
-  const raw = localStorage.getItem('panel_cal_sesion');
-  if (raw) { try { const s = JSON.parse(raw); if (s.categoria) loading(true, 'RESTAURANDO SESIÓN...'); } catch(e) {} }
-  restaurarSesion();
+  loading(false);
 });
 </script>
-
 </body>
 </html>
