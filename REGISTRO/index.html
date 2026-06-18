@@ -29,7 +29,7 @@
     .wrapper::before { content: ''; position: absolute; left: -600px; top: 0; bottom: 0; width: 580px; background: linear-gradient(135deg, rgba(26,92,168,0.85) 0%, rgba(18,20,26,0.90) 100%), url('../shared/images/foto3.jpg') 5% center / cover no-repeat; border-radius: 0 16px 16px 0; box-shadow: 0 8px 32px rgba(26,92,168,0.3); border-right: 2px solid rgba(91,200,240,0.3); z-index: 1; }
     .reg-layout { display: flex; align-items: flex-start; gap: 80px; position: relative; margin-bottom: 60px; }
     .reg-robot { flex: 0 0 420px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
-    .reg-robot img { width: 100%; max-width: 400px; height: auto; filter: drop-shadow(0 8px 32px rgba(91,200,240,0.25)); animation: float-robot 4s ease-in-out infinite; }
+    .reg-robot-img { width: 100%; max-width: 400px; height: auto; filter: drop-shadow(0 8px 32px rgba(91,200,240,0.25)); animation: float-robot 4s ease-in-out infinite; }
     @keyframes float-robot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
     .reg-aviso { margin-top: 20px; padding: 4px 0; font-family: 'Exo 2', sans-serif; font-size: 12.5px; color: #1a3a6e; line-height: 1.75; width: 75%; box-sizing: border-box; }
     .reg-aviso-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #1a5ca8; margin-bottom: 10px; font-weight: 700; text-transform: uppercase; }
@@ -37,6 +37,14 @@
     .reg-aviso p:last-child { margin-bottom: 0; }
     .reg-aviso strong { color: #1a5ca8; }
     .reg-aviso .aviso-email { color: #1a5ca8; font-family: 'DM Mono', monospace; font-size: 10.5px; }
+    /* WA card */
+    .wa-card { margin-top: 20px; width: 75%; background: linear-gradient(135deg,#071a0e 0%,#0d3a22 100%); border: 1.5px solid rgba(37,211,102,0.35); border-radius: 12px; padding: 14px 16px; box-sizing: border-box; }
+    .wa-card-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #25d366; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .wa-card-body { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .wa-card-body img { width: 138px; height: 138px; object-fit: contain; border-radius: 6px; display: block; }
+    .wa-card-body p { font-family: 'Exo 2', sans-serif; font-size: 10.5px; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.5; margin: 0; }
+    .wa-card-body p strong { color: #25d366; }
+    /* Form */
     .form-card { background: linear-gradient(135deg, var(--r-blue) 0%, #14497e 100%); border: 1.5px solid var(--r-blue); border-radius: 16px; padding: 28px; box-shadow: 0 4px 24px rgba(26,92,168,0.25); flex: 1; position: relative; z-index: 1; margin-top: -108px; }
     .form-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--r-cyan-bright); margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
     .form-section-title { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 0.14em; color: rgba(255,255,255,0.7); text-transform: uppercase; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.15); font-weight: 700; }
@@ -96,6 +104,7 @@
     .pago-info-key { color: rgba(255,255,255,0.5); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
     .pago-info-val { color: #e8f0ff; font-weight: 600; text-align: right; }
     .pago-info-val.mono { font-family: 'DM Mono', monospace; color: var(--r-cyan-bright); font-size: 12px; letter-spacing: 1px; }
+    /* Precios panel desktop */
     @keyframes shimmer { 0%{left:-60%} 100%{left:120%} }
     .precios-panel { position: absolute; right: -210px; top: 20px; width: 190px; display: flex; flex-direction: column; gap: 12px; z-index: 2; animation: float-panel 4s ease-in-out infinite; }
     @keyframes float-panel { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -115,23 +124,54 @@
     .precio-item:not(.activo) .precio-desc { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12); }
     .precio-badge-activo { position: absolute; top: 9px; right: 9px; background: #fbbf24; color: #78350f; font-family: 'Orbitron', monospace; font-size: 7px; font-weight: 700; padding: 3px 7px; border-radius: 6px; letter-spacing: 0.5px; animation: pulse-badge 1.4s ease-in-out infinite; }
     @keyframes pulse-badge { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.08)} }
-    @media (max-width: 1260px) { .precios-panel { display: none; } }
+    /* Precios móvil — bloque horizontal ANTES del form */
+    .precios-movil { display: none; }
+    /* Botón */
     .btn-register { width: 100%; margin-top: 16px; background: #1a3a6b; border: 1.5px solid rgba(255,255,255,0.15); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; letter-spacing: 0.15em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .btn-register:hover:not(:disabled) { background: #1e4a8a; border-color: rgba(255,255,255,0.3); }
     .btn-register:active { background: #152e5a; }
     .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
     .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid var(--r-green); color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 600; padding: 12px 16px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 300px; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; box-shadow: 0 3px 12px rgba(0,0,0,0.3); }
     .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    /* WA card sin animación */
-    .wa-card { margin-top: 20px; width: 75%; background: linear-gradient(135deg,#071a0e 0%,#0d3a22 100%); border: 1.5px solid rgba(37,211,102,0.35); border-radius: 12px; padding: 14px 16px; box-sizing: border-box; }
-    .wa-card-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #25d366; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-    .wa-card-body { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .wa-card-body img { width: 138px; height: 138px; object-fit: contain; border-radius: 6px; display: block; }
-    .wa-card-body p { font-family: 'Exo 2', sans-serif; font-size: 10.5px; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.5; margin: 0; }
-    .wa-card-body p strong { color: #25d366; }
-    @media (max-width: 1000px) { .reg-layout { flex-direction: column; align-items: center; } .reg-robot { flex: 0 0 auto; } .form-card { width: 100%; max-width: 700px; } }
+
+    /* ── DESKTOP ocultar panel móvil ── */
+    @media (min-width: 1261px) {
+      .precios-movil { display: none !important; }
+    }
+    @media (min-width: 769px) and (max-width: 1260px) {
+      .precios-panel { display: none; }
+      .precios-movil { display: none !important; }
+    }
+
+    /* ── TABLET (1000px) ── */
+    @media (max-width: 1000px) {
+      .reg-layout { flex-direction: column; align-items: center; }
+      .reg-robot { flex: 0 0 auto; }
+      .form-card { width: 100%; max-width: 700px; }
+    }
+
+    /* ── MÓVIL (768px) ── */
     @media (max-width: 768px) {
-      .reg-robot { display: none; } .wrapper { padding: 0 12px 40px; } .page-hero { padding: 20px 0 14px; } .page-hero h2 { font-size: 1.6rem; letter-spacing: 1px; } .page-hero-badge { font-size: 8px; letter-spacing: 2px; }
+      .wrapper { padding: 0 12px 40px; }
+      .page-hero { padding: 20px 0 14px; }
+      .page-hero h2 { font-size: 1.6rem; letter-spacing: 1px; }
+      .page-hero-badge { font-size: 8px; letter-spacing: 2px; }
+      /* Mostrar reg-robot pero sin imagen del robot */
+      .reg-robot { display: flex; width: 100%; max-width: 100%; align-items: flex-start; pointer-events: auto; }
+      .reg-robot-img { display: none; }
+      .reg-aviso { width: 100%; font-size: 12px; }
+      .wa-card { width: 100%; margin-top: 16px; }
+      .wa-card-body img { width: 160px; height: 160px; }
+      /* Precios móvil — bloque horizontal encima del form */
+      .precios-movil { display: block; width: 100%; margin: 16px 0; }
+      .precios-movil-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #5bc8f0; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+      .precios-movil-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .precios-movil .precio-item { padding: 12px 8px; border-radius: 12px; }
+      .precios-movil .precio-periodo { font-size: 9.5px; margin-bottom: 4px; }
+      .precios-movil .precio-valor { font-size: 2rem; margin-bottom: 4px; }
+      .precios-movil .precio-desc { font-size: 8px; padding: 3px 6px; }
+      .precios-movil .precio-badge-activo { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
+      /* Form */
       .form-card { margin-top: 0 !important; padding: 18px 14px; border-radius: 12px; width: 100%; box-sizing: border-box; }
       .form-grid, .grid-comprobante { grid-template-columns: 1fr !important; }
       .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
@@ -139,6 +179,8 @@
       .logo-drop-zone { width: 100%; height: 44px; box-sizing: border-box; }
       .logo-placeholder span { white-space: normal; }
       .toast { left: 12px; right: 12px; max-width: calc(100vw - 24px); bottom: 20px; }
+      /* Ocultar panel desktop */
+      .precios-panel { display: none !important; }
     }
   </style>
 </head>
@@ -162,15 +204,13 @@
 
   <div class="reg-layout">
     <div class="reg-robot">
-      <img src="../shared/images/robot-inss.png" alt="Robot inscribiendo" />
+      <img class="reg-robot-img" src="../shared/images/robot-inss.png" alt="Robot inscribiendo" />
       <div class="reg-aviso">
         <div class="reg-aviso-title">📋 Información importante</div>
         <p><strong>📛 Nombre completo:</strong> Escríbelo tal como aparecerá en tu diploma de participación.</p>
         <p><strong>📧 Correo electrónico:</strong> Verifica que esté bien escrito — a esa dirección se enviará tu <strong>código QR</strong> de acceso al evento.</p>
         <p><strong style="color:#1a5ca8;">✅ ¿No recibiste el correo?</strong> Revisa tu carpeta de <em>spam</em> o escríbenos a<br><span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span></p>
       </div>
-
-      <!-- GRUPO WHATSAPP QR — sin animación -->
       <div class="wa-card">
         <div class="wa-card-title">
           <svg style="width:13px;height:13px;fill:#25d366;flex-shrink:0;" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
@@ -181,7 +221,31 @@
           <p>Escanea para unirte al grupo de<br><strong>capitanes participantes</strong></p>
         </div>
       </div>
+    </div>
 
+    <!-- PRECIOS MÓVIL — solo visible en móvil, encima del form -->
+    <div class="precios-movil">
+      <div class="precios-movil-title">
+        <svg style="width:12px;height:12px;fill:#fbbf24;" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        INSCRIPCIÓN
+      </div>
+      <div class="precios-movil-grid">
+        <div class="precio-item" id="precio-m-1">
+          <div class="precio-periodo">Hasta el<br>30 de junio</div>
+          <div class="precio-valor">$12</div>
+          <div class="precio-desc">40% OFF</div>
+        </div>
+        <div class="precio-item" id="precio-m-2">
+          <div class="precio-periodo">1 al 6<br>de julio</div>
+          <div class="precio-valor">$15</div>
+          <div class="precio-desc">25% OFF</div>
+        </div>
+        <div class="precio-item" id="precio-m-3">
+          <div class="precio-periodo">9 al 10<br>de julio</div>
+          <div class="precio-valor">$20</div>
+          <div class="precio-desc">Regular</div>
+        </div>
+      </div>
     </div>
 
     <div class="form-card">
@@ -339,7 +403,6 @@
       </div>
 
       <div class="form-section-title">📎 Comprobante de Pago</div>
-
       <div class="pago-info">
         <div class="pago-info-label">🏦 Cuenta para el pago</div>
         <div class="pago-info-row"><span class="pago-info-key">Banco</span><span class="pago-info-val">Banco Pichincha</span></div>
@@ -368,7 +431,7 @@
       </button>
     </div>
 
-    <!-- Panel de precios flotante -->
+    <!-- Panel de precios flotante DESKTOP -->
     <div class="precios-panel" id="precios-panel">
       <div class="precios-panel-title">💰 Inscripción</div>
       <div class="precio-item" id="precio-1">
@@ -542,7 +605,6 @@
 
   async function registrarParticipante() {
     if (_registrando) return;
-
     const nombre       = document.getElementById('f-nombre').value.trim();
     const miembro2     = document.getElementById('f-miembro2').value.trim();
     const institucion  = getInstitucionValue();
@@ -624,18 +686,21 @@
     }
   }
 
+  // Marcar precio activo — desktop Y móvil
   (function() {
     const hoy = new Date();
     const año = hoy.getFullYear();
     const periodos = [
-      { id: 'precio-1', desde: new Date(año, 0, 1),  hasta: new Date(año, 5, 30, 23, 59) },
-      { id: 'precio-2', desde: new Date(año, 6, 1),  hasta: new Date(año, 6, 6,  23, 59) },
-      { id: 'precio-3', desde: new Date(año, 6, 9),  hasta: new Date(año, 6, 10, 23, 59) },
+      { ids: ['precio-1','precio-m-1'], desde: new Date(año, 0, 1),  hasta: new Date(año, 5, 30, 23, 59) },
+      { ids: ['precio-2','precio-m-2'], desde: new Date(año, 6, 1),  hasta: new Date(año, 6, 6,  23, 59) },
+      { ids: ['precio-3','precio-m-3'], desde: new Date(año, 6, 9),  hasta: new Date(año, 6, 10, 23, 59) },
     ];
     periodos.forEach(p => {
       if (hoy >= p.desde && hoy <= p.hasta) {
-        const el = document.getElementById(p.id);
-        if (el) { el.classList.add('activo'); el.innerHTML += '<div class="precio-badge-activo">ACTIVO</div>'; }
+        p.ids.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.classList.add('activo'); el.innerHTML += '<div class="precio-badge-activo">ACTIVO</div>'; }
+        });
       }
     });
   })();
