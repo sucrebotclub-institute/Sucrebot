@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SucreBot — Registro de Participantes</title>
+  <title>[DEV] SucreBot — Registro de Participantes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -17,6 +17,8 @@
       --r-green: #3dd68c;
     }
     body { background: #ffffff !important; color: #1a1c28 !important; }
+    /* Banner DEV fijo */
+    .dev-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 99999; background: #fbbf24; color: #78350f; font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; text-align: center; padding: 7px 16px; letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 2px 8px rgba(251,191,36,0.4); }
     .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; position: relative; overflow: visible; }
     .page-hero { padding: 48px 0 24px; margin-bottom: 16px; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--r-blue); border: 1px solid var(--r-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
@@ -37,15 +39,15 @@
     .reg-aviso p:last-child { margin-bottom: 0; }
     .reg-aviso strong { color: #1a5ca8; }
     .reg-aviso .aviso-email { color: #1a5ca8; font-family: 'DM Mono', monospace; font-size: 10.5px; }
-    /* WA card */
     .wa-card { margin-top: 20px; width: 75%; background: linear-gradient(135deg,#071a0e 0%,#0d3a22 100%); border: 1.5px solid rgba(37,211,102,0.35); border-radius: 12px; padding: 14px 16px; box-sizing: border-box; }
     .wa-card-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #25d366; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
     .wa-card-body { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .wa-card-body img { width: 138px; height: 138px; object-fit: contain; border-radius: 6px; display: block; }
     .wa-card-body p { font-family: 'Exo 2', sans-serif; font-size: 10.5px; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.5; margin: 0; }
     .wa-card-body p strong { color: #25d366; }
-    /* Form */
     .form-card { background: linear-gradient(135deg, var(--r-blue) 0%, #14497e 100%); border: 1.5px solid var(--r-blue); border-radius: 16px; padding: 28px; box-shadow: 0 4px 24px rgba(26,92,168,0.25); flex: 1; position: relative; z-index: 1; margin-top: -108px; }
+    /* Borde amarillo en form-card para recordar que es DEV */
+    .form-card { border-color: #fbbf24 !important; box-shadow: 0 4px 24px rgba(251,191,36,0.2) !important; }
     .form-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--r-cyan-bright); margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
     .form-section-title { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 0.14em; color: rgba(255,255,255,0.7); text-transform: uppercase; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.15); font-weight: 700; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 4px; }
@@ -104,7 +106,6 @@
     .pago-info-key { color: rgba(255,255,255,0.5); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
     .pago-info-val { color: #e8f0ff; font-weight: 600; text-align: right; }
     .pago-info-val.mono { font-family: 'DM Mono', monospace; color: var(--r-cyan-bright); font-size: 12px; letter-spacing: 1px; }
-    /* Precios panel desktop */
     @keyframes shimmer { 0%{left:-60%} 100%{left:120%} }
     .precios-panel { position: absolute; right: -210px; top: 20px; width: 190px; display: flex; flex-direction: column; gap: 12px; z-index: 2; animation: float-panel 4s ease-in-out infinite; }
     @keyframes float-panel { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -124,45 +125,26 @@
     .precio-item:not(.activo) .precio-desc { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12); }
     .precio-badge-activo { position: absolute; top: 9px; right: 9px; background: #fbbf24; color: #78350f; font-family: 'Orbitron', monospace; font-size: 7px; font-weight: 700; padding: 3px 7px; border-radius: 6px; letter-spacing: 0.5px; animation: pulse-badge 1.4s ease-in-out infinite; }
     @keyframes pulse-badge { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.08)} }
-    /* Precios móvil — bloque horizontal ANTES del form */
     .precios-movil { display: none; }
-    /* Botón */
     .btn-register { width: 100%; margin-top: 16px; background: #1a3a6b; border: 1.5px solid rgba(255,255,255,0.15); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; letter-spacing: 0.15em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .btn-register:hover:not(:disabled) { background: #1e4a8a; border-color: rgba(255,255,255,0.3); }
     .btn-register:active { background: #152e5a; }
     .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
     .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid var(--r-green); color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 600; padding: 12px 16px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 300px; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; box-shadow: 0 3px 12px rgba(0,0,0,0.3); }
     .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-
-    /* ── DESKTOP ocultar panel móvil ── */
-    @media (min-width: 1261px) {
-      .precios-movil { display: none !important; }
-    }
-    @media (min-width: 769px) and (max-width: 1260px) {
-      .precios-panel { display: none; }
-      .precios-movil { display: none !important; }
-    }
-
-    /* ── TABLET (1000px) ── */
-    @media (max-width: 1000px) {
-      .reg-layout { flex-direction: column; align-items: center; }
-      .reg-robot { flex: 0 0 auto; }
-      .form-card { width: 100%; max-width: 700px; }
-    }
-
-    /* ── MÓVIL (768px) ── */
+    @media (min-width: 1261px) { .precios-movil { display: none !important; } }
+    @media (min-width: 769px) and (max-width: 1260px) { .precios-panel { display: none; } .precios-movil { display: none !important; } }
+    @media (max-width: 1000px) { .reg-layout { flex-direction: column; align-items: center; } .reg-robot { flex: 0 0 auto; } .form-card { width: 100%; max-width: 700px; } }
     @media (max-width: 768px) {
       .wrapper { padding: 0 12px 40px; }
       .page-hero { padding: 20px 0 14px; }
       .page-hero h2 { font-size: 1.6rem; letter-spacing: 1px; }
       .page-hero-badge { font-size: 8px; letter-spacing: 2px; }
-      /* Mostrar reg-robot pero sin imagen del robot */
       .reg-robot { display: flex; width: 100%; max-width: 100%; align-items: flex-start; pointer-events: auto; }
       .reg-robot-img { display: none; }
       .reg-aviso { width: 100%; font-size: 12px; }
       .wa-card { width: 100%; margin-top: 16px; }
       .wa-card-body img { width: 160px; height: 160px; }
-      /* Precios móvil — bloque horizontal encima del form */
       .precios-movil { display: block; width: 100%; margin: 16px 0; }
       .precios-movil-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #5bc8f0; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
       .precios-movil-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -171,7 +153,6 @@
       .precios-movil .precio-valor { font-size: 2rem; margin-bottom: 4px; }
       .precios-movil .precio-desc { font-size: 8px; padding: 3px 6px; }
       .precios-movil .precio-badge-activo { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
-      /* Form */
       .form-card { margin-top: 0 !important; padding: 18px 14px; border-radius: 12px; width: 100%; box-sizing: border-box; }
       .form-grid, .grid-comprobante { grid-template-columns: 1fr !important; }
       .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
@@ -179,14 +160,17 @@
       .logo-drop-zone { width: 100%; height: 44px; box-sizing: border-box; }
       .logo-placeholder span { white-space: normal; }
       .toast { left: 12px; right: 12px; max-width: calc(100vw - 24px); bottom: 20px; }
-      /* Ocultar panel desktop */
       .precios-panel { display: none !important; }
+      .dev-banner { font-size: 8px; padding: 6px 8px; letter-spacing: 1px; }
     }
   </style>
 </head>
 <body>
 
-<div class="sticky-header">
+<!-- Banner DEV siempre visible -->
+<div class="dev-banner">⚠ MODO PRUEBAS — Los robots se guardan con prefijo [DEV] en el Sheet</div>
+
+<div class="sticky-header" style="margin-top:34px;">
   <div data-include="../shared/components/topbar.html"></div>
   <div data-include="../shared/components/header.html"></div>
   <div data-include="../shared/components/nav.html"></div>
@@ -196,7 +180,7 @@
   <div class="page-hero">
     <div class="page-hero-badge">
       <div class="page-hero-badge-dot"></div>
-      SUCREBOT 2026 · TORNEO DE ROBÓTICA
+      SUCREBOT 2026 · MODO PRUEBAS
     </div>
     <h2>REGISTRO DE <span>PARTICIPANTES</span></h2>
     <p>INSCRIPCIÓN AL TORNEO SUCREBOT 2026</p>
@@ -223,7 +207,7 @@
       </div>
     </div>
 
-    <!-- PRECIOS MÓVIL — solo visible en móvil, encima del form -->
+    <!-- PRECIOS MÓVIL -->
     <div class="precios-movil">
       <div class="precios-movil-title">
         <svg style="width:12px;height:12px;fill:#fbbf24;" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -250,8 +234,8 @@
 
     <div class="form-card">
       <div class="form-title">
-        <svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:var(--r-cyan-bright);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
-        REGISTRO DE PARTICIPANTE
+        <svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:#fbbf24;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
+        <span style="color:#fbbf24;">[DEV]</span> REGISTRO DE PARTICIPANTE
       </div>
 
       <div class="form-section-title">👤 Datos Personales</div>
@@ -357,7 +341,7 @@
       <div class="form-section-title">🤖 Datos del Robot</div>
       <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:4px;">
         <div class="field">
-          <label>Nombre del Robot</label>
+          <label>Nombre del Robot <span style="color:#fbbf24;font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">→ se guardará como [DEV] nombre</span></label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
           <input type="text" id="f-robot" placeholder="RoboX-1" tabindex="10">
         </div>
@@ -427,7 +411,7 @@
 
       <button class="btn-register" onclick="registrarParticipante()" tabindex="15">
         <svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
-        REGISTRAR PARTICIPANTE
+        [DEV] REGISTRAR PARTICIPANTE
       </button>
     </div>
 
@@ -585,7 +569,7 @@
     });
   }
 
-  const BTN_HTML_ORIGINAL = `<svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg> REGISTRAR PARTICIPANTE`;
+  const BTN_HTML_ORIGINAL = `<svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg> [DEV] REGISTRAR PARTICIPANTE`;
   let _registrando = false;
 
   function limpiarFormulario() {
@@ -605,11 +589,15 @@
 
   async function registrarParticipante() {
     if (_registrando) return;
+
     const nombre       = document.getElementById('f-nombre').value.trim();
     const miembro2     = document.getElementById('f-miembro2').value.trim();
     const institucion  = getInstitucionValue();
     const ciudad       = getCiudadValue();
-    const robot        = document.getElementById('f-robot').value.trim();
+    // ── DEV: prefijo [DEV] automático en el robot ──────────────
+    const robotRaw     = document.getElementById('f-robot').value.trim();
+    const robot        = robotRaw ? '[DEV] ' + robotRaw : '';
+    // ───────────────────────────────────────────────────────────
     const contacto     = document.getElementById('f-contacto').value.trim();
     const correo       = document.getElementById('f-correo').value.trim();
     const categoria    = document.getElementById('f-categoria').value;
@@ -622,7 +610,7 @@
     if (!nombre)      { showToast('El nombre completo es obligatorio', true); return; }
     if (!institucion) { showToast('La institución es obligatoria', true); return; }
     if (!ciudad)      { showToast('Selecciona una provincia o escribe tu país', true); return; }
-    if (!robot)       { showToast('El nombre del robot es obligatorio', true); return; }
+    if (!robotRaw)    { showToast('El nombre del robot es obligatorio', true); return; }
     if (!contacto)    { showToast('El número de contacto es obligatorio', true); return; }
     if (contacto.length < 7) { showToast('El número debe tener al menos 7 dígitos', true); return; }
     if (!correo)      { showToast('El correo electrónico es obligatorio', true); return; }
@@ -650,7 +638,7 @@
       if (!respLogo.ok || !respLogo.url) throw new Error(respLogo.error || 'Error al subir logo');
       const logoUrl = respLogo.url;
 
-      btn.innerHTML = '⏳ Finalizando registro...';
+      btn.innerHTML = '⏳ Finalizando registro [DEV]...';
       const respRegistro = await gasPost({
         action: 'setParticipante',
         id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
@@ -658,24 +646,8 @@
       });
       if (!respRegistro.ok || !respRegistro.id) throw new Error('No se pudo completar el registro');
 
-      const idGenerado = respRegistro.id;
-
-      if (document.getElementById('f-institucion-select').value === '__nueva__' && institucion) {
-        try {
-          const raw = localStorage.getItem(INST_CACHE_KEY);
-          const cache = raw ? JSON.parse(raw) : { data: [], ts: Date.now() };
-          if (!cache.data.includes(institucion)) { cache.data.push(institucion); localStorage.setItem(INST_CACHE_KEY, JSON.stringify(cache)); }
-        } catch(e) {}
-      }
-
-      try {
-        const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
-        lista.push({ id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria, equipo });
-        localStorage.setItem('participantes', JSON.stringify(lista));
-      } catch(e) {}
-
       limpiarFormulario();
-      showToast('✅ Registrado con ID: ' + idGenerado, false);
+      showToast('✅ [DEV] Registrado con ID: ' + respRegistro.id + ' — robot guardado como "' + robot + '"', false);
 
     } catch(e) {
       showToast('Error: ' + e.message, true);
@@ -686,7 +658,6 @@
     }
   }
 
-  // Marcar precio activo — desktop Y móvil
   (function() {
     const hoy = new Date();
     const año = hoy.getFullYear();
@@ -714,7 +685,7 @@
     else       { icon.textContent = '✓'; t.style.borderLeftColor = '#3dd68c'; t.style.color = '#d0f5e8'; t.style.background = '#1e2438'; }
     if (toastTimer) { clearTimeout(toastTimer); t.classList.remove('show'); }
     requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
-    toastTimer = setTimeout(() => { t.classList.remove('show'); toastTimer = null; }, 3500);
+    toastTimer = setTimeout(() => { t.classList.remove('show'); toastTimer = null; }, 5000);
   }
 </script>
 </body>
