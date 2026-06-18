@@ -163,6 +163,11 @@
       .precios-panel { display: none !important; }
       .dev-banner { font-size: 8px; padding: 6px 8px; letter-spacing: 1px; }
     }
+    /* Banner DEV */
+    .dev-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 99999; background: #fbbf24; color: #78350f; font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; text-align: center; padding: 7px 16px; letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 2px 8px rgba(251,191,36,0.4); }
+    /* Borde amarillo form-card DEV */
+    .form-card { border-color: #fbbf24 !important; box-shadow: 0 4px 24px rgba(251,191,36,0.2) !important; }
+    @media (max-width: 768px) { .dev-banner { font-size: 8px; padding: 6px 8px; letter-spacing: 1px; } }
   </style>
 </head>
 <body>
@@ -235,7 +240,7 @@
     <div class="form-card">
       <div class="form-title">
         <svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:#fbbf24;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
-        <span style="color:#fbbf24;">[DEV]</span> REGISTRO DE PARTICIPANTE
+        <span style="color:#fbbf24;">[DEV]</span> <span style="color:#fbbf24;">[DEV]</span> REGISTRO DE PARTICIPANTE
       </div>
 
       <div class="form-section-title">👤 Datos Personales</div>
@@ -411,7 +416,7 @@
 
       <button class="btn-register" onclick="registrarParticipante()" tabindex="15">
         <svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
-        [DEV] REGISTRAR PARTICIPANTE
+        [DEV] [DEV] REGISTRAR PARTICIPANTE
       </button>
     </div>
 
@@ -472,13 +477,12 @@
         if (Date.now() - cache.ts < INST_TTL) { poblarInstSelect(cache.data); return; }
       }
     } catch(e) {}
-    fetch(GAS_URL + '?action=getParticipantes')
+    fetch(GAS_URL + '?action=getInstituciones')
       .then(r => r.json())
       .then(data => {
         if (!Array.isArray(data)) return;
-        const instituciones = [...new Set(data.map(p => (p.institucion || '').trim()).filter(Boolean))];
-        poblarInstSelect(instituciones);
-        localStorage.setItem(INST_CACHE_KEY, JSON.stringify({ data: instituciones, ts: Date.now() }));
+        poblarInstSelect(data);
+        localStorage.setItem(INST_CACHE_KEY, JSON.stringify({ data: data, ts: Date.now() }));
       })
       .catch(() => {
         const sel = document.getElementById('f-institucion-select');
