@@ -104,7 +104,6 @@
     .pago-info-key { color: rgba(255,255,255,0.5); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
     .pago-info-val { color: #e8f0ff; font-weight: 600; text-align: right; }
     .pago-info-val.mono { font-family: 'DM Mono', monospace; color: var(--r-cyan-bright); font-size: 12px; letter-spacing: 1px; }
-    /* Precios panel desktop */
     @keyframes shimmer { 0%{left:-60%} 100%{left:120%} }
     .precios-panel { position: absolute; right: -210px; top: 20px; width: 190px; display: flex; flex-direction: column; gap: 12px; z-index: 2; animation: float-panel 4s ease-in-out infinite; }
     @keyframes float-panel { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -124,45 +123,26 @@
     .precio-item:not(.activo) .precio-desc { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12); }
     .precio-badge-activo { position: absolute; top: 9px; right: 9px; background: #fbbf24; color: #78350f; font-family: 'Orbitron', monospace; font-size: 7px; font-weight: 700; padding: 3px 7px; border-radius: 6px; letter-spacing: 0.5px; animation: pulse-badge 1.4s ease-in-out infinite; }
     @keyframes pulse-badge { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.08)} }
-    /* Precios móvil — bloque horizontal ANTES del form */
     .precios-movil { display: none; }
-    /* Botón */
     .btn-register { width: 100%; margin-top: 16px; background: #1a3a6b; border: 1.5px solid rgba(255,255,255,0.15); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; letter-spacing: 0.15em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .btn-register:hover:not(:disabled) { background: #1e4a8a; border-color: rgba(255,255,255,0.3); }
     .btn-register:active { background: #152e5a; }
     .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
     .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid var(--r-green); color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 600; padding: 12px 16px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 300px; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; box-shadow: 0 3px 12px rgba(0,0,0,0.3); }
     .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-
-    /* ── DESKTOP ocultar panel móvil ── */
-    @media (min-width: 1261px) {
-      .precios-movil { display: none !important; }
-    }
-    @media (min-width: 769px) and (max-width: 1260px) {
-      .precios-panel { display: none; }
-      .precios-movil { display: none !important; }
-    }
-
-    /* ── TABLET (1000px) ── */
-    @media (max-width: 1000px) {
-      .reg-layout { flex-direction: column; align-items: center; }
-      .reg-robot { flex: 0 0 auto; }
-      .form-card { width: 100%; max-width: 700px; }
-    }
-
-    /* ── MÓVIL (768px) ── */
+    @media (min-width: 1261px) { .precios-movil { display: none !important; } }
+    @media (min-width: 769px) and (max-width: 1260px) { .precios-panel { display: none; } .precios-movil { display: none !important; } }
+    @media (max-width: 1000px) { .reg-layout { flex-direction: column; align-items: center; } .reg-robot { flex: 0 0 auto; } .form-card { width: 100%; max-width: 700px; } }
     @media (max-width: 768px) {
       .wrapper { padding: 0 12px 40px; }
       .page-hero { padding: 20px 0 14px; }
       .page-hero h2 { font-size: 1.6rem; letter-spacing: 1px; }
       .page-hero-badge { font-size: 8px; letter-spacing: 2px; }
-      /* Mostrar reg-robot pero sin imagen del robot */
       .reg-robot { display: flex; width: 100%; max-width: 100%; align-items: flex-start; pointer-events: auto; }
       .reg-robot-img { display: none; }
       .reg-aviso { width: 100%; font-size: 12px; }
       .wa-card { width: 100%; margin-top: 16px; }
       .wa-card-body img { width: 160px; height: 160px; }
-      /* Precios móvil — bloque horizontal encima del form */
       .precios-movil { display: block; width: 100%; margin: 16px 0; }
       .precios-movil-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #5bc8f0; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
       .precios-movil-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -171,7 +151,6 @@
       .precios-movil .precio-valor { font-size: 2rem; margin-bottom: 4px; }
       .precios-movil .precio-desc { font-size: 8px; padding: 3px 6px; }
       .precios-movil .precio-badge-activo { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
-      /* Form */
       .form-card { margin-top: 0 !important; padding: 18px 14px; border-radius: 12px; width: 100%; box-sizing: border-box; }
       .form-grid, .grid-comprobante { grid-template-columns: 1fr !important; }
       .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
@@ -179,7 +158,6 @@
       .logo-drop-zone { width: 100%; height: 44px; box-sizing: border-box; }
       .logo-placeholder span { white-space: normal; }
       .toast { left: 12px; right: 12px; max-width: calc(100vw - 24px); bottom: 20px; }
-      /* Ocultar panel desktop */
       .precios-panel { display: none !important; }
     }
   </style>
@@ -223,7 +201,7 @@
       </div>
     </div>
 
-    <!-- PRECIOS MÓVIL — solo visible en móvil, encima del form -->
+    <!-- PRECIOS MÓVIL -->
     <div class="precios-movil">
       <div class="precios-movil-title">
         <svg style="width:12px;height:12px;fill:#fbbf24;" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -488,13 +466,12 @@
         if (Date.now() - cache.ts < INST_TTL) { poblarInstSelect(cache.data); return; }
       }
     } catch(e) {}
-    fetch(GAS_URL + '?action=getParticipantes')
+    fetch(GAS_URL + '?action=getInstituciones')
       .then(r => r.json())
       .then(data => {
         if (!Array.isArray(data)) return;
-        const instituciones = [...new Set(data.map(p => (p.institucion || '').trim()).filter(Boolean))];
-        poblarInstSelect(instituciones);
-        localStorage.setItem(INST_CACHE_KEY, JSON.stringify({ data: instituciones, ts: Date.now() }));
+        poblarInstSelect(data);
+        localStorage.setItem(INST_CACHE_KEY, JSON.stringify({ data: data, ts: Date.now() }));
       })
       .catch(() => {
         const sel = document.getElementById('f-institucion-select');
@@ -686,7 +663,6 @@
     }
   }
 
-  // Marcar precio activo — desktop Y móvil
   (function() {
     const hoy = new Date();
     const año = hoy.getFullYear();
