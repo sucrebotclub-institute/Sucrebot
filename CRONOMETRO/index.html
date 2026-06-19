@@ -492,10 +492,64 @@ function detenerCrono(){
   registrarIntento(tiempo);enviarSerial('S');
 }
 
-function reiniciarCrono(){
+// ── REINICIAR CRONÓMETRO ─────────────────────────────────────────
+// Si el intento actual ya tiene un tiempo registrado (se detuvo el
+// cronómetro y se guardó), Reiniciar primero pide confirmación y,
+// de aceptar, deshace ese intento (lo borra del log local, del
+// ranking visual y de la hoja "resultados" en GAS) para poder
+// repetirlo desde cero. Además, para Cubo Rubik (pulsadores),
+// reenvía 'R' al Arduino para sacarlo del estado EST_ESPERAR_R
+// en el que queda trabado tras cada STOP.
+async function reiniciarCrono(){
+  const idxLog = intentosLog.findIndex(l => l.intento === intentoActual && l.ronda === rondaActual);
+  if (idxLog >= 0 && participanteActual) {
+    const intentoABorrar = intentosLog[idxLog];
+    if (!confirm('⚠️ El intento '+intentoActual+' de "'+participanteActual.robot+'" ya tiene un tiempo registrado ('+intentoABorrar.tiempo+').\n¿Borrarlo para repetirlo?')) {
+      return; // cancelado — no se toca nada
+    }
+    intentosLog.splice(idxLog, 1);
+    quitarTiempoDelRanking(participanteActual.robot, intentoABorrar.tiempo, rondaActual);
+    try {
+      await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({
+        action:'eliminarResultado',
+        participanteId:participanteActual.id,
+        ronda:rondaActual,
+        intento:intentoActual,
+        ruta:getRuta()||'general'
+      })});
+    } catch(e){ console.error('Error eliminando resultado en GAS:', e); }
+    desbloquearBtn();
+    ocultarBotonesAccion();
+    guardarEstado();
+    showToast('🗑 Intento '+intentoActual+' borrado — listo para repetir');
+  }
+
   if(cronoInterval)clearInterval(cronoInterval);cronoInterval=null;cronoInicio=null;
   document.getElementById('cronometro').textContent='00:00:00';document.getElementById('crono-display').className='crono-display';
   document.getElementById('crono-status').textContent=participanteActual?'LISTO · Intento '+intentoActual+' de '+maxIntentos:'LISTO';document.getElementById('btn-dnf').style.display='none';
+  if(CATS_PULSADOR.includes(categoriaActual))enviarSerial('R');
+}
+
+// Quita un tiempo específico del array `tiempos` de un participante en
+// una ronda dada, y recalcula su mejor tiempo (`tiempo`) y estado DNF
+// a partir de los intentos restantes.
+function quitarTiempoDelRanking(robot, tiempoABorrar, ronda){
+  const rd = getRonda(ronda);
+  const c = rd.clasificados.find(x => x.robot === robot);
+  if (!c) return;
+  const idxT = (c.tiempos || []).indexOf(tiempoABorrar);
+  if (idxT >= 0) c.tiempos.splice(idxT, 1);
+  const validos = (c.tiempos || []).filter(t => t && t !== '—' && t !== 'DNF');
+  if (validos.length > 0) {
+    c.tiempo = validos.reduce((mejor, t) => tiempoASegundos(t) < tiempoASegundos(mejor) ? t : mejor, validos[0]);
+    c.esDNF = false;
+  } else {
+    const quedaDNF = (c.tiempos || []).includes('DNF');
+    c.tiempo = quedaDNF ? 'DNF' : '—';
+    c.esDNF = quedaDNF;
+  }
+  renderRondas();
+  actualizarContador();
 }
 
 function marcarDNF(){
