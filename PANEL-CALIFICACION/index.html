@@ -298,6 +298,10 @@
     .clasificado-nombre { font-weight: 600; font-size: .9rem; color: var(--text-main); }
     .clasificado-score { font-family: 'DM Mono'; font-size: .78rem; color: var(--cyan); margin-left: auto; }
 
+    /* ── TERMINAR CATEGORÍA ── */
+    .btn-terminar { background: transparent; border: 1.5px solid var(--red); color: var(--red); font-weight: 700; }
+    .btn-terminar:hover { background: rgba(231,76,60,0.12); }
+
     @media(max-width:600px) {
       .criterio-row { grid-template-columns: 1fr; gap: 8px; }
       .criterio-input-wrap { justify-content: flex-start; }
@@ -502,6 +506,9 @@
           <div id="lkFase2Trigger" style="display:none;margin-top:10px">
             <button class="btn btn-green btn-sm" style="width:100%;justify-content:center;" onclick="abrirClasificados()">🏁 Clasificar a Fase 2</button>
           </div>
+          <div style="margin-top:10px">
+            <button class="btn btn-terminar btn-sm" style="width:100%;justify-content:center;" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
+          </div>
         </div>
         <div class="robots-list" id="robotsList"></div>
       </div>
@@ -582,6 +589,7 @@
           <button class="btn btn-outline btn-sm" onclick="irACalificar()">← Volver a Calificar</button>
           <button class="btn btn-primary btn-sm" onclick="exportarExcel()">📊 Exportar CSV</button>
           <button class="btn btn-green btn-sm" onclick="guardarPodio()">🏆 Guardar Podio</button>
+          <button class="btn btn-terminar btn-sm" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -1227,6 +1235,53 @@ function volverAConfigurar() {
     document.getElementById('btnIniciarCal').disabled = false;
     setStep(1);
   });
+}
+
+// ── TERMINAR CATEGORÍA ──────────────────────────────────────────
+function terminarCategoria() {
+  if (!state.categoria) { toast('No hay categoría activa', 'error'); return; }
+  const catNombre = CAT_NOMBRES[state.categoria];
+  confirmar('🏁','TERMINAR CATEGORÍA',
+    `¿Terminar la calificación de ${catNombre}?\nSe borrarán todas las puntuaciones guardadas de esta categoría y volverás al inicio para empezar de nuevo.\nEsta acción no se puede deshacer.`,
+    'Terminar categoría','danger',
+    async () => {
+      loading(true, 'TERMINANDO CATEGORÍA...');
+      try {
+        await gasPost({ action: 'resetearCalificacionCategoria', categoria: state.categoria });
+        if (state.categoria !== 'bat') {
+          await gasPost({ action: 'desbloquearCategoria', categoria: catNombre }).catch(() => {});
+        }
+      } catch(e) { toast('Error al terminar categoría', 'error'); loading(false); return; }
+
+      // Reset completo de estado local
+      localStorage.removeItem('panel_cal_sesion');
+      state.categoria = '';
+      state.criterios = [];
+      state.participantes = [];
+      state.calificaciones = {};
+      state.selectedId = null;
+      state.rondaActual = {};
+      state.rankingData = [];
+      state.lkFase = 1;
+      state.lkClasificados = [];
+      state.juezActual = null;
+      state.juezEmail = null;
+
+      // Reset visual paso 1
+      ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
+      document.getElementById('lkNota').classList.remove('show');
+      document.getElementById('batNota').classList.remove('show');
+      document.getElementById('configuracionPanel').classList.remove('show');
+      document.getElementById('btnVerRankingP1').style.display = 'none';
+      document.getElementById('btnIniciarCal').disabled = true;
+      document.getElementById('juezBadgeBar').classList.remove('show');
+      resetCrono();
+
+      loading(false);
+      toast(`✅ Categoría ${catNombre} terminada`, 'success');
+      setStep(1);
+    }
+  );
 }
 
 async function cargarRanking() {
