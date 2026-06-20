@@ -233,8 +233,9 @@
       .then(r => r.json())
       .then(data => {
         if (!Array.isArray(data)) return;
-        const total = data.length;
-        const instituciones = new Set(data.map(p => (p.institucion || '').trim()).filter(Boolean)).size;
+        const reales = data.filter(p => !String(p.robot || '').trim().startsWith('[DEV]'));
+        const total = reales.length;
+        const instituciones = new Set(reales.map(p => (p.institucion || '').trim()).filter(Boolean)).size;
         aplicarStats(total, instituciones);
         localStorage.setItem(CACHE_KEY, JSON.stringify({
           p: total, i: instituciones, ts: Date.now()
