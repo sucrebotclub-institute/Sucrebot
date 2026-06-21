@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
-<head> 
+<head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel de Bracket · SucreBot 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -190,6 +190,20 @@
     .modal-btns{display:flex;gap:12px;justify-content:center}
     .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
     .empty-state-icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
+    .tp-wrap{margin-top:24px;background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:20px}
+    .tp-title{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px}
+    .tp-table{width:100%;border-collapse:collapse;font-size:.85rem}
+    .tp-table th{font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;text-align:center;padding:8px 6px;border-bottom:1.5px solid var(--border2)}
+    .tp-table td{text-align:center;padding:9px 6px;color:var(--text);border-bottom:1px solid var(--border)}
+    .tp-table tr:first-child td{background:rgba(46,204,113,.07)}
+    .tp-nombre{text-align:left !important;font-weight:700}
+    .tp-pos{font-family:'Orbitron';font-weight:700;color:var(--cyan)}
+    .tp-puntos{font-family:'Orbitron';font-weight:900;color:var(--green)}
+    .tp-nota{margin-top:12px;font-size:.75rem;color:var(--muted);text-align:center}
+    .podio-manual-campos{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .pm-label{font-family:'Orbitron';font-size:.65rem;letter-spacing:1px;color:var(--muted);margin-top:10px}
+    .pm-select{background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Exo 2';font-size:.9rem;outline:none;width:100%}
+    .pm-select:focus{border-color:var(--cyan)}
   </style>
 </head>
 <body>
@@ -205,6 +219,26 @@
     <div class="modal-btns">
       <button class="btn btn-outline btn-sm" onclick="cerrarModal()">Cancelar</button>
       <button class="btn btn-danger btn-sm" id="modalConfirmBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="podioManualModal">
+  <div class="modal-box" style="max-width:480px;text-align:left;">
+    <div class="modal-icon" style="text-align:center;">🏆</div>
+    <div class="modal-title" style="text-align:center;">ASIGNAR PODIO MANUAL</div>
+    <div class="modal-msg" style="text-align:center;">Úsalo si el desempate automático no resuelve el orden, o si el juez decide aplicar otro criterio del reglamento.</div>
+    <div class="podio-manual-campos">
+      <label class="pm-label">🥇 1er lugar</label>
+      <select id="pmSelect1" class="pm-select"></select>
+      <label class="pm-label">🥈 2do lugar</label>
+      <select id="pmSelect2" class="pm-select"></select>
+      <label class="pm-label">🥉 3er lugar</label>
+      <select id="pmSelect3" class="pm-select"></select>
+    </div>
+    <div class="modal-btns" style="margin-top:20px;">
+      <button class="btn btn-outline btn-sm" onclick="cerrarPodioManual()">Cancelar</button>
+      <button class="btn btn-green btn-sm" onclick="guardarPodioManualUI()">Guardar podio</button>
     </div>
   </div>
 </div>
@@ -339,10 +373,12 @@
           <button class="btn btn-outline btn-sm" onclick="volverPaso1()">← Nueva categoría</button>
           <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
           <button class="btn btn-outline btn-sm" id="btnVerPodio" onclick="verPodioEnBracket()" style="display:none;">📊 Ver Podio</button>
+          <button class="btn btn-outline btn-sm" onclick="abrirPodioManual()">🏆 Podio Manual</button>
           <button class="btn btn-green btn-sm" id="btnPodio" onclick="guardarPodio()" style="display:none;">🏆 Guardar Podio</button>
         </div>
       </div>
       <div class="bracket-wrap"><div class="bracket-fases" id="bracketFases"></div></div>
+      <div id="tabla-posiciones-display"></div>
       <div id="podio-display"></div>
     </div>
   </div>
@@ -361,8 +397,10 @@ const CAT_INFO = {
   ms_rc: { nombre: 'Minisumo RC',       tipo: 'minisumo', gasNombre: 'Minisumo RC' },
   soc:   { nombre: 'Robot Soccer',      tipo: 'soccer',   gasNombre: 'Robot soccer' }
 };
-let state = { categoria:'', tipo:'', participantes:[], seleccionados:new Set(), bracket:null, bracketBloqueado:false, podio:[] };
+let state = { categoria:'', tipo:'', participantes:[], seleccionados:new Set(), bracket:null, bracketBloqueado:false, podio:[], tablaPosiciones:null, podioManual:null };
 let cron = { partido:null, duracion:2, segundos:0, fase:'idle', corriendo:false, interval:null, golesA:0, golesB:0, penalesA:0, penalesB:0, penIntentosA:0, penIntentosB:0, amonA:0, amonB:0, huboAlargue:false };
+
+function esTodosContraTodos() { return state.bracket?.fases?.length===1 && state.bracket.fases[0].nombre==='TODOS CONTRA TODOS'; }
 
 function loading(show, txt='CARGANDO...') { document.getElementById('loadingOverlay').classList.toggle('show',show); document.getElementById('loadingTxt').textContent=txt; }
 let _toastTimer;
@@ -444,8 +482,8 @@ function actualizarContadorSel() { const n=state.seleccionados.size; document.ge
 function seleccionarTodos()   { state.participantes.forEach(p=>state.seleccionados.add(p.id)); renderSeleccion(); }
 function deseleccionarTodos() { state.seleccionados.clear(); renderSeleccion(); }
 function volverPaso1() {
-  state.categoria=''; state.tipo=''; state.participantes=[]; state.seleccionados=new Set(); state.bracket=null; state.bracketBloqueado=false;
-  document.getElementById('podio-display').innerHTML=''; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected')); setStep(1);
+  state.categoria=''; state.tipo=''; state.participantes=[]; state.seleccionados=new Set(); state.bracket=null; state.bracketBloqueado=false; state.tablaPosiciones=null;
+  document.getElementById('podio-display').innerHTML=''; document.getElementById('tabla-posiciones-display').innerHTML=''; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected')); setStep(1);
 }
 
 // ── GENERAR BRACKET ──
@@ -453,7 +491,11 @@ async function generarBracket() {
   if(state.seleccionados.size<2){toast('Selecciona al menos 2','error');return;}
   if(state.bracketBloqueado){toast('Ya hay un bracket generado','error');return;}
   const presentes=state.participantes.filter(p=>state.seleccionados.has(p.id));
-  confirmar('🏆','GENERAR BRACKET',`¿Generar bracket con ${presentes.length} ${state.tipo==='soccer'?'equipos':'robots'}? Los emparejamientos serán aleatorios e inmutables.`,'Generar','success',
+  const esImpar3=presentes.length===3;
+  const msg=esImpar3
+    ? `Con 3 ${state.tipo==='soccer'?'equipos':'robots'} se arma un todos-contra-todos (cada uno juega contra los otros 2), en vez de un bracket con pase directo. ¿Generar?`
+    : `¿Generar bracket con ${presentes.length} ${state.tipo==='soccer'?'equipos':'robots'}? Los emparejamientos serán aleatorios e inmutables.`;
+  confirmar('🏆','GENERAR BRACKET',msg,'Generar','success',
     async()=>{
       loading(true,'GENERANDO BRACKET...');
       try{
@@ -470,13 +512,56 @@ async function generarBracket() {
 // ── RENDERIZAR BRACKET ──
 function renderBracket() {
   const container=document.getElementById('bracketFases');
-  if(!state.bracket?.fases?.length){ container.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><p>No hay bracket disponible.</p></div>'; return; }
+  if(!state.bracket?.fases?.length){ container.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><p>No hay bracket disponible.</p></div>'; document.getElementById('tabla-posiciones-display').innerHTML=''; return; }
   const fases=state.bracket.fases;
-  const faseFinalRender=fases.find(f=>f.nombre==='FINAL');
-  const finalizado=faseFinalRender?.partidos?.some(p=>p.estado==='FINALIZADO'&&p.ganador_id);
+  const esRR=esTodosContraTodos();
+  let finalizado;
+  if(esRR){
+    const partidos=fases[0].partidos||[];
+    finalizado=partidos.length>0 && partidos.every(p=>p.estado==='FINALIZADO');
+  } else {
+    const faseFinalRender=fases.find(f=>f.nombre==='FINAL');
+    finalizado=faseFinalRender?.partidos?.some(p=>p.estado==='FINALIZADO'&&p.ganador_id);
+  }
   document.getElementById('btnPodio').style.display=finalizado?'inline-flex':'none';
   document.getElementById('btnVerPodio').style.display=finalizado?'inline-flex':'none';
   container.innerHTML=fases.map(fase=>`<div class="bracket-fase"><div class="fase-label">${fase.nombre}</div><div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`).join('');
+  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; }
+}
+
+// ── TABLA DE POSICIONES (todos contra todos) ──
+async function cargarTablaPosiciones() {
+  try{
+    const res=await gasGet({action:'getTablaPosiciones',categoria:state.categoria});
+    state.tablaPosiciones=(res.ok&&Array.isArray(res.tabla))?res.tabla:[];
+  }catch(e){ state.tablaPosiciones=[]; }
+  renderTablaPosiciones();
+}
+function renderTablaPosiciones() {
+  const cont=document.getElementById('tabla-posiciones-display');
+  const tabla=state.tablaPosiciones||[];
+  if(!tabla.length){ cont.innerHTML=''; return; }
+  const conMarcador=tabla.some(t=>t.tieneMarcador);
+  const filas=tabla.map((t,i)=>{
+    const pos=i+1;
+    return`<tr>
+      <td class="tp-pos">${pos}º</td>
+      <td class="tp-nombre">${t.nombre}</td>
+      <td>${t.jugados}</td>
+      <td>${t.victorias}</td>
+      <td>${t.derrotas}</td>
+      ${conMarcador?`<td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia>0?'+':''}${t.diferencia}</td>`:''}
+      <td class="tp-puntos">${t.puntos}</td>
+    </tr>`;
+  }).join('');
+  cont.innerHTML=`<div class="tp-wrap"><div class="tp-title">📊 Tabla de posiciones — Todos contra todos</div>
+    <table class="tp-table"><thead><tr>
+      <th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>P</th>
+      ${conMarcador?'<th>GF</th><th>GC</th><th>DIF</th>':''}
+      <th>PTS</th>
+    </tr></thead><tbody>${filas}</tbody></table>
+    <div class="tp-nota">Empates en puntos${conMarcador?' (y diferencia)':''} se resuelven con el botón "🏆 Podio Manual" →</div>
+    </div>`;
 }
 function renderPartido(p) {
   if(p.tipo==='BYE') return`<div class="partido-card bye"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · Pasa directo</div></div>`;
@@ -514,51 +599,105 @@ function resetearBracket() {
   confirmar('🗑','RESETEAR BRACKET',`¿Eliminar el bracket de ${CAT_INFO[state.categoria]?.nombre}? Esta acción no se puede deshacer.`,'Resetear','danger',
     async()=>{
       loading(true,'RESETEANDO...');
-      try{ const res=await gasPost({action:'resetearBracketGeneral',categoria:state.categoria}); if(!res.ok)throw new Error(res.error||'Error'); state.bracket=null; state.bracketBloqueado=false; state.seleccionados=new Set(); document.getElementById('podio-display').innerHTML=''; toast('Bracket reseteado','success'); renderSeleccion(); setStep(2); }
+      try{ const res=await gasPost({action:'resetearBracketGeneral',categoria:state.categoria}); if(!res.ok)throw new Error(res.error||'Error'); state.bracket=null; state.bracketBloqueado=false; state.seleccionados=new Set(); state.tablaPosiciones=null; document.getElementById('podio-display').innerHTML=''; document.getElementById('tabla-posiciones-display').innerHTML=''; toast('Bracket reseteado','success'); renderSeleccion(); setStep(2); }
       catch(e){toast('Error: '+e.message,'error');}
       loading(false);
     }
   );
 }
 
-// ── VER PODIO ──
-function verPodioEnBracket() {
-  if(!state.bracket?.fases?.length)return;
-  const fases=state.bracket.fases;
+// ── PODIO: cálculo unificado (manual > todos-contra-todos > bracket normal) ──
+function obtenerEquiposDelBracket() {
+  if(!state.bracket?.fases?.length) return [];
+  const mapa={};
+  state.bracket.fases.forEach(fase=>{
+    fase.partidos.forEach(p=>{
+      if(p.equipo_a_id) mapa[p.equipo_a_id]=p.equipo_a_nombre;
+      if(p.equipo_b_id) mapa[p.equipo_b_id]=p.equipo_b_nombre;
+    });
+  });
+  return Object.entries(mapa).map(([id,nombre])=>({id,nombre}));
+}
+
+async function obtenerPodioCalculado() {
+  // 1. Prioridad máxima: podio asignado manualmente por el juez
+  try{
+    const rm=await gasGet({action:'getPodioManual',categoria:state.categoria});
+    if(rm.ok&&Array.isArray(rm.podio)&&rm.podio.length>=2){
+      const porPos={}; rm.podio.forEach(p=>porPos[p.posicion]=p);
+      return { manual:true,
+        primero:{id:porPos[1]?.equipo_id,nombre:porPos[1]?.equipo_nombre},
+        segundo:{id:porPos[2]?.equipo_id,nombre:porPos[2]?.equipo_nombre},
+        tercero:porPos[3]?{id:porPos[3].equipo_id,nombre:porPos[3].equipo_nombre}:null,
+        cuarto:null };
+    }
+  }catch(e){}
+
+  // 2. Todos contra todos (bracket final impar, n=3): usar tabla de posiciones
+  if(esTodosContraTodos()){
+    if(!state.tablaPosiciones) await cargarTablaPosiciones();
+    const t=state.tablaPosiciones||[];
+    if(t.length<3) return null;
+    const empatado=t[1]&&t[2]&&t[1].puntos===t[2].puntos&&t[1].diferencia===t[2].diferencia;
+    return { manual:false, empatado,
+      primero:{id:t[0].id,nombre:t[0].nombre},
+      segundo:{id:t[1].id,nombre:t[1].nombre},
+      tercero:{id:t[2].id,nombre:t[2].nombre},
+      cuarto:null };
+  }
+
+  // 3. Bracket normal: FINAL + 3ER LUGAR
+  const fases=state.bracket?.fases||[];
   const faseFinal=fases.find(f=>f.nombre==='FINAL');
   const partidoFinal=faseFinal?.partidos?.find(p=>p.estado==='FINALIZADO'&&p.ganador_id);
-  if(!partidoFinal){toast('La final aún no ha terminado','error');return;}
+  if(!partidoFinal) return null;
   const ganadorId=partidoFinal.ganador_id;
   const perdedorId=ganadorId===partidoFinal.equipo_a_id?partidoFinal.equipo_b_id:partidoFinal.equipo_a_id;
   const ganadorNombre=ganadorId===partidoFinal.equipo_a_id?partidoFinal.equipo_a_nombre:partidoFinal.equipo_b_nombre;
   const perdedorNombre=perdedorId===partidoFinal.equipo_a_id?partidoFinal.equipo_a_nombre:partidoFinal.equipo_b_nombre;
-  let tercerosHTML='';
+  let tercero=null, cuarto=null, partido3erPendiente=false;
   const fase3er=fases.find(f=>f.nombre==='3ER LUGAR');
-  if(fase3er?.partidos?.length){
-    const p3=fase3er.partidos[0];
+  const p3=fase3er?.partidos?.[0];
+  if(p3){
     if(p3.estado==='FINALIZADO'&&p3.ganador_id){
-      const bronce4to=p3.ganador_id;
-      const bronce4toNombre=bronce4to===p3.equipo_a_id?p3.equipo_a_nombre:p3.equipo_b_nombre;
-      const cuartoNombre=bronce4to===p3.equipo_a_id?p3.equipo_b_nombre:p3.equipo_a_nombre;
-      tercerosHTML=`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${bronce4toNombre}</div><div class="podio-item-label">TERCER LUGAR</div></div><div class="podio-item" style="border:1px solid rgba(150,150,150,.2);"><div class="podio-item-icon">4️⃣</div><div class="podio-item-nombre" style="color:#8a90a8;">${cuartoNombre}</div><div class="podio-item-label">CUARTO LUGAR</div></div>`;
-    } else {
-      tercerosHTML=`<div class="podio-item bronce" style="opacity:.7;"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre" style="font-size:.85rem;">${p3.equipo_a_nombre} vs ${p3.equipo_b_nombre}</div><div class="podio-item-label">3ER LUGAR — Por jugar</div></div>`;
+      const bronceId=p3.ganador_id;
+      const cuartoId=bronceId===p3.equipo_a_id?p3.equipo_b_id:p3.equipo_a_id;
+      tercero={id:bronceId,nombre:bronceId===p3.equipo_a_id?p3.equipo_a_nombre:p3.equipo_b_nombre};
+      cuarto={id:cuartoId,nombre:cuartoId===p3.equipo_a_id?p3.equipo_a_nombre:p3.equipo_b_nombre};
+    } else { partido3erPendiente=true; }
+  }
+  return { manual:false, primero:{id:ganadorId,nombre:ganadorNombre}, segundo:{id:perdedorId,nombre:perdedorNombre}, tercero, cuarto, partido3erPendiente };
+}
+
+// ── VER PODIO ──
+async function verPodioEnBracket() {
+  const podio=await obtenerPodioCalculado();
+  if(!podio){ toast('Aún no hay suficiente información para mostrar el podio','error'); return; }
+  let tercerosHTML='';
+  if(podio.manual){
+    tercerosHTML=podio.tercero?`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${podio.tercero.nombre||'—'}</div><div class="podio-item-label">TERCER LUGAR</div></div>`:'';
+  } else if(esTodosContraTodos()){
+    tercerosHTML=`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${podio.tercero.nombre}</div><div class="podio-item-label">TERCER LUGAR</div></div>`;
+    if(podio.empatado) tercerosHTML+=`<div class="aviso-empty" style="grid-column:1/-1;">⚠️ Empate entre 2° y 3° puesto — usa "🏆 Podio Manual" para definir el orden</div>`;
+  } else {
+    if(podio.tercero){
+      tercerosHTML=`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${podio.tercero.nombre}</div><div class="podio-item-label">TERCER LUGAR</div></div><div class="podio-item" style="border:1px solid rgba(150,150,150,.2);"><div class="podio-item-icon">4️⃣</div><div class="podio-item-nombre" style="color:#8a90a8;">${podio.cuarto?.nombre||'—'}</div><div class="podio-item-label">CUARTO LUGAR</div></div>`;
+    } else if(podio.partido3erPendiente){
+      tercerosHTML=`<div class="podio-item bronce" style="opacity:.7;"><div class="podio-item-icon">🥉</div><div class="podio-item-label">3ER LUGAR — Por jugar</div></div>`;
     }
   }
-  document.getElementById('podio-display').innerHTML=`<div class="podio-display"><div class="podio-display-title">🏆 Podio — ${CAT_INFO[state.categoria]?.nombre}</div><div class="podio-grid"><div class="podio-item oro"><div class="podio-item-icon">🥇</div><div class="podio-item-nombre">${ganadorNombre||'—'}</div><div class="podio-item-label">GANADOR</div></div><div class="podio-item plata"><div class="podio-item-icon">🥈</div><div class="podio-item-nombre">${perdedorNombre||'—'}</div><div class="podio-item-label">SUBCAMPEÓN</div></div>${tercerosHTML}</div></div>`;
+  const etiquetaManual=podio.manual?' <span style="font-size:.6rem;color:var(--orange);">(asignado manualmente)</span>':'';
+  document.getElementById('podio-display').innerHTML=`<div class="podio-display"><div class="podio-display-title">🏆 Podio — ${CAT_INFO[state.categoria]?.nombre}${etiquetaManual}</div><div class="podio-grid"><div class="podio-item oro"><div class="podio-item-icon">🥇</div><div class="podio-item-nombre">${podio.primero.nombre||'—'}</div><div class="podio-item-label">GANADOR</div></div><div class="podio-item plata"><div class="podio-item-icon">🥈</div><div class="podio-item-nombre">${podio.segundo.nombre||'—'}</div><div class="podio-item-label">SUBCAMPEÓN</div></div>${tercerosHTML}</div></div>`;
   document.getElementById('podio-display').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 // ── GUARDAR PODIO ──
 async function guardarPodio() {
-  if(!state.bracket?.fases?.length)return;
-  const fases=state.bracket.fases;
-  const faseFinal=fases.find(f=>f.nombre==='FINAL');
-  const partidoFinal=faseFinal?.partidos?.find(p=>p.estado==='FINALIZADO');
-  if(!partidoFinal){toast('La final no ha terminado aún','error');return;}
-  const fase3er=fases.find(f=>f.nombre==='3ER LUGAR');
-  const partido3er=fase3er?.partidos?.[0];
-  if(partido3er&&partido3er.estado!=='FINALIZADO'){toast('El partido por el 3er lugar aún no ha terminado','error');return;}
+  const podio=await obtenerPodioCalculado();
+  if(!podio){ toast('Aún no hay suficiente información para guardar el podio','error'); return; }
+  if(!podio.manual&&podio.partido3erPendiente){ toast('El partido por el 3er lugar aún no ha terminado','error'); return; }
+  if(!podio.manual&&esTodosContraTodos()&&podio.empatado){ toast('Hay un empate sin resolver — usa "🏆 Podio Manual" primero','error'); return; }
+
   confirmar('🏆','GUARDAR PODIO',`¿Guardar el podio de ${CAT_INFO[state.categoria]?.nombre} en certificados?`,'Guardar','success',
     async()=>{
       loading(true,'GUARDANDO PODIO...');
@@ -589,26 +728,57 @@ async function guardarPodio() {
       }
 
       try{
-        const ganadorId=partidoFinal.ganador_id;
-        const perdedorId=ganadorId===partidoFinal.equipo_a_id?partidoFinal.equipo_b_id:partidoFinal.equipo_a_id;
-        const ganadorNombre=ganadorId===partidoFinal.equipo_a_id?(partidoFinal.equipo_a_nombre||''):(partidoFinal.equipo_b_nombre||'');
-        const perdedorNombre=perdedorId===partidoFinal.equipo_a_id?(partidoFinal.equipo_a_nombre||''):(partidoFinal.equipo_b_nombre||'');
-        await guardarCertEquipo(ganadorId,ganadorNombre,'GANADOR');
-        await guardarCertEquipo(perdedorId,perdedorNombre,'SUBCAMPEÓN');
-        if(partido3er&&partido3er.estado==='FINALIZADO'&&partido3er.ganador_id){
-          const bronceId=partido3er.ganador_id;
-          const cuartoId=bronceId===partido3er.equipo_a_id?partido3er.equipo_b_id:partido3er.equipo_a_id;
-          const bronceNombre=bronceId===partido3er.equipo_a_id?partido3er.equipo_a_nombre:partido3er.equipo_b_nombre;
-          const cuartoNombre=cuartoId===partido3er.equipo_a_id?partido3er.equipo_a_nombre:partido3er.equipo_b_nombre;
-          await guardarCertEquipo(bronceId,bronceNombre,'TERCER LUGAR');
-          await guardarCertEquipo(cuartoId,cuartoNombre,'PARTICIPACIÓN');
-        }
+        await guardarCertEquipo(podio.primero.id,podio.primero.nombre,'GANADOR');
+        await guardarCertEquipo(podio.segundo.id,podio.segundo.nombre,'SUBCAMPEÓN');
+        if(podio.tercero) await guardarCertEquipo(podio.tercero.id,podio.tercero.nombre,'TERCER LUGAR');
+        if(podio.cuarto)  await guardarCertEquipo(podio.cuarto.id,podio.cuarto.nombre,'PARTICIPACIÓN');
         toast('🏆 Podio guardado en certificados','success');
         verPodioEnBracket();
       }catch(e){toast('Error: '+e.message,'error');}
       loading(false);
     }
   );
+}
+
+// ── PODIO MANUAL ──
+function abrirPodioManual() {
+  const equipos=obtenerEquiposDelBracket();
+  if(equipos.length<2){ toast('No hay suficientes equipos en el bracket','error'); return; }
+  const opciones=`<option value="">— Seleccionar —</option>`+equipos.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+  document.getElementById('pmSelect1').innerHTML=opciones;
+  document.getElementById('pmSelect2').innerHTML=opciones;
+  document.getElementById('pmSelect3').innerHTML=opciones;
+  if(state.tablaPosiciones?.length){
+    if(state.tablaPosiciones[0]) document.getElementById('pmSelect1').value=state.tablaPosiciones[0].id;
+    if(state.tablaPosiciones[1]) document.getElementById('pmSelect2').value=state.tablaPosiciones[1].id;
+    if(state.tablaPosiciones[2]) document.getElementById('pmSelect3').value=state.tablaPosiciones[2].id;
+  }
+  document.getElementById('podioManualModal').classList.add('show');
+}
+function cerrarPodioManual() { document.getElementById('podioManualModal').classList.remove('show'); }
+
+async function guardarPodioManualUI() {
+  const equipos=obtenerEquiposDelBracket();
+  const idMap=Object.fromEntries(equipos.map(e=>[e.id,e.nombre]));
+  const s1=document.getElementById('pmSelect1').value;
+  const s2=document.getElementById('pmSelect2').value;
+  const s3=document.getElementById('pmSelect3').value;
+  if(!s1||!s2||!s3){ toast('Selecciona los 3 lugares','error'); return; }
+  if(new Set([s1,s2,s3]).size<3){ toast('No puedes repetir el mismo equipo en dos lugares','error'); return; }
+  const posiciones=[
+    {posicion:1,equipo_id:s1,equipo_nombre:idMap[s1]},
+    {posicion:2,equipo_id:s2,equipo_nombre:idMap[s2]},
+    {posicion:3,equipo_id:s3,equipo_nombre:idMap[s3]}
+  ];
+  loading(true,'GUARDANDO PODIO...');
+  try{
+    const r=await gasPost({action:'guardarPodioManual',categoria:state.categoria,posiciones});
+    if(!r.ok) throw new Error(r.error||'Error');
+    toast('🏆 Podio manual guardado','success');
+    cerrarPodioManual();
+    verPodioEnBracket();
+  }catch(e){ toast('Error: '+e.message,'error'); }
+  loading(false);
 }
 
 // ── CRONÓMETRO SOCCER ──
