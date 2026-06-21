@@ -172,6 +172,7 @@
     .modal-comprobante img { max-width:100%; height:auto; border-radius:12px; border:2px solid #e8f0ff; box-shadow:0 4px 16px rgba(26,92,168,0.15); }
     .modal-comprobante-link { display:inline-block; margin-top:12px; color:var(--p-blue); font-family:'Exo 2',sans-serif; font-size:13px; font-weight:600; text-decoration:none; }
     .modal-comprobante-link:hover { color:var(--p-blue-dark); text-decoration:underline; }
+    .modal-comprobante-numero { font-family:'DM Mono',monospace; font-size:12px; font-weight:700; letter-spacing:0.5px; color:#1a3a6e; background:#eef4fb; border:1px solid #d7e6f7; padding:4px 10px; border-radius:6px; text-transform:none; white-space:nowrap; }
     .modal-actions { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:28px; }
     .modal-btn { font-family:'Orbitron',monospace; font-size:11px; font-weight:700; padding:16px 20px; border-radius:12px; border:2px solid rgba(255,255,255,0.3); cursor:pointer; transition:all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55); display:flex; align-items:center; justify-content:center; gap:8px; text-transform:uppercase; letter-spacing:1.2px; box-shadow:0 4px 16px rgba(0,0,0,0.15); color:#ffffff; }
     .modal-btn-eliminar { background:linear-gradient(135deg,var(--p-error-light) 0%,var(--p-error) 100%); }
@@ -373,7 +374,10 @@
         </div>
       </div>
       <div class="modal-section">
-        <div class="modal-section-title">💳 Comprobante de Pago</div>
+        <div class="modal-section-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span>💳 Comprobante de Pago</span>
+          <span id="rev-comprobante-numero" class="modal-comprobante-numero">N° —</span>
+        </div>
         <div class="modal-comprobante">
           <img id="rev-comprobante" src="" alt="Comprobante" style="display:none;">
           <a id="rev-comprobante-link" href="" target="_blank" style="display:none;">🔗 Ver en tamaño completo</a>
@@ -698,6 +702,8 @@
     const imgEl=document.getElementById('rev-comprobante'),linkEl=document.getElementById('rev-comprobante-link');
     if(p.archivoUrl){const m=p.archivoUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);imgEl.src=m?'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w800':p.archivoUrl;imgEl.style.display='block';linkEl.href=p.archivoUrl;linkEl.style.display='inline-block';}
     else{imgEl.style.display='none';linkEl.style.display='none';}
+    const numComprobante=strVal(p.comprobante);
+    document.getElementById('rev-comprobante-numero').textContent=numComprobante?('N° '+numComprobante):'N° —';
     const aprobado=p.aprobado==='APROBADO';
     document.getElementById('btn-eliminar').style.display=aprobado?'none':'flex';
     document.getElementById('btn-aprobar').style.display=aprobado?'none':'flex';
