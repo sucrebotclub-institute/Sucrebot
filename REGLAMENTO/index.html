@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>Reglamento - SucreBot 2026</title>
+    <title>Reglamentos - SucreBot 2026</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Orbitron:wght@500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="../shared/js/config.js"></script>
@@ -58,6 +58,16 @@
         }
         .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
         .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
+
+        .reg-actualizado {
+            display: inline-flex; align-items: center; gap: 7px;
+            margin-top: 18px; padding: 7px 16px;
+            background: rgba(26,92,168,0.07); border: 1px solid rgba(26,92,168,0.18);
+            border-radius: 20px; width: fit-content;
+            font-family: 'Exo 2', sans-serif; font-size: 12.5px;
+            font-weight: 600; color: #1a5ca8; letter-spacing: 0.3px;
+        }
+        .reg-actualizado svg { width: 14px; height: 14px; flex-shrink: 0; }
 
         .reglamento-layout {
             display: flex; align-items: flex-start;
@@ -195,9 +205,13 @@
                     <div class="page-hero-badge-dot"></div>
                     SUCREBOT 2026 · TORNEO DE ROBÓTICA
                 </div>
-                <h2>REGLA<span>MENTO</span></h2>
+                <h2>REGLA<span>MENTOS</span></h2>
                 <div class="page-hero-sub">
                     <p>NORMAS Y REGLAS OFICIALES DEL TORNEO SUCREBOT 2026</p>
+                </div>
+                <div class="reg-actualizado" id="fecha-actualizacion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span id="fecha-actualizacion-texto">Actualizado: —</span>
                 </div>
             </div>
 
@@ -322,7 +336,16 @@ function cerrarIframe(iframeId, e) {
   if (btn) btn.textContent = '👁 Vista previa';
 }
 
+function actualizarFechaHoy() {
+  const el = document.getElementById('fecha-actualizacion-texto');
+  if (!el) return;
+  const hoy = new Date();
+  const formato = hoy.toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' });
+  el.textContent = `Actualizado: ${formato}`;
+}
+
 document.addEventListener('componentsLoaded', renderReglamentos);
+actualizarFechaHoy();
 </script>
 
 </body>
