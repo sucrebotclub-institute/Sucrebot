@@ -133,6 +133,19 @@
     .cron-config label{font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;color:var(--muted)}
     .cron-config input{width:70px;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Mono';font-size:.9rem;outline:none;text-align:center}
     .cron-config input:focus{border-color:var(--cyan)}
+    .cron-amonestaciones{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;background:rgba(243,156,18,.05);border:1px solid rgba(243,156,18,.2);border-radius:12px;padding:14px}
+    .cron-amon-eq{text-align:center}
+    .cron-amon-nombre{font-size:.7rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+    .cron-amon-count{font-family:'Orbitron';font-size:1.8rem;font-weight:900;color:var(--orange);margin-bottom:8px}
+    .cron-amon-count.alerta{color:var(--red);animation:parpadeo 1s infinite}
+    .btn-cron.amonestar{background:rgba(243,156,18,.15);color:var(--orange);border:1px solid rgba(243,156,18,.3);padding:8px;font-size:.65rem;width:100%}
+    .cron-pen-fase{font-family:'Orbitron';font-size:.6rem;color:var(--orange);text-align:center;margin-bottom:12px;letter-spacing:1px}
+    .cron-pen-intentos{font-size:.65rem;color:var(--muted);margin-top:4px}
+    .cron-pen-botones{display:flex;gap:6px;margin-top:8px}
+    .cron-pen-botones .btn-cron{padding:8px;font-size:.62rem;flex:1}
+    .btn-cron.fallar{background:rgba(231,76,60,.15);color:var(--red);border:1px solid rgba(231,76,60,.3)}
+    .cron-descalificar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .btn-cron.descalificar{background:rgba(231,76,60,.12);color:var(--red);border:1.5px solid rgba(231,76,60,.35);padding:10px;font-size:.62rem}
     .podio-display{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:20px}
     .podio-display-title{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);margin-bottom:16px;text-transform:uppercase}
     .podio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
@@ -204,7 +217,7 @@
     </div>
     <div class="cron-config">
       <label>DURACIÓN (MIN)</label>
-      <input type="number" id="cronDuracion" value="3" min="1" max="15">
+      <input type="number" id="cronDuracion" value="2" min="1" max="15">
       <button class="btn btn-outline btn-sm" onclick="aplicarDuracion()">Aplicar</button>
     </div>
     <div class="cron-marcador">
@@ -212,15 +225,44 @@
       <div class="cron-vs">VS</div>
       <div class="cron-equipo"><div class="cron-eq-nombre">Equipo B</div><div class="cron-eq-robot" id="cronNombreB">—</div><div class="cron-goles" id="cronGolesB">0</div></div>
     </div>
+    <div class="cron-amonestaciones" id="cronAmonestaciones">
+      <div class="cron-amon-eq">
+        <div class="cron-amon-nombre" id="amonNombreA">—</div>
+        <div class="cron-amon-count" id="amonCountA">0</div>
+        <button class="btn-cron amonestar" onclick="amonestar('A')">🟨 Amonestar</button>
+      </div>
+      <div class="cron-amon-eq">
+        <div class="cron-amon-nombre" id="amonNombreB">—</div>
+        <div class="cron-amon-count" id="amonCountB">0</div>
+        <button class="btn-cron amonestar" onclick="amonestar('B')">🟨 Amonestar</button>
+      </div>
+    </div>
     <div class="cron-tiempo-display">
-      <div class="cron-tiempo-num" id="cronTiempoNum">03:00</div>
+      <div class="cron-tiempo-num" id="cronTiempoNum">02:00</div>
       <div class="cron-tiempo-label" id="cronTiempoLabel">LISTO PARA INICIAR</div>
     </div>
     <div class="cron-penales" id="cronPenales">
       <div class="cron-pen-title">⚽ DEFINICIÓN POR PENALES</div>
+      <div class="cron-pen-fase" id="cronPenFase">Ronda inicial 1 / 3</div>
       <div class="cron-pen-grid">
-        <div class="cron-pen-eq"><div class="cron-pen-nombre" id="penNombreA">—</div><div class="cron-pen-count" id="penCountA">0</div><button class="btn-cron penal" style="margin-top:8px;" onclick="anotarPenal('A')">+ Penal</button></div>
-        <div class="cron-pen-eq"><div class="cron-pen-nombre" id="penNombreB">—</div><div class="cron-pen-count" id="penCountB">0</div><button class="btn-cron penal" style="margin-top:8px;" onclick="anotarPenal('B')">+ Penal</button></div>
+        <div class="cron-pen-eq">
+          <div class="cron-pen-nombre" id="penNombreA">—</div>
+          <div class="cron-pen-count" id="penCountA">0</div>
+          <div class="cron-pen-intentos" id="penIntentosA">Intentos: 0/3</div>
+          <div class="cron-pen-botones">
+            <button class="btn-cron penal" onclick="anotarPenal('A')">✅ Anotó</button>
+            <button class="btn-cron fallar" onclick="fallarPenal('A')">❌ Falló</button>
+          </div>
+        </div>
+        <div class="cron-pen-eq">
+          <div class="cron-pen-nombre" id="penNombreB">—</div>
+          <div class="cron-pen-count" id="penCountB">0</div>
+          <div class="cron-pen-intentos" id="penIntentosB">Intentos: 0/3</div>
+          <div class="cron-pen-botones">
+            <button class="btn-cron penal" onclick="anotarPenal('B')">✅ Anotó</button>
+            <button class="btn-cron fallar" onclick="fallarPenal('B')">❌ Falló</button>
+          </div>
+        </div>
       </div>
       <button class="btn-cron definir" onclick="definirPorPenales()">🏁 Definir ganador por penales</button>
     </div>
@@ -231,6 +273,10 @@
       <button class="btn-cron gol-b"     id="btnGolB"          onclick="anotarGol('B')">⚽ Gol B</button>
       <button class="btn-cron reiniciar" id="btnCronReiniciar" onclick="cronReiniciar()" style="grid-column:span 2;">🔄 Reiniciar tiempo</button>
       <button class="btn-cron terminar"  id="btnCronTerminar"  onclick="terminarPartidoSoccer()">🏁 Terminar partido</button>
+    </div>
+    <div class="cron-descalificar">
+      <button class="btn-cron descalificar" id="btnDescA" onclick="descalificarEquipo('A')">🚫 Descalificar A</button>
+      <button class="btn-cron descalificar" id="btnDescB" onclick="descalificarEquipo('B')">🚫 Descalificar B</button>
     </div>
     <button class="btn-cron cerrar" onclick="cerrarCronometro()" style="margin-top:8px;">✕ Cerrar sin guardar</button>
   </div>
@@ -316,7 +362,7 @@ const CAT_INFO = {
   soc:   { nombre: 'Robot Soccer',      tipo: 'soccer',   gasNombre: 'Robot soccer' }
 };
 let state = { categoria:'', tipo:'', participantes:[], seleccionados:new Set(), bracket:null, bracketBloqueado:false, podio:[] };
-let cron = { partido:null, duracion:3, segundos:0, fase:'idle', corriendo:false, interval:null, golesA:0, golesB:0, penalesA:0, penalesB:0 };
+let cron = { partido:null, duracion:2, segundos:0, fase:'idle', corriendo:false, interval:null, golesA:0, golesB:0, penalesA:0, penalesB:0, penIntentosA:0, penIntentosB:0, amonA:0, amonB:0, huboAlargue:false };
 
 function loading(show, txt='CARGANDO...') { document.getElementById('loadingOverlay').classList.toggle('show',show); document.getElementById('loadingTxt').textContent=txt; }
 let _toastTimer;
@@ -567,9 +613,10 @@ async function guardarPodio() {
 
 // ── CRONÓMETRO SOCCER ──
 function abrirCronometro(partido) {
-  cron.partido=partido; cron.duracion=parseInt(document.getElementById('cronDuracion').value)||3;
+  cron.partido=partido; cron.duracion=parseInt(document.getElementById('cronDuracion').value)||2;
   cron.segundos=cron.duracion*60; cron.fase='idle'; cron.corriendo=false;
   cron.golesA=0; cron.golesB=0; cron.penalesA=0; cron.penalesB=0;
+  cron.penIntentosA=0; cron.penIntentosB=0; cron.amonA=0; cron.amonB=0; cron.huboAlargue=false;
   if(cron.interval)clearInterval(cron.interval);
   const nombreA=partido.equipo_a_nombre||partido.equipoA_nombre||'?';
   const nombreB=partido.equipo_b_nombre||partido.equipoB_nombre||'?';
@@ -577,15 +624,19 @@ function abrirCronometro(partido) {
   document.getElementById('cronNombreA').textContent=nombreA; document.getElementById('cronNombreB').textContent=nombreB;
   document.getElementById('btnGolA').textContent=`⚽ Gol ${nombreA}`; document.getElementById('btnGolB').textContent=`⚽ Gol ${nombreB}`;
   document.getElementById('penNombreA').textContent=nombreA; document.getElementById('penNombreB').textContent=nombreB;
+  document.getElementById('amonNombreA').textContent=nombreA; document.getElementById('amonNombreB').textContent=nombreB;
+  document.getElementById('btnDescA').textContent=`🚫 Descalificar ${nombreA}`;
+  document.getElementById('btnDescB').textContent=`🚫 Descalificar ${nombreB}`;
   document.getElementById('cronFaseBadge').textContent='TIEMPO 1';
-  actualizarDisplayCron(); actualizarMarcadorCron();
+  document.getElementById('cronAmonestaciones').style.display='grid';
+  actualizarDisplayCron(); actualizarMarcadorCron(); actualizarAmonestaciones(); resetPenalesUI();
   document.getElementById('cronPenales').classList.remove('show');
   document.getElementById('btnCronIniciar').disabled=false; document.getElementById('btnCronIniciar').textContent='▶ Iniciar T1';
   document.getElementById('btnCronPausar').disabled=true;
   document.getElementById('cronOverlay').classList.add('show');
 }
 function cerrarCronometro() { if(cron.corriendo&&!confirm('¿Cerrar sin guardar el resultado?'))return; if(cron.interval)clearInterval(cron.interval); cron.corriendo=false; document.getElementById('cronOverlay').classList.remove('show'); }
-function aplicarDuracion() { const val=parseInt(document.getElementById('cronDuracion').value)||3; cron.duracion=val; cron.segundos=val*60; actualizarDisplayCron(); toast('Duración actualizada','success'); }
+function aplicarDuracion() { const val=parseInt(document.getElementById('cronDuracion').value)||2; cron.duracion=val; cron.segundos=val*60; actualizarDisplayCron(); toast('Duración actualizada','success'); }
 function cronIniciar() {
   if(cron.fase==='idle')cron.fase='t1'; cron.corriendo=true;
   document.getElementById('btnCronIniciar').disabled=true; document.getElementById('btnCronPausar').disabled=false;
@@ -596,10 +647,36 @@ function cronPausar() { cron.corriendo=false; if(cron.interval)clearInterval(cro
 function cronReiniciar() { if(!confirm('¿Reiniciar el tiempo actual?'))return; cronPausar(); cron.segundos=cron.duracion*60; actualizarDisplayCron(); document.getElementById('btnCronIniciar').textContent='▶ Iniciar'; }
 function finDeTiempo() {
   toast('⏱ ¡Tiempo terminado!');
-  if(cron.fase==='t1'){cron.fase='t2';cron.segundos=cron.duracion*60;actualizarDisplayCron();document.getElementById('cronFaseBadge').textContent='TIEMPO 2';document.getElementById('btnCronIniciar').textContent='▶ Iniciar T2';document.getElementById('btnCronIniciar').disabled=false;toast('Fin T1 — presiona Iniciar para T2');}
+  if(cron.fase==='t1'){
+    cron.fase='t2'; cron.segundos=cron.duracion*60; actualizarDisplayCron();
+    document.getElementById('cronFaseBadge').textContent='TIEMPO 2';
+    document.getElementById('btnCronIniciar').textContent='▶ Iniciar T2';
+    document.getElementById('btnCronIniciar').disabled=false;
+    toast('Fin T1 — descanso y presiona Iniciar para T2');
+  }
   else if(cron.fase==='t2'){
-    if(cron.golesA===cron.golesB){cron.fase='penales';document.getElementById('cronFaseBadge').textContent='PENALES';document.getElementById('cronPenales').classList.add('show');document.getElementById('btnCronIniciar').disabled=true;document.getElementById('penCountA').textContent=0;document.getElementById('penCountB').textContent=0;toast('¡Empate! Definición por penales');}
-    else{cron.fase='fin';terminarPartidoSoccer();}
+    if(cron.golesA===cron.golesB){
+      cron.fase='alargue'; cron.huboAlargue=true; cron.segundos=60; actualizarDisplayCron();
+      document.getElementById('cronFaseBadge').textContent='ALARGUE';
+      document.getElementById('btnCronIniciar').textContent='▶ Iniciar Alargue (1 min)';
+      document.getElementById('btnCronIniciar').disabled=false;
+      toast('¡Empate! Descanso de 1 min y luego alargue de 1 min');
+    } else {
+      cron.fase='fin'; terminarPartidoSoccer();
+    }
+  }
+  else if(cron.fase==='alargue'){
+    if(cron.golesA===cron.golesB){
+      cron.fase='penales';
+      document.getElementById('cronFaseBadge').textContent='PENALES';
+      document.getElementById('cronAmonestaciones').style.display='none';
+      document.getElementById('cronPenales').classList.add('show');
+      document.getElementById('btnCronIniciar').disabled=true;
+      resetPenalesUI();
+      toast('¡Sigue el empate! Definición por penales');
+    } else {
+      cron.fase='fin'; terminarPartidoSoccer();
+    }
   }
 }
 function anotarGol(equipo) {
@@ -609,14 +686,75 @@ function anotarGol(equipo) {
   const nombre=equipo==='A'?(cron.partido?.equipo_a_nombre||cron.partido?.equipoA_nombre):(cron.partido?.equipo_b_nombre||cron.partido?.equipoB_nombre);
   toast(`⚽ Gol de ${nombre}!`);
 }
-function anotarPenal(equipo) { if(equipo==='A'){cron.penalesA++;document.getElementById('penCountA').textContent=cron.penalesA;}else{cron.penalesB++;document.getElementById('penCountB').textContent=cron.penalesB;} }
+function anotarPenal(equipo) {
+  if(equipo==='A'){cron.penalesA++;cron.penIntentosA++;document.getElementById('penCountA').textContent=cron.penalesA;}
+  else{cron.penalesB++;cron.penIntentosB++;document.getElementById('penCountB').textContent=cron.penalesB;}
+  actualizarIntentosPenales();
+}
+function fallarPenal(equipo) {
+  if(equipo==='A'){cron.penIntentosA++;}else{cron.penIntentosB++;}
+  actualizarIntentosPenales();
+}
+function resetPenalesUI() {
+  cron.penalesA=0; cron.penalesB=0; cron.penIntentosA=0; cron.penIntentosB=0;
+  document.getElementById('penCountA').textContent=0;
+  document.getElementById('penCountB').textContent=0;
+  document.getElementById('cronPenFase').textContent='Ronda inicial 1 / 3';
+  actualizarIntentosPenales();
+}
+function actualizarIntentosPenales() {
+  const a=cron.penIntentosA, b=cron.penIntentosB;
+  document.getElementById('penIntentosA').textContent = a<3 ? `Intentos: ${a}/3` : `Intentos: ${a} (m.s.)`;
+  document.getElementById('penIntentosB').textContent = b<3 ? `Intentos: ${b}/3` : `Intentos: ${b} (m.s.)`;
+  const faseEl=document.getElementById('cronPenFase');
+  if(a<3||b<3){ faseEl.textContent=`Ronda inicial ${Math.min(Math.max(a,b)+1,3)} / 3`; }
+  else { const rs=Math.max(a-3,b-3)+1; faseEl.textContent=`⚡ Muerte súbita — Ronda ${rs}`; }
+}
 function definirPorPenales() { if(cron.penalesA===cron.penalesB){toast('Sigue el empate en penales','error');return;} cron.fase='fin';terminarPartidoSoccer(); }
+
+function amonestar(equipo) {
+  if(equipo==='A')cron.amonA++; else cron.amonB++;
+  actualizarAmonestaciones();
+  const n=equipo==='A'?cron.amonA:cron.amonB;
+  const nombre=equipo==='A'?(cron.partido?.equipo_a_nombre||cron.partido?.equipoA_nombre):(cron.partido?.equipo_b_nombre||cron.partido?.equipoB_nombre);
+  if(n>=5){toast(`⚠️ ${nombre} acumuló 5 amonestaciones — puedes descalificarlo abajo`,'error');}
+  else{toast(`🟨 Amonestación ${n}/5 — ${nombre}`);}
+}
+function actualizarAmonestaciones() {
+  const elA=document.getElementById('amonCountA'), elB=document.getElementById('amonCountB');
+  elA.textContent=cron.amonA; elB.textContent=cron.amonB;
+  elA.classList.toggle('alerta',cron.amonA>=5);
+  elB.classList.toggle('alerta',cron.amonB>=5);
+}
+async function descalificarEquipo(equipoInfractor) {
+  if(!cron.partido)return;
+  const nombreInfractor=equipoInfractor==='A'?(cron.partido?.equipo_a_nombre||cron.partido?.equipoA_nombre):(cron.partido?.equipo_b_nombre||cron.partido?.equipoB_nombre);
+  const nombreGanador=equipoInfractor==='A'?(cron.partido?.equipo_b_nombre||cron.partido?.equipoB_nombre):(cron.partido?.equipo_a_nombre||cron.partido?.equipoA_nombre);
+  if(!confirm(`¿Confirmas que "${nombreInfractor}" pierde por descalificación (5 amonestaciones o robots sin funcionar)?\n\nSe guardará el marcador con una diferencia de 2 goles a favor de "${nombreGanador}", según el reglamento.`))return;
+  const motivo=prompt('Motivo breve (ej: "5 amonestaciones" o "sin robots funcionales"):','5 amonestaciones');
+  if(motivo===null)return;
+  if(cron.interval)clearInterval(cron.interval); cron.corriendo=false;
+  const golesInfractorActual=equipoInfractor==='A'?cron.golesA:cron.golesB;
+  const golesGanadorActual=equipoInfractor==='A'?cron.golesB:cron.golesA;
+  const golesGanadorFinal=Math.max(golesGanadorActual,golesInfractorActual+2);
+  if(equipoInfractor==='A'){cron.golesB=golesGanadorFinal;}else{cron.golesA=golesGanadorFinal;}
+  actualizarMarcadorCron();
+  const ganadorId=equipoInfractor==='A'?cron.partido.equipo_b_id:cron.partido.equipo_a_id;
+  const marcador=`${cron.golesA}-${cron.golesB} (desc. ${motivo||'descalificación'})`;
+  loading(true,'GUARDANDO RESULTADO...');
+  try{
+    const res=await gasPost({action:'registrarResultadoGeneral',partido_id:cron.partido.partido_id||cron.partido.id,ganador_id:ganadorId,marcador,categoria:state.categoria});
+    if(!res.ok)throw new Error(res.error||'Error');
+    state.bracket=res.bracket; document.getElementById('cronOverlay').classList.remove('show'); toast(`🏆 Ganó ${nombreGanador} por descalificación`,'success'); renderBracket();
+  }catch(e){toast('Error: '+e.message,'error');}
+  loading(false);
+}
 async function terminarPartidoSoccer() {
   if(cron.fase!=='fin'){if(cron.golesA===cron.golesB&&cron.fase!=='penales'){toast('Hay empate — espera fin del T2','error');return;}if(cron.fase==='penales'&&cron.penalesA===cron.penalesB){toast('Debes definir el ganador por penales','error');return;}}
   const esPenales=cron.penalesA>0||cron.penalesB>0;
   let ganadorId,marcador;
-  if(esPenales){ganadorId=cron.penalesA>cron.penalesB?cron.partido.equipo_a_id:cron.partido.equipo_b_id;marcador=`${cron.golesA}-${cron.golesB} (pen ${cron.penalesA}-${cron.penalesB})`;}
-  else{ganadorId=cron.golesA>cron.golesB?cron.partido.equipo_a_id:cron.partido.equipo_b_id;marcador=`${cron.golesA}-${cron.golesB}`;}
+  if(esPenales){ganadorId=cron.penalesA>cron.penalesB?cron.partido.equipo_a_id:cron.partido.equipo_b_id;marcador=`${cron.golesA}-${cron.golesB}${cron.huboAlargue?' (alargue)':''} (pen ${cron.penalesA}-${cron.penalesB})`;}
+  else{ganadorId=cron.golesA>cron.golesB?cron.partido.equipo_a_id:cron.partido.equipo_b_id;marcador=`${cron.golesA}-${cron.golesB}${cron.huboAlargue?' (alargue)':''}`;}
   const ganadorNombre=ganadorId===cron.partido.equipo_a_id?(cron.partido.equipo_a_nombre||cron.partido.equipoA_nombre):(cron.partido.equipo_b_nombre||cron.partido.equipoB_nombre);
   if(cron.interval)clearInterval(cron.interval); cron.corriendo=false;
   loading(true,'GUARDANDO RESULTADO...');
@@ -631,7 +769,7 @@ function actualizarDisplayCron() {
   const m=Math.floor(cron.segundos/60),s=cron.segundos%60;
   const el=document.getElementById('cronTiempoNum'); el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   el.classList.toggle('alerta',cron.segundos<=30&&cron.segundos>0);
-  const fase=cron.fase==='t1'?'TIEMPO 1':cron.fase==='t2'?'TIEMPO 2':cron.fase==='penales'?'PENALES':'LISTO';
+  const fase=cron.fase==='t1'?'TIEMPO 1':cron.fase==='t2'?'TIEMPO 2':cron.fase==='alargue'?'ALARGUE':cron.fase==='penales'?'PENALES':'LISTO';
   document.getElementById('cronTiempoLabel').textContent=fase;
 }
 function actualizarMarcadorCron() { document.getElementById('cronGolesA').textContent=cron.golesA; document.getElementById('cronGolesB').textContent=cron.golesB; }
