@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>  
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>Reglamentos - SucreBot 2026</title>
@@ -59,15 +59,14 @@
         .page-hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
         .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
 
-        .reg-actualizado {
-            display: inline-flex; align-items: center; gap: 7px;
-            margin-top: 18px; padding: 7px 16px;
-            background: rgba(26,92,168,0.07); border: 1px solid rgba(26,92,168,0.18);
-            border-radius: 20px; width: fit-content;
-            font-family: 'Exo 2', sans-serif; font-size: 12.5px;
-            font-weight: 600; color: #1a5ca8; letter-spacing: 0.3px;
+        .reg-card-meta {
+            display: flex; flex-direction: column; align-items: flex-end;
+            gap: 5px; flex-shrink: 0;
         }
-        .reg-actualizado svg { width: 14px; height: 14px; flex-shrink: 0; }
+        .reg-card-fecha {
+            font-family: 'Exo 2', sans-serif; font-size: .68rem;
+            color: rgba(255,255,255,0.55); white-space: nowrap;
+        }
 
         .reglamento-layout {
             display: flex; align-items: flex-start;
@@ -209,10 +208,6 @@
                 <div class="page-hero-sub">
                     <p>NORMAS Y REGLAS OFICIALES DEL TORNEO SUCREBOT 2026</p>
                 </div>
-                <div class="reg-actualizado" id="fecha-actualizacion">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <span id="fecha-actualizacion-texto">Actualizado: —</span>
-                </div>
             </div>
 
             <div id="reglamentos-content"></div>
@@ -232,33 +227,35 @@
 <script>
 // ── Definición de categorías ──────────────────────────────────
 // Para agregar un PDF: pon el ID de Drive en driveId y cambia disponible: true
+// 👉 actualizado: cambia esta fecha (formato 'YYYY-MM-DD') solo de la categoría
+//    cuyo PDF subiste/modificaste de nuevo. Las demás no se tocan.
 const CATEGORIAS = [
   {
     nivel: '🏅 Amateur',
     items: [
-      { emoji: '🐛', nombre: 'Insectos',                         desc: 'Robots de combate pequeño formato', disponible: true, driveId: '19luFX8jYvLrikZe7CBuoL0nDoY9ZXSea' },
-      { emoji: '🧗', nombre: 'Trepador (Amateur)',               desc: 'Ascenso de estructura vertical',     disponible: true, driveId: '1CgvgGFzvD45kBiq-PN2szpht_q8hf5bI' },
-      { emoji: '➡️', nombre: 'Seguidor de línea ST (Amateur)',   desc: 'Seguimiento autónomo de trayectoria',disponible: true, driveId: '19ow_r0DQGJHVLZpsYjWQ4I3FKh-5zyKb' },
+      { emoji: '🐛', nombre: 'Insectos',                         desc: 'Robots de combate pequeño formato', disponible: true, driveId: '19luFX8jYvLrikZe7CBuoL0nDoY9ZXSea', actualizado: '2026-06-21' },
+      { emoji: '🧗', nombre: 'Trepador (Amateur)',               desc: 'Ascenso de estructura vertical',     disponible: true, driveId: '1CgvgGFzvD45kBiq-PN2szpht_q8hf5bI', actualizado: '2026-06-21' },
+      { emoji: '➡️', nombre: 'Seguidor de línea ST (Amateur)',   desc: 'Seguimiento autónomo de trayectoria',disponible: true, driveId: '19ow_r0DQGJHVLZpsYjWQ4I3FKh-5zyKb', actualizado: '2026-06-21' },
     ]
   },
   {
     nivel: '🏆 Pro',
     items: [
-      { emoji: '➡️', nombre: 'Seguidor de línea ST (Pro)',       desc: 'Seguimiento autónomo avanzado',       disponible: true, driveId: '1n8XoPGoMN7loU5XnRT-TY3lv1NVck5B1' },
-      { emoji: '⚔️', nombre: 'Minisumo Autónomo',               desc: 'Combate autónomo en ring circular',   disponible: true, driveId: '1KPMDzboKeqaIxATijc2smOsOt8sYwjEH' },
-      { emoji: '🕹️', nombre: 'Minisumo RC',                     desc: 'Combate con control remoto',          disponible: false, driveId: '' },
-      { emoji: '💃', nombre: 'Bailarín',                         desc: 'Coreografía sincronizada con música', disponible: true, driveId: '1cvkPhrl9cHjKTTT2W0BkU1MYK3WoBxu-' },
-      { emoji: '🥊', nombre: 'Batalla',                          desc: 'Combate por criterios de jurado',     disponible: true, driveId: '12GsGwOkg7qF5nFNturhilIf8ytQmh7ac' },
-      { emoji: '🧗', nombre: 'Trepador (Pro)',                   desc: 'Ascenso de estructura vertical Pro',  disponible: true, driveId: '1BIQTZygDrXJUzG_vogJOuzTpk_jH-ADa' },
-      { emoji: '⚽', nombre: 'Robot Soccer',                     desc: 'Fútbol robótico por equipos',         disponible: true, driveId: '1z96ZKATIUF9N5PhLSXHM7TSZil-AudzC' },
+      { emoji: '➡️', nombre: 'Seguidor de línea ST (Pro)',       desc: 'Seguimiento autónomo avanzado',       disponible: true, driveId: '1n8XoPGoMN7loU5XnRT-TY3lv1NVck5B1', actualizado: '2026-06-21' },
+      { emoji: '⚔️', nombre: 'Minisumo Autónomo',               desc: 'Combate autónomo en ring circular',   disponible: true, driveId: '1KPMDzboKeqaIxATijc2smOsOt8sYwjEH', actualizado: '2026-06-21' },
+      { emoji: '🕹️', nombre: 'Minisumo RC',                     desc: 'Combate con control remoto',          disponible: false, driveId: '', actualizado: '' },
+      { emoji: '💃', nombre: 'Bailarín',                         desc: 'Coreografía sincronizada con música', disponible: true, driveId: '1cvkPhrl9cHjKTTT2W0BkU1MYK3WoBxu-', actualizado: '2026-06-21' },
+      { emoji: '🥊', nombre: 'Batalla',                          desc: 'Combate por criterios de jurado',     disponible: true, driveId: '12GsGwOkg7qF5nFNturhilIf8ytQmh7ac', actualizado: '2026-06-21' },
+      { emoji: '🧗', nombre: 'Trepador (Pro)',                   desc: 'Ascenso de estructura vertical Pro',  disponible: true, driveId: '1BIQTZygDrXJUzG_vogJOuzTpk_jH-ADa', actualizado: '2026-06-21' },
+      { emoji: '⚽', nombre: 'Robot Soccer',                     desc: 'Fútbol robótico por equipos',         disponible: true, driveId: '1z96ZKATIUF9N5PhLSXHM7TSZil-AudzC', actualizado: '2026-06-21' },
     ]
   },
   {
     nivel: '🌟 Open',
     items: [
-      { emoji: '🟥', nombre: 'Cubo Rubik',                       desc: 'Resolución de cubo Rubik',            disponible: true, driveId: '1z2QWpejQW5TLfPIKEXBxk-gct8FGThPq' }, 
-      { emoji: '🧱', nombre: 'Lego Kids',                        desc: 'Ensamble y carrera con Lego',         disponible: true, driveId: '1pzugCG0nouoHlCfCbl2LEEBjSD0AVwou' },
-      { emoji: '💡', nombre: 'Impacto Tecnológico',              desc: 'Proyecto de innovación y tecnología',  disponible: true, driveId: '1pzugCG0nouoHlCfCbl2LEEBjSD0AVwou' },
+      { emoji: '🟥', nombre: 'Cubo Rubik',                       desc: 'Resolución de cubo Rubik',            disponible: true, driveId: '1z2QWpejQW5TLfPIKEXBxk-gct8FGThPq', actualizado: '2026-06-21' }, 
+      { emoji: '🧱', nombre: 'Lego Kids',                        desc: 'Ensamble y carrera con Lego',         disponible: true, driveId: '1pzugCG0nouoHlCfCbl2LEEBjSD0AVwou', actualizado: '2026-06-21' },
+      { emoji: '💡', nombre: 'Impacto Tecnológico',              desc: 'Proyecto de innovación y tecnología',  disponible: true, driveId: '1pzugCG0nouoHlCfCbl2LEEBjSD0AVwou', actualizado: '2026-06-21' },
     ]
   }
 ];
@@ -282,9 +279,12 @@ function renderReglamentos() {
               <div class="reg-card-desc">${cat.desc}</div>
             </div>
           </div>
-          <span class="reg-estado ${cat.disponible ? 'disponible' : 'pendiente'}">
-            ${cat.disponible ? '✓ Disponible' : '⏳ Próximamente'}
-          </span>
+          <div class="reg-card-meta">
+            <span class="reg-estado ${cat.disponible ? 'disponible' : 'pendiente'}">
+              ${cat.disponible ? '✓ Disponible' : '⏳ Próximamente'}
+            </span>
+            ${cat.disponible && cat.actualizado ? `<span class="reg-card-fecha">Actualizado: ${formatearFecha(cat.actualizado)}</span>` : ''}
+          </div>
         </div>
         ${cat.disponible ? `
         <div class="reg-acciones show">
@@ -336,16 +336,13 @@ function cerrarIframe(iframeId, e) {
   if (btn) btn.textContent = '👁 Vista previa';
 }
 
-function actualizarFechaHoy() {
-  const el = document.getElementById('fecha-actualizacion-texto');
-  if (!el) return;
-  const hoy = new Date();
-  const formato = hoy.toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' });
-  el.textContent = `Actualizado: ${formato}`;
+function formatearFecha(fechaStr) {
+  const [anio, mes, dia] = fechaStr.split('-').map(Number);
+  const fecha = new Date(anio, mes - 1, dia); // evita desfase de zona horaria
+  return fecha.toLocaleDateString('es-EC', { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '');
 }
 
 document.addEventListener('componentsLoaded', renderReglamentos);
-actualizarFechaHoy();
 </script>
 
 </body>
