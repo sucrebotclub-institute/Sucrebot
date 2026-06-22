@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
-    /* === ESTILOS IDÉNTICOS AL ORIGINAL === */
     :root { --cyan:#5bc8f0; --blue:#1a5ca8; --blue-d:#0a2a5a; --blue-dd:#071e45; --green:#2ecc71; --red:#e74c3c; --orange:#f39c12; --text:#e8eaf2; --muted:#8a90a8; --border:rgba(91,200,240,0.15); --border2:rgba(91,200,240,0.28); --panel:#0a2a5a; --panel2:#071e45; }
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#f0f4fa !important;font-family:'Exo 2',sans-serif;padding-top:0 !important}
@@ -68,6 +67,7 @@
     .part-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
     .part-badge{font-family:'Orbitron';font-size:.5rem;letter-spacing:1px;padding:2px 8px;border-radius:8px;flex-shrink:0;background:rgba(91,200,240,.12);color:var(--cyan);border:1px solid var(--border2)}
     .aviso-empty{background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.35);border-radius:8px;padding:12px 16px;font-size:.85rem;color:var(--orange);text-align:center;grid-column:1/-1}
+    /* ── Bracket normal ── */
     .bracket-wrap{overflow-x:auto}
     .bracket-fases{display:flex;gap:40px;min-width:max-content;padding:8px 0 16px}
     .bracket-fase{display:flex;flex-direction:column;min-width:260px}
@@ -95,30 +95,69 @@
     .btn-ganador:hover{background:#1e6bc4}
     .btn-jugar-soccer{width:100%;font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;padding:8px;border-radius:7px;border:none;cursor:pointer;background:var(--green);color:#fff;transition:all .2s}
     .btn-jugar-soccer:hover{background:#27ae60}
+    /* ── Soccer: grupos ── */
+    .soc-grupos-wrap{display:flex;flex-direction:column;gap:28px}
+    .soc-grupo{background:var(--panel2);border:1px solid var(--border2);border-radius:14px;padding:18px}
+    .soc-grupo-titulo{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .soc-grupo-titulo::before{content:'';width:3px;height:14px;background:var(--cyan);border-radius:2px}
+    .soc-partidos-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+    .soc-partido{display:flex;align-items:center;gap:8px;background:var(--panel);border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;transition:all .2s}
+    .soc-partido.finalizado{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.04)}
+    .soc-partido.desempate-pendiente{border-color:rgba(243,156,18,.5);background:rgba(243,156,18,.06)}
+    .soc-partido-equipos{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+    .soc-eq{flex:1;font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .soc-eq.ganador{color:var(--green)}
+    .soc-eq.perdedor{opacity:.5}
+    .soc-vs{font-family:'Orbitron';font-size:.6rem;color:var(--muted);flex-shrink:0}
+    .soc-marcador{font-family:'DM Mono';font-size:.8rem;color:var(--cyan);white-space:nowrap;flex-shrink:0;margin:0 6px}
+    .soc-estado-badge{font-family:'Orbitron';font-size:.5rem;letter-spacing:1px;padding:2px 7px;border-radius:6px;flex-shrink:0}
+    .soc-badge-fin{background:rgba(46,204,113,.15);color:var(--green)}
+    .soc-badge-pend{background:rgba(91,200,240,.1);color:var(--cyan)}
+    .soc-badge-bloq{background:rgba(139,139,139,.1);color:var(--muted)}
+    .soc-badge-desemp{background:rgba(243,156,18,.15);color:var(--orange)}
+    .btn-jugar-soc-sm{font-family:'Orbitron';font-size:.55rem;letter-spacing:.5px;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;background:var(--green);color:#fff;flex-shrink:0;white-space:nowrap}
+    .btn-jugar-soc-sm:hover{background:#27ae60}
+    /* ── Soccer: tabla de posiciones de grupo ── */
+    .soc-tabla{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:4px}
+    .soc-tabla th{font-family:'Orbitron';font-size:.55rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;text-align:center;padding:6px 4px;border-bottom:1.5px solid var(--border2)}
+    .soc-tabla td{text-align:center;padding:7px 4px;color:var(--text);border-bottom:1px solid var(--border)}
+    .soc-tabla tr:first-child td{background:rgba(46,204,113,.06)}
+    .soc-tabla .soc-tnombre{text-align:left !important;font-weight:700}
+    .soc-tabla .soc-tpos{font-family:'Orbitron';font-weight:700;color:var(--cyan)}
+    .soc-tabla .soc-tpts{font-family:'Orbitron';font-weight:900;color:var(--green)}
+    /* ── Soccer: fase final ── */
+    .soc-fase-final{background:var(--panel2);border:1.5px solid rgba(91,200,240,.3);border-radius:14px;padding:18px;margin-top:8px}
+    .soc-fase-titulo{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px}
+    /* ── Tabla general (todos contra todos) ── */
+    .tp-wrap{margin-top:24px;background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:20px}
+    .tp-title{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px}
+    .tp-table{width:100%;border-collapse:collapse;font-size:.85rem}
+    .tp-table th{font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;text-align:center;padding:8px 6px;border-bottom:1.5px solid var(--border2)}
+    .tp-table td{text-align:center;padding:9px 6px;color:var(--text);border-bottom:1px solid var(--border)}
+    .tp-table tr:first-child td{background:rgba(46,204,113,.07)}
+    .tp-nombre{text-align:left !important;font-weight:700}
+    .tp-pos{font-family:'Orbitron';font-weight:700;color:var(--cyan)}
+    .tp-puntos{font-family:'Orbitron';font-weight:900;color:var(--green)}
+    .tp-nota{margin-top:12px;font-size:.75rem;color:var(--muted);text-align:center}
+    /* ── Cronómetro soccer ── */
     .cronometro-overlay{display:none;position:fixed;inset:0;background:rgba(7,14,30,.95);backdrop-filter:blur(8px);z-index:8000;align-items:center;justify-content:center;padding:20px}
     .cronometro-overlay.show{display:flex}
     .cron-box{background:var(--panel);border:1px solid var(--border2);border-radius:20px;padding:32px;width:100%;max-width:700px;color:var(--text)}
     .cron-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
     .cron-titulo{font-family:'Bebas Neue';font-size:1.6rem;letter-spacing:2px;color:var(--cyan)}
-    .cron-fase-badge{font-family:'Orbitron';font-size:.65rem;letter-spacing:1.5px;background:rgba(26,92,168,.3);color:var(--cyan);border:1px solid var(--border2);border-radius:20px;padding:4px 14px}
-    .cron-marcador{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin-bottom:24px;background:var(--panel2);border-radius:14px;padding:20px;border:1px solid var(--border)}
+    .cron-fase-badge{font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;background:rgba(91,200,240,.12);color:var(--cyan);border:1px solid var(--border2);border-radius:20px;padding:4px 14px}
+    .cron-marcador{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;margin-bottom:24px;text-align:center}
     .cron-equipo{text-align:center}
-    .cron-eq-nombre{font-family:'Exo 2';font-size:.8rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase}
-    .cron-eq-robot{font-family:'Bebas Neue';font-size:1.4rem;color:var(--text);letter-spacing:1px;margin-bottom:10px}
-    .cron-goles{font-family:'Orbitron';font-size:3.5rem;font-weight:900;color:var(--cyan);line-height:1;text-shadow:0 0 20px rgba(91,200,240,.5)}
-    .cron-vs{font-family:'Bebas Neue';font-size:1.8rem;color:var(--muted);opacity:.5}
-    .cron-tiempo-display{text-align:center;margin-bottom:20px;background:var(--panel2);border-radius:14px;padding:24px;border:2px solid var(--border2)}
-    .cron-tiempo-num{font-family:'Orbitron';font-size:5rem;font-weight:900;color:var(--cyan);line-height:1;letter-spacing:.05em;text-shadow:0 0 30px rgba(91,200,240,.6)}
+    .cron-eq-nombre{font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:2px}
+    .cron-eq-robot{font-family:'Bebas Neue';font-size:1.2rem;letter-spacing:1px;color:var(--text);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cron-goles{font-family:'Orbitron';font-size:3rem;font-weight:900;color:var(--green);line-height:1}
+    .cron-vs{font-family:'Bebas Neue';font-size:1.5rem;color:var(--muted);opacity:.5}
+    .cron-tiempo-display{text-align:center;margin-bottom:24px;background:var(--panel2);border-radius:16px;padding:20px;border:2px solid var(--border2)}
+    .cron-tiempo-num{font-family:'Orbitron';font-size:3.5rem;font-weight:900;color:var(--cyan);line-height:1;letter-spacing:.05em}
     .cron-tiempo-num.alerta{color:var(--red);animation:parpadeo 1s infinite}
-    @keyframes parpadeo{0%,100%{opacity:1}50%{opacity:.7}}
-    .cron-penales{display:none;background:rgba(243,156,18,.08);border:1.5px solid rgba(243,156,18,.35);border-radius:12px;padding:20px;margin-bottom:16px}
-    .cron-penales.show{display:block}
-    .cron-pen-title{font-family:'Orbitron';font-size:.7rem;color:var(--orange);letter-spacing:2px;text-align:center;margin-bottom:14px}
-    .cron-pen-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-    .cron-pen-eq{text-align:center}
-    .cron-pen-nombre{font-size:.75rem;color:var(--muted);margin-bottom:6px}
-    .cron-pen-count{font-family:'Orbitron';font-size:2.5rem;font-weight:900;color:var(--orange)}
-    .cron-controles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    @keyframes parpadeo{0%,100%{opacity:1}50%{opacity:.3}}
+    .cron-tiempo-label{font-family:'Orbitron';font-size:.6rem;letter-spacing:2px;color:var(--muted);margin-top:8px;text-transform:uppercase}
+    .cron-btns-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
     .btn-cron{font-family:'Exo 2';font-size:.85rem;font-weight:700;padding:14px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:6px}
     .btn-cron:disabled{opacity:.4;cursor:not-allowed}
     .btn-cron.iniciar{background:var(--green);color:#fff}
@@ -148,7 +187,16 @@
     .btn-cron.fallar{background:rgba(231,76,60,.15);color:var(--red);border:1px solid rgba(231,76,60,.3)}
     .cron-descalificar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
     .btn-cron.descalificar{background:rgba(231,76,60,.12);color:var(--red);border:1.5px solid rgba(231,76,60,.35);padding:10px;font-size:.62rem}
-    /* ── PANEL DE COMBATE BATALLA ── */
+    .cron-penales{display:none;background:rgba(243,156,18,.05);border:1.5px solid rgba(243,156,18,.35);border-radius:12px;padding:16px;margin-bottom:16px}
+    .cron-penales.show{display:block}
+    .cron-pen-title{font-family:'Orbitron';font-size:.7rem;letter-spacing:1px;color:var(--orange);text-align:center;margin-bottom:12px;text-transform:uppercase}
+    .cron-pen-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .cron-pen-equipo{text-align:center}
+    .pen-nombre{font-size:.72rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;font-family:'Orbitron';font-size:.55rem;letter-spacing:1px}
+    .pen-count{font-family:'Orbitron';font-size:2rem;font-weight:900;color:var(--orange);margin-bottom:8px}
+    /* ── Panel combate Batalla ── */
+    .combate-overlay{display:none;position:fixed;inset:0;background:rgba(7,14,30,.95);backdrop-filter:blur(8px);z-index:8000;align-items:center;justify-content:center;padding:20px}
+    .combate-overlay.show{display:flex}
     .combate-box{background:var(--panel);border:1px solid var(--border2);border-radius:18px;padding:16px 18px;width:100%;max-width:760px;max-height:96vh;overflow-y:auto;color:var(--text)}
     .combate-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
     .combate-titulo{font-family:'Bebas Neue';font-size:1.3rem;letter-spacing:2px;color:var(--cyan)}
@@ -182,7 +230,7 @@
     .combate-empate.show{display:block}
     .combate-empate-title{font-family:'Orbitron';font-size:.62rem;color:var(--orange);letter-spacing:.5px;margin-bottom:8px}
     .combate-empate-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-
+    /* ── Podio ── */
     .podio-display{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:20px}
     .podio-display-title{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);margin-bottom:16px;text-transform:uppercase}
     .podio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
@@ -196,6 +244,7 @@
     .podio-item.plata .podio-item-nombre{color:#bdc3c7}
     .podio-item.bronce .podio-item-nombre{color:#cd7f32}
     .podio-item-label{font-family:'Orbitron';font-size:.55rem;color:var(--muted);margin-top:4px}
+    /* ── Botones ── */
     .btn{display:inline-flex;align-items:center;gap:8px;font-family:'Orbitron';font-size:.7rem;letter-spacing:1.5px;padding:10px 22px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;text-transform:uppercase}
     .btn-primary{background:var(--blue);color:#fff}
     .btn-primary:hover{background:#1e6bc4;box-shadow:0 4px 16px rgba(26,92,168,.4)}
@@ -209,6 +258,7 @@
     .btn-danger:hover{background:#c0392b}
     .btn-sm{padding:7px 14px;font-size:.62rem}
     .btn-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;align-items:center}
+    /* ── Utils ── */
     .loading-overlay{display:none;position:fixed;inset:0;background:rgba(14,18,30,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:9000;flex-direction:column;gap:16px}
     .loading-overlay.show{display:flex}
     .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
@@ -227,20 +277,11 @@
     .modal-btns{display:flex;gap:12px;justify-content:center}
     .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
     .empty-state-icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
-    .tp-wrap{margin-top:24px;background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:20px}
-    .tp-title{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px}
-    .tp-table{width:100%;border-collapse:collapse;font-size:.85rem}
-    .tp-table th{font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;text-align:center;padding:8px 6px;border-bottom:1.5px solid var(--border2)}
-    .tp-table td{text-align:center;padding:9px 6px;color:var(--text);border-bottom:1px solid var(--border)}
-    .tp-table tr:first-child td{background:rgba(46,204,113,.07)}
-    .tp-nombre{text-align:left !important;font-weight:700}
-    .tp-pos{font-family:'Orbitron';font-weight:700;color:var(--cyan)}
-    .tp-puntos{font-family:'Orbitron';font-weight:900;color:var(--green)}
-    .tp-nota{margin-top:12px;font-size:.75rem;color:var(--muted);text-align:center}
     .podio-manual-campos{display:flex;flex-direction:column;gap:6px;margin-top:8px}
     .pm-label{font-family:'Orbitron';font-size:.65rem;letter-spacing:1px;color:var(--muted);margin-top:10px}
     .pm-select{background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Exo 2';font-size:.9rem;outline:none;width:100%}
     .pm-select:focus{border-color:var(--cyan)}
+    .aviso-desemp{background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.3);border-radius:8px;padding:10px 14px;font-size:.8rem;color:var(--orange);margin-top:8px}
   </style>
 </head>
 <body>
@@ -280,6 +321,7 @@
   </div>
 </div>
 
+<!-- CRONÓMETRO SOCCER -->
 <div class="cronometro-overlay" id="cronOverlay">
   <div class="cron-box">
     <div class="cron-header">
@@ -316,18 +358,18 @@
       <div class="cron-pen-title">⚽ DEFINICIÓN POR PENALES</div>
       <div class="cron-pen-fase" id="cronPenFase">Ronda inicial 1 / 3</div>
       <div class="cron-pen-grid">
-        <div class="cron-pen-eq">
-          <div class="cron-pen-nombre" id="penNombreA">—</div>
-          <div class="cron-pen-count" id="penCountA">0</div>
+        <div class="cron-pen-equipo">
+          <div class="pen-nombre" id="penNombreA">—</div>
+          <div class="pen-count" id="penCountA">0</div>
           <div class="cron-pen-intentos" id="penIntentosA">Intentos: 0/3</div>
           <div class="cron-pen-botones">
             <button class="btn-cron penal" onclick="anotarPenal('A')">✅ Anotó</button>
             <button class="btn-cron fallar" onclick="fallarPenal('A')">❌ Falló</button>
           </div>
         </div>
-        <div class="cron-pen-eq">
-          <div class="cron-pen-nombre" id="penNombreB">—</div>
-          <div class="cron-pen-count" id="penCountB">0</div>
+        <div class="cron-pen-equipo">
+          <div class="pen-nombre" id="penNombreB">—</div>
+          <div class="pen-count" id="penCountB">0</div>
           <div class="cron-pen-intentos" id="penIntentosB">Intentos: 0/3</div>
           <div class="cron-pen-botones">
             <button class="btn-cron penal" onclick="anotarPenal('B')">✅ Anotó</button>
@@ -335,38 +377,41 @@
           </div>
         </div>
       </div>
-      <button class="btn-cron definir" onclick="definirPorPenales()">🏁 Definir ganador por penales</button>
+      <div class="cron-btns-grid" style="margin-top:12px;">
+        <button class="btn-cron definir" onclick="definirPorPenales()">✅ Definir ganador por penales</button>
+      </div>
     </div>
-    <div class="cron-controles" id="cronControles">
-      <button class="btn-cron iniciar"   id="btnCronIniciar"   onclick="cronIniciar()">▶ Iniciar</button>
-      <button class="btn-cron pausar"    id="btnCronPausar"    onclick="cronPausar()" disabled>⏸ Pausar</button>
-      <button class="btn-cron gol-a"     id="btnGolA"          onclick="anotarGol('A')">⚽ Gol A</button>
-      <button class="btn-cron gol-b"     id="btnGolB"          onclick="anotarGol('B')">⚽ Gol B</button>
-      <button class="btn-cron reiniciar" id="btnCronReiniciar" onclick="cronReiniciar()" style="grid-column:span 2;">🔄 Reiniciar tiempo</button>
-      <button class="btn-cron terminar"  id="btnCronTerminar"  onclick="terminarPartidoSoccer()">🏁 Terminar partido</button>
+    <div class="cron-btns-grid">
+      <button class="btn-cron iniciar" id="btnCronIniciar" onclick="cronIniciar()">▶ Iniciar T1</button>
+      <button class="btn-cron pausar" id="btnCronPausar" onclick="cronPausar()" disabled>⏸ Pausar</button>
+      <button class="btn-cron gol-a" id="btnGolA" onclick="anotarGol('A')">⚽ Gol A</button>
+      <button class="btn-cron gol-b" id="btnGolB" onclick="anotarGol('B')">⚽ Gol B</button>
+      <button class="btn-cron terminar" onclick="terminarPartidoSoccer()">🏁 Terminar y guardar</button>
+      <button class="btn-cron cerrar" onclick="cerrarCronometro()">✕ Cerrar sin guardar</button>
     </div>
     <div class="cron-descalificar">
       <button class="btn-cron descalificar" id="btnDescA" onclick="descalificarEquipo('A')">🚫 Descalificar A</button>
       <button class="btn-cron descalificar" id="btnDescB" onclick="descalificarEquipo('B')">🚫 Descalificar B</button>
     </div>
-    <button class="btn-cron cerrar" onclick="cerrarCronometro()" style="margin-top:8px;">✕ Cerrar sin guardar</button>
   </div>
 </div>
 
-<div class="cronometro-overlay" id="combateOverlay">
+<!-- COMBATE BATALLA -->
+<div class="combate-overlay" id="combateOverlay">
   <div class="combate-box">
     <div class="combate-header">
       <div class="combate-titulo" id="combTitulo">COMBATE</div>
       <div class="combate-fase-badge" id="combFaseBadge">LISTO</div>
+      <button class="btn btn-outline btn-sm" onclick="cerrarCombate()">✕ Cerrar</button>
     </div>
     <div class="combate-marcador">
-      <div class="combate-equipo"><div class="combate-eq-nombre" id="combNombreA">—</div><div class="combate-puntos" id="combPuntosA">0</div><div class="combate-amon-mini">🟨 <span id="amonBatCountA">0</span> amon.</div></div>
+      <div class="combate-equipo"><div class="combate-eq-nombre" id="combNombreA">A</div><div class="combate-puntos" id="combPuntosA">0</div><div class="combate-amon-mini" id="amonBatCountA">🟨 0</div></div>
       <div class="combate-vs">VS</div>
-      <div class="combate-equipo"><div class="combate-eq-nombre" id="combNombreB">—</div><div class="combate-puntos" id="combPuntosB">0</div><div class="combate-amon-mini">🟨 <span id="amonBatCountB">0</span> amon.</div></div>
+      <div class="combate-equipo"><div class="combate-eq-nombre" id="combNombreB">B</div><div class="combate-puntos" id="combPuntosB">0</div><div class="combate-amon-mini" id="amonBatCountB">🟨 0</div></div>
     </div>
     <div class="combate-tiempo-display">
       <div class="combate-tiempo-num" id="combTiempoNum">03:00</div>
-      <div class="combate-tiempo-label" id="combTiempoLabel">LISTO PARA INICIAR — 1 ASALTO ÚNICO</div>
+      <div class="combate-tiempo-label">TIEMPO DE COMBATE</div>
     </div>
     <div class="combate-controles-tiempo">
       <button class="btn-cron iniciar" id="btnCombIniciar" onclick="iniciarCombate()">▶ Iniciar combate</button>
@@ -374,37 +419,36 @@
     </div>
     <div class="combate-puntuacion-grid">
       <div class="combate-puntuacion-col">
-        <div class="combate-col-titulo" id="combColA">Robot A</div>
-        <button class="btn-comb inmovilizar" onclick="puntuar('A','Inmovilizar',10)">🔒 Inmovilizar (10s) +10</button>
-        <button class="btn-comb embestida" onclick="puntuar('A','Embestida',5)">💥 Embestida +5</button>
-        <button class="btn-comb vuelco" onclick="puntuar('A','Vuelco',15)">🔄 Vuelco +15</button>
-        <button class="btn-comb arma" onclick="puntuar('A','Embestida con arma',15)">⚔️ Embestida c/arma +15</button>
-        <button class="btn-comb amonestar" onclick="amonestarBat('A')">🟨 Amonestación −5</button>
-        <button class="btn-comb tecnico" onclick="tiempoTecnico('A')">⏱ Tiempo técnico</button>
-        <button class="btn-comb abandono" onclick="declararAbandono('A')">🚩 Se retira (gana rival)</button>
-        <button class="btn-comb nocaut" onclick="declararNocaut('A')">🏆 NOCAUT — gana A</button>
+        <div class="combate-col-titulo" id="combColA">EQUIPO A</div>
+        <button class="btn-comb inmovilizar" onclick="puntuar('A','Inmovilizar (10s)',10)">🔒 Inmovilizar (10s) +10</button>
+        <button class="btn-comb embestida"   onclick="puntuar('A','Embestida',5)">💥 Embestida +5</button>
+        <button class="btn-comb vuelco"      onclick="puntuar('A','Vuelco',15)">🔄 Vuelco +15</button>
+        <button class="btn-comb arma"        onclick="puntuar('A','Embestida con arma',15)">⚔️ Embestida con arma +15</button>
+        <button class="btn-comb amonestar"   onclick="amonestarBat('A',false)">🟨 Amonestación −5</button>
+        <button class="btn-comb tecnico"     onclick="tiempoTecnico('A')">⏱ Tiempo técnico</button>
+        <button class="btn-comb nocaut"      onclick="declararNocaut('A')">🏆 NOCAUT — A gana</button>
+        <button class="btn-comb abandono"    onclick="declararAbandono('A')">🚩 A se retira</button>
       </div>
       <div class="combate-puntuacion-col">
-        <div class="combate-col-titulo" id="combColB">Robot B</div>
-        <button class="btn-comb inmovilizar" onclick="puntuar('B','Inmovilizar',10)">🔒 Inmovilizar (10s) +10</button>
-        <button class="btn-comb embestida" onclick="puntuar('B','Embestida',5)">💥 Embestida +5</button>
-        <button class="btn-comb vuelco" onclick="puntuar('B','Vuelco',15)">🔄 Vuelco +15</button>
-        <button class="btn-comb arma" onclick="puntuar('B','Embestida con arma',15)">⚔️ Embestida c/arma +15</button>
-        <button class="btn-comb amonestar" onclick="amonestarBat('B')">🟨 Amonestación −5</button>
-        <button class="btn-comb tecnico" onclick="tiempoTecnico('B')">⏱ Tiempo técnico</button>
-        <button class="btn-comb abandono" onclick="declararAbandono('B')">🚩 Se retira (gana rival)</button>
-        <button class="btn-comb nocaut" onclick="declararNocaut('B')">🏆 NOCAUT — gana B</button>
+        <div class="combate-col-titulo" id="combColB">EQUIPO B</div>
+        <button class="btn-comb inmovilizar" onclick="puntuar('B','Inmovilizar (10s)',10)">🔒 Inmovilizar (10s) +10</button>
+        <button class="btn-comb embestida"   onclick="puntuar('B','Embestida',5)">💥 Embestida +5</button>
+        <button class="btn-comb vuelco"      onclick="puntuar('B','Vuelco',15)">🔄 Vuelco +15</button>
+        <button class="btn-comb arma"        onclick="puntuar('B','Embestida con arma',15)">⚔️ Embestida con arma +15</button>
+        <button class="btn-comb amonestar"   onclick="amonestarBat('B',false)">🟨 Amonestación −5</button>
+        <button class="btn-comb tecnico"     onclick="tiempoTecnico('B')">⏱ Tiempo técnico</button>
+        <button class="btn-comb nocaut"      onclick="declararNocaut('B')">🏆 NOCAUT — B gana</button>
+        <button class="btn-comb abandono"    onclick="declararAbandono('B')">🚩 B se retira</button>
       </div>
     </div>
     <div class="combate-empate" id="combateEmpate">
-      <div class="combate-empate-title">⚖️ Empate en puntos — el reglamento deja el desempate a criterio del juez</div>
+      <div class="combate-empate-title">⚖️ EMPATE EN PUNTOS — El juez decide</div>
       <div class="combate-empate-btns">
-        <button class="btn-cron iniciar" onclick="declararGanadorManual('A')">🏆 Gana Robot A</button>
-        <button class="btn-cron iniciar" onclick="declararGanadorManual('B')">🏆 Gana Robot B</button>
+        <button class="btn-comb nocaut" onclick="declararGanadorManual('A')" id="combEmpBtnA">🏆 Gana A</button>
+        <button class="btn-comb nocaut" onclick="declararGanadorManual('B')" id="combEmpBtnB">🏆 Gana B</button>
       </div>
     </div>
-    <button class="btn-cron terminar" id="btnCombTerminar" onclick="terminarCombate()" style="display:none;margin-bottom:10px;">🏁 Terminar combate</button>
-    <button class="btn-cron cerrar" onclick="cerrarCombate()">✕ Cerrar sin guardar</button>
+    <button class="btn-cron terminar" id="btnCombTerminar" style="display:none;width:100%;margin-top:8px;" onclick="terminarCombate()">🏁 Terminar combate</button>
   </div>
 </div>
 
@@ -415,68 +459,99 @@
 </div>
 
 <main>
-<div class="wrapper" style="max-width:1200px;margin:0 auto;padding:0 20px 60px">
-<div class="pb-hero">
-  <div class="pb-badge"><div class="pb-badge-dot"></div>SUCREBOT 2026 · STAFF</div>
-  <h2 class="pb-title">PANEL DE <span>BRACKET</span></h2>
-  <p class="pb-sub">Minisumo Autónomo · Minisumo RC · Robot Soccer</p>
-</div>
-<div class="stepper-wrap">
-  <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
-  <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Presentes</div></div>
-  <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label">Bracket</div></div>
-</div>
-<div class="pb-wrap">
-  <!-- PASO 1 -->
-  <div class="step-panel active" id="panel-1">
-    <div class="pb-card">
-      <div class="pb-card-title">Seleccionar Categoría</div>
-      <div class="cat-grid">
-        <div class="cat-btn" onclick="seleccionarCategoria('ms_a')"><div class="cat-btn-icon">🤖</div><div class="cat-btn-nombre">Minisumo Autónomo</div><div class="cat-btn-desc">Robots autónomos 1v1</div><div class="cat-btn-tipo tipo-bracket">BRACKET ELIMINACIÓN</div></div>
-        <div class="cat-btn" onclick="seleccionarCategoria('ms_rc')"><div class="cat-btn-icon">🕹️</div><div class="cat-btn-nombre">Minisumo RC</div><div class="cat-btn-desc">Radio control 1v1</div><div class="cat-btn-tipo tipo-bracket">BRACKET ELIMINACIÓN</div></div>
-        <div class="cat-btn" onclick="seleccionarCategoria('soc')"><div class="cat-btn-icon">⚽</div><div class="cat-btn-nombre">Robot Soccer</div><div class="cat-btn-desc">Por equipos · Cronómetro 3 min</div><div class="cat-btn-tipo tipo-soccer">BRACKET + CRONÓMETRO</div></div>
-        <div class="cat-btn" onclick="seleccionarCategoria('bat')"><div class="cat-btn-icon">🥊</div><div class="cat-btn-nombre">Batalla</div><div class="cat-btn-desc">1v1 · Combate de 3 min</div><div class="cat-btn-tipo tipo-batalla">BRACKET + COMBATE</div></div>
-      </div>
+  <div class="pb-wrap">
+    <div class="pb-hero">
+      <div class="pb-badge"><div class="pb-badge-dot"></div>PANEL OPERADOR</div>
+      <div class="pb-title">PANEL DE <span>BRACKET</span></div>
+      <div class="pb-sub">Gestiona combates, partidos y resultados en tiempo real</div>
     </div>
-  </div>
-  <!-- PASO 2 -->
-  <div class="step-panel" id="panel-2">
-    <div class="pb-card">
-      <div class="pb-card-title" id="paso2Titulo">Participantes Presentes</div>
-      <div class="sel-header">
-        <div class="sel-counts"><span id="selCount">0</span> seleccionados de <span id="selTotal">0</span></div>
-        <div class="sel-acciones">
-          <button class="btn btn-outline btn-sm" onclick="seleccionarTodos()">✓ Todos</button>
-          <button class="btn btn-outline btn-sm" onclick="deseleccionarTodos()">✗ Ninguno</button>
+
+    <div class="stepper-wrap">
+      <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
+      <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Presentes</div></div>
+      <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label">Bracket</div></div>
+    </div>
+
+    <!-- PASO 1 -->
+    <div class="step-panel active" id="panel-1">
+      <div class="pb-card">
+        <div class="pb-card-title">Seleccionar categoría</div>
+        <div class="cat-grid">
+          <div class="cat-btn" onclick="seleccionarCategoria('ms_a')">
+            <div class="cat-btn-icon">🤖</div>
+            <div class="cat-btn-nombre">Minisumo Autónomo</div>
+            <div class="cat-btn-desc">Combate autónomo 1v1</div>
+            <div class="cat-btn-tipo tipo-bracket">BRACKET</div>
+          </div>
+          <div class="cat-btn" onclick="seleccionarCategoria('ms_rc')">
+            <div class="cat-btn-icon">🎮</div>
+            <div class="cat-btn-nombre">Minisumo RC</div>
+            <div class="cat-btn-desc">Combate radiocontrol 1v1</div>
+            <div class="cat-btn-tipo tipo-bracket">BRACKET</div>
+          </div>
+          <div class="cat-btn" onclick="seleccionarCategoria('soc')">
+            <div class="cat-btn-icon">⚽</div>
+            <div class="cat-btn-nombre">Robot Soccer</div>
+            <div class="cat-btn-desc">Torneo por grupos/fases</div>
+            <div class="cat-btn-tipo tipo-soccer">SOCCER</div>
+          </div>
+          <div class="cat-btn" onclick="seleccionarCategoria('bat')">
+            <div class="cat-btn-icon">🥊</div>
+            <div class="cat-btn-nombre">Batalla</div>
+            <div class="cat-btn-desc">Combate de puntuación 3lb</div>
+            <div class="cat-btn-tipo tipo-batalla">BATALLA</div>
+          </div>
         </div>
       </div>
-      <div class="participantes-list" id="participantesList"></div>
-      <div class="btn-row" style="justify-content:space-between;margin-top:24px;">
-        <button class="btn btn-outline" onclick="volverPaso1()">← Volver</button>
-        <button class="btn btn-green" id="btnGenerarBracket" onclick="generarBracket()" disabled>Generar Bracket →</button>
-      </div>
     </div>
-  </div>
-  <!-- PASO 3 -->
-  <div class="step-panel" id="panel-3">
-    <div class="pb-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-        <div class="pb-card-title" style="margin-bottom:0" id="paso3Titulo">BRACKET</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn btn-outline btn-sm" onclick="volverPaso1()">← Nueva categoría</button>
-          <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
-          <button class="btn btn-outline btn-sm" id="btnVerPodio" onclick="verPodioEnBracket()" style="display:none;">📊 Ver Podio</button>
-          <button class="btn btn-outline btn-sm" onclick="abrirPodioManual()">🏆 Podio Manual</button>
-          <button class="btn btn-green btn-sm" id="btnPodio" onclick="guardarPodio()" style="display:none;">🏆 Guardar Podio</button>
+
+    <!-- PASO 2 -->
+    <div class="step-panel" id="panel-2">
+      <div class="pb-card">
+        <div class="sel-header">
+          <div>
+            <div class="pb-card-title" id="paso2Titulo" style="margin-bottom:4px;">Presentes</div>
+            <div class="sel-counts">Total: <span id="selTotal">0</span> · Seleccionados: <span id="selCount">0</span></div>
+          </div>
+          <div class="sel-acciones">
+            <button class="btn btn-outline btn-sm" onclick="seleccionarTodos()">Todos</button>
+            <button class="btn btn-outline btn-sm" onclick="deseleccionarTodos()">Ninguno</button>
+            <button class="btn btn-outline btn-sm" onclick="volverPaso1()">← Volver</button>
+          </div>
+        </div>
+        <div class="participantes-list" id="participantesList"></div>
+        <div class="btn-row">
+          <button class="btn btn-green" id="btnGenerarBracket" disabled onclick="generarBracket()">⚡ Generar torneo</button>
         </div>
       </div>
-      <div class="bracket-wrap"><div class="bracket-fases" id="bracketFases"></div></div>
-      <div id="tabla-posiciones-display"></div>
-      <div id="podio-display"></div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div class="step-panel" id="panel-3">
+      <div class="pb-card">
+        <div class="sel-header">
+          <div class="pb-card-title" id="paso3Titulo" style="margin-bottom:0;">BRACKET</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="volverPaso1()">← Inicio</button>
+            <button class="btn btn-outline btn-sm" id="btnPodio" style="display:none;" onclick="guardarPodio()">💾 Guardar podio</button>
+            <button class="btn btn-outline btn-sm" id="btnVerPodio" style="display:none;" onclick="verPodioEnBracket()">🏆 Ver podio</button>
+            <button class="btn btn-outline btn-sm" id="btnPodioManual" onclick="abrirPodioManual()">🏆 Podio Manual</button>
+            <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
+          </div>
+        </div>
+        <!-- Bracket normal (ms_a, ms_rc, bat) -->
+        <div id="bracket-normal-wrap">
+          <div class="bracket-wrap"><div class="bracket-fases" id="bracketFases"></div></div>
+          <div id="tabla-posiciones-display"></div>
+        </div>
+        <!-- Soccer -->
+        <div id="soccer-torneo-wrap" style="display:none;">
+          <div id="soccer-torneo-content"></div>
+        </div>
+        <div id="podio-display"></div>
+      </div>
     </div>
   </div>
-</div>
-</div>
 </main>
 
 <div data-include="../shared/components/footer.html"></div>
@@ -491,15 +566,32 @@ const CAT_INFO = {
   soc:   { nombre: 'Robot Soccer',      tipo: 'soccer',   gasNombre: 'Robot soccer' },
   bat:   { nombre: 'Batalla',           tipo: 'batalla',  gasNombre: 'Batalla' }
 };
-let state = { categoria:'', tipo:'', participantes:[], seleccionados:new Set(), bracket:null, bracketBloqueado:false, podio:[], tablaPosiciones:null, podioManual:null };
-let cron = { partido:null, duracion:2, segundos:0, fase:'idle', corriendo:false, interval:null, golesA:0, golesB:0, penalesA:0, penalesB:0, penIntentosA:0, penIntentosB:0, amonA:0, amonB:0, huboAlargue:false };
 
+let state = {
+  categoria:'', tipo:'', participantes:[], seleccionados:new Set(),
+  bracket:null, bracketBloqueado:false, podio:[], tablaPosiciones:null, podioManual:null,
+  torneoSoc:null  // solo para soccer
+};
+let cron = {
+  partido:null, duracion:2, segundos:0, fase:'idle', corriendo:false, interval:null,
+  golesA:0, golesB:0, penalesA:0, penalesB:0, penIntentosA:0, penIntentosB:0,
+  amonA:0, amonB:0, huboAlargue:false
+};
+
+// ════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════
 function esTodosContraTodos() { return state.bracket?.fases?.length===1 && state.bracket.fases[0].nombre==='TODOS CONTRA TODOS'; }
-
 function loading(show, txt='CARGANDO...') { document.getElementById('loadingOverlay').classList.toggle('show',show); document.getElementById('loadingTxt').textContent=txt; }
 let _toastTimer;
 function toast(msg, type='info') { const el=document.getElementById('toast'); el.textContent=msg; el.className=`show ${type}`; clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>el.classList.remove('show'),3500); }
-function setStep(n) { [1,2,3].forEach(i=>{ document.getElementById(`step-dot-${i}`).className='step-item'+(i<n?' done':i===n?' active':''); document.getElementById(`panel-${i}`).className='step-panel'+(i===n?' active':''); }); window.scrollTo({top:0,behavior:'smooth'}); }
+function setStep(n) {
+  [1,2,3].forEach(i=>{
+    document.getElementById(`step-dot-${i}`).className='step-item'+(i<n?' done':i===n?' active':'');
+    document.getElementById(`panel-${i}`).className='step-panel'+(i===n?' active':'');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 async function gasGet(params) { const r=await fetch(GAS+'?'+new URLSearchParams(params)); return r.json(); }
 async function gasPost(body) { const r=await fetch(GAS,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),redirect:'follow'}); return r.json(); }
 
@@ -512,7 +604,9 @@ function confirmar(icon,title,msg,btnLabel,type,cb) {
 function cerrarModal() { document.getElementById('confirmModal').classList.remove('show'); _modalCb=null; }
 document.getElementById('modalConfirmBtn').onclick=()=>{ const cb=_modalCb; cerrarModal(); if(cb)cb(); };
 
-// ── PASO 1 ──
+// ════════════════════════════════════════
+//  PASO 1 — SELECCIONAR CATEGORÍA
+// ════════════════════════════════════════
 async function seleccionarCategoria(cat) {
   state.categoria=cat; state.tipo=CAT_INFO[cat].tipo;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
@@ -523,6 +617,7 @@ async function seleccionarCategoria(cat) {
     const todos=Array.isArray(res)?res:(res.participantes||[]);
     const gasNombre=CAT_INFO[cat].gasNombre;
     if (cat==='soc') {
+      // Soccer: agrupar por equipo
       const porEquipo={};
       todos.filter(p=>p.categoria===gasNombre&&p.aprobado==='APROBADO').forEach(p=>{
         const eq=(p.equipo||'').trim(); if(!eq)return;
@@ -536,34 +631,50 @@ async function seleccionarCategoria(cat) {
         correo:p.correo, miembro2:p.miembro2||''
       }));
     }
-    state.seleccionados=new Set(); state.bracket=null; state.bracketBloqueado=false;
-    await intentarCargarBracket(cat);
+    state.seleccionados=new Set(); state.bracket=null; state.bracketBloqueado=false; state.torneoSoc=null;
+    if (cat==='soc') {
+      await intentarCargarTorneoSoccer();
+    } else {
+      await intentarCargarBracket(cat);
+    }
   } catch(e) { toast('Error cargando participantes','error'); console.error(e); }
   loading(false);
 }
 
+// ── No-soccer: intentar cargar bracket existente ──
 async function intentarCargarBracket(cat) {
   try {
     const res=await gasGet({action:'getBracketGeneral',categoria:cat});
-    if(res.ok&&res.bracket){ state.bracket=res.bracket; state.bracketBloqueado=true; renderBracket(); actualizarTitulos(); setStep(3); return; }
+    if(res.ok&&res.bracket){ state.bracket=res.bracket; state.bracketBloqueado=true; actualizarTitulos(); renderBracket(); setStep(3); return; }
   } catch(e) {}
   actualizarTitulos(); renderSeleccion(); setStep(2);
 }
 
-// ── PASO 2 ──
+// ── Soccer: intentar cargar torneo existente ──
+async function intentarCargarTorneoSoccer() {
+  try {
+    const res=await gasGet({action:'getSoccerTorneo'});
+    if(res.ok&&res.torneo){ state.torneoSoc=res.torneo; state.bracketBloqueado=true; actualizarTitulos(); renderTorneoSoccer(); setStep(3); return; }
+  } catch(e) {}
+  actualizarTitulos(); renderSeleccion(); setStep(2);
+}
+
+// ════════════════════════════════════════
+//  PASO 2 — SELECCIÓN DE PRESENTES
+// ════════════════════════════════════════
 function actualizarTitulos() {
   const nombre=CAT_INFO[state.categoria]?.nombre||'';
   document.getElementById('paso2Titulo').textContent=state.tipo==='soccer'?`Equipos Presentes — ${nombre}`:`Robots Presentes — ${nombre}`;
-  document.getElementById('paso3Titulo').textContent=`BRACKET — ${nombre}`;
+  document.getElementById('paso3Titulo').textContent=state.tipo==='soccer'?`TORNEO SOCCER — ${nombre}`:`BRACKET — ${nombre}`;
 }
 function renderSeleccion() {
   const lista=document.getElementById('participantesList'); const total=state.participantes.length;
   document.getElementById('selTotal').textContent=total; actualizarContadorSel();
   if(!total){ lista.innerHTML=`<div class="aviso-empty">⚠️ No hay participantes aprobados para ${CAT_INFO[state.categoria]?.nombre}</div>`; document.getElementById('btnGenerarBracket').disabled=true; return; }
   lista.innerHTML=state.participantes.map(p=>{
-    const seleccionado=state.seleccionados.has(p.id);
+    const sel=state.seleccionados.has(p.id);
     const sub=state.tipo==='soccer'?`${p.robots?.length||0} robot(s) · ${p.robots?.map(r=>r.robot).join(', ')}`:(p.sub||p.institucion||'—');
-    return`<div class="part-item ${seleccionado?'checked':''}" onclick="toggleSeleccion('${p.id}')" id="pitem-${p.id.replace(/[^a-z0-9]/gi,'_')}"><div class="part-check">${seleccionado?'✓':''}</div><div class="part-info"><div class="part-nombre">${p.nombre}</div><div class="part-sub">${sub}</div></div><div class="part-badge">${state.tipo==='soccer'?'⚽':state.tipo==='batalla'?'🥊':'🤖'}</div></div>`;
+    return`<div class="part-item ${sel?'checked':''}" onclick="toggleSeleccion('${p.id}')" id="pitem-${p.id.replace(/[^a-z0-9]/gi,'_')}"><div class="part-check">${sel?'✓':''}</div><div class="part-info"><div class="part-nombre">${p.nombre}</div><div class="part-sub">${sub}</div></div><div class="part-badge">${state.tipo==='soccer'?'⚽':state.tipo==='batalla'?'🥊':'🤖'}</div></div>`;
   }).join('');
 }
 function toggleSeleccion(id) {
@@ -576,19 +687,46 @@ function actualizarContadorSel() { const n=state.seleccionados.size; document.ge
 function seleccionarTodos()   { state.participantes.forEach(p=>state.seleccionados.add(p.id)); renderSeleccion(); }
 function deseleccionarTodos() { state.seleccionados.clear(); renderSeleccion(); }
 function volverPaso1() {
-  state.categoria=''; state.tipo=''; state.participantes=[]; state.seleccionados=new Set(); state.bracket=null; state.bracketBloqueado=false; state.tablaPosiciones=null;
-  document.getElementById('podio-display').innerHTML=''; document.getElementById('tabla-posiciones-display').innerHTML=''; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected')); setStep(1);
+  state.categoria=''; state.tipo=''; state.participantes=[]; state.seleccionados=new Set();
+  state.bracket=null; state.bracketBloqueado=false; state.tablaPosiciones=null; state.torneoSoc=null;
+  document.getElementById('podio-display').innerHTML='';
+  document.getElementById('tabla-posiciones-display').innerHTML='';
+  document.getElementById('soccer-torneo-content').innerHTML='';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  setStep(1);
 }
 
-// ── GENERAR BRACKET ──
+// ════════════════════════════════════════
+//  GENERAR TORNEO / BRACKET
+// ════════════════════════════════════════
 async function generarBracket() {
   if(state.seleccionados.size<2){toast('Selecciona al menos 2','error');return;}
-  if(state.bracketBloqueado){toast('Ya hay un bracket generado','error');return;}
+  if(state.bracketBloqueado){toast('Ya hay un torneo generado','error');return;}
   const presentes=state.participantes.filter(p=>state.seleccionados.has(p.id));
-  const esImpar3=presentes.length===3;
+  const n=presentes.length;
+
+  if(state.tipo==='soccer'){
+    const desc=describFormato(n);
+    confirmar('⚽','GENERAR TORNEO SOCCER',`${n} equipos → ${desc}. Los emparejamientos serán aleatorios. ¿Generar?`,'Generar','success',
+      async()=>{
+        loading(true,'GENERANDO TORNEO...');
+        try{
+          const res=await gasPost({action:'generarTorneoSoccer',equipos:presentes.map(p=>({id:p.id,nombre:p.nombre}))});
+          if(!res.ok)throw new Error(res.error||'Error');
+          state.torneoSoc=res.torneo; state.bracketBloqueado=true;
+          toast('✅ Torneo generado','success'); renderTorneoSoccer(); setStep(3);
+        }catch(e){toast('Error: '+e.message,'error');console.error(e);}
+        loading(false);
+      }
+    );
+    return;
+  }
+
+  // No-soccer
+  const esImpar3=n===3;
   const msg=esImpar3
-    ? `Con 3 ${state.tipo==='soccer'?'equipos':'robots'} se arma un todos-contra-todos (cada uno juega contra los otros 2), en vez de un bracket con pase directo. ¿Generar?`
-    : `¿Generar bracket con ${presentes.length} ${state.tipo==='soccer'?'equipos':'robots'}? Los emparejamientos serán aleatorios e inmutables.`;
+    ? `Con 3 ${state.tipo==='batalla'?'robots':'robots'} se arma un todos-contra-todos. ¿Generar?`
+    : `¿Generar bracket con ${n} participantes? Los emparejamientos serán aleatorios e inmutables.`;
   confirmar('🏆','GENERAR BRACKET',msg,'Generar','success',
     async()=>{
       loading(true,'GENERANDO BRACKET...');
@@ -603,19 +741,34 @@ async function generarBracket() {
   );
 }
 
-// ── RENDERIZAR BRACKET ──
+function describFormato(n){
+  const m={2:'Final única ida y vuelta',3:'Todos contra todos ida y vuelta → Final',4:'Todos contra todos → Final + 3ro auto',
+    5:'Grupo A (2) + Grupo B (3) → Final + 3er lugar',6:'2 grupos de 3 → Final + 3ro por estadísticas',
+    7:'Grupo A (3) + Grupo B (4) → Final + 3er lugar',8:'2 grupos de 4 → Final + 3ro por estadísticas',
+    9:'3 grupos de 3 → Todos contra todos final'};
+  return m[n]||`Formato personalizado (${n} equipos)`;
+}
+
+// ════════════════════════════════════════
+//  BRACKET NORMAL (ms_a, ms_rc, bat)
+// ════════════════════════════════════════
+function mostrarWrap(esSoccer){
+  document.getElementById('bracket-normal-wrap').style.display=esSoccer?'none':'block';
+  document.getElementById('soccer-torneo-wrap').style.display=esSoccer?'block':'none';
+}
+
 function renderBracket() {
+  mostrarWrap(false);
   const container=document.getElementById('bracketFases');
   if(!state.bracket?.fases?.length){ container.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><p>No hay bracket disponible.</p></div>'; document.getElementById('tabla-posiciones-display').innerHTML=''; return; }
   const fases=state.bracket.fases;
   const esRR=esTodosContraTodos();
   let finalizado;
   if(esRR){
-    const partidos=fases[0].partidos||[];
-    finalizado=partidos.length>0 && partidos.every(p=>p.estado==='FINALIZADO');
+    finalizado=fases[0].partidos.length>0&&fases[0].partidos.every(p=>p.estado==='FINALIZADO');
   } else {
-    const faseFinalRender=fases.find(f=>f.nombre==='FINAL');
-    finalizado=faseFinalRender?.partidos?.some(p=>p.estado==='FINALIZADO'&&p.ganador_id);
+    const faseFinal=fases.find(f=>f.nombre==='FINAL');
+    finalizado=faseFinal?.partidos?.some(p=>p.estado==='FINALIZADO'&&p.ganador_id);
   }
   document.getElementById('btnPodio').style.display=finalizado?'inline-flex':'none';
   document.getElementById('btnVerPodio').style.display=finalizado?'inline-flex':'none';
@@ -623,61 +776,40 @@ function renderBracket() {
   if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; }
 }
 
-// ── TABLA DE POSICIONES (todos contra todos) ──
 async function cargarTablaPosiciones() {
-  try{
-    const res=await gasGet({action:'getTablaPosiciones',categoria:state.categoria});
-    state.tablaPosiciones=(res.ok&&Array.isArray(res.tabla))?res.tabla:[];
-  }catch(e){ state.tablaPosiciones=[]; }
+  try{ const res=await gasGet({action:'getTablaPosiciones',categoria:state.categoria}); state.tablaPosiciones=(res.ok&&Array.isArray(res.tabla))?res.tabla:[]; }catch(e){ state.tablaPosiciones=[]; }
   renderTablaPosiciones();
 }
 function renderTablaPosiciones() {
-  const cont=document.getElementById('tabla-posiciones-display');
-  const tabla=state.tablaPosiciones||[];
+  const cont=document.getElementById('tabla-posiciones-display'); const tabla=state.tablaPosiciones||[];
   if(!tabla.length){ cont.innerHTML=''; return; }
-  const conMarcador=tabla.some(t=>t.tieneMarcador);
-  const filas=tabla.map((t,i)=>{
-    const pos=i+1;
-    return`<tr>
-      <td class="tp-pos">${pos}º</td>
-      <td class="tp-nombre">${t.nombre}</td>
-      <td>${t.jugados}</td>
-      <td>${t.victorias}</td>
-      <td>${t.derrotas}</td>
-      ${conMarcador?`<td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia>0?'+':''}${t.diferencia}</td>`:''}
-      <td class="tp-puntos">${t.puntos}</td>
-    </tr>`;
-  }).join('');
+  const conM=tabla.some(t=>t.tieneMarcador);
   cont.innerHTML=`<div class="tp-wrap"><div class="tp-title">📊 Tabla de posiciones — Todos contra todos</div>
-    <table class="tp-table"><thead><tr>
-      <th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>P</th>
-      ${conMarcador?'<th>GF</th><th>GC</th><th>DIF</th>':''}
-      <th>PTS</th>
-    </tr></thead><tbody>${filas}</tbody></table>
-    <div class="tp-nota">Empates en puntos${conMarcador?' (y diferencia)':''} se resuelven con el botón "🏆 Podio Manual" →</div>
-    </div>`;
-}
-function renderPartido(p) {
-  if(p.tipo==='BYE') return`<div class="partido-card bye"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · Pasa directo</div></div>`;
-  const esFinalizado=p.estado==='FINALIZADO', puedeJugar=p.estado==='PENDIENTE'&&p.equipo_a_id&&p.equipo_b_id, bloqueado=!p.equipo_a_id||!p.equipo_b_id;
-  const claseCard=esFinalizado?'finalizado':bloqueado?'pendiente-bloqueado':'';
-  const nombreA=p.equipo_a_nombre||p.equipoA_nombre||'— Por definir —', nombreB=p.equipo_b_nombre||p.equipoB_nombre||'— Por definir —';
-  const claseA=esFinalizado?(p.ganador_id===p.equipo_a_id?'ganador':'perdedor'):'';
-  const claseB=esFinalizado?(p.ganador_id===p.equipo_b_id?'ganador':'perdedor'):'';
-  let scoreA='',scoreB='';
-  if(esFinalizado&&p.marcador){const partes=String(p.marcador).split('-');scoreA=partes[0]||'';scoreB=partes[1]?.split(' ')[0]||'';}
-  let botonesHTML='';
-  if(puedeJugar){
-    if(state.tipo==='soccer') botonesHTML=`<button class="btn-jugar-soccer" onclick='abrirCronometro(${JSON.stringify(p)})'>▶ Jugar partido</button>`;
-    else if(state.tipo==='batalla') botonesHTML=`<button class="btn-jugar-soccer" onclick='abrirCombateBatalla(${JSON.stringify(p)})'>🥊 Iniciar combate</button>`;
-    else botonesHTML=`<div class="partido-btns"><button class="btn-ganador" onclick='registrarGanadorMinisumo("${p.partido_id}","${p.equipo_a_id}","${nombreA}")'>🏆 ${nombreA}</button><button class="btn-ganador" onclick='registrarGanadorMinisumo("${p.partido_id}","${p.equipo_b_id}","${nombreB}")'>🏆 ${nombreB}</button></div>`;
-  }
-  const estadoLabel=esFinalizado?'FINALIZADO':bloqueado?'EN ESPERA':'PENDIENTE';
-  const estadoClase=esFinalizado?'estado-finalizado':bloqueado?'estado-bloqueado':'estado-pendiente';
-  return`<div class="partido-card ${claseCard}"><div class="partido-estado ${estadoClase}">${estadoLabel}</div><div class="partido-equipos"><div class="partido-eq ${claseA}"><span class="partido-eq-nombre">${nombreA}</span>${scoreA?`<span class="partido-eq-score">${scoreA}</span>`:''}</div><div class="partido-eq ${claseB}"><span class="partido-eq-nombre">${nombreB}</span>${scoreB?`<span class="partido-eq-score">${scoreB}</span>`:''}</div></div>${botonesHTML}</div>`;
+    <table class="tp-table"><thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>P</th>${conM?'<th>GF</th><th>GC</th><th>DIF</th>':''}<th>PTS</th></tr></thead>
+    <tbody>${tabla.map((t,i)=>`<tr><td class="tp-pos">${i+1}º</td><td class="tp-nombre">${t.nombre}</td><td>${t.jugados}</td><td>${t.victorias}</td><td>${t.derrotas}</td>${conM?`<td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia>0?'+':''}${t.diferencia}</td>`:''}<td class="tp-puntos">${t.puntos}</td></tr>`).join('')}
+    </tbody></table><div class="tp-nota">Empates → usa "🏆 Podio Manual" para definir el orden</div></div>`;
 }
 
-// ── MINISUMO ──
+function renderPartido(p) {
+  if(p.tipo==='BYE') return`<div class="partido-card bye"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · Pasa directo</div></div>`;
+  const esFin=p.estado==='FINALIZADO', puedeJugar=p.estado==='PENDIENTE'&&p.equipo_a_id&&p.equipo_b_id, bloq=!p.equipo_a_id||!p.equipo_b_id;
+  const claseCard=esFin?'finalizado':bloq?'pendiente-bloqueado':'';
+  const nombreA=p.equipo_a_nombre||p.equipoA_nombre||'— Por definir —', nombreB=p.equipo_b_nombre||p.equipoB_nombre||'— Por definir —';
+  const clA=esFin?(p.ganador_id===p.equipo_a_id?'ganador':'perdedor'):'';
+  const clB=esFin?(p.ganador_id===p.equipo_b_id?'ganador':'perdedor'):'';
+  let sA='',sB='';
+  if(esFin&&p.marcador){const parts=String(p.marcador).split('-');sA=parts[0]||'';sB=parts[1]?.split(' ')[0]||'';}
+  let btns='';
+  if(puedeJugar){
+    if(state.tipo==='soccer') btns=`<button class="btn-jugar-soccer" onclick='abrirCronometro(${JSON.stringify(p)})'>▶ Jugar partido</button>`;
+    else if(state.tipo==='batalla') btns=`<button class="btn-jugar-soccer" onclick='abrirCombateBatalla(${JSON.stringify(p)})'>🥊 Iniciar combate</button>`;
+    else btns=`<div class="partido-btns"><button class="btn-ganador" onclick='registrarGanadorMinisumo("${p.partido_id}","${p.equipo_a_id}","${nombreA}")'>🏆 ${nombreA}</button><button class="btn-ganador" onclick='registrarGanadorMinisumo("${p.partido_id}","${p.equipo_b_id}","${nombreB}")'>🏆 ${nombreB}</button></div>`;
+  }
+  const estLabel=esFin?'FINALIZADO':bloq?'EN ESPERA':'PENDIENTE';
+  const estCl=esFin?'estado-finalizado':bloq?'estado-bloqueado':'estado-pendiente';
+  return`<div class="partido-card ${claseCard}"><div class="partido-estado ${estCl}">${estLabel}</div><div class="partido-equipos"><div class="partido-eq ${clA}"><span class="partido-eq-nombre">${nombreA}</span>${sA?`<span class="partido-eq-score">${sA}</span>`:''}</div><div class="partido-eq ${clB}"><span class="partido-eq-nombre">${nombreB}</span>${sB?`<span class="partido-eq-score">${sB}</span>`:''}</div></div>${btns}</div>`;
+}
+
 async function registrarGanadorMinisumo(partidoId,ganadorId,ganadorNombre) {
   confirmar('🏆','CONFIRMAR GANADOR',`¿Ganó ${ganadorNombre}?`,'Confirmar','success',
     async()=>{
@@ -689,19 +821,178 @@ async function registrarGanadorMinisumo(partidoId,ganadorId,ganadorNombre) {
   );
 }
 
-// ── RESETEAR ──
+// ════════════════════════════════════════
+//  RESETEAR
+// ════════════════════════════════════════
 function resetearBracket() {
-  confirmar('🗑','RESETEAR BRACKET',`¿Eliminar el bracket de ${CAT_INFO[state.categoria]?.nombre}? Esta acción no se puede deshacer.`,'Resetear','danger',
+  const esSoccer=state.tipo==='soccer';
+  confirmar('🗑','RESETEAR TORNEO',`¿Eliminar el torneo de ${CAT_INFO[state.categoria]?.nombre}? Esta acción no se puede deshacer.`,'Resetear','danger',
     async()=>{
       loading(true,'RESETEANDO...');
-      try{ const res=await gasPost({action:'resetearBracketGeneral',categoria:state.categoria}); if(!res.ok)throw new Error(res.error||'Error'); state.bracket=null; state.bracketBloqueado=false; state.seleccionados=new Set(); state.tablaPosiciones=null; document.getElementById('podio-display').innerHTML=''; document.getElementById('tabla-posiciones-display').innerHTML=''; toast('Bracket reseteado','success'); renderSeleccion(); setStep(2); }
-      catch(e){toast('Error: '+e.message,'error');}
+      try{
+        let res;
+        if(esSoccer){ res=await gasPost({action:'resetearTorneoSoccer'}); }
+        else { res=await gasPost({action:'resetearBracketGeneral',categoria:state.categoria}); }
+        if(!res.ok)throw new Error(res.error||'Error');
+        state.bracket=null; state.bracketBloqueado=false; state.seleccionados=new Set();
+        state.tablaPosiciones=null; state.torneoSoc=null;
+        document.getElementById('podio-display').innerHTML='';
+        document.getElementById('tabla-posiciones-display').innerHTML='';
+        document.getElementById('soccer-torneo-content').innerHTML='';
+        toast('Torneo reseteado','success'); renderSeleccion(); setStep(2);
+      }catch(e){toast('Error: '+e.message,'error');}
       loading(false);
     }
   );
 }
 
-// ── PODIO: cálculo unificado (manual > todos-contra-todos > bracket normal) ──
+// ════════════════════════════════════════
+//  SOCCER — RENDERIZADO DE TORNEO
+// ════════════════════════════════════════
+function renderTorneoSoccer() {
+  mostrarWrap(true);
+  const torneo=state.torneoSoc;
+  if(!torneo){ document.getElementById('soccer-torneo-content').innerHTML='<div class="empty-state"><div class="empty-state-icon">⚽</div><p>No hay torneo disponible.</p></div>'; return; }
+
+  const partidos=torneo.partidos;
+  const tabla=torneo.tabla||{};
+  const formato=torneo.formato;
+
+  // Detectar si hay podio disponible
+  const podioDisponible=torneoSoccerTerminado(partidos, formato);
+  document.getElementById('btnPodio').style.display=podioDisponible?'inline-flex':'none';
+  document.getElementById('btnVerPodio').style.display=podioDisponible?'inline-flex':'none';
+
+  let html='<div class="soc-grupos-wrap">';
+
+  // ── Grupos ──────────────────────────────────────────────────
+  const gruposOrden=['FASE_UNICA','FASE_GRUPOS','GRUPO_A','GRUPO_B','GRUPO_C'];
+  const gruposPresentes=gruposOrden.filter(g=>partidos.some(p=>p.grupo===g));
+
+  gruposPresentes.forEach(g=>{
+    const pGroup=partidos.filter(p=>p.grupo===g);
+    const tablaG=tabla[g]||[];
+    const label=g==='FASE_UNICA'?'🏆 Final Única (Ida y Vuelta)':g==='FASE_GRUPOS'?'📊 Fase de grupos':
+      g==='GRUPO_A'?'🔵 Grupo A':g==='GRUPO_B'?'🟢 Grupo B':'🟠 Grupo C';
+    html+=`<div class="soc-grupo"><div class="soc-grupo-titulo">${label}</div>`;
+    html+=`<div class="soc-partidos-lista">`;
+    pGroup.forEach(p=>{
+      html+=renderSocPartido(p, formato, g);
+    });
+    html+=`</div>`;
+    // Tabla de posiciones del grupo (si aplica)
+    if(tablaG.length>1 && g!=='FASE_UNICA'){
+      html+=`<table class="soc-tabla"><thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>G</th><th>P</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead><tbody>`;
+      tablaG.forEach((t,i)=>{
+        const clasificado=i===0;
+        html+=`<tr ${clasificado?'style="background:rgba(46,204,113,.06)"':''}><td class="soc-tpos">${i+1}º${clasificado?' ✓':''}</td><td class="soc-tnombre">${t.nombre}</td><td>${t.jugados}</td><td>${t.victorias}</td><td>${t.derrotas}</td><td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia>0?'+':''}${t.diferencia}</td><td class="soc-tpts">${t.puntos}</td></tr>`;
+      });
+      html+=`</tbody></table>`;
+    }
+    html+=`</div>`;
+  });
+
+  // ── Fases finales ────────────────────────────────────────────
+  const gruposFinales=['FINAL','FINAL_TCV','3ER_LUGAR','3ER_AUTO','DESEMPATE'];
+  const partidosFinales=partidos.filter(p=>gruposFinales.includes(p.grupo));
+
+  if(partidosFinales.length){
+    html+=`<div class="soc-fase-final"><div class="soc-fase-titulo">🏆 Fase Final</div><div class="soc-partidos-lista">`;
+    // Orden: primero FINAL_TCV o DESEMPATE o FINAL, luego 3ER_LUGAR/3ER_AUTO
+    const ordenFin=['FINAL_TCV','DESEMPATE','FINAL','3ER_LUGAR','3ER_AUTO'];
+    ordenFin.forEach(g=>{
+      partidos.filter(p=>p.grupo===g).forEach(p=>{
+        html+=renderSocPartido(p, formato, g);
+      });
+    });
+    html+=`</div></div>`;
+  }
+
+  html+=`</div>`;
+  document.getElementById('soccer-torneo-content').innerHTML=html;
+}
+
+function renderSocPartido(p, formato, grupo) {
+  // Partidos vacíos (aún sin equipos definidos excepto en algunos grupos)
+  const sinEquipos=!p.equipo_a_id||!p.equipo_b_id;
+  const esFin=p.estado==='FINALIZADO';
+  const es3Auto=grupo==='3ER_AUTO'&&esFin&&p.marcador==='AUTO';
+  const esDesemp=grupo==='DESEMPATE';
+
+  // Etiqueta del partido
+  let label='';
+  if(grupo==='FINAL') label='🏆 FINAL';
+  else if(grupo==='FINAL_TCV') label='🏆 FINAL TCV';
+  else if(grupo==='3ER_LUGAR') label='🥉 3er Lugar';
+  else if(grupo==='3ER_AUTO') label='🥉 3er Lugar (Estadísticas)';
+  else if(grupo==='DESEMPATE') label='⚖️ Desempate aggregate';
+
+  const nombreA=p.equipo_a_nombre||'— Por definir —';
+  const nombreB=p.equipo_b_nombre||'— Por definir —';
+  const clA=esFin?(p.ganador_id===p.equipo_a_id?'ganador':'perdedor'):'';
+  const clB=esFin?(p.ganador_id===p.equipo_b_id?'ganador':'perdedor'):'';
+
+  let marcadorStr='';
+  if(esFin&&p.marcador&&p.marcador!=='AUTO') marcadorStr=p.marcador;
+
+  let badgeHtml='';
+  if(esFin) badgeHtml=`<span class="soc-estado-badge soc-badge-fin">FINALIZADO</span>`;
+  else if(sinEquipos) badgeHtml=`<span class="soc-estado-badge soc-badge-bloq">EN ESPERA</span>`;
+  else if(esDesemp) badgeHtml=`<span class="soc-estado-badge soc-badge-desemp">DESEMPATE</span>`;
+  else badgeHtml=`<span class="soc-estado-badge soc-badge-pend">PENDIENTE</span>`;
+
+  let botonHtml='';
+  if(!esFin&&!sinEquipos){
+    const pJson=JSON.stringify(p).replace(/'/g,"\\'");
+    botonHtml=`<button class="btn-jugar-soc-sm" onclick='abrirCronometroSoccer(${JSON.stringify(p)})'>▶ Jugar</button>`;
+  }
+
+  // 3er auto: no tiene botón, mostrar solo resultado
+  if(es3Auto){
+    return`<div class="soc-partido finalizado">
+      ${label?`<span class="soc-estado-badge soc-badge-fin" style="margin-right:6px">${label}</span>`:''}
+      <div class="soc-partido-equipos"><span class="soc-eq ganador">🥉 ${nombreA}</span><span class="soc-vs">—</span><span class="soc-marcador">POR ESTADÍSTICAS</span></div>
+      ${badgeHtml}
+    </div>`;
+  }
+
+  return`<div class="soc-partido ${esFin?'finalizado':esDesemp&&!sinEquipos?'desempate-pendiente':''}">
+    ${label?`<span style="font-family:Orbitron;font-size:.55rem;letter-spacing:1px;color:var(--muted);white-space:nowrap;margin-right:4px;">${label}</span>`:''}
+    <div class="soc-partido-equipos">
+      <span class="soc-eq ${clA}">${nombreA}</span>
+      <span class="soc-vs">VS</span>
+      ${marcadorStr?`<span class="soc-marcador">${marcadorStr}</span>`:''}
+      <span class="soc-eq ${clB}">${nombreB}</span>
+    </div>
+    ${badgeHtml}
+    ${botonHtml}
+  </div>`;
+}
+
+function torneoSoccerTerminado(partidos, formato) {
+  if(formato==='IDA_VUELTA'){
+    return partidos.some(p=>p.grupo==='DESEMPATE'&&p.estado==='FINALIZADO');
+  }
+  if(formato==='GRUPOS_9'){
+    return partidos.filter(p=>p.grupo==='FINAL_TCV').every(p=>p.estado==='FINALIZADO');
+  }
+  return partidos.some(p=>p.grupo==='FINAL'&&p.estado==='FINALIZADO');
+}
+
+// ════════════════════════════════════════
+//  PODIO — SOCCER
+// ════════════════════════════════════════
+async function obtenerPodioSoccer() {
+  try {
+    const res=await gasGet({action:'getPodioSoccer'});
+    if(res.ok&&Array.isArray(res.podio)&&res.podio.length>=2) return res.podio;
+  } catch(e) {}
+  return null;
+}
+
+// ════════════════════════════════════════
+//  PODIO — BRACKET NORMAL
+// ════════════════════════════════════════
 function obtenerEquiposDelBracket() {
   if(!state.bracket?.fases?.length) return [];
   const mapa={};
@@ -715,7 +1006,18 @@ function obtenerEquiposDelBracket() {
 }
 
 async function obtenerPodioCalculado() {
-  // 1. Prioridad máxima: podio asignado manualmente por el juez
+  // Soccer: usa endpoint propio
+  if(state.tipo==='soccer'){
+    const podio=await obtenerPodioSoccer();
+    if(!podio) return null;
+    const porPos={}; podio.forEach(p=>porPos[p.posicion]=p);
+    return { manual:false, soccer:true,
+      primero:{id:porPos[1]?.equipo_id,nombre:porPos[1]?.equipo_nombre},
+      segundo:{id:porPos[2]?.equipo_id,nombre:porPos[2]?.equipo_nombre},
+      tercero:porPos[3]?{id:porPos[3].equipo_id,nombre:porPos[3].equipo_nombre}:null };
+  }
+
+  // Podio manual (bracket normal)
   try{
     const rm=await gasGet({action:'getPodioManual',categoria:state.categoria});
     if(rm.ok&&Array.isArray(rm.podio)&&rm.podio.length>=2){
@@ -728,7 +1030,7 @@ async function obtenerPodioCalculado() {
     }
   }catch(e){}
 
-  // 2. Todos contra todos (bracket final impar, n=3): usar tabla de posiciones
+  // Todos contra todos (n=3 bracket)
   if(esTodosContraTodos()){
     if(!state.tablaPosiciones) await cargarTablaPosiciones();
     const t=state.tablaPosiciones||[];
@@ -737,11 +1039,10 @@ async function obtenerPodioCalculado() {
     return { manual:false, empatado,
       primero:{id:t[0].id,nombre:t[0].nombre},
       segundo:{id:t[1].id,nombre:t[1].nombre},
-      tercero:{id:t[2].id,nombre:t[2].nombre},
-      cuarto:null };
+      tercero:{id:t[2].id,nombre:t[2].nombre}, cuarto:null };
   }
 
-  // 3. Bracket normal: FINAL + 3ER LUGAR
+  // Bracket normal
   const fases=state.bracket?.fases||[];
   const faseFinal=fases.find(f=>f.nombre==='FINAL');
   const partidoFinal=faseFinal?.partidos?.find(p=>p.estado==='FINALIZADO'&&p.ganador_id);
@@ -750,30 +1051,30 @@ async function obtenerPodioCalculado() {
   const perdedorId=ganadorId===partidoFinal.equipo_a_id?partidoFinal.equipo_b_id:partidoFinal.equipo_a_id;
   const ganadorNombre=ganadorId===partidoFinal.equipo_a_id?partidoFinal.equipo_a_nombre:partidoFinal.equipo_b_nombre;
   const perdedorNombre=perdedorId===partidoFinal.equipo_a_id?partidoFinal.equipo_a_nombre:partidoFinal.equipo_b_nombre;
-  let tercero=null, cuarto=null, partido3erPendiente=false;
+  let tercero=null,cuarto=null,partido3erPendiente=false;
   const fase3er=fases.find(f=>f.nombre==='3ER LUGAR');
   const p3=fase3er?.partidos?.[0];
   if(p3){
     if(p3.estado==='FINALIZADO'&&p3.ganador_id){
-      const bronceId=p3.ganador_id;
-      const cuartoId=bronceId===p3.equipo_a_id?p3.equipo_b_id:p3.equipo_a_id;
-      tercero={id:bronceId,nombre:bronceId===p3.equipo_a_id?p3.equipo_a_nombre:p3.equipo_b_nombre};
-      cuarto={id:cuartoId,nombre:cuartoId===p3.equipo_a_id?p3.equipo_a_nombre:p3.equipo_b_nombre};
+      const bId=p3.ganador_id, cId=bId===p3.equipo_a_id?p3.equipo_b_id:p3.equipo_a_id;
+      tercero={id:bId,nombre:bId===p3.equipo_a_id?p3.equipo_a_nombre:p3.equipo_b_nombre};
+      cuarto={id:cId,nombre:cId===p3.equipo_a_id?p3.equipo_a_nombre:p3.equipo_b_nombre};
     } else { partido3erPendiente=true; }
   }
   return { manual:false, primero:{id:ganadorId,nombre:ganadorNombre}, segundo:{id:perdedorId,nombre:perdedorNombre}, tercero, cuarto, partido3erPendiente };
 }
 
-// ── VER PODIO ──
 async function verPodioEnBracket() {
   const podio=await obtenerPodioCalculado();
   if(!podio){ toast('Aún no hay suficiente información para mostrar el podio','error'); return; }
   let tercerosHTML='';
-  if(podio.manual){
-    tercerosHTML=podio.tercero?`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${podio.tercero.nombre||'—'}</div><div class="podio-item-label">TERCER LUGAR</div></div>`:'';
+  if(podio.soccer){
+    if(podio.tercero) tercerosHTML=`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${podio.tercero.nombre}</div><div class="podio-item-label">TERCER LUGAR</div></div>`;
+  } else if(podio.manual){
+    if(podio.tercero) tercerosHTML=`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${podio.tercero.nombre||'—'}</div><div class="podio-item-label">TERCER LUGAR</div></div>`;
   } else if(esTodosContraTodos()){
     tercerosHTML=`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${podio.tercero.nombre}</div><div class="podio-item-label">TERCER LUGAR</div></div>`;
-    if(podio.empatado) tercerosHTML+=`<div class="aviso-empty" style="grid-column:1/-1;">⚠️ Empate entre 2° y 3° puesto — usa "🏆 Podio Manual" para definir el orden</div>`;
+    if(podio.empatado) tercerosHTML+=`<div class="aviso-empty" style="grid-column:1/-1;">⚠️ Empate entre 2° y 3° — usa "🏆 Podio Manual" para definir el orden</div>`;
   } else {
     if(podio.tercero){
       tercerosHTML=`<div class="podio-item bronce"><div class="podio-item-icon">🥉</div><div class="podio-item-nombre">${podio.tercero.nombre}</div><div class="podio-item-label">TERCER LUGAR</div></div><div class="podio-item" style="border:1px solid rgba(150,150,150,.2);"><div class="podio-item-icon">4️⃣</div><div class="podio-item-nombre" style="color:#8a90a8;">${podio.cuarto?.nombre||'—'}</div><div class="podio-item-label">CUARTO LUGAR</div></div>`;
@@ -781,17 +1082,16 @@ async function verPodioEnBracket() {
       tercerosHTML=`<div class="podio-item bronce" style="opacity:.7;"><div class="podio-item-icon">🥉</div><div class="podio-item-label">3ER LUGAR — Por jugar</div></div>`;
     }
   }
-  const etiquetaManual=podio.manual?' <span style="font-size:.6rem;color:var(--orange);">(asignado manualmente)</span>':'';
-  document.getElementById('podio-display').innerHTML=`<div class="podio-display"><div class="podio-display-title">🏆 Podio — ${CAT_INFO[state.categoria]?.nombre}${etiquetaManual}</div><div class="podio-grid"><div class="podio-item oro"><div class="podio-item-icon">🥇</div><div class="podio-item-nombre">${podio.primero.nombre||'—'}</div><div class="podio-item-label">GANADOR</div></div><div class="podio-item plata"><div class="podio-item-icon">🥈</div><div class="podio-item-nombre">${podio.segundo.nombre||'—'}</div><div class="podio-item-label">SUBCAMPEÓN</div></div>${tercerosHTML}</div></div>`;
+  const etManual=podio.manual?' <span style="font-size:.6rem;color:var(--orange);">(asignado manualmente)</span>':'';
+  document.getElementById('podio-display').innerHTML=`<div class="podio-display"><div class="podio-display-title">🏆 Podio — ${CAT_INFO[state.categoria]?.nombre}${etManual}</div><div class="podio-grid"><div class="podio-item oro"><div class="podio-item-icon">🥇</div><div class="podio-item-nombre">${podio.primero.nombre||'—'}</div><div class="podio-item-label">GANADOR</div></div><div class="podio-item plata"><div class="podio-item-icon">🥈</div><div class="podio-item-nombre">${podio.segundo.nombre||'—'}</div><div class="podio-item-label">SUBCAMPEÓN</div></div>${tercerosHTML}</div></div>`;
   document.getElementById('podio-display').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ── GUARDAR PODIO ──
 async function guardarPodio() {
   const podio=await obtenerPodioCalculado();
   if(!podio){ toast('Aún no hay suficiente información para guardar el podio','error'); return; }
-  if(!podio.manual&&podio.partido3erPendiente){ toast('El partido por el 3er lugar aún no ha terminado','error'); return; }
-  if(!podio.manual&&esTodosContraTodos()&&podio.empatado){ toast('Hay un empate sin resolver — usa "🏆 Podio Manual" primero','error'); return; }
+  if(!podio.soccer&&!podio.manual&&podio.partido3erPendiente){ toast('El partido por el 3er lugar aún no ha terminado','error'); return; }
+  if(!podio.soccer&&!podio.manual&&esTodosContraTodos()&&podio.empatado){ toast('Hay un empate sin resolver — usa "🏆 Podio Manual" primero','error'); return; }
 
   confirmar('🏆','GUARDAR PODIO',`¿Guardar el podio de ${CAT_INFO[state.categoria]?.nombre} en certificados?`,'Guardar','success',
     async()=>{
@@ -804,31 +1104,24 @@ async function guardarPodio() {
         if(state.tipo==='soccer'){
           const robots=p.robots||[];
           for(const robot of robots){
-            const nombreCapitan=robot.nombre||nombreFallback;
-            // Capitán
-            await gasPost({action:'guardarCertificado',id_participante:robot.id,correo:p.correo||'',nombre:nombreCapitan,nombre_completo:nombreCapitan,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
-            // Miembro 2
+            const nom=robot.nombre||nombreFallback;
+            await gasPost({action:'guardarCertificado',id_participante:robot.id,correo:p.correo||'',nombre:nom,nombre_completo:nom,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
             if(robot.miembro2){
               await gasPost({action:'guardarCertificado',id_participante:robot.id+'-m2',correo:p.correo||'',nombre:robot.miembro2,nombre_completo:robot.miembro2,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
             }
-            }
-        } else {
-          // Minisumo: capitán (sub) + miembro2
-          const nombreCapitan=p.sub||p.nombre||nombreFallback;
-          await gasPost({action:'guardarCertificado',id_participante:id,correo:p.correo||'',nombre:nombreCapitan,nombre_completo:nombreCapitan,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
-          if(p.miembro2){
-            await gasPost({action:'guardarCertificado',id_participante:id+'-m2',correo:p.correo||'',nombre:p.miembro2,nombre_completo:p.miembro2,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
           }
+        } else {
+          const nom=p.sub||p.nombre||nombreFallback;
+          await gasPost({action:'guardarCertificado',id_participante:id,correo:p.correo||'',nombre:nom,nombre_completo:nom,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
+          if(p.miembro2){ await gasPost({action:'guardarCertificado',id_participante:id+'-m2',correo:p.correo||'',nombre:p.miembro2,nombre_completo:p.miembro2,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'}); }
         }
       }
-
       try{
         await guardarCertEquipo(podio.primero.id,podio.primero.nombre,'GANADOR');
         await guardarCertEquipo(podio.segundo.id,podio.segundo.nombre,'SUBCAMPEÓN');
         if(podio.tercero) await guardarCertEquipo(podio.tercero.id,podio.tercero.nombre,'TERCER LUGAR');
         if(podio.cuarto)  await guardarCertEquipo(podio.cuarto.id,podio.cuarto.nombre,'PARTICIPACIÓN');
-        toast('🏆 Podio guardado en certificados','success');
-        verPodioEnBracket();
+        toast('🏆 Podio guardado en certificados','success'); verPodioEnBracket();
       }catch(e){toast('Error: '+e.message,'error');}
       loading(false);
     }
@@ -837,54 +1130,58 @@ async function guardarPodio() {
 
 // ── PODIO MANUAL ──
 function abrirPodioManual() {
-  const equipos=obtenerEquiposDelBracket();
-  if(equipos.length<2){ toast('No hay suficientes equipos en el bracket','error'); return; }
+  // Para soccer: obtener equipos del torneo
+  let equipos;
+  if(state.tipo==='soccer'){
+    const partidos=state.torneoSoc?.partidos||[];
+    const mapa={};
+    partidos.forEach(p=>{ if(p.equipo_a_id)mapa[p.equipo_a_id]=p.equipo_a_nombre; if(p.equipo_b_id)mapa[p.equipo_b_id]=p.equipo_b_nombre; });
+    equipos=Object.entries(mapa).map(([id,nombre])=>({id,nombre}));
+  } else {
+    equipos=obtenerEquiposDelBracket();
+  }
+  if(equipos.length<2){ toast('No hay suficientes equipos','error'); return; }
   const opciones=`<option value="">— Seleccionar —</option>`+equipos.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
   document.getElementById('pmSelect1').innerHTML=opciones;
   document.getElementById('pmSelect2').innerHTML=opciones;
   document.getElementById('pmSelect3').innerHTML=opciones;
-  if(state.tablaPosiciones?.length){
-    if(state.tablaPosiciones[0]) document.getElementById('pmSelect1').value=state.tablaPosiciones[0].id;
-    if(state.tablaPosiciones[1]) document.getElementById('pmSelect2').value=state.tablaPosiciones[1].id;
-    if(state.tablaPosiciones[2]) document.getElementById('pmSelect3').value=state.tablaPosiciones[2].id;
-  }
   document.getElementById('podioManualModal').classList.add('show');
 }
 function cerrarPodioManual() { document.getElementById('podioManualModal').classList.remove('show'); }
-
 async function guardarPodioManualUI() {
-  const equipos=obtenerEquiposDelBracket();
+  let equipos;
+  if(state.tipo==='soccer'){
+    const partidos=state.torneoSoc?.partidos||[];
+    const mapa={}; partidos.forEach(p=>{ if(p.equipo_a_id)mapa[p.equipo_a_id]=p.equipo_a_nombre; if(p.equipo_b_id)mapa[p.equipo_b_id]=p.equipo_b_nombre; });
+    equipos=Object.entries(mapa).map(([id,nombre])=>({id,nombre}));
+  } else { equipos=obtenerEquiposDelBracket(); }
   const idMap=Object.fromEntries(equipos.map(e=>[e.id,e.nombre]));
-  const s1=document.getElementById('pmSelect1').value;
-  const s2=document.getElementById('pmSelect2').value;
-  const s3=document.getElementById('pmSelect3').value;
-  if(!s1||!s2||!s3){ toast('Selecciona los 3 lugares','error'); return; }
-  if(new Set([s1,s2,s3]).size<3){ toast('No puedes repetir el mismo equipo en dos lugares','error'); return; }
-  const posiciones=[
-    {posicion:1,equipo_id:s1,equipo_nombre:idMap[s1]},
-    {posicion:2,equipo_id:s2,equipo_nombre:idMap[s2]},
-    {posicion:3,equipo_id:s3,equipo_nombre:idMap[s3]}
-  ];
+  const s1=document.getElementById('pmSelect1').value, s2=document.getElementById('pmSelect2').value, s3=document.getElementById('pmSelect3').value;
+  if(!s1||!s2){ toast('Selecciona al menos los 2 primeros lugares','error'); return; }
+  if(new Set([s1,s2,s3].filter(Boolean)).size<[s1,s2,s3].filter(Boolean).length){ toast('No puedes repetir el mismo equipo','error'); return; }
+  const posiciones=[{posicion:1,equipo_id:s1,equipo_nombre:idMap[s1]},{posicion:2,equipo_id:s2,equipo_nombre:idMap[s2]}];
+  if(s3) posiciones.push({posicion:3,equipo_id:s3,equipo_nombre:idMap[s3]});
   loading(true,'GUARDANDO PODIO...');
   try{
     const r=await gasPost({action:'guardarPodioManual',categoria:state.categoria,posiciones});
     if(!r.ok) throw new Error(r.error||'Error');
-    toast('🏆 Podio manual guardado','success');
-    cerrarPodioManual();
-    verPodioEnBracket();
+    toast('🏆 Podio manual guardado','success'); cerrarPodioManual(); verPodioEnBracket();
   }catch(e){ toast('Error: '+e.message,'error'); }
   loading(false);
 }
 
-// ── CRONÓMETRO SOCCER ──
+// ════════════════════════════════════════
+//  CRONÓMETRO SOCCER
+// ════════════════════════════════════════
+function abrirCronometroSoccer(partido) { abrirCronometro(partido); }
+
 function abrirCronometro(partido) {
   cron.partido=partido; cron.duracion=parseInt(document.getElementById('cronDuracion').value)||2;
   cron.segundos=cron.duracion*60; cron.fase='idle'; cron.corriendo=false;
   cron.golesA=0; cron.golesB=0; cron.penalesA=0; cron.penalesB=0;
   cron.penIntentosA=0; cron.penIntentosB=0; cron.amonA=0; cron.amonB=0; cron.huboAlargue=false;
   if(cron.interval)clearInterval(cron.interval);
-  const nombreA=partido.equipo_a_nombre||partido.equipoA_nombre||'?';
-  const nombreB=partido.equipo_b_nombre||partido.equipoB_nombre||'?';
+  const nombreA=partido.equipo_a_nombre||'?', nombreB=partido.equipo_b_nombre||'?';
   document.getElementById('cronTitulo').textContent=`${nombreA} vs ${nombreB}`;
   document.getElementById('cronNombreA').textContent=nombreA; document.getElementById('cronNombreB').textContent=nombreB;
   document.getElementById('btnGolA').textContent=`⚽ Gol ${nombreA}`; document.getElementById('btnGolB').textContent=`⚽ Gol ${nombreB}`;
@@ -900,16 +1197,22 @@ function abrirCronometro(partido) {
   document.getElementById('btnCronPausar').disabled=true;
   document.getElementById('cronOverlay').classList.add('show');
 }
+
 function cerrarCronometro() { if(cron.corriendo&&!confirm('¿Cerrar sin guardar el resultado?'))return; if(cron.interval)clearInterval(cron.interval); cron.corriendo=false; document.getElementById('cronOverlay').classList.remove('show'); }
 function aplicarDuracion() { const val=parseInt(document.getElementById('cronDuracion').value)||2; cron.duracion=val; cron.segundos=val*60; actualizarDisplayCron(); toast('Duración actualizada','success'); }
+
 function cronIniciar() {
   if(cron.fase==='idle')cron.fase='t1'; cron.corriendo=true;
   document.getElementById('btnCronIniciar').disabled=true; document.getElementById('btnCronPausar').disabled=false;
   if(cron.interval)clearInterval(cron.interval);
-  cron.interval=setInterval(()=>{ if(cron.segundos>0){cron.segundos--;actualizarDisplayCron();if(cron.segundos===30)toast('⚠️ 30 segundos restantes','error');}else{cronPausar();finDeTiempo();} },1000);
+  cron.interval=setInterval(()=>{
+    if(cron.segundos>0){cron.segundos--;actualizarDisplayCron();if(cron.segundos===30)toast('⚠️ 30 segundos restantes','error');}
+    else{cronPausar();finDeTiempo();}
+  },1000);
 }
 function cronPausar() { cron.corriendo=false; if(cron.interval)clearInterval(cron.interval); document.getElementById('btnCronIniciar').disabled=false; document.getElementById('btnCronPausar').disabled=true; document.getElementById('btnCronIniciar').textContent='▶ Reanudar'; }
 function cronReiniciar() { if(!confirm('¿Reiniciar el tiempo actual?'))return; cronPausar(); cron.segundos=cron.duracion*60; actualizarDisplayCron(); document.getElementById('btnCronIniciar').textContent='▶ Iniciar'; }
+
 function finDeTiempo() {
   toast('⏱ ¡Tiempo terminado!');
   if(cron.fase==='t1'){
@@ -918,19 +1221,15 @@ function finDeTiempo() {
     document.getElementById('btnCronIniciar').textContent='▶ Iniciar T2';
     document.getElementById('btnCronIniciar').disabled=false;
     toast('Fin T1 — descanso y presiona Iniciar para T2');
-  }
-  else if(cron.fase==='t2'){
+  } else if(cron.fase==='t2'){
     if(cron.golesA===cron.golesB){
       cron.fase='alargue'; cron.huboAlargue=true; cron.segundos=60; actualizarDisplayCron();
       document.getElementById('cronFaseBadge').textContent='ALARGUE';
       document.getElementById('btnCronIniciar').textContent='▶ Iniciar Alargue (1 min)';
       document.getElementById('btnCronIniciar').disabled=false;
-      toast('¡Empate! Descanso de 1 min y luego alargue de 1 min');
-    } else {
-      cron.fase='fin'; terminarPartidoSoccer();
-    }
-  }
-  else if(cron.fase==='alargue'){
+      toast('¡Empate! Descanso y luego alargue de 1 minuto');
+    } else { cron.fase='fin'; terminarPartidoSoccer(); }
+  } else if(cron.fase==='alargue'){
     if(cron.golesA===cron.golesB){
       cron.fase='penales';
       document.getElementById('cronFaseBadge').textContent='PENALES';
@@ -939,94 +1238,95 @@ function finDeTiempo() {
       document.getElementById('btnCronIniciar').disabled=true;
       resetPenalesUI();
       toast('¡Sigue el empate! Definición por penales');
-    } else {
-      cron.fase='fin'; terminarPartidoSoccer();
-    }
+    } else { cron.fase='fin'; terminarPartidoSoccer(); }
   }
 }
+
 function anotarGol(equipo) {
   if(cron.fase==='penales'||cron.fase==='fin')return;
   if(equipo==='A')cron.golesA++;else cron.golesB++;
   actualizarMarcadorCron();
-  const nombre=equipo==='A'?(cron.partido?.equipo_a_nombre||cron.partido?.equipoA_nombre):(cron.partido?.equipo_b_nombre||cron.partido?.equipoB_nombre);
-  toast(`⚽ Gol de ${nombre}!`);
+  toast(`⚽ Gol de ${equipo==='A'?(cron.partido?.equipo_a_nombre||'A'):(cron.partido?.equipo_b_nombre||'B')}!`);
 }
 function anotarPenal(equipo) {
   if(equipo==='A'){cron.penalesA++;cron.penIntentosA++;document.getElementById('penCountA').textContent=cron.penalesA;}
   else{cron.penalesB++;cron.penIntentosB++;document.getElementById('penCountB').textContent=cron.penalesB;}
   actualizarIntentosPenales();
 }
-function fallarPenal(equipo) {
-  if(equipo==='A'){cron.penIntentosA++;}else{cron.penIntentosB++;}
-  actualizarIntentosPenales();
-}
+function fallarPenal(equipo) { if(equipo==='A')cron.penIntentosA++;else cron.penIntentosB++; actualizarIntentosPenales(); }
 function resetPenalesUI() {
   cron.penalesA=0; cron.penalesB=0; cron.penIntentosA=0; cron.penIntentosB=0;
-  document.getElementById('penCountA').textContent=0;
-  document.getElementById('penCountB').textContent=0;
-  document.getElementById('cronPenFase').textContent='Ronda inicial 1 / 3';
-  actualizarIntentosPenales();
+  document.getElementById('penCountA').textContent=0; document.getElementById('penCountB').textContent=0;
+  document.getElementById('cronPenFase').textContent='Ronda inicial 1 / 3'; actualizarIntentosPenales();
 }
 function actualizarIntentosPenales() {
-  const a=cron.penIntentosA, b=cron.penIntentosB;
-  document.getElementById('penIntentosA').textContent = a<3 ? `Intentos: ${a}/3` : `Intentos: ${a} (m.s.)`;
-  document.getElementById('penIntentosB').textContent = b<3 ? `Intentos: ${b}/3` : `Intentos: ${b} (m.s.)`;
+  const a=cron.penIntentosA,b=cron.penIntentosB;
+  document.getElementById('penIntentosA').textContent=a<3?`Intentos: ${a}/3`:`Intentos: ${a} (m.s.)`;
+  document.getElementById('penIntentosB').textContent=b<3?`Intentos: ${b}/3`:`Intentos: ${b} (m.s.)`;
   const faseEl=document.getElementById('cronPenFase');
-  if(a<3||b<3){ faseEl.textContent=`Ronda inicial ${Math.min(Math.max(a,b)+1,3)} / 3`; }
-  else { const rs=Math.max(a-3,b-3)+1; faseEl.textContent=`⚡ Muerte súbita — Ronda ${rs}`; }
+  if(a<3||b<3){faseEl.textContent=`Ronda inicial ${Math.min(Math.max(a,b)+1,3)} / 3`;}
+  else{const rs=Math.max(a-3,b-3)+1;faseEl.textContent=`⚡ Muerte súbita — Ronda ${rs}`;}
 }
-function definirPorPenales() { if(cron.penalesA===cron.penalesB){toast('Sigue el empate en penales','error');return;} cron.fase='fin';terminarPartidoSoccer(); }
+function definirPorPenales() { if(cron.penalesA===cron.penalesB){toast('Sigue el empate en penales','error');return;} cron.fase='fin'; terminarPartidoSoccer(); }
 
 function amonestar(equipo) {
-  if(equipo==='A')cron.amonA++; else cron.amonB++;
+  if(equipo==='A')cron.amonA++;else cron.amonB++;
   actualizarAmonestaciones();
   const n=equipo==='A'?cron.amonA:cron.amonB;
-  const nombre=equipo==='A'?(cron.partido?.equipo_a_nombre||cron.partido?.equipoA_nombre):(cron.partido?.equipo_b_nombre||cron.partido?.equipoB_nombre);
-  if(n>=5){toast(`⚠️ ${nombre} acumuló 5 amonestaciones — puedes descalificarlo abajo`,'error');}
-  else{toast(`🟨 Amonestación ${n}/5 — ${nombre}`);}
+  const nom=equipo==='A'?(cron.partido?.equipo_a_nombre||'A'):(cron.partido?.equipo_b_nombre||'B');
+  if(n>=5)toast(`⚠️ ${nom} acumuló 5 amonestaciones — puedes descalificarlo abajo`,'error');
+  else toast(`🟨 Amonestación ${n}/5 — ${nom}`);
 }
 function actualizarAmonestaciones() {
-  const elA=document.getElementById('amonCountA'), elB=document.getElementById('amonCountB');
+  const elA=document.getElementById('amonCountA'),elB=document.getElementById('amonCountB');
   elA.textContent=cron.amonA; elB.textContent=cron.amonB;
-  elA.classList.toggle('alerta',cron.amonA>=5);
-  elB.classList.toggle('alerta',cron.amonB>=5);
+  elA.classList.toggle('alerta',cron.amonA>=5); elB.classList.toggle('alerta',cron.amonB>=5);
 }
 async function descalificarEquipo(equipoInfractor) {
   if(!cron.partido)return;
-  const nombreInfractor=equipoInfractor==='A'?(cron.partido?.equipo_a_nombre||cron.partido?.equipoA_nombre):(cron.partido?.equipo_b_nombre||cron.partido?.equipoB_nombre);
-  const nombreGanador=equipoInfractor==='A'?(cron.partido?.equipo_b_nombre||cron.partido?.equipoB_nombre):(cron.partido?.equipo_a_nombre||cron.partido?.equipoA_nombre);
-  if(!confirm(`¿Confirmas que "${nombreInfractor}" pierde por descalificación (5 amonestaciones o robots sin funcionar)?\n\nSe guardará el marcador con una diferencia de 2 goles a favor de "${nombreGanador}", según el reglamento.`))return;
-  const motivo=prompt('Motivo breve (ej: "5 amonestaciones" o "sin robots funcionales"):','5 amonestaciones');
-  if(motivo===null)return;
+  const nomInf=equipoInfractor==='A'?(cron.partido?.equipo_a_nombre||'A'):(cron.partido?.equipo_b_nombre||'B');
+  const nomGan=equipoInfractor==='A'?(cron.partido?.equipo_b_nombre||'B'):(cron.partido?.equipo_a_nombre||'A');
+  if(!confirm(`¿Confirmas que "${nomInf}" pierde por descalificación?\nSe guardará el marcador con +2 goles a favor de "${nomGan}".`))return;
+  const motivo=prompt('Motivo breve:','5 amonestaciones'); if(motivo===null)return;
   if(cron.interval)clearInterval(cron.interval); cron.corriendo=false;
-  const golesInfractorActual=equipoInfractor==='A'?cron.golesA:cron.golesB;
-  const golesGanadorActual=equipoInfractor==='A'?cron.golesB:cron.golesA;
-  const golesGanadorFinal=Math.max(golesGanadorActual,golesInfractorActual+2);
-  if(equipoInfractor==='A'){cron.golesB=golesGanadorFinal;}else{cron.golesA=golesGanadorFinal;}
+  const gInf=equipoInfractor==='A'?cron.golesA:cron.golesB, gGan=equipoInfractor==='A'?cron.golesB:cron.golesA;
+  const gGanFinal=Math.max(gGan,gInf+2);
+  if(equipoInfractor==='A')cron.golesB=gGanFinal;else cron.golesA=gGanFinal;
   actualizarMarcadorCron();
   const ganadorId=equipoInfractor==='A'?cron.partido.equipo_b_id:cron.partido.equipo_a_id;
   const marcador=`${cron.golesA}-${cron.golesB} (desc. ${motivo||'descalificación'})`;
   loading(true,'GUARDANDO RESULTADO...');
   try{
-    const res=await gasPost({action:'registrarResultadoGeneral',partido_id:cron.partido.partido_id||cron.partido.id,ganador_id:ganadorId,marcador,categoria:state.categoria});
+    const res=await gasPost({action:'registrarResultadoSoccer',partido_id:cron.partido.partido_id,ganador_id:ganadorId,marcador});
     if(!res.ok)throw new Error(res.error||'Error');
-    state.bracket=res.bracket; document.getElementById('cronOverlay').classList.remove('show'); toast(`🏆 Ganó ${nombreGanador} por descalificación`,'success'); renderBracket();
+    state.torneoSoc=res.torneo; document.getElementById('cronOverlay').classList.remove('show');
+    toast(`🏆 Ganó ${nomGan} por descalificación`,'success'); renderTorneoSoccer();
   }catch(e){toast('Error: '+e.message,'error');}
   loading(false);
 }
+
 async function terminarPartidoSoccer() {
-  if(cron.fase!=='fin'){if(cron.golesA===cron.golesB&&cron.fase!=='penales'){toast('Hay empate — espera fin del T2','error');return;}if(cron.fase==='penales'&&cron.penalesA===cron.penalesB){toast('Debes definir el ganador por penales','error');return;}}
-  const esPenales=cron.penalesA>0||cron.penalesB>0;
+  if(cron.fase!=='fin'){
+    if(cron.golesA===cron.golesB&&cron.fase!=='penales'){toast('Hay empate — espera fin del tiempo','error');return;}
+    if(cron.fase==='penales'&&cron.penalesA===cron.penalesB){toast('Debes definir el ganador por penales','error');return;}
+  }
+  const esPen=cron.penalesA>0||cron.penalesB>0;
   let ganadorId,marcador;
-  if(esPenales){ganadorId=cron.penalesA>cron.penalesB?cron.partido.equipo_a_id:cron.partido.equipo_b_id;marcador=`${cron.golesA}-${cron.golesB}${cron.huboAlargue?' (alargue)':''} (pen ${cron.penalesA}-${cron.penalesB})`;}
-  else{ganadorId=cron.golesA>cron.golesB?cron.partido.equipo_a_id:cron.partido.equipo_b_id;marcador=`${cron.golesA}-${cron.golesB}${cron.huboAlargue?' (alargue)':''}`;}
-  const ganadorNombre=ganadorId===cron.partido.equipo_a_id?(cron.partido.equipo_a_nombre||cron.partido.equipoA_nombre):(cron.partido.equipo_b_nombre||cron.partido.equipoB_nombre);
+  if(esPen){
+    ganadorId=cron.penalesA>cron.penalesB?cron.partido.equipo_a_id:cron.partido.equipo_b_id;
+    marcador=`${cron.golesA}-${cron.golesB}${cron.huboAlargue?' (alargue)':''} (pen ${cron.penalesA}-${cron.penalesB})`;
+  } else {
+    ganadorId=cron.golesA>cron.golesB?cron.partido.equipo_a_id:cron.partido.equipo_b_id;
+    marcador=`${cron.golesA}-${cron.golesB}${cron.huboAlargue?' (alargue)':''}`;
+  }
+  const ganadorNombre=ganadorId===cron.partido.equipo_a_id?cron.partido.equipo_a_nombre:cron.partido.equipo_b_nombre;
   if(cron.interval)clearInterval(cron.interval); cron.corriendo=false;
   loading(true,'GUARDANDO RESULTADO...');
   try{
-    const res=await gasPost({action:'registrarResultadoGeneral',partido_id:cron.partido.partido_id||cron.partido.id,ganador_id:ganadorId,marcador,categoria:state.categoria});
+    const res=await gasPost({action:'registrarResultadoSoccer',partido_id:cron.partido.partido_id,ganador_id:ganadorId,marcador});
     if(!res.ok)throw new Error(res.error||'Error');
-    state.bracket=res.bracket; document.getElementById('cronOverlay').classList.remove('show'); toast(`🏆 Ganó ${ganadorNombre}`,'success'); renderBracket();
+    state.torneoSoc=res.torneo; document.getElementById('cronOverlay').classList.remove('show');
+    toast(`🏆 Ganó ${ganadorNombre}`,'success'); renderTorneoSoccer();
   }catch(e){toast('Error: '+e.message,'error');}
   loading(false);
 }
@@ -1039,7 +1339,9 @@ function actualizarDisplayCron() {
 }
 function actualizarMarcadorCron() { document.getElementById('cronGolesA').textContent=cron.golesA; document.getElementById('cronGolesB').textContent=cron.golesB; }
 
-// ── PANEL DE COMBATE BATALLA ──
+// ════════════════════════════════════════
+//  PANEL DE COMBATE BATALLA
+// ════════════════════════════════════════
 let combate = { partido:null, segundos:180, fase:'idle', corriendo:false, interval:null,
   puntosA:0, puntosB:0, amonA:0, amonB:0, tecnicoUsadoA:0, tecnicoUsadoB:0 };
 
@@ -1056,8 +1358,7 @@ function abrirCombateBatalla(partido) {
   document.getElementById('combFaseBadge').textContent='LISTO';
   document.getElementById('combateEmpate').classList.remove('show');
   document.getElementById('btnCombTerminar').style.display='none';
-  document.getElementById('btnCombIniciar').disabled=false;
-  document.getElementById('btnCombIniciar').textContent='▶ Iniciar combate';
+  document.getElementById('btnCombIniciar').disabled=false; document.getElementById('btnCombIniciar').textContent='▶ Iniciar combate';
   document.getElementById('btnCombPausar').disabled=true;
   actualizarDisplayCombate(); actualizarMarcadorCombate(); actualizarAmonestacionesBat();
   document.getElementById('combateOverlay').classList.add('show');
@@ -1071,8 +1372,8 @@ function iniciarCombate() {
   document.getElementById('combFaseBadge').textContent='EN COMBATE';
   if(combate.interval)clearInterval(combate.interval);
   combate.interval=setInterval(()=>{
-    if(combate.segundos>0){ combate.segundos--; actualizarDisplayCombate(); if(combate.segundos===10)toast('⚠️ 10 segundos restantes','error'); }
-    else { pausarCombate(); finDeTiempoCombate(); }
+    if(combate.segundos>0){combate.segundos--;actualizarDisplayCombate();if(combate.segundos===10)toast('⚠️ 10 segundos restantes','error');}
+    else{pausarCombate();finDeTiempoCombate();}
   },1000);
 }
 function pausarCombate() {
@@ -1086,75 +1387,65 @@ function actualizarDisplayCombate() {
   el.classList.toggle('alerta',combate.segundos<=10&&combate.segundos>0);
 }
 function actualizarMarcadorCombate() { document.getElementById('combPuntosA').textContent=combate.puntosA; document.getElementById('combPuntosB').textContent=combate.puntosB; }
-function actualizarAmonestacionesBat() { document.getElementById('amonBatCountA').textContent=combate.amonA; document.getElementById('amonBatCountB').textContent=combate.amonB; }
+function actualizarAmonestacionesBat() { document.getElementById('amonBatCountA').textContent='🟨 '+combate.amonA; document.getElementById('amonBatCountB').textContent='🟨 '+combate.amonB; }
 
 function puntuar(equipo,evento,puntos) {
   if(combate.fase==='fin')return;
-  if(equipo==='A')combate.puntosA+=puntos; else combate.puntosB+=puntos;
+  if(equipo==='A')combate.puntosA+=puntos;else combate.puntosB+=puntos;
   actualizarMarcadorCombate();
   const nombre=equipo==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
   toast(`+${puntos} ${evento} — ${nombre}`,'success');
 }
 function amonestarBat(equipo,silencioso) {
   if(combate.fase==='fin')return;
-  if(equipo==='A'){combate.amonA++;combate.puntosA-=5;} else {combate.amonB++;combate.puntosB-=5;}
+  if(equipo==='A'){combate.amonA++;combate.puntosA-=5;}else{combate.amonB++;combate.puntosB-=5;}
   actualizarAmonestacionesBat(); actualizarMarcadorCombate();
-  if(!silencioso){
-    const nombre=equipo==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
-    toast(`🟨 Amonestación −5 — ${nombre}`,'error');
-  }
+  if(!silencioso){ const nombre=equipo==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent; toast(`🟨 Amonestación −5 — ${nombre}`,'error'); }
 }
 function tiempoTecnico(equipo) {
   if(combate.fase==='fin')return;
   const nombre=equipo==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
   const usados=equipo==='A'?combate.tecnicoUsadoA:combate.tecnicoUsadoB;
   const esProrroga=usados>=1;
-  const msg=esProrroga
-    ? `${nombre} ya usó su tiempo técnico de 1 min. ¿Conceder una PRÓRROGA adicional de 1 min?\n\nLa prórroga cuenta como amonestación (−5), según el reglamento.`
-    : `¿Conceder 1 minuto técnico a ${nombre} para inspeccionar su robot?`;
+  const msg=esProrroga?`${nombre} ya usó su tiempo técnico. ¿Conceder PRÓRROGA? (cuenta como amonestación −5)`:
+    `¿Conceder 1 minuto técnico a ${nombre}?`;
   if(!confirm(msg))return;
   pausarCombate();
-  if(equipo==='A')combate.tecnicoUsadoA++; else combate.tecnicoUsadoB++;
+  if(equipo==='A')combate.tecnicoUsadoA++;else combate.tecnicoUsadoB++;
   combate.fase='tecnico';
   document.getElementById('combFaseBadge').textContent=`TIEMPO TÉCNICO — ${nombre}`;
-  if(esProrroga) amonestarBat(equipo,true);
+  if(esProrroga)amonestarBat(equipo,true);
   toast(`⏱ Tiempo técnico para ${nombre} — presiona Reanudar cuando termine`,'info');
 }
 function finDeTiempoCombate() {
-  combate.fase='fin';
-  document.getElementById('combFaseBadge').textContent='TIEMPO FINALIZADO';
+  combate.fase='fin'; document.getElementById('combFaseBadge').textContent='TIEMPO FINALIZADO';
   toast('⏱ ¡Tiempo terminado!');
-  if(combate.puntosA===combate.puntosB){
-    document.getElementById('combateEmpate').classList.add('show');
-    toast('¡Empate en puntos! El juez debe decidir el ganador','error');
-  } else {
-    document.getElementById('btnCombTerminar').style.display='block';
-  }
+  if(combate.puntosA===combate.puntosB){ document.getElementById('combateEmpate').classList.add('show'); toast('¡Empate en puntos! El juez debe decidir','error'); }
+  else { document.getElementById('btnCombTerminar').style.display='block'; }
 }
 async function declararNocaut(equipoGanador) {
   const nombre=equipoGanador==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
-  if(!confirm(`¿Confirmas NOCAUT? ${nombre} gana el combate de inmediato, sin importar el marcador actual.`))return;
+  if(!confirm(`¿Confirmas NOCAUT? ${nombre} gana de inmediato.`))return;
   combate.fase='fin'; if(combate.interval)clearInterval(combate.interval); combate.corriendo=false;
   await finalizarCombate(equipoGanador,'nocaut');
 }
 async function declararAbandono(equipoQueAbandona) {
-  const equipoGanador=equipoQueAbandona==='A'?'B':'A';
-  const nombreAband=equipoQueAbandona==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
-  const nombreGana=equipoGanador==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
-  if(!confirm(`¿Confirmas que ${nombreAband} se retira o no puede continuar? ${nombreGana} ganará el combate.`))return;
+  const ganador=equipoQueAbandona==='A'?'B':'A';
+  const nomAband=equipoQueAbandona==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
+  const nomGana=ganador==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
+  if(!confirm(`¿Confirmas que ${nomAband} se retira? ${nomGana} ganará.`))return;
   combate.fase='fin'; if(combate.interval)clearInterval(combate.interval); combate.corriendo=false;
-  await finalizarCombate(equipoGanador,'abandono');
+  await finalizarCombate(ganador,'abandono');
 }
 async function terminarCombate() {
-  if(combate.puntosA===combate.puntosB){ toast('Hay empate — usa los botones de desempate del juez','error'); return; }
-  const ganador=combate.puntosA>combate.puntosB?'A':'B';
-  await finalizarCombate(ganador,'puntos');
+  if(combate.puntosA===combate.puntosB){toast('Hay empate — usa los botones de desempate','error');return;}
+  await finalizarCombate(combate.puntosA>combate.puntosB?'A':'B','puntos');
 }
 function declararGanadorManual(equipo) { finalizarCombate(equipo,'decision'); }
 
 async function finalizarCombate(equipoGanador,motivo) {
   const ganadorId=equipoGanador==='A'?combate.partido.equipo_a_id:combate.partido.equipo_b_id;
-  const ganadorNombre=equipoGanador==='A'?(combate.partido.equipo_a_nombre||combate.partido.equipoA_nombre):(combate.partido.equipo_b_nombre||combate.partido.equipoB_nombre);
+  const ganadorNombre=equipoGanador==='A'?(combate.partido.equipo_a_nombre||'A'):(combate.partido.equipo_b_nombre||'B');
   let marcador=`${combate.puntosA}-${combate.puntosB}`;
   if(motivo==='nocaut')marcador+=' (nocaut)';
   else if(motivo==='abandono')marcador+=' (abandono)';
@@ -1172,4 +1463,4 @@ async function finalizarCombate(equipoGanador,motivo) {
 document.addEventListener('componentsLoaded',()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} });
 </script>
 </body>
-</html> 
+</html>
