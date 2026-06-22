@@ -143,9 +143,19 @@
     .tabla-participantes tbody tr:last-child td:first-child { border-radius:0 0 0 12px; }
     .tabla-participantes tbody tr:last-child td:last-child { border-radius:0 0 12px 0; }
     .categoria-badge { display:inline-block; font-family:'DM Mono',monospace; font-size:11px; font-weight:700; padding:5px 12px; border-radius:12px; letter-spacing:0.5px; border:1px solid; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
-    .categoria-badge.amateur { background:#ffd966; color:#5a4500; border-color:#ffea88; }
-    .categoria-badge.pro { background:var(--p-cyan); color:var(--p-surface); border-color:var(--p-cyan-bright); }
-    .categoria-badge.extra { background:#c084fc; color:#3a0c5c; border-color:#d8a9ff; }
+    .categoria-badge.cat-ins   { background:#f97316; color:#fff;    border-color:#fb923c; }
+    .categoria-badge.cat-trp_a { background:#eab308; color:#3a2a00; border-color:#fde047; }
+    .categoria-badge.cat-sl_a  { background:#84cc16; color:#1a3300; border-color:#bef264; }
+    .categoria-badge.cat-sl_p  { background:#22c55e; color:#052e16; border-color:#4ade80; }
+    .categoria-badge.cat-ms_a  { background:#06b6d4; color:#082f49; border-color:#67e8f9; }
+    .categoria-badge.cat-ms_rc { background:#3b82f6; color:#fff;    border-color:#93c5fd; }
+    .categoria-badge.cat-bai   { background:#ec4899; color:#fff;    border-color:#f9a8d4; }
+    .categoria-badge.cat-bat   { background:#ef4444; color:#fff;    border-color:#fca5a5; }
+    .categoria-badge.cat-trp_p { background:#f59e0b; color:#2a1a00; border-color:#fcd34d; }
+    .categoria-badge.cat-soc   { background:#10b981; color:#022c22; border-color:#6ee7b7; }
+    .categoria-badge.cat-cr    { background:#8b5cf6; color:#fff;    border-color:#c4b5fd; }
+    .categoria-badge.cat-lk    { background:#14b8a6; color:#022020; border-color:#5eead4; }
+    .categoria-badge.cat-dev   { background:#f472b6; color:#4a0028; border-color:#fbcfe8; }
     .estado-badge { display:inline-flex; align-items:center; gap:6px; font-family:'DM Mono',monospace; font-size:11px; font-weight:700; padding:5px 12px; border-radius:12px; letter-spacing:0.5px; }
     .estado-badge.aprobado { background:var(--p-success); color:#0a3d1a; }
     .estado-badge.pendiente { background:var(--p-warning); color:#2a1a00; }
@@ -421,6 +431,12 @@
   const CACHE_TTL    = 10 * 60 * 1000;
   const PAGE_SIZE    = 30;
 
+  const CAT_CLASS = {
+    'Insectos':'cat-ins','Trepador (Amateur)':'cat-trp_a','Seguidor de línea ST (Amateur)':'cat-sl_a',
+    'Seguidor de línea ST (Pro)':'cat-sl_p','Minisumo Autónomo':'cat-ms_a','Minisumo RC':'cat-ms_rc',
+    'Bailarín':'cat-bai','Batalla':'cat-bat','Trepador (Pro)':'cat-trp_p','Robot soccer':'cat-soc',
+    'Cubo Rubik':'cat-cr','Lego Kids':'cat-lk','Impacto Tecnológico':'cat-dev'
+  };
   const CATEGORIAS_NIVEL = {
     'Insectos':'amateur','Trepador (Amateur)':'amateur','Seguidor de línea ST (Amateur)':'amateur',
     'Seguidor de línea ST (Pro)':'pro','Minisumo Autónomo':'pro','Minisumo RC':'pro',
@@ -574,6 +590,7 @@
       if(aprobado==='APROBADO'){estadoClass='aprobado';estadoTexto='APROBADO';}
       else if(aprobado==='NO CUMPLE'){estadoClass='nocumple';estadoTexto='NO CUMPLE';}
       const nivel = CATEGORIAS_NIVEL[p.categoria] || 'pro';
+      const catClass = CAT_CLASS[p.categoria] || 'cat-ms_a';
       const nombres = [p.nombre, p.miembro2].map(strVal).filter(Boolean);
       const nombresHtml = nombres.map((n,i) =>
         i===0 ? '<div style="font-weight:700;">'+n+'</div>'
@@ -581,7 +598,7 @@
       ).join('');
       return '<tr data-pid="'+p.id.replace(/"/g,'&quot;')+'" class="fila-participante">'+
         '<td>'+(p.robot||'—')+'</td>'+
-        '<td><span class="categoria-badge '+nivel+'">'+(p.categoria||'—')+'</span></td>'+
+        '<td><span class="categoria-badge '+catClass+'">'+(p.categoria||'—')+'</span></td>'+
         '<td>'+nombresHtml+'</td>'+
         '<td>'+(p.institucion||'—')+'</td>'+
         '<td><span class="estado-badge '+estadoClass+'">'+estadoTexto+'</span></td>'+
