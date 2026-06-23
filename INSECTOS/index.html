@@ -499,11 +499,10 @@
       presentes.forEach(p => { intentos[p.id] = []; });
       clasificados = [...presentes];
       tiemposFinal = {};
-      stepActivar(2); // primero activar el paso para que el DOM esté visible
-      // luego inicializar
+      stepActivar(2);
       resetCronF();
-      document.getElementById('clasificadosInfo').innerHTML =
-        `<b>${clasificados.length} participantes directos a la final:</b> ` +
+      const fi = document.getElementById('finalInfo');
+      if (fi) fi.innerHTML = `<b>${clasificados.length} participantes directos a la final:</b> ` +
         clasificados.map(p => `<span style="color:var(--cyan)">${p.robot}</span>`).join(', ');
       renderCarrilesFinal();
       return;
