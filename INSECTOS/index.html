@@ -368,9 +368,9 @@
   // ============================================================
   async function cargarParticipantes() {
     try {
-      const res = await gasPost({ accion: 'getParticipantes', categoria: 'Insectos', staffToken: staffToken() });
-      if (!res.ok) throw new Error(res.error);
-      participantes = (res.participantes || []).filter(p => p.aprobado === 'SI');
+      const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' })).then(r => r.json());
+      const todos = Array.isArray(res) ? res : (res.participantes || []);
+      participantes = todos.filter(p => p.categoria === 'Insectos' && p.aprobado === 'APROBADO');
       renderLista();
     } catch (e) {
       document.getElementById('listaParticipantes').innerHTML = `<div class="empty-state" style="color:var(--red)">Error cargando participantes: ${e.message}</div>`;
