@@ -61,6 +61,8 @@
     .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'Exo 2';font-size:.85rem;font-weight:600;transition:all .2s}
     .btn-cyan{background:var(--cyan);color:#071e45}
     .btn-cyan:hover{filter:brightness(1.1)}
+    .btn-turno{background:#1a5ca8;color:#000;font-weight:700}
+    .btn-turno:hover{background:#2a7ad8;color:#000}
     .btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--text)}
     .btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
     .btn-green{background:var(--green);color:#071e45}
@@ -84,7 +86,7 @@
     .turno-badge{display:inline-flex;align-items:center;gap:8px;background:#1a5ca8;border:1px solid #2a7ad8;border-radius:8px;padding:8px 18px;font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:#fff;margin-bottom:16px}
     .grupo-badge{font-family:'Orbitron';font-size:.75rem;letter-spacing:2px;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
     .grupo-num{background:var(--blue);color:#fff;padding:3px 12px;border-radius:6px}
-    .carriles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+    .carriles-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
     .carril-card{background:#0d2040;border:2px solid #1e3a6e;border-radius:12px;padding:16px;text-align:center;position:relative;transition:all .3s}
     .carril-card.registrado{border-color:#27ae60;background:#0a2a18}
     .carril-card.dnf{border-color:#c0392b;background:#2a0a0a}
@@ -229,7 +231,7 @@
                 <span style="font-size:.7rem;color:var(--muted)" id="grupoInfo"></span>
               </div>
             </div>
-            <div class="carriles-grid" id="carrilesGrid" style="grid-template-columns:repeat(2,1fr)"></div>
+            <div class="carriles-grid" id="carrilesGrid" style="grid-template-columns:repeat(2,1fr) !important;display:grid"></div>
             <div style="display:flex;justify-content:space-between;gap:8px;margin-top:10px">
               <button class="btn btn-outline" id="btnGrupoAnterior" style="flex:1">← Anterior</button>
               <button class="btn btn-cyan" id="btnGrupoSiguiente" style="flex:1">Siguiente →</button>
@@ -499,7 +501,7 @@
       btnSig.className = 'btn btn-green';
     } else if (esUltimoGrupoTurno) {
       btnSig.textContent = `Iniciar Turno ${turnoActual + 2} →`;
-      btnSig.className = 'btn btn-orange';
+      btnSig.className = 'btn btn-turno';
     } else {
       btnSig.textContent = 'Siguiente grupo →';
       btnSig.className = 'btn btn-cyan';
