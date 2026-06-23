@@ -107,11 +107,7 @@ const CERTIFICADO_CSS = `
 }
 .cert-line-l { left: 52px; background: linear-gradient(180deg,transparent,#1a5ca8 20%,#1a5ca8 80%,transparent); }
 .cert-line-r { right: 52px; background: linear-gradient(180deg,transparent,#1a5ca8 20%,#1a5ca8 80%,transparent); }
-.cert-line-l::after, .cert-line-r::after {
-  content: ''; position: absolute; width: 12px; height: 12px;
-  background: #1a5ca8; border-radius: 50%;
-  left: 50%; transform: translateX(-50%); top: 40px;
-}
+.cert-line-l::after, .cert-line-r::after { content: none; }
 
 /* Cuerpo */
 .cert-body {
@@ -230,7 +226,6 @@ function obtenerDatosTipo(tipo) {
 // ── SELLO / ROSETA SVG ────────────────────────────────────────────────────────
 
 function obtenerSelloSVG(tipo) {
-  // Normalizar variantes: '1ro'→'1er', '3ro'→'3er', 'GANADOR'→'1er', etc.
   const norm = {
     '1ro': '1er', 'GANADOR': '1er', '1er': '1er',
     '2do': '2do', 'SUBCAMPEÓN': '2do', 'SUBCAMPEON': '2do', 'FINALISTA': '2do',
@@ -238,16 +233,45 @@ function obtenerSelloSVG(tipo) {
     'participacion': 'participacion', 'PARTICIPACIÓN': 'participacion', 'PARTICIPACION': 'participacion'
   };
   const tipoNorm = norm[tipo] || 'participacion';
+
+  // Sello especial 1er lugar — dorado brillante con estrella blanca
+  if (tipoNorm === '1er') {
+    return `<svg viewBox="0 0 120 158" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="gold1" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#ffe566"/>
+          <stop offset="40%" stop-color="#f0b429"/>
+          <stop offset="100%" stop-color="#b8760a"/>
+        </radialGradient>
+        <linearGradient id="rib1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f0c030"/>
+          <stop offset="50%" stop-color="#c8900a"/>
+          <stop offset="100%" stop-color="#a06808"/>
+        </linearGradient>
+        <filter id="glow1" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="2.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <path d="M44 96 L44 150 L60 140 L76 150 L76 96 Z" fill="url(#rib1)"/>
+      <path d="M44 96 L44 150 L52 145 L52 96 Z" fill="#a06808" opacity="0.6"/>
+      <circle cx="60" cy="56" r="57" fill="none" stroke="#ffe566" stroke-width="1.5" opacity="0.4"/>
+      <circle cx="60" cy="56" r="54" fill="url(#gold1)" stroke="#f0c030" stroke-width="2"/>
+      <circle cx="60" cy="56" r="46" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+      <polygon points="60,18 69,44 96,44 74,60 83,86 60,70 37,86 46,60 24,44 51,44" fill="#ffffff" filter="url(#glow1)"/>
+      <text x="60" y="102" text-anchor="middle" font-family="Exo 2,Arial,sans-serif" font-size="11" font-weight="900" fill="#7a4d00" letter-spacing="0.5">1er</text>
+    </svg>`;
+  }
+
   const conf = {
-    '1er':          { star: '#c9a24b', fill: '#fdfaf2', ribbon: '#1a5ca8', ribbonShade: '#0a2a5e', txt: '#8a6d28', label: '1er',     fontSize: 12  },
     '2do':          { star: '#9aa6b2', fill: '#f7f8fa', ribbon: '#5f6b78', ribbonShade: '#4a545f', txt: '#5f6b78', label: '2do',     fontSize: 12  },
     '3er':          { star: '#c87d4a', fill: '#fbf2ec', ribbon: '#a85f33', ribbonShade: '#8a4d28', txt: '#8a4f28', label: '3er',     fontSize: 12  },
     'participacion':{ star: '#1a5ca8', fill: '#eef3f9', ribbon: '#13325c', ribbonShade: '#0d2444', txt: '#1a5ca8', label: 'PARTIC.', fontSize: 8.5 }
   };
-  const c = conf[tipoNorm];
+  const c = conf[tipoNorm] || conf['participacion'];
   return `<svg viewBox="0 0 120 158" xmlns="http://www.w3.org/2000/svg">
     <path d="M44 96 L44 150 L60 140 L76 150 L76 96 Z" fill="${c.ribbon}"/>
-    <path d="M44 96 L44 150 L52 145 L52 96 Z" fill="${c.ribbonShade}"/>
+    <path d="M44 96 L44 150 L52 145 L52 96 Z" fill="${c.ribbonShade}" opacity="0.6"/>
     <circle cx="60" cy="56" r="54" fill="${c.fill}" stroke="${c.star}" stroke-width="2.5"/>
     <circle cx="60" cy="56" r="47" fill="none" stroke="${c.star}" stroke-width="0.8" opacity="0.55"/>
     <polygon points="60,20 68,44 93,44 73,59 81,83 60,68 39,83 47,59 27,44 52,44" fill="${c.star}"/>
