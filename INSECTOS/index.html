@@ -76,6 +76,7 @@
     .cron-bar-wrap{height:8px;background:#0d2040;border-radius:4px;margin:14px 0;overflow:hidden}
     .cron-bar{height:100%;width:100%;border-radius:4px;background:var(--green);transition:width .1s linear,background .3s}
     .cron-btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+    @media(max-width:900px){.layout-2col{grid-template-columns:1fr !important}}
     /* GRUPOS y CARRILES */
     .turno-badge{display:inline-flex;align-items:center;gap:8px;background:#1a5ca8;border:1px solid #2a7ad8;border-radius:8px;padding:8px 18px;font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:#fff;margin-bottom:16px}
     .grupo-badge{font-family:'Orbitron';font-size:.75rem;letter-spacing:2px;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
@@ -209,39 +210,42 @@
         </div>
         <div class="serial-warn" id="serialWarn">⚠️ Conecta el Arduino (sensor IR) para registrar tiempos automáticamente. También puedes registrar manualmente.</div>
 
-        <!-- CRONOMETRO CLASIFICATORIA -->
-        <div class="cron-central">
-          <div class="cron-label" id="cronLabel">TURNO 1 · GRUPO 1</div>
-          <div class="cron-num" id="cronNum">02:00</div>
-          <div class="cron-bar-wrap"><div class="cron-bar" id="cronFill"></div></div>
-          <div class="cron-btn-row">
-            <button class="btn btn-green" id="btnCronStart">▶ INICIAR</button>
-            <button class="btn btn-orange" id="btnCronPause" disabled>⏸ PAUSAR</button>
-            <button class="btn btn-red" id="btnCronStop" disabled>⏹ DETENER</button>
-            <button class="btn btn-outline" id="btnDNFAll">DNF TODOS RESTANTES</button>
+        <!-- LAYOUT DOS COLUMNAS -->
+        <div class="layout-2col" style="display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start">
+
+          <!-- COLUMNA IZQUIERDA: cronómetro + ranking -->
+          <div>
+            <div class="cron-central">
+              <div class="cron-label" id="cronLabel">TURNO 1 · GRUPO 1</div>
+              <div class="cron-num" id="cronNum">02:00</div>
+              <div class="cron-bar-wrap"><div class="cron-bar" id="cronFill"></div></div>
+              <div class="cron-btn-row">
+                <button class="btn btn-green" id="btnCronStart">▶ INICIAR</button>
+                <button class="btn btn-orange" id="btnCronPause" disabled>⏸ PAUSAR</button>
+                <button class="btn btn-red" id="btnCronStop" disabled>⏹ DETENER</button>
+                <button class="btn btn-outline" id="btnDNFAll" style="width:100%;margin-top:6px">DNF TODOS RESTANTES</button>
+              </div>
+            </div>
+            <div class="ranking-mini" id="rankingParcial"></div>
           </div>
-        </div>
 
-        <!-- turno + grupo actual -->
-        <div style="margin-bottom:12px">
-          <div class="turno-badge" id="turnoBadge">CLASIFICATORIA · TURNO 1 · INTENTO 1</div>
-        </div>
-        <div class="grupo-badge">
-          Grupo <span class="grupo-num" id="grupoNumLabel">1</span>
-          <span style="font-size:.7rem;color:var(--muted)" id="grupoInfo"></span>
-        </div>
+          <!-- COLUMNA DERECHA: turno badge + carriles + navegación -->
+          <div>
+            <div style="margin-bottom:10px">
+              <div class="turno-badge" id="turnoBadge">CLASIFICATORIA · TURNO 1 · INTENTO 1</div>
+            </div>
+            <div class="grupo-badge">
+              Grupo <span class="grupo-num" id="grupoNumLabel">1</span>
+              <span style="font-size:.7rem;color:var(--muted)" id="grupoInfo"></span>
+            </div>
+            <div class="carriles-grid" id="carrilesGrid" style="grid-template-columns:repeat(2,1fr)"></div>
+            <div class="btn-row" style="justify-content:space-between;margin-top:12px">
+              <button class="btn btn-outline" id="btnGrupoAnterior">← Grupo anterior</button>
+              <button class="btn btn-cyan" id="btnGrupoSiguiente">Siguiente grupo →</button>
+            </div>
+          </div>
 
-        <!-- Carriles clasificatoria -->
-        <div class="carriles-grid" id="carrilesGrid"></div>
-
-        <!-- Botones navegación clasificatoria -->
-        <div class="btn-row" style="justify-content:space-between;margin-top:12px">
-          <button class="btn btn-outline" id="btnGrupoAnterior">← Grupo anterior</button>
-          <button class="btn btn-cyan" id="btnGrupoSiguiente">Siguiente grupo →</button>
         </div>
-
-        <!-- Ranking parcial -->
-        <div class="ranking-mini" id="rankingParcial" style="margin-top:28px"></div>
       </div>
 
       <!-- STEP 3: FINAL -->
