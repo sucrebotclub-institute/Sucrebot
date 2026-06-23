@@ -1,136 +1,750 @@
-// ════════════════════════════════════════════════════════════════
-//  INSTRUCCIONES DE INSTALACIÓN EN Code.gs
-//  ─────────────────────────────────────────────────────────────
-//  1. Pega la función enviarCorreoPendiente() justo debajo de
-//     la función enviarCorreoQR() existente.
-//
-//  2. Dentro de doPost(), en el bloque "if (action === 'setParticipante')",
-//     busca la línea del return final:
-//
-//       return ContentService.createTextOutput(JSON.stringify({ ok: true, id: participanteId }))
-//         .setMimeType(ContentService.MimeType.JSON);
-//
-//     Y ANTES de esa línea, agrega el bloque marcado como
-//     "── AGREGAR AQUÍ ──" más abajo.
-//
-//  3. Despliega como "Nueva versión" del deployment existente.
-// ════════════════════════════════════════════════════════════════
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Registro de Participantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="../shared/js/config.js"></script>
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <style>
+    :root {
+      --r-cyan: #5bc8f0; --r-cyan-bright: #90dcff;
+      --r-blue: #1a5ca8; --r-blue-dark: #1a3a6b; --r-blue-deep: #0a193c;
+      --r-green: #3dd68c;
+    }
+    body { background: #ffffff !important; color: #1a1c28 !important; }
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; position: relative; overflow: visible; }
+    .page-hero { padding: 48px 0 24px; margin-bottom: 16px; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--r-blue); border: 1px solid var(--r-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
+    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; color: var(--r-blue-dark); line-height: 1; position: relative; padding-bottom: 8px; }
+    .page-hero h2::after { content: ""; position: absolute; bottom: 4px; left: 0; width: 120px; height: 3px; background: linear-gradient(90deg, transparent 0%, #5bc8f0 50%, transparent 100%); border-radius: 2px; }
+    .page-hero h2 span { color: var(--r-blue); }
+    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; }
+    .wrapper::before { content: ''; position: absolute; left: -600px; top: 0; bottom: 0; width: 580px; background: linear-gradient(135deg, rgba(26,92,168,0.85) 0%, rgba(18,20,26,0.90) 100%), url('../shared/images/foto3.jpg') 5% center / cover no-repeat; border-radius: 0 16px 16px 0; box-shadow: 0 8px 32px rgba(26,92,168,0.3); border-right: 2px solid rgba(91,200,240,0.3); z-index: 1; }
+    .reg-layout { display: flex; align-items: flex-start; gap: 80px; position: relative; margin-bottom: 60px; }
+    .reg-robot { flex: 0 0 420px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+    .reg-robot-img { width: 100%; max-width: 400px; height: auto; filter: drop-shadow(0 8px 32px rgba(91,200,240,0.25)); animation: float-robot 4s ease-in-out infinite; }
+    @keyframes float-robot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    .reg-aviso { margin-top: 20px; padding: 4px 0; font-family: 'Exo 2', sans-serif; font-size: 12.5px; color: #1a3a6e; line-height: 1.75; width: 75%; box-sizing: border-box; }
+    .reg-aviso-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #1a5ca8; margin-bottom: 10px; font-weight: 700; text-transform: uppercase; }
+    .reg-aviso p { margin: 0 0 8px 0; }
+    .reg-aviso p:last-child { margin-bottom: 0; }
+    .reg-aviso strong { color: #1a5ca8; }
+    .reg-aviso .aviso-email { color: #1a5ca8; font-family: 'DM Mono', monospace; font-size: 10.5px; }
+    /* WA card */
+    .wa-card { margin-top: 20px; width: 75%; background: linear-gradient(135deg,#071a0e 0%,#0d3a22 100%); border: 1.5px solid rgba(37,211,102,0.35); border-radius: 12px; padding: 14px 16px; box-sizing: border-box; }
+    .wa-card-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #25d366; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .wa-card-body { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .wa-card-body img { width: 138px; height: 138px; object-fit: contain; border-radius: 6px; display: block; }
+    .wa-card-body p { font-family: 'Exo 2', sans-serif; font-size: 10.5px; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.5; margin: 0; }
+    .wa-card-body p strong { color: #25d366; }
+    /* Form */
+    .form-card { background: linear-gradient(135deg, var(--r-blue) 0%, #14497e 100%); border: 1.5px solid var(--r-blue); border-radius: 16px; padding: 28px; box-shadow: 0 4px 24px rgba(26,92,168,0.25); flex: 1; position: relative; z-index: 1; margin-top: -108px; }
+    .form-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--r-cyan-bright); margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
+    .form-section-title { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 0.14em; color: rgba(255,255,255,0.7); text-transform: uppercase; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.15); font-weight: 700; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 4px; }
+    .field { position: relative; }
+    .field.full-width { grid-column: 1 / -1; }
+    .field label { display: block; font-family: 'Orbitron', monospace; font-size: 10px; color: rgba(255,255,255,0.95); margin-bottom: 6px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; }
+    .field-icon { position: absolute; left: 12px; bottom: 11px; width: 16px; height: 16px; color: var(--r-cyan); pointer-events: none; }
+    .field input, .field select { width: 100%; background: rgba(10,25,60,0.55); border: 1.5px solid rgba(255,255,255,0.12); color: #e8f0ff; font-family: 'Exo 2', sans-serif; font-size: 14px; padding: 10px 14px 10px 36px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; box-sizing: border-box; }
+    .field input:focus, .field select:focus { border-color: var(--r-cyan); background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .field input::placeholder { color: rgba(255,255,255,0.3); }
+    .field input[type="file"] { border: 1.5px dashed rgba(255,255,255,0.25); cursor: pointer; padding-left: 36px; }
+    .field input[type="file"]:hover { border-color: var(--r-cyan); }
+    .field select { background: rgba(10,25,60,0.55); cursor: pointer; appearance: auto; }
+    .field select option { background: var(--r-blue-deep); color: #e8f0ff; padding: 8px; }
+    .field select optgroup { background: var(--r-blue-deep); color: var(--r-cyan-bright); font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 4px 0; }
+    .field select option[value=""] { color: rgba(255,255,255,0.35); }
+    .inst-combo { position: relative; }
+    .inst-combo select { width: 100%; }
+    .inst-nueva-wrap { margin-top: 8px; display: none; animation: fadeIn .2s ease; position: relative; }
+    .inst-nueva-wrap.show { display: block; }
+    .inst-nueva-wrap input { width: 100%; background: rgba(10,25,60,0.55); border: 1.5px solid var(--r-cyan); color: #e8f0ff; font-family: 'Exo 2', sans-serif; font-size: 14px; padding: 10px 14px 10px 36px; border-radius: 8px; outline: none; box-sizing: border-box; }
+    .inst-nueva-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+    .inst-nueva-wrap input:focus { background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .prov-combo { position: relative; }
+    .prov-combo select { width: 100%; }
+    .prov-otra-wrap { margin-top: 8px; display: none; animation: fadeIn .2s ease; position: relative; }
+    .prov-otra-wrap.show { display: block; }
+    .prov-otra-wrap input { width: 100%; background: rgba(10,25,60,0.55); border: 1.5px solid var(--r-cyan); color: #e8f0ff; font-family: 'Exo 2', sans-serif; font-size: 14px; padding: 10px 14px 10px 36px; border-radius: 8px; outline: none; box-sizing: border-box; }
+    .prov-otra-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+    .prov-otra-wrap input:focus { background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .soccer-equipo-wrap { display: none; margin-top: 4px; animation: fadeIn .25s ease; }
+    .soccer-equipo-wrap.show { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    .soccer-equipo-badge { display: flex; align-items: center; gap: 8px; background: rgba(91,200,240,0.08); border: 1px solid rgba(91,200,240,0.25); border-radius: 8px; padding: 8px 14px; margin-bottom: 10px; font-family: 'Exo 2', sans-serif; font-size: 11.5px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+    .soccer-equipo-badge strong { color: var(--r-cyan); }
+    .logo-uploader { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+    .logo-uploader label.logo-label { font-family: 'Orbitron', monospace; font-size: 10px; color: rgba(255,255,255,0.95); margin-bottom: 6px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; display: block; width: 100%; text-align: left; }
+    .logo-drop-zone { width: 200px; height: 38px; border: 1.5px dashed rgba(91,200,240,0.4); border-radius: 8px; background: rgba(10,25,60,0.55); display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 7px; cursor: pointer; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; flex-shrink: 0; padding: 0 10px; box-sizing: border-box; }
+    .logo-drop-zone:hover, .logo-drop-zone:focus { border-color: var(--r-cyan); background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); outline: none; }
+    .logo-drop-zone.drag-over { border-color: var(--r-cyan); background: rgba(91,200,240,0.08); box-shadow: 0 0 0 3px rgba(91,200,240,0.2); }
+    .logo-drop-zone.has-logo { border-color: rgba(61,214,140,0.6); border-style: solid; }
+    .logo-placeholder { display: flex; flex-direction: row; align-items: center; gap: 6px; pointer-events: none; }
+    .logo-placeholder svg { width: 15px; height: 15px; color: rgba(91,200,240,0.5); flex-shrink: 0; }
+    .logo-placeholder span { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 0.05em; white-space: nowrap; }
+    .logo-preview-img { height: 100%; width: auto; max-width: 100%; object-fit: contain; padding: 4px; box-sizing: border-box; display: none; }
+    .logo-drop-zone.has-logo .logo-preview-img { display: block; }
+    .logo-drop-zone.has-logo .logo-placeholder { display: none; }
+    .logo-remove-btn { display: none; margin-top: 3px; background: none; border: none; color: rgba(255,120,120,0.7); font-family: 'DM Mono', monospace; font-size: 9px; cursor: pointer; letter-spacing: 0.05em; padding: 2px 4px; transition: color 0.2s; }
+    .logo-remove-btn:hover { color: #ff6b6b; }
+    .logo-uploader.has-logo .logo-remove-btn { display: block; }
+    #f-logo { display: none; }
+    .pago-info { background: linear-gradient(135deg, #0a2a5a 0%, #1a3a6b 100%); border: 1.5px solid rgba(91,200,240,0.25); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; box-sizing: border-box; }
+    .pago-info-label { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: var(--r-cyan-bright); font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .pago-info-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-family: 'Exo 2', sans-serif; font-size: 11.5px; }
+    .pago-info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .pago-info-key { color: rgba(255,255,255,0.5); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pago-info-val { color: #e8f0ff; font-weight: 600; text-align: right; }
+    .pago-info-val.mono { font-family: 'DM Mono', monospace; color: var(--r-cyan-bright); font-size: 12px; letter-spacing: 1px; }
+    @keyframes shimmer { 0%{left:-60%} 100%{left:120%} }
+    .precios-panel { position: absolute; right: -210px; top: 20px; width: 190px; display: flex; flex-direction: column; gap: 12px; z-index: 2; animation: float-panel 4s ease-in-out infinite; }
+    @keyframes float-panel { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .precios-panel-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #5bc8f0; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; text-align: center; }
+    .precio-item { background: linear-gradient(135deg, #0a2a5a 0%, #1a3a6b 100%); border: 1.5px solid rgba(91,200,240,0.2); border-radius: 14px; padding: 16px 14px; text-align: center; position: relative; overflow: hidden; cursor: default; transition: transform 0.2s, border-color 0.2s; }
+    .precio-item:hover { transform: scale(1.04); border-color: rgba(91,200,240,0.5); }
+    .precio-item.activo { border-color: #fbbf24; animation: pulse-activo 2.5s ease-in-out 0.7s infinite; }
+    .precio-item.activo::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24); background-size: 200%; animation: shimmer-bar 2s linear infinite; }
+    @keyframes shimmer-bar { 0%{background-position:200%} 100%{background-position:-200%} }
+    @keyframes pulse-activo { 0%,100%{box-shadow:0 0 18px rgba(251,191,36,0.3)} 50%{box-shadow:0 0 32px rgba(251,191,36,0.6)} }
+    .precio-item::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); animation: shimmer 3s ease-in-out infinite; }
+    .precio-periodo { font-family: 'Exo 2', sans-serif; font-size: 11px; color: rgba(255,255,255,0.65); margin-bottom: 8px; line-height: 1.35; }
+    .precio-valor { font-family: 'Bebas Neue', sans-serif; font-size: 2.6rem; color: #ffffff; line-height: 1; margin-bottom: 6px; letter-spacing: 1px; }
+    .precio-item.activo .precio-valor { color: #fbbf24; text-shadow: 0 0 20px rgba(251,191,36,0.4); }
+    .precio-desc { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 1px; padding: 4px 10px; border-radius: 10px; display: inline-block; font-weight: 700; }
+    .precio-item.activo .precio-desc { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.5); }
+    .precio-item:not(.activo) .precio-desc { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12); }
+    .precio-badge-activo { position: absolute; top: 9px; right: 9px; background: #fbbf24; color: #78350f; font-family: 'Orbitron', monospace; font-size: 7px; font-weight: 700; padding: 3px 7px; border-radius: 6px; letter-spacing: 0.5px; animation: pulse-badge 1.4s ease-in-out infinite; }
+    @keyframes pulse-badge { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.08)} }
+    .precios-movil { display: none; }
+    .btn-register { width: 100%; margin-top: 16px; background: #1a3a6b; border: 1.5px solid rgba(255,255,255,0.15); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; letter-spacing: 0.15em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-register:hover:not(:disabled) { background: #1e4a8a; border-color: rgba(255,255,255,0.3); }
+    .btn-register:active { background: #152e5a; }
+    .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
+    .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid var(--r-green); color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 600; padding: 12px 16px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 300px; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; box-shadow: 0 3px 12px rgba(0,0,0,0.3); }
+    .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
+    /* ── Panel de éxito tras registro ── */
+    .success-overlay { display: none; position: fixed; inset: 0; background: rgba(10,20,50,0.85); z-index: 10000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+    .success-overlay.show { display: flex; animation: fadeIn .3s ease; }
+    .success-card { background: linear-gradient(135deg, #0a2a5a 0%, #1a3a6b 100%); border: 1.5px solid rgba(91,200,240,0.35); border-radius: 20px; padding: 36px 32px; max-width: 460px; width: 100%; text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,0.6); }
+    .success-icon { font-size: 3rem; margin-bottom: 10px; }
+    .success-title { font-family: 'Orbitron', monospace; font-size: 13px; letter-spacing: 3px; color: #3dd68c; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+    .success-subtitle { font-family: 'Exo 2', sans-serif; font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 1px; margin-bottom: 16px; }
+    .success-id { font-family: 'DM Mono', monospace; font-size: 13px; background: rgba(0,0,0,0.3); color: #90dcff; border: 1px solid rgba(91,200,240,0.3); border-radius: 8px; padding: 9px 18px; display: inline-block; margin-bottom: 20px; letter-spacing: 1.5px; }
+    .success-msg { font-family: 'Exo 2', sans-serif; font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.75; margin-bottom: 24px; text-align: left; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 14px 16px; border-left: 3px solid rgba(91,200,240,0.4); }
+    .success-msg strong { color: #ffffff; }
+    .success-btn-primary { display: block; width: 100%; background: #1a5ca8; border: none; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; padding: 15px; border-radius: 10px; cursor: pointer; letter-spacing: 0.15em; text-transform: uppercase; text-decoration: none; margin-bottom: 10px; transition: background .2s; box-sizing: border-box; }
+    .success-btn-primary:hover { background: #1e6fc8; }
+    .success-btn-secondary { display: block; width: 100%; background: transparent; border: 1.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.55); font-family: 'Exo 2', sans-serif; font-size: 13px; padding: 12px; border-radius: 10px; cursor: pointer; text-decoration: none; transition: border-color .2s, color .2s; box-sizing: border-box; }
+    .success-btn-secondary:hover { border-color: rgba(255,255,255,0.35); color: #ffffff; }
 
-// ════════════════════════════════════════
-//  CORREO DE REGISTRO PENDIENTE
-//  Se envía automáticamente al registrarse.
-//  El correo de aprobación (enviarCorreoQR) sigue igual.
-// ════════════════════════════════════════
+    @media (min-width: 1261px) { .precios-movil { display: none !important; } }
+    @media (min-width: 769px) and (max-width: 1260px) { .precios-panel { display: none; } .precios-movil { display: none !important; } }
+    @media (max-width: 1000px) { .reg-layout { flex-direction: column; align-items: center; } .reg-robot { flex: 0 0 auto; } .form-card { width: 100%; max-width: 700px; } }
+    @media (max-width: 768px) {
+      .wrapper { padding: 0 12px 40px; }
+      .page-hero { padding: 20px 0 14px; }
+      .page-hero h2 { font-size: 1.6rem; letter-spacing: 1px; }
+      .page-hero-badge { font-size: 8px; letter-spacing: 2px; }
+      .reg-robot { display: flex; width: 100%; max-width: 100%; align-items: flex-start; pointer-events: auto; }
+      .reg-robot-img { display: none; }
+      .reg-aviso { width: 100%; font-size: 12px; }
+      .wa-card { width: 100%; margin-top: 16px; }
+      .wa-card-body img { width: 160px; height: 160px; }
+      .precios-movil { display: block; width: 100%; margin: 16px 0; }
+      .precios-movil-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #5bc8f0; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+      .precios-movil-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .precios-movil .precio-item { padding: 12px 8px; border-radius: 12px; }
+      .precios-movil .precio-periodo { font-size: 9.5px; margin-bottom: 4px; }
+      .precios-movil .precio-valor { font-size: 2rem; margin-bottom: 4px; }
+      .precios-movil .precio-desc { font-size: 8px; padding: 3px 6px; }
+      .precios-movil .precio-badge-activo { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
+      .form-card { margin-top: 0 !important; padding: 18px 14px; border-radius: 12px; width: 100%; box-sizing: border-box; }
+      .form-grid, .grid-comprobante { grid-template-columns: 1fr !important; }
+      .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
+      .logo-uploader { width: 100%; flex-direction: column; align-items: flex-start; }
+      .logo-drop-zone { width: 100%; height: 44px; box-sizing: border-box; }
+      .logo-placeholder span { white-space: normal; }
+      .toast { left: 12px; right: 12px; max-width: calc(100vw - 24px); bottom: 20px; }
+      .precios-panel { display: none !important; }
+      .success-card { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
 
-function enviarCorreoPendiente(correo, nombre, robot, categoria, institucion, id) {
-  if (!correo || !String(correo).includes('@') || !String(correo).includes('.')) return;
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
 
-  var asunto = '⏳ SucreBot 2026 — Registro recibido · ' + nombre;
-  var miRegistroUrl = 'https://sucrebotclub-institute.github.io/Sucrebot/MI-REGISTRO/index.html?correo=' + encodeURIComponent(correo);
+<div class="wrapper">
+  <div class="page-hero">
+    <div class="page-hero-badge">
+      <div class="page-hero-badge-dot"></div>
+      SUCREBOT 2026 · TORNEO DE ROBÓTICA
+    </div>
+    <h2>REGISTRO DE <span>PARTICIPANTES</span></h2>
+    <p>INSCRIPCIÓN AL TORNEO SUCREBOT 2026</p>
+  </div>
 
-  var cuerpo =
-    '<div style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,sans-serif;">' +
+  <div class="reg-layout">
+    <div class="reg-robot">
+      <img class="reg-robot-img" src="../shared/images/robot-inss.png" alt="Robot inscribiendo" />
+      <div class="reg-aviso">
+        <div class="reg-aviso-title">📋 Información importante</div>
+        <p><strong>📛 Nombre completo:</strong> Escríbelo tal como aparecerá en tu diploma de participación.</p>
+        <p><strong>📧 Correo electrónico:</strong> Verifica que esté bien escrito — a esa dirección se enviará tu <strong>código QR</strong> de acceso al evento.</p>
+        <p><strong style="color:#1a5ca8;">✅ ¿No recibiste el correo?</strong> Revisa tu carpeta de <em>spam</em> o escríbenos a<br><span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span></p>
+      </div>
+      <div class="wa-card">
+        <div class="wa-card-title">
+          <svg style="width:13px;height:13px;fill:#25d366;flex-shrink:0;" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+          GRUPO WHATSAPP · CAPITANES
+        </div>
+        <div class="wa-card-body">
+          <img src="../shared/images/whatsapp-qr.png" alt="QR Grupo WhatsApp Capitanes" />
+          <p>Escanea para unirte al grupo de<br><strong>capitanes participantes</strong></p>
+        </div>
+      </div>
+    </div>
 
-      // Header
-      '<div style="background:#1a5ca8;padding:20px 32px;border-radius:12px 12px 0 0;">' +
-        '<table width="100%" cellpadding="0" cellspacing="0"><tr>' +
-          '<td style="text-align:left;width:72px;">' +
-            '<img src="' + LOGO_CLUB + '" height="52" alt="Club Robótica Sucre" style="display:block;"/>' +
-          '</td>' +
-          '<td style="text-align:center;">' +
-            '<div style="font-size:22px;font-weight:900;color:#ffffff;letter-spacing:4px;">SUCREBOT 2026</div>' +
-            '<div style="font-size:10px;color:rgba(255,255,255,0.7);letter-spacing:3px;margin-top:4px;text-transform:uppercase;">Torneo de Robótica</div>' +
-          '</td>' +
-          '<td style="text-align:right;width:72px;">' +
-            '<div style="background:#ffffff;border-radius:6px;padding:4px;display:inline-block;">' +
-              '<img src="' + LOGO_SUCRE + '" height="44" alt="Instituto Sucre" style="display:block;"/>' +
-            '</div>' +
-          '</td>' +
-        '</tr></table>' +
-      '</div>' +
+    <!-- PRECIOS MÓVIL -->
+    <div class="precios-movil">
+      <div class="precios-movil-title">
+        <svg style="width:12px;height:12px;fill:#fbbf24;" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        INSCRIPCIÓN
+      </div>
+      <div class="precios-movil-grid">
+        <div class="precio-item" id="precio-m-1">
+          <div class="precio-periodo">Hasta el<br>30 de junio</div>
+          <div class="precio-valor">$12</div>
+          <div class="precio-desc">40% OFF</div>
+        </div>
+        <div class="precio-item" id="precio-m-2">
+          <div class="precio-periodo">1 al 6<br>de julio</div>
+          <div class="precio-valor">$15</div>
+          <div class="precio-desc">25% OFF</div>
+        </div>
+        <div class="precio-item" id="precio-m-3">
+          <div class="precio-periodo">9 al 10<br>de julio</div>
+          <div class="precio-valor">$20</div>
+          <div class="precio-desc">Regular</div>
+        </div>
+      </div>
+    </div>
 
-      // Badge estado
-      '<div style="background:#0e2a5a;padding:14px 32px;text-align:center;">' +
-        '<span style="display:inline-block;background:#fbbf24;color:#78350f;font-size:12px;font-weight:800;letter-spacing:2px;padding:7px 24px;border-radius:20px;text-transform:uppercase;">⏳ En Revisión</span>' +
-      '</div>' +
+    <div class="form-card">
+      <div class="form-title">
+        <svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:var(--r-cyan-bright);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
+        REGISTRO DE PARTICIPANTE
+      </div>
 
-      // Cuerpo
-      '<div style="background:#ffffff;padding:32px;border-left:1px solid #dde6f0;border-right:1px solid #dde6f0;">' +
+      <div class="form-section-title">👤 Datos Personales</div>
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
+        <div class="field">
+          <label>Nombre Completo <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(capitán)</span></label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="f-nombre" placeholder="Juan Pérez" tabindex="1">
+        </div>
+        <div class="field">
+          <label>Nombre Completo <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(subcapitán)</span></label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="f-miembro2" placeholder="Nombre completo" tabindex="2">
+        </div>
+      </div>
 
-        '<p style="font-size:17px;color:#1a3a6e;font-weight:700;margin:0 0 8px 0;">¡Hola, ' + nombre + '!</p>' +
-        '<p style="font-size:14px;color:#555;margin:0 0 24px 0;line-height:1.7;">' +
-          'Recibimos tu inscripción al <strong style="color:#1a5ca8;">Torneo SucreBot 2026</strong>. ' +
-          'Nuestro equipo revisará tu comprobante de pago y aprobará tu registro en los próximos días. ' +
-          'Una vez aprobado, <strong>recibirás un segundo correo con tu código QR</strong> de acceso al evento.' +
-        '</p>' +
+      <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px;">
+        <div class="field">
+          <label>Institución / Club</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <div class="inst-combo">
+            <select id="f-institucion-select" onchange="onInstitucionChange()" tabindex="3">
+              <option value="">— Cargando instituciones... —</option>
+            </select>
+            <div class="inst-nueva-wrap" id="inst-nueva-wrap">
+              <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--r-cyan);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <input type="text" id="f-institucion-nueva" placeholder="Nombre completo de tu institución o club" tabindex="4">
+            </div>
+          </div>
+        </div>
+      </div>
 
-        // Datos resumen
-        '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8faff;border:1px solid #e0eaff;border-radius:10px;margin-bottom:24px;overflow:hidden;">' +
-          '<tr><td style="padding:16px 20px 4px;font-size:10px;color:#999;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Robot</td></tr>' +
-          '<tr><td style="padding:0 20px 12px;font-size:16px;color:#1a3a6e;font-weight:700;">' + robot + '</td></tr>' +
-          '<tr><td style="padding:0 20px 4px;border-top:1px solid #e8f0ff;padding-top:12px;font-size:10px;color:#999;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Categoría</td></tr>' +
-          '<tr><td style="padding:0 20px 12px;">' +
-            '<span style="display:inline-block;background:#e8f0ff;color:#1a5ca8;font-size:12px;font-weight:700;padding:4px 12px;border-radius:12px;">' + categoria + '</span>' +
-          '</td></tr>' +
-          '<tr><td style="padding:0 20px 4px;border-top:1px solid #e8f0ff;padding-top:12px;font-size:10px;color:#999;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Institución</td></tr>' +
-          '<tr><td style="padding:0 20px 12px;font-size:14px;color:#1a3a6e;">' + institucion + '</td></tr>' +
-          '<tr><td style="padding:0 20px 4px;border-top:1px solid #e8f0ff;padding-top:12px;font-size:10px;color:#999;font-weight:700;letter-spacing:1px;text-transform:uppercase;">ID de registro</td></tr>' +
-          '<tr><td style="padding:0 20px 16px;"><span style="font-family:monospace;background:#f0f4f8;color:#0e2a5a;font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;">' + id + '</span></td></tr>' +
-        '</table>' +
+      <div style="margin-bottom:14px;">
+        <div class="logo-uploader" id="logo-uploader">
+          <label class="logo-label">Logo <span style="color:#e74c3c;font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(obligatorio)</span></label>
+          <div class="logo-drop-zone" id="logo-drop-zone" tabindex="5" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();logoInput.click()}" title="Clic para subir logo del club o institución">
+            <div class="logo-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Subir logo (PNG / JPG)</span>
+            </div>
+            <img class="logo-preview-img" id="logo-preview" alt="Preview logo" />
+          </div>
+          <button type="button" class="logo-remove-btn" id="logo-remove-btn" onclick="quitarLogo()" tabindex="-1">✕ quitar logo</button>
+          <input type="file" id="f-logo" accept="image/png,image/jpeg,image/svg+xml,image/webp" />
+        </div>
+      </div>
 
-        // Botón consultar estado
-        '<div style="text-align:center;margin-bottom:24px;">' +
-          '<a href="' + miRegistroUrl + '" style="display:inline-block;background:#1a5ca8;color:#ffffff;font-size:13px;font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:1px;">🔍 Consultar estado de mi registro</a>' +
-        '</div>' +
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
+        <div class="field">
+          <label>Provincia / País</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="prov-combo">
+            <select id="f-ciudad" onchange="onProvinciaChange()" tabindex="6">
+              <option value="">— Selecciona —</option>
+              <option value="Azuay">Azuay</option>
+              <option value="Bolívar">Bolívar</option>
+              <option value="Cañar">Cañar</option>
+              <option value="Carchi">Carchi</option>
+              <option value="Chimborazo">Chimborazo</option>
+              <option value="Cotopaxi">Cotopaxi</option>
+              <option value="El Oro">El Oro</option>
+              <option value="Esmeraldas">Esmeraldas</option>
+              <option value="Galápagos">Galápagos</option>
+              <option value="Guayas">Guayas</option>
+              <option value="Imbabura">Imbabura</option>
+              <option value="Loja">Loja</option>
+              <option value="Los Ríos">Los Ríos</option>
+              <option value="Manabí">Manabí</option>
+              <option value="Morona Santiago">Morona Santiago</option>
+              <option value="Napo">Napo</option>
+              <option value="Orellana">Orellana</option>
+              <option value="Pastaza">Pastaza</option>
+              <option value="Pichincha">Pichincha</option>
+              <option value="Santa Elena">Santa Elena</option>
+              <option value="Santo Domingo de los Tsáchilas">Santo Domingo de los Tsáchilas</option>
+              <option value="Sucumbíos">Sucumbíos</option>
+              <option value="Tungurahua">Tungurahua</option>
+              <option value="Zamora Chinchipe">Zamora Chinchipe</option>
+              <option disabled>──────────────────</option>
+              <option value="__otro__">🌍 Otro (fuera de Ecuador)...</option>
+            </select>
+            <div class="prov-otra-wrap" id="prov-otra-wrap">
+              <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--r-cyan);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <input type="text" id="f-ciudad-otra" placeholder="Ej: Bogotá, Colombia" tabindex="7">
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Contacto / WhatsApp</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.4A2 2 0 0 1 3.55 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l1.3-1.3a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <input type="tel" id="f-contacto" placeholder="0991234567" tabindex="8">
+        </div>
+      </div>
 
-        // Aviso
-        '<div style="background:#fffbeb;border-left:4px solid #fbbf24;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;">' +
-          '<div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px;">⚠️ Importante</div>' +
-          '<div style="font-size:12px;color:#78350f;line-height:1.6;">' +
-            'Si no recibes respuesta en 48 horas, contáctanos en ' +
-            '<a href="mailto:sucrebotclub@tecnologicosucre.edu.ec" style="color:#1a5ca8;font-weight:600;">sucrebotclub@tecnologicosucre.edu.ec</a>' +
-          '</div>' +
-        '</div>' +
+      <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:4px;">
+        <div class="field">
+          <label>Correo Electrónico</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+          <input type="email" id="f-correo" placeholder="juan@gmail.com" tabindex="9">
+        </div>
+      </div>
 
-        '<p style="font-size:12px;color:#aaa;margin:0;line-height:1.6;">' +
-          '¿No reconoces este registro? Escríbenos al correo indicado.' +
-        '</p>' +
+      <div class="form-section-title">🤖 Datos del Robot</div>
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:4px;">
+        <div class="field">
+          <label>Nombre del Robot</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+          <input type="text" id="f-robot" placeholder="RoboX-1" tabindex="10">
+        </div>
+        <div class="field">
+          <label>Categoría de Competencia</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          <select id="f-categoria" onchange="onCategoriaChange()" tabindex="11">
+            <option value="">— Selecciona —</option>
+            <optgroup label="🏅 AMATEUR">
+              <option value="Insectos">Insectos</option>
+              <option value="Trepador (Amateur)">Trepador (Amateur)</option>
+              <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+            </optgroup>
+            <optgroup label="🏆 PRO">
+              <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+              <option value="Minisumo Autónomo">Minisumo Autónomo</option>
+              <option value="Minisumo RC">Minisumo RC</option>
+              <option value="Bailarín">Bailarín</option>
+              <option value="Batalla">Batalla</option>
+              <option value="Trepador (Pro)">Trepador (Pro)</option>
+              <option value="Robot soccer">Robot soccer</option>
+            </optgroup>
+            <optgroup label="🌟 OPEN">
+              <option value="Cubo Rubik">Cubo Rubik</option>
+              <option value="Lego Kids">Lego Kids</option>
+              <option value="Impacto Tecnológico">Impacto Tecnológico</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
 
-      '</div>' +
+      <div class="soccer-equipo-wrap" id="soccerEquipoWrap">
+        <div class="soccer-equipo-badge">
+          ⚽ <span>En <strong>Robot soccer</strong> compites por equipo. El bracket se generará agrupando todos los robots del mismo equipo.</span>
+        </div>
+        <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:4px;">
+          <div class="field">
+            <label>Nombre del Equipo <span style="color:#e74c3c;font-family:'Exo 2',sans-serif;font-size:10px;letter-spacing:0;text-transform:none;font-weight:400;">(obligatorio)</span></label>
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <input type="text" id="f-equipo" placeholder="Ej: Los Titanes" tabindex="12">
+          </div>
+        </div>
+      </div>
 
-      // Footer
-      '<div style="background:#1a5ca8;padding:18px 32px;border-radius:0 0 12px 12px;text-align:center;">' +
-        '<div style="font-size:13px;font-weight:800;color:#ffffff;letter-spacing:2px;">CLUB DE ROBÓTICA SUCRE</div>' +
-        '<div style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:4px;">Instituto Superior Universitario Sucre · sucrebotclub@tecnologicosucre.edu.ec</div>' +
-      '</div>' +
+      <div class="form-section-title">📎 Comprobante de Pago</div>
+      <div class="pago-info">
+        <div class="pago-info-label">🏦 Cuenta para el pago</div>
+        <div class="pago-info-row"><span class="pago-info-key">Banco</span><span class="pago-info-val">Banco Pichincha</span></div>
+        <div class="pago-info-row"><span class="pago-info-key">Tipo</span><span class="pago-info-val">Cuenta de Ahorros</span></div>
+        <div class="pago-info-row"><span class="pago-info-key">N.° Cuenta</span><span class="pago-info-val mono">2215952522</span></div>
+        <div class="pago-info-row"><span class="pago-info-key">C.I.</span><span class="pago-info-val mono">1719651190</span></div>
+        <div class="pago-info-row"><span class="pago-info-key">Titular</span><span class="pago-info-val">Christian Ortega</span></div>
+      </div>
 
-    '</div>';
+      <div class="form-grid grid-comprobante" style="grid-template-columns: 1fr 1fr;">
+        <div class="field">
+          <label>Número de Comprobante</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <input type="text" id="f-comprobante" placeholder="Ej: 0012345678" style="font-family:'DM Mono',monospace;letter-spacing:1px;" tabindex="13">
+        </div>
+        <div class="field">
+          <label>Imagen o PDF del Comprobante</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <input type="file" id="f-archivo" accept="image/*,.pdf" style="width:100%;padding-left:36px;box-sizing:border-box;" tabindex="14" />
+        </div>
+      </div>
 
-  MailApp.sendEmail({
-    to: correo,
-    subject: asunto,
-    htmlBody: cuerpo,
-    name: 'SucreBot 2026'
+      <button class="btn-register" onclick="registrarParticipante()" tabindex="15">
+        <svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
+        REGISTRAR PARTICIPANTE
+      </button>
+    </div>
+
+    <!-- Panel de precios flotante DESKTOP -->
+    <div class="precios-panel" id="precios-panel">
+      <div class="precios-panel-title">💰 Inscripción</div>
+      <div class="precio-item" id="precio-1">
+        <div class="precio-periodo">Hasta el<br>30 de junio</div>
+        <div class="precio-valor">$12</div>
+        <div class="precio-desc">40% OFF</div>
+      </div>
+      <div class="precio-item" id="precio-2">
+        <div class="precio-periodo">1 al 6<br>de julio</div>
+        <div class="precio-valor">$15</div>
+        <div class="precio-desc">25% OFF</div>
+      </div>
+      <div class="precio-item" id="precio-3">
+        <div class="precio-periodo">9 al 10<br>de julio</div>
+        <div class="precio-valor">$20</div>
+        <div class="precio-desc">Regular</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Panel de éxito ── -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-card">
+    <div class="success-icon">✅</div>
+    <div class="success-title">¡Registro Recibido!</div>
+    <div class="success-subtitle">SUCREBOT 2026 · Tu ID de registro</div>
+    <div class="success-id" id="success-id-display">sb-2026-xxx-001</div>
+    <div class="success-msg">
+      Tu inscripción fue enviada correctamente. <strong>Revisaremos tu comprobante de pago</strong> y recibirás un correo de confirmación cuando tu registro sea aprobado.<br><br>
+      Puedes consultar el estado de tu registro en cualquier momento:
+    </div>
+    <a class="success-btn-primary" id="success-mi-registro-link" href="../MI-REGISTRO/index.html">
+      🔍 Ver estado de mi registro
+    </a>
+    <button class="success-btn-secondary" onclick="cerrarSuccessOverlay()">
+      Registrar otro participante
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toast-icon">✓</span>
+  <span id="toast-msg"></span>
+</div>
+
+<div data-include="../shared/components/footer.html"></div>
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
+<script>
+  let toastTimer = null;
+  const GAS_URL = CONFIG.GAS_URL();
+  const INST_CACHE_KEY = 'sucrebot_instituciones_cache';
+  const INST_TTL = 6 * 60 * 60 * 1000;
+
+  function poblarInstSelect(instituciones) {
+    const sel = document.getElementById('f-institucion-select');
+    sel.innerHTML = '<option value="">— Selecciona institución / club —</option>';
+    instituciones.sort().forEach(inst => {
+      const opt = document.createElement('option');
+      opt.value = inst; opt.textContent = inst;
+      sel.appendChild(opt);
+    });
+    const sep = document.createElement('option'); sep.disabled = true; sep.textContent = '──────────────────'; sel.appendChild(sep);
+    const nueva = document.createElement('option'); nueva.value = '__nueva__'; nueva.textContent = '➕ Otra / Nueva institución...'; sel.appendChild(nueva);
+  }
+
+  function cargarInstituciones() {
+    try {
+      const raw = localStorage.getItem(INST_CACHE_KEY);
+      if (raw) {
+        const cache = JSON.parse(raw);
+        if (Date.now() - cache.ts < INST_TTL) { poblarInstSelect(cache.data); return; }
+      }
+    } catch(e) {}
+    fetch(GAS_URL + '?action=getInstituciones')
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        poblarInstSelect(data);
+        localStorage.setItem(INST_CACHE_KEY, JSON.stringify({ data: data, ts: Date.now() }));
+      })
+      .catch(() => {
+        const sel = document.getElementById('f-institucion-select');
+        sel.innerHTML = '<option value="">— Selecciona institución / club —</option>';
+        const nueva = document.createElement('option'); nueva.value = '__nueva__'; nueva.textContent = '➕ Otra / Nueva institución...'; sel.appendChild(nueva);
+      });
+  }
+
+  function onInstitucionChange() {
+    const sel = document.getElementById('f-institucion-select');
+    const wrap = document.getElementById('inst-nueva-wrap');
+    if (sel.value === '__nueva__') { wrap.classList.add('show'); document.getElementById('f-institucion-nueva').focus(); }
+    else { wrap.classList.remove('show'); document.getElementById('f-institucion-nueva').value = ''; }
+  }
+
+  function getInstitucionValue() {
+    const sel = document.getElementById('f-institucion-select');
+    if (sel.value === '__nueva__') return document.getElementById('f-institucion-nueva').value.trim();
+    return sel.value;
+  }
+
+  cargarInstituciones();
+
+  function onProvinciaChange() {
+    const sel = document.getElementById('f-ciudad');
+    const wrap = document.getElementById('prov-otra-wrap');
+    if (sel.value === '__otro__') { wrap.classList.add('show'); document.getElementById('f-ciudad-otra').focus(); }
+    else { wrap.classList.remove('show'); document.getElementById('f-ciudad-otra').value = ''; }
+  }
+
+  function getCiudadValue() {
+    const sel = document.getElementById('f-ciudad');
+    if (sel.value === '__otro__') return document.getElementById('f-ciudad-otra').value.trim();
+    return sel.value;
+  }
+
+  const dropZone     = document.getElementById('logo-drop-zone');
+  const logoInput    = document.getElementById('f-logo');
+  const logoPreview  = document.getElementById('logo-preview');
+  const logoUploader = document.getElementById('logo-uploader');
+
+  function ajustarLogoDropZone() { dropZone.style.width = window.innerWidth <= 768 ? '100%' : '200px'; }
+  ajustarLogoDropZone();
+  window.addEventListener('resize', ajustarLogoDropZone);
+
+  dropZone.addEventListener('click', () => logoInput.click());
+  logoInput.addEventListener('change', () => { if (logoInput.files[0]) mostrarPreviewLogo(logoInput.files[0]); });
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const dt = new DataTransfer(); dt.items.add(file); logoInput.files = dt.files;
+      mostrarPreviewLogo(file);
+    }
   });
-}
 
+  function mostrarPreviewLogo(file) {
+    const reader = new FileReader();
+    reader.onload = e => { logoPreview.src = e.target.result; dropZone.classList.add('has-logo'); logoUploader.classList.add('has-logo'); };
+    reader.readAsDataURL(file);
+  }
 
-// ════════════════════════════════════════
-//  AGREGAR ESTO dentro de doPost()
-//  en el bloque "if (action === 'setParticipante')"
-//  JUSTO ANTES del return final.
-// ════════════════════════════════════════
-//
-//    // Correo de confirmación "registro en revisión"
-//    try {
-//      enviarCorreoPendiente(
-//        data.correo, data.nombre, data.robot,
-//        data.categoria, data.institucion, participanteId
-//      );
-//    } catch(e) { Logger.log('enviarCorreoPendiente error: ' + e); }
-//
-//    return ContentService.createTextOutput(JSON.stringify({ ok: true, id: participanteId }))
-//      .setMimeType(ContentService.MimeType.JSON);
-//
-// ════════════════════════════════════════
+  function quitarLogo() {
+    logoInput.value = ''; logoPreview.src = '';
+    dropZone.classList.remove('has-logo'); logoUploader.classList.remove('has-logo');
+  }
+
+  function onCategoriaChange() {
+    const cat = document.getElementById('f-categoria').value;
+    const wrap = document.getElementById('soccerEquipoWrap');
+    if (cat === 'Robot soccer') wrap.classList.add('show');
+    else { wrap.classList.remove('show'); document.getElementById('f-equipo').value = ''; }
+  }
+
+  async function gasPost(data) {
+    const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(data), redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+    return r.json();
+  }
+
+  function toBase64(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload  = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  const BTN_HTML_ORIGINAL = `<svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg> REGISTRAR PARTICIPANTE`;
+  let _registrando = false;
+
+  // Guarda el correo para construir el link a MI-REGISTRO
+  let _correoRegistrado = '';
+
+  function limpiarFormulario() {
+    ['f-nombre','f-robot','f-contacto','f-correo','f-comprobante','f-miembro2','f-equipo']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-ciudad').value = '';
+    document.getElementById('f-ciudad-otra').value = '';
+    document.getElementById('prov-otra-wrap').classList.remove('show');
+    document.getElementById('f-categoria').value = '';
+    document.getElementById('f-institucion-select').value = '';
+    document.getElementById('f-institucion-nueva').value = '';
+    document.getElementById('inst-nueva-wrap').classList.remove('show');
+    document.getElementById('soccerEquipoWrap').classList.remove('show');
+    document.getElementById('f-archivo').value = '';
+    quitarLogo();
+  }
+
+  async function registrarParticipante() {
+    if (_registrando) return;
+    const nombre       = document.getElementById('f-nombre').value.trim();
+    const miembro2     = document.getElementById('f-miembro2').value.trim();
+    const institucion  = getInstitucionValue();
+    const ciudad       = getCiudadValue();
+    const robot        = document.getElementById('f-robot').value.trim();
+    const contacto     = document.getElementById('f-contacto').value.trim();
+    const correo       = document.getElementById('f-correo').value.trim();
+    const categoria    = document.getElementById('f-categoria').value;
+    const comprobante  = document.getElementById('f-comprobante').value.trim();
+    const archivoInput = document.getElementById('f-archivo');
+    const archivo      = archivoInput.files[0] || null;
+    const logoArchivo  = logoInput.files[0] || null;
+    const equipo       = document.getElementById('f-equipo').value.trim();
+
+    if (!nombre)      { showToast('El nombre completo es obligatorio', true); return; }
+    if (!institucion) { showToast('La institución es obligatoria', true); return; }
+    if (!ciudad)      { showToast('Selecciona una provincia o escribe tu país', true); return; }
+    if (!robot)       { showToast('El nombre del robot es obligatorio', true); return; }
+    if (!contacto)    { showToast('El número de contacto es obligatorio', true); return; }
+    if (contacto.length < 7) { showToast('El número debe tener al menos 7 dígitos', true); return; }
+    if (!correo)      { showToast('El correo electrónico es obligatorio', true); return; }
+    if (!categoria)   { showToast('Selecciona una categoría', true); return; }
+    if (categoria === 'Robot soccer' && !equipo) { showToast('El nombre del equipo es obligatorio para Robot soccer', true); return; }
+    if (!comprobante) { showToast('El número de comprobante es obligatorio', true); return; }
+    if (!archivo)     { showToast('Debes adjuntar el comprobante de pago', true); return; }
+    if (!logoArchivo) { showToast('El logo de tu institución o club es obligatorio', true); return; }
+
+    _registrando = true;
+    _correoRegistrado = correo;
+    const btn = document.querySelector('.btn-register');
+    btn.disabled = true;
+
+    try {
+      btn.innerHTML = '⏳ Subiendo comprobante...';
+      const base64Comp = await toBase64(archivo);
+      const respComp = await gasPost({ action: 'uploadComprobante', base64: base64Comp, mimeType: archivo.type, fileName: 'TRANSFERENCIA-TEMP-' + Date.now() });
+      if (!respComp.ok || !respComp.url) throw new Error(respComp.error || 'Error al subir comprobante');
+      const archivoUrl = respComp.url;
+
+      btn.innerHTML = '⏳ Subiendo logo del club...';
+      const base64Logo = await toBase64(logoArchivo);
+      const ext = logoArchivo.name.split('.').pop() || 'png';
+      const respLogo = await gasPost({ action: 'uploadLogo', base64: base64Logo, mimeType: logoArchivo.type, fileName: 'LOGO-TEMP-' + Date.now() + '.' + ext });
+      if (!respLogo.ok || !respLogo.url) throw new Error(respLogo.error || 'Error al subir logo');
+      const logoUrl = respLogo.url;
+
+      btn.innerHTML = '⏳ Finalizando registro...';
+      const respRegistro = await gasPost({
+        action: 'setParticipante',
+        id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
+        miembro2, comprobante, archivoUrl, logoUrl, equipo
+      });
+      if (!respRegistro.ok || !respRegistro.id) throw new Error('No se pudo completar el registro');
+
+      const idGenerado = respRegistro.id;
+
+      if (document.getElementById('f-institucion-select').value === '__nueva__' && institucion) {
+        try {
+          const raw = localStorage.getItem(INST_CACHE_KEY);
+          const cache = raw ? JSON.parse(raw) : { data: [], ts: Date.now() };
+          if (!cache.data.includes(institucion)) { cache.data.push(institucion); localStorage.setItem(INST_CACHE_KEY, JSON.stringify(cache)); }
+        } catch(e) {}
+      }
+
+      try {
+        const lista = JSON.parse(localStorage.getItem('participantes') || '[]');
+        lista.push({ id: idGenerado, nombre, institucion, ciudad, robot, contacto, correo, categoria, equipo });
+        localStorage.setItem('participantes', JSON.stringify(lista));
+      } catch(e) {}
+
+      limpiarFormulario();
+      mostrarSuccessPanel(idGenerado, correo);
+
+    } catch(e) {
+      showToast('Error: ' + e.message, true);
+    } finally {
+      _registrando = false;
+      btn.disabled = false;
+      btn.innerHTML = BTN_HTML_ORIGINAL;
+    }
+  }
+
+  function mostrarSuccessPanel(id, correo) {
+    document.getElementById('success-id-display').textContent = id;
+    const base = '../MI-REGISTRO/index.html';
+    const url  = correo ? base + '?correo=' + encodeURIComponent(correo) : base;
+    document.getElementById('success-mi-registro-link').href = url;
+    document.getElementById('success-overlay').classList.add('show');
+  }
+
+  function cerrarSuccessOverlay() {
+    document.getElementById('success-overlay').classList.remove('show');
+  }
+
+  (function() {
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const periodos = [
+      { ids: ['precio-1','precio-m-1'], desde: new Date(año, 0, 1),  hasta: new Date(año, 5, 30, 23, 59) },
+      { ids: ['precio-2','precio-m-2'], desde: new Date(año, 6, 1),  hasta: new Date(año, 6, 6,  23, 59) },
+      { ids: ['precio-3','precio-m-3'], desde: new Date(año, 6, 9),  hasta: new Date(año, 6, 10, 23, 59) },
+    ];
+    periodos.forEach(p => {
+      if (hoy >= p.desde && hoy <= p.hasta) {
+        p.ids.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.classList.add('activo'); el.innerHTML += '<div class="precio-badge-activo">ACTIVO</div>'; }
+        });
+      }
+    });
+  })();
+
+  function showToast(msg, error = false) {
+    const t = document.getElementById('toast');
+    const icon = document.getElementById('toast-icon');
+    const text = document.getElementById('toast-msg');
+    text.textContent = msg;
+    if (error) { icon.textContent = '⚠'; t.style.borderLeftColor = '#e05555'; t.style.color = '#ffb3b3'; t.style.background = '#2a1a1a'; }
+    else       { icon.textContent = '✓'; t.style.borderLeftColor = '#3dd68c'; t.style.color = '#d0f5e8'; t.style.background = '#1e2438'; }
+    if (toastTimer) { clearTimeout(toastTimer); t.classList.remove('show'); }
+    requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+    toastTimer = setTimeout(() => { t.classList.remove('show'); toastTimer = null; }, 3500);
+  }
+</script>
+</body>
+</html>
