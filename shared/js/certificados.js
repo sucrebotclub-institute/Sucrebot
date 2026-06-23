@@ -201,13 +201,20 @@ const CERTIFICADO_CSS = `
 // ── TEXTOS ─────────────────────────────────────────────────────────────────────
 
 function obtenerTextoLogro(tipo, categoria) {
+  const norm = {
+    '1ro':'1er','GANADOR':'1er','1er':'1er',
+    '2do':'2do','SUBCAMPEÓN':'2do','SUBCAMPEON':'2do','FINALISTA':'2do',
+    '3ro':'3er','TERCER LUGAR':'3er','TERCER_LUGAR':'3er','3er':'3er',
+    'participacion':'participacion','PARTICIPACIÓN':'participacion','PARTICIPACION':'participacion'
+  };
+  const t = norm[tipo] || 'participacion';
   const textos = {
     '1er':          `Por haber obtenido el <strong>PRIMER LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.`,
     '2do':          `Por haber obtenido el <strong>SEGUNDO LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.`,
     '3er':          `Por haber obtenido el <strong>TERCER LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.`,
     'participacion':`Por su <strong>DESTACADA PARTICIPACIÓN</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.`
   };
-  return textos[tipo] || textos['participacion'];
+  return textos[t];
 }
 
 function obtenerDatosTipo(tipo) {
@@ -223,13 +230,21 @@ function obtenerDatosTipo(tipo) {
 // ── SELLO / ROSETA SVG ────────────────────────────────────────────────────────
 
 function obtenerSelloSVG(tipo) {
+  // Normalizar variantes: '1ro'→'1er', '3ro'→'3er', 'GANADOR'→'1er', etc.
+  const norm = {
+    '1ro': '1er', 'GANADOR': '1er', '1er': '1er',
+    '2do': '2do', 'SUBCAMPEÓN': '2do', 'SUBCAMPEON': '2do', 'FINALISTA': '2do',
+    '3ro': '3er', 'TERCER LUGAR': '3er', 'TERCER_LUGAR': '3er', '3er': '3er',
+    'participacion': 'participacion', 'PARTICIPACIÓN': 'participacion', 'PARTICIPACION': 'participacion'
+  };
+  const tipoNorm = norm[tipo] || 'participacion';
   const conf = {
     '1er':          { star: '#c9a24b', fill: '#fdfaf2', ribbon: '#1a5ca8', ribbonShade: '#0a2a5e', txt: '#8a6d28', label: '1er',     fontSize: 12  },
     '2do':          { star: '#9aa6b2', fill: '#f7f8fa', ribbon: '#5f6b78', ribbonShade: '#4a545f', txt: '#5f6b78', label: '2do',     fontSize: 12  },
     '3er':          { star: '#c87d4a', fill: '#fbf2ec', ribbon: '#a85f33', ribbonShade: '#8a4d28', txt: '#8a4f28', label: '3er',     fontSize: 12  },
     'participacion':{ star: '#1a5ca8', fill: '#eef3f9', ribbon: '#13325c', ribbonShade: '#0d2444', txt: '#1a5ca8', label: 'PARTIC.', fontSize: 8.5 }
   };
-  const c = conf[tipo] || conf['participacion'];
+  const c = conf[tipoNorm];
   return `<svg viewBox="0 0 120 158" xmlns="http://www.w3.org/2000/svg">
     <path d="M44 96 L44 150 L60 140 L76 150 L76 96 Z" fill="${c.ribbon}"/>
     <path d="M44 96 L44 150 L52 145 L52 96 Z" fill="${c.ribbonShade}"/>
