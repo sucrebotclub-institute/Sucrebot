@@ -371,12 +371,21 @@
   // UTILS
   // ============================================================
   function fmtMs(ms) {
+    // Formato visual con centésimos: 00:02:56
     if (ms === null || ms === undefined) return '–';
     const total = Math.max(0, Math.round(ms));
     const m = Math.floor(total / 60000);
     const s = Math.floor((total % 60000) / 1000);
     const cs = Math.floor((total % 1000) / 10);
-    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}:${String(cs).padStart(2,'0')}`;
+  }
+  function fmtMsGAS(ms) {
+    // Formato para guardar en GAS: 00:MM:SS (HH:MM:SS) — lo que acepta publicarJSON
+    if (ms === null || ms === undefined) return 'DNF';
+    const total = Math.max(0, Math.round(ms));
+    const m = Math.floor(total / 60000);
+    const s = Math.floor((total % 60000) / 1000);
+    return `00:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   }
   function fmtCD(ms) {
     // cuenta regresiva MM:SS
@@ -1086,7 +1095,7 @@
     const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id));
 
     const todos = [
-      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: fmtMs(tiemposFinal[p.id].tiempo) })),
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: fmtMsGAS(tiemposFinal[p.id].tiempo) })),
       ...sinMeta.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
       ...noFinal.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
     ];
