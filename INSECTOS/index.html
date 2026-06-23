@@ -23,7 +23,7 @@
     .ins-title::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,#5bc8f0,transparent)}
     .ins-sub{color:#5a7a9a;font-size:.95rem;margin-top:10px}
     /* STEPPER */
-    .stepper-wrap{display:flex;justify-content:center;align-items:center;padding:0 20px 28px;max-width:900px;margin:0 auto}
+    .stepper-wrap{display:flex;justify-content:center;align-items:center;padding:0 20px 28px;max-width:100%;margin:0 auto}
     .step-item{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
     .step-item:not(:last-child)::after{content:'';position:absolute;top:18px;left:calc(50% + 20px);width:calc(100% - 40px);height:2px;background:#c8d4e8;z-index:0}
     .step-item.done:not(:last-child)::after{background:var(--blue)}
@@ -34,7 +34,10 @@
     .step-item.active .step-label{color:var(--blue);font-weight:700}
     .step-item.done .step-label{color:var(--green)}
     /* PANELS */
-    .ins-wrap{max-width:1100px;margin:0 auto;padding:0 20px 60px}
+    .ins-wrap{width:100%;margin:0 auto;padding:0 20px 40px}
+    .panel-3col{display:grid;grid-template-columns:240px 1fr 280px;gap:14px;align-items:start;width:100%}
+    @media(max-width:1100px){.panel-3col{grid-template-columns:1fr}}
+    .panel-lateral{position:sticky;top:200px}
     .step-panel{display:none;animation:fadeUp .3s ease}
     .step-panel.active{display:block}
     @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -210,11 +213,31 @@
         </div>
         <div class="serial-warn" id="serialWarn">⚠️ Conecta el Arduino (sensor IR) para registrar tiempos automáticamente. También puedes registrar manualmente.</div>
 
-        <!-- LAYOUT DOS COLUMNAS -->
-        <div class="layout-2col" style="display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start">
+        <div class="panel-3col">
 
-          <!-- COLUMNA IZQUIERDA: cronómetro + ranking -->
+          <!-- COLUMNA IZQUIERDA: ranking parcial -->
+          <div class="panel-lateral">
+            <div class="ranking-mini" id="rankingParcial"></div>
+          </div>
+
+          <!-- COLUMNA CENTRO: badge + carriles -->
           <div>
+            <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div class="turno-badge" id="turnoBadge">CLASIFICATORIA · TURNO 1 · INTENTO 1</div>
+              <div class="grupo-badge" style="margin-bottom:0">
+                Grupo <span class="grupo-num" id="grupoNumLabel">1</span>
+                <span style="font-size:.7rem;color:var(--muted)" id="grupoInfo"></span>
+              </div>
+            </div>
+            <div class="carriles-grid" id="carrilesGrid" style="grid-template-columns:repeat(2,1fr)"></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;margin-top:10px">
+              <button class="btn btn-outline" id="btnGrupoAnterior" style="flex:1">← Anterior</button>
+              <button class="btn btn-cyan" id="btnGrupoSiguiente" style="flex:1">Siguiente →</button>
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: cronómetro -->
+          <div class="panel-lateral">
             <div class="cron-central">
               <div class="cron-label" id="cronLabel">TURNO 1 · GRUPO 1</div>
               <div class="cron-num" id="cronNum">02:00</div>
@@ -223,25 +246,8 @@
                 <button class="btn btn-green" id="btnCronStart">▶ INICIAR</button>
                 <button class="btn btn-orange" id="btnCronPause" disabled>⏸ PAUSAR</button>
                 <button class="btn btn-red" id="btnCronStop" disabled>⏹ DETENER</button>
-                <button class="btn btn-outline" id="btnDNFAll" style="width:100%;margin-top:6px">DNF TODOS RESTANTES</button>
               </div>
-            </div>
-            <div class="ranking-mini" id="rankingParcial"></div>
-          </div>
-
-          <!-- COLUMNA DERECHA: turno badge + carriles + navegación -->
-          <div>
-            <div style="margin-bottom:10px">
-              <div class="turno-badge" id="turnoBadge">CLASIFICATORIA · TURNO 1 · INTENTO 1</div>
-            </div>
-            <div class="grupo-badge">
-              Grupo <span class="grupo-num" id="grupoNumLabel">1</span>
-              <span style="font-size:.7rem;color:var(--muted)" id="grupoInfo"></span>
-            </div>
-            <div class="carriles-grid" id="carrilesGrid" style="grid-template-columns:repeat(2,1fr)"></div>
-            <div class="btn-row" style="justify-content:space-between;margin-top:12px">
-              <button class="btn btn-outline" id="btnGrupoAnterior">← Grupo anterior</button>
-              <button class="btn btn-cyan" id="btnGrupoSiguiente">Siguiente grupo →</button>
+              <button class="btn btn-outline" id="btnDNFAll" style="width:100%;margin-top:8px">DNF TODOS</button>
             </div>
           </div>
 
