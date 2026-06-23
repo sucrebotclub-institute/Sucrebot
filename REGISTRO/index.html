@@ -81,6 +81,11 @@
     @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
     .soccer-equipo-badge { display: flex; align-items: center; gap: 8px; background: rgba(91,200,240,0.08); border: 1px solid rgba(91,200,240,0.25); border-radius: 8px; padding: 8px 14px; margin-bottom: 10px; font-family: 'Exo 2', sans-serif; font-size: 11.5px; color: rgba(255,255,255,0.7); line-height: 1.5; }
     .soccer-equipo-badge strong { color: var(--r-cyan); }
+    /* Aviso límite miembros */
+    .miembros-aviso { display: flex; align-items: flex-start; gap: 10px; background: rgba(91,200,240,0.08); border: 1px solid rgba(91,200,240,0.3); border-radius: 8px; padding: 10px 14px; margin-top: 10px; margin-bottom: 4px; }
+    .miembros-aviso-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .miembros-aviso-text { font-family: 'Exo 2', sans-serif; font-size: 11.5px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+    .miembros-aviso-text strong { color: #90dcff; }
     .logo-uploader { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
     .logo-uploader label.logo-label { font-family: 'Orbitron', monospace; font-size: 10px; color: rgba(255,255,255,0.95); margin-bottom: 6px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; display: block; width: 100%; text-align: left; }
     .logo-drop-zone { width: 200px; height: 38px; border: 1.5px dashed rgba(91,200,240,0.4); border-radius: 8px; background: rgba(10,25,60,0.55); display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 7px; cursor: pointer; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; flex-shrink: 0; padding: 0 10px; box-sizing: border-box; }
@@ -250,7 +255,7 @@
       </div>
 
       <div class="form-section-title">👤 Datos Personales</div>
-      <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:14px;">
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:4px;">
         <div class="field">
           <label>Nombre Completo <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(capitán)</span></label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -263,7 +268,15 @@
         </div>
       </div>
 
-      <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px;">
+      <!-- AVISO LÍMITE DE MIEMBROS -->
+      <div class="miembros-aviso">
+        <div class="miembros-aviso-icon">👥</div>
+        <div class="miembros-aviso-text">
+          Cada equipo puede inscribir <strong>máximo 2 integrantes</strong>: un <strong>Capitán</strong> y un <strong>Subcapitán</strong>. El subcapitán es opcional, pero no se aceptarán miembros adicionales.
+        </div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:14px; margin-top:14px;">
         <div class="field">
           <label>Institución / Club</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -602,7 +615,6 @@
   const BTN_HTML_ORIGINAL = `<svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg> REGISTRAR PARTICIPANTE`;
   let _registrando = false;
 
-  // Guarda el correo para construir el link a MI-REGISTRO
   let _correoRegistrado = '';
 
   function limpiarFormulario() {
