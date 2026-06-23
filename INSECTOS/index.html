@@ -1074,18 +1074,26 @@
     btn.disabled = true;
     btn.textContent = 'Guardando…';
 
-    // Construir lista completa: top 3 con tiempo + resto como participación
-    const ranked = rankingClas(); // ordenados por mejor tiempo, DNF al final
-    const tk = staffToken();
+    // Construir lista ordenada desde tiemposFinal (datos reales de la final)
     const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
-    let ok = 0, errores = 0;
+    const conMeta = clasificados
+      .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
+      .sort((a,b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
+    const sinMeta = clasificados
+      .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
+    // No clasificados (si vinieron de clasificatoria y no llegaron a final)
+    const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id));
 
-    for (let i = 0; i < ranked.length; i++) {
-      const r = ranked[i];
-      const p = r.p;
-      const tipo = tipoMap[i] || 'PARTICIPACIÓN';
+    const todos = [
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: fmtMs(tiemposFinal[p.id].tiempo) })),
+      ...sinMeta.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
+      ...noFinal.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
+    ];
+
+    let ok = 0, errores = 0;
+    for (const entry of todos) {
+      const p = entry.p;
       try {
-        // Guardar certificado — campos exactos que lee GAS guardarCertificado()
         await gasPost({
           action: 'guardarCertificado',
           correo: p.correo || '',
@@ -1094,30 +1102,29 @@
           institucion: p.institucion || '',
           evento: 'SucreBot 2026',
           fecha_evento: '16 de julio de 2026',
-          tipo_certificado: tipo,
+          tipo_certificado: entry.tipo,
         });
-        // Guardar resultado en hoja resultados (para ranking instituciones y RESULTADOS page)
         await gasPost({
           action: 'pushResultado',
           participanteId: p.id || '',
           nombre: p.nombre || '',
           robot: p.robot || '',
           institucion: p.institucion || '',
-          tiempo: r.tiempo ? fmtMs(r.tiempo) : 'DNF',
+          tiempo: entry.tiempo,
           ronda: 'FINAL',
           intento: 1,
           ruta: 'ins',
           fecha: new Date().toISOString(),
         });
         ok++;
-      } catch(e) { errores++; console.error(e); }
+      } catch(e) { errores++; console.error('Error guardando', p.nombre, e); }
     }
 
     if (errores === 0) {
       btn.textContent = `✓ Guardado (${ok})`;
       btn.className = 'btn btn-green';
     } else {
-      btn.textContent = `Guardado con ${errores} errores`;
+      btn.textContent = `${ok} ok · ${errores} errores`;
       btn.disabled = false;
     }
   });
