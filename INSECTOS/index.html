@@ -215,6 +215,7 @@
           <div class="serial-status" id="serialStatus">Web Serial desconectado</div>
           <button class="btn btn-outline btn-sm" id="btnConectar">🔌 Conectar Arduino</button>
           <button class="btn btn-outline btn-sm" id="btnDesconectar" style="display:none">⏏ Desconectar</button>
+          <button class="btn btn-sm" style="background:#7b1fa2;color:#fff;margin-left:auto" id="btnCerrarCat">✕ Cerrar Categoría</button>
         </div>
         <div class="serial-warn" id="serialWarn">⚠️ Conecta el Arduino (sensor IR) para registrar tiempos automáticamente. También puedes registrar manualmente.</div>
 
@@ -299,6 +300,7 @@
           <div id="podioNota"></div>
           <div style="margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
             <button class="btn btn-cyan" id="btnGuardarPodio">💾 Guardar en certificados</button>
+            <button class="btn btn-green" id="btnExportarExcel">📊 Exportar Excel</button>
             <button class="btn btn-outline" id="btnReiniciar">↺ Nueva competencia</button>
           </div>
         </div>
@@ -980,28 +982,52 @@
     const btn = document.getElementById('btnGuardarPodio');
     btn.disabled = true;
     btn.textContent = 'Guardando…';
-    const ranked = rankingClas().filter(r => r.tiempo !== null);
-    try {
-      for (let i = 0; i < Math.min(3, ranked.length); i++) {
-        const p = ranked[i].p;
+
+    // Construir lista completa: top 3 con tiempo + resto como participación
+    const ranked = rankingClas(); // ordenados por mejor tiempo, DNF al final
+    const tk = staffToken();
+    const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
+    let ok = 0, errores = 0;
+
+    for (let i = 0; i < ranked.length; i++) {
+      const r = ranked[i];
+      const p = r.p;
+      const tipo = tipoMap[i] || 'PARTICIPACIÓN';
+      try {
+        // Guardar certificado — campos exactos que lee GAS guardarCertificado()
         await gasPost({
-          accion: 'guardarCertificado',
-          staffToken: staffToken(),
-          correo: p.correo,
-          nombreCompleto: p.nombre,
+          action: 'guardarCertificado',
+          correo: p.correo || '',
+          nombre_completo: p.nombre || '',
           categoria: 'Insectos',
-          institucion: p.institucion,
+          institucion: p.institucion || '',
           evento: 'SucreBot 2026',
-          fechaEvento: '16 de julio de 2026',
-          tipoCertificado: i === 0 ? 'primer_lugar' : i === 1 ? 'segundo_lugar' : 'tercer_lugar',
+          fecha_evento: '16 de julio de 2026',
+          tipo_certificado: tipo,
         });
-      }
-      btn.textContent = '✓ Guardado';
+        // Guardar resultado en hoja resultados (para ranking instituciones y RESULTADOS page)
+        await gasPost({
+          action: 'pushResultado',
+          participanteId: p.id || '',
+          nombre: p.nombre || '',
+          robot: p.robot || '',
+          institucion: p.institucion || '',
+          tiempo: r.tiempo ? fmtMs(r.tiempo) : 'DNF',
+          ronda: 'FINAL',
+          intento: 1,
+          ruta: 'ins',
+          fecha: new Date().toISOString(),
+        });
+        ok++;
+      } catch(e) { errores++; console.error(e); }
+    }
+
+    if (errores === 0) {
+      btn.textContent = `✓ Guardado (${ok})`;
       btn.className = 'btn btn-green';
-    } catch (e) {
-      alert('Error guardando: ' + e.message);
+    } else {
+      btn.textContent = `Guardado con ${errores} errores`;
       btn.disabled = false;
-      btn.textContent = '💾 Guardar en certificados';
     }
   });
 
@@ -1122,6 +1148,48 @@
   }
 
   // ============================================================
+  // CERRAR CATEGORÍA
+  document.getElementById('btnCerrarCat').addEventListener('click', () => {
+    if (!confirm('¿Cerrar la categoría Insectos? Esto reiniciará la competencia.')) return;
+    presentes = []; grupos = []; mejores = {}; intentos = {};
+    clasificados = []; tiemposFinal = {};
+    turnoActual = 0; grupoActual = 0;
+    clearInterval(cronInterval); clearInterval(cronFInterval);
+    stepActivar(0);
+    cargarParticipantes();
+  });
+
+  // EXPORTAR EXCEL (CSV con BOM)
+  document.getElementById('btnExportarExcel').addEventListener('click', () => {
+    const ranked = rankingClas();
+    const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
+    const rows = [['#','Robot','Participante','Institución','Mejor Tiempo','Posición','Intento 1','Intento 2']];
+    ranked.forEach((r, i) => {
+      const intenList = intentos[r.p.id] || [];
+      const t1 = intenList.find(x => x.turno === 0);
+      const t2 = intenList.find(x => x.turno === 1);
+      rows.push([
+        i + 1,
+        r.p.robot || '',
+        r.p.nombre || '',
+        r.p.institucion || '',
+        r.tiempo ? fmtMs(r.tiempo) : 'DNF',
+        tipoMap[i] || 'PARTICIPACIÓN',
+        t1 ? (t1.dnf ? 'DNF' : fmtMs(t1.tiempo)) : '–',
+        t2 ? (t2.dnf ? 'DNF' : fmtMs(t2.tiempo)) : '–',
+      ]);
+    });
+    const bom = '\uFEFF';
+    const csv = bom + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Insectos_Resultados_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
   // INIT
   // ============================================================
   document.addEventListener('componentsLoaded', () => {
