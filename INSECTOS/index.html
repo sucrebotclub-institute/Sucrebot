@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -319,6 +319,7 @@
           <div class="podio-wrap" id="podioWrap"></div>
           <div id="podioNota"></div>
           <div style="margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-anterior" id="btnVolverFinal">← Volver a Final</button>
             <button class="btn btn-cyan" id="btnGuardarPodio">💾 Guardar en certificados</button>
             <button class="btn btn-green" id="btnExportarExcel">📊 Exportar Excel</button>
             <button class="btn btn-outline" id="btnReiniciar">↺ Nueva competencia</button>
@@ -1278,25 +1279,26 @@
 
   // EXPORTAR EXCEL (CSV con BOM y separador ; para Excel español)
   document.getElementById('btnExportarExcel').addEventListener('click', () => {
-    const ranked = rankingClas();
     const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
-    const rows = [['#','Robot','Participante','Institución','Mejor Tiempo','Posición','Intento 1','Intento 2']];
-    ranked.forEach((r, i) => {
-      const intenList = intentos[r.p.id] || [];
-      const t1 = intenList.find(x => x.turno === 0);
-      const t2 = intenList.find(x => x.turno === 1);
-      rows.push([
-        i + 1,
-        r.p.robot || '',
-        r.p.nombre || '',
-        r.p.institucion || '',
-        r.tiempo ? fmtMs(r.tiempo) : 'DNF',
-        tipoMap[i] || 'PARTICIPACIÓN',
-        t1 ? (t1.dnf ? 'DNF' : fmtMs(t1.tiempo)) : '–',
-        t2 ? (t2.dnf ? 'DNF' : fmtMs(t2.tiempo)) : '–',
-      ]);
+    // Ordenar igual que guardarPodio: conMeta por tiempo, luego sinMeta, luego noFinal
+    const conMeta = clasificados
+      .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
+      .sort((a,b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
+    const sinMeta = clasificados
+      .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
+    const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id));
+
+    const todos = [
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i]||'PARTICIPACIÓN', tiempo: fmtMs(tiemposFinal[p.id].tiempo) })),
+      ...sinMeta.map(p => ({ p, tipo:'PARTICIPACIÓN', tiempo:'DNF' })),
+      ...noFinal.map(p => ({ p, tipo:'PARTICIPACIÓN', tiempo:'DNF' })),
+    ];
+
+    const rows = [['#','Robot','Participante','Institución','Tiempo Final','Posición']];
+    todos.forEach((entry, i) => {
+      rows.push([i+1, entry.p.robot||'', entry.p.nombre||'', entry.p.institucion||'', entry.tiempo, entry.tipo]);
     });
-    // BOM + separador ; para Excel en español/latino
+
     const bom = '\uFEFF';
     const csv = bom + rows.map(r => r.map(c => String(c).replace(/;/g,',')).join(';')).join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1306,6 +1308,13 @@
     a.download = `Insectos_Resultados_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  });
+
+  // VOLVER A FINAL desde podio
+  document.getElementById('btnVolverFinal').addEventListener('click', () => {
+    stepActivar(2);
+    renderCarrilesFinal();
+    renderRankingFinal();
   });
 
   // INIT
