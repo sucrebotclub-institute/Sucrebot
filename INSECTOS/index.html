@@ -988,7 +988,20 @@
   function registrarTiempoFinalCarril(ci, msOverride) {
     const p = clasificados[ci];
     if (!p || tiemposFinal[p.id] !== undefined) return;
-    const ms = msOverride !== undefined ? msOverride : tiempoTranscurridoF();
+    let ms;
+    if (msOverride !== undefined) {
+      ms = msOverride;
+    } else if (cronFIniciado || cronFCorriendo) {
+      ms = tiempoTranscurridoF();
+    } else {
+      // Cronómetro no iniciado — pedir tiempo manual
+      const input = prompt(`Ingresa el tiempo para ${p.robot} (formato MM:SS o MM:SS:CC):`);
+      if (!input) return;
+      const parts = input.trim().split(':').map(Number);
+      if (parts.length === 2) ms = (parts[0]*60 + parts[1]) * 1000;
+      else if (parts.length === 3) ms = (parts[0]*60 + parts[1]) * 1000 + parts[2]*10;
+      else { alert('Formato inválido. Usa MM:SS o MM:SS:CC'); return; }
+    }
     tiemposFinal[p.id] = { tiempo: ms, dnf: false, cruzaMeta: true };
     const td = document.getElementById(`tdF-c${ci}`);
     if (td) td.innerHTML = `<span style="color:var(--green)">${fmtMs(ms)}</span>`;
