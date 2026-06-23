@@ -201,8 +201,9 @@
           <div class="participantes-list" id="listaParticipantes">
             <div class="empty-state">Cargando participantes…</div>
           </div>
-          <div style="margin-top:24px;display:flex;justify-content:flex-end">
-            <button class="btn btn-cyan" id="btnIniciarClas">INICIAR CLASIFICATORIA →</button>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end;align-items:center;gap:12px">
+            <div id="reglamentoNote" style="font-family:'Orbitron';font-size:.6rem;color:var(--muted);display:none"></div>
+            <button class="btn btn-cyan" id="btnIniciarClas">INICIAR →</button>
           </div>
         </div>
       </div>
@@ -438,7 +439,18 @@
   }
 
   function actualizarCuentaSel() {
-    document.getElementById('cntSel').textContent = presentes.length;
+    const n = presentes.length;
+    document.getElementById('cntSel').textContent = n;
+    const btn = document.getElementById('btnIniciarClas');
+    const nota = document.getElementById('reglamentoNote');
+    if (n <= 4 && n >= 2) {
+      btn.textContent = 'IR A FINAL DIRECTO →';
+      nota.textContent = `⚡ ${n} participantes → Final directa (reglamento)`;
+      nota.style.display = 'block';
+    } else {
+      btn.textContent = 'INICIAR CLASIFICATORIA →';
+      nota.style.display = 'none';
+    }
   }
 
   document.getElementById('btnTodos').addEventListener('click', () => {
@@ -460,6 +472,23 @@
 
   document.getElementById('btnIniciarClas').addEventListener('click', () => {
     if (presentes.length < 2) { alert('Selecciona al menos 2 participantes'); return; }
+
+    // REGLAMENTO: 4 o menos participantes van directo a la final
+    if (presentes.length <= 4) {
+      if (!confirm(`Solo hay ${presentes.length} participantes. Según el reglamento van directo a la Final. ¿Continuar?`)) return;
+      mejores = {}; intentos = {}; grupos = [];
+      presentes.forEach(p => { intentos[p.id] = []; });
+      clasificados = [...presentes];
+      tiemposFinal = {};
+      resetCronF();
+      document.getElementById('clasificadosInfo').innerHTML =
+        `<b>${clasificados.length} participantes directos a la final:</b> ` +
+        clasificados.map(p => `<span style="color:var(--cyan)">${p.robot}</span>`).join(', ');
+      renderCarrilesFinal();
+      stepActivar(2); // saltar directamente al paso FINAL
+      return;
+    }
+
     formarGrupos();
     stepActivar(1);
     renderGrupoActual();
@@ -1159,7 +1188,7 @@
     cargarParticipantes();
   });
 
-  // EXPORTAR EXCEL (CSV con BOM)
+  // EXPORTAR EXCEL (CSV con BOM y separador ; para Excel español)
   document.getElementById('btnExportarExcel').addEventListener('click', () => {
     const ranked = rankingClas();
     const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
@@ -1179,8 +1208,9 @@
         t2 ? (t2.dnf ? 'DNF' : fmtMs(t2.tiempo)) : '–',
       ]);
     });
+    // BOM + separador ; para Excel en español/latino
     const bom = '\uFEFF';
-    const csv = bom + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const csv = bom + rows.map(r => r.map(c => String(c).replace(/;/g,',')).join(';')).join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
