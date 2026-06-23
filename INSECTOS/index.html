@@ -273,26 +273,42 @@
           <div class="serial-status" id="serialStatusF">Web Serial desconectado</div>
           <button class="btn btn-outline btn-sm" id="btnConectarF">🔌 Conectar Arduino</button>
           <button class="btn btn-outline btn-sm" id="btnDesconectarF" style="display:none">⏏ Desconectar</button>
-        </div>
-
-        <div class="final-info" id="finalInfo"></div>
-
-        <div class="cron-central">
-          <div class="cron-label">FINAL · INTENTO ÚNICO</div>
-          <div class="cron-num" id="cronNumF">02:00</div>
-          <div class="cron-bar-wrap"><div class="cron-bar" id="cronFillF"></div></div>
-          <div class="cron-btn-row">
-            <button class="btn btn-green" id="btnCronStartF">▶ INICIAR</button>
-            <button class="btn btn-orange" id="btnCronPauseF" disabled>⏸ PAUSAR</button>
-            <button class="btn btn-red" id="btnCronStopF" disabled>⏹ DETENER</button>
-            <button class="btn btn-outline" id="btnDNFAllF">DNF TODOS RESTANTES</button>
+          <div style="margin-left:auto">
+            <button class="btn btn-sm btn-anterior" id="btnVolverPresentes2">← Presentes</button>
           </div>
         </div>
 
-        <div class="carriles-grid" id="carrilesGridFinal"></div>
+        <div class="turno-badge" style="margin-bottom:12px">⭐ RONDA FINAL · 1 INTENTO</div>
+        <div class="final-info" id="finalInfo" style="margin-bottom:12px"></div>
 
-        <div style="margin-top:20px;display:flex;justify-content:flex-end">
-          <button class="btn btn-cyan" id="btnVerPodio">VER PODIO →</button>
+        <div class="panel-3col">
+          <!-- IZQUIERDA: vacío o ranking clas si viene de clasificatoria -->
+          <div class="panel-lateral">
+            <div class="ranking-mini" id="rankingParcialFinal"></div>
+          </div>
+
+          <!-- CENTRO: carriles 2x2 -->
+          <div>
+            <div class="carriles-grid" id="carrilesGridFinal" style="grid-template-columns:repeat(2,1fr);display:grid"></div>
+            <div style="margin-top:10px;display:flex;justify-content:flex-end">
+              <button class="btn btn-cyan" id="btnVerPodio">VER PODIO →</button>
+            </div>
+          </div>
+
+          <!-- DERECHA: cronómetro -->
+          <div class="panel-lateral">
+            <div class="cron-central">
+              <div class="cron-label">FINAL · INTENTO ÚNICO</div>
+              <div class="cron-num" id="cronNumF">02:00</div>
+              <div class="cron-bar-wrap"><div class="cron-bar" id="cronFillF"></div></div>
+              <div class="cron-btn-row">
+                <button class="btn btn-green" id="btnCronStartF">▶ INICIAR</button>
+                <button class="btn btn-orange" id="btnCronPauseF" disabled>⏸ PAUSAR</button>
+                <button class="btn btn-red" id="btnCronStopF" disabled>⏹ DETENER</button>
+              </div>
+              <button class="btn btn-outline" id="btnDNFAllF" style="width:100%;margin-top:8px">DNF TODOS</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -822,6 +838,17 @@
 
     // carriles final
     renderCarrilesFinal();
+    // ranking clasificatoria en panel lateral izquierdo de final
+    const rpf = document.getElementById('rankingParcialFinal');
+    if (rpf && Object.keys(mejores).length > 0) {
+      const rk = rankingClas();
+      rpf.innerHTML = `<div class="ranking-mini"><h4>📊 RANKING CLAS.</h4>` +
+        rk.map((r,i) => `<div class="rank-row">
+          <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+          <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
+          <div class="rank-tiempo ${!r.tiempo?'rank-dnf':''}">${r.tiempo?fmtMs(r.tiempo):'DNF'}</div>
+        </div>`).join('') + '</div>';
+    }
   }
 
   function renderCarrilesFinal() {
@@ -1185,7 +1212,17 @@
   }
 
   // ============================================================
-  // VOLVER A PRESENTES
+  // VOLVER A PRESENTES (desde final)
+  document.getElementById('btnVolverPresentes2').addEventListener('click', () => {
+    if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
+    clearInterval(cronFInterval);
+    clasificados = []; tiemposFinal = {};
+    grupos = []; mejores = {}; intentos = {};
+    turnoActual = 0; grupoActual = 0;
+    stepActivar(0);
+  });
+
+  // VOLVER A PRESENTES (desde clasificatoria)
   document.getElementById('btnVolverPresentes').addEventListener('click', () => {
     if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
     clearInterval(cronInterval);
