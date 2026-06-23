@@ -505,6 +505,7 @@
       if (fi) fi.innerHTML = `<b>${clasificados.length} participantes directos a la final:</b> ` +
         clasificados.map(p => `<span style="color:var(--cyan)">${p.robot}</span>`).join(', ');
       renderCarrilesFinal();
+      renderRankingFinal();
       return;
     }
 
@@ -837,6 +838,7 @@
 
     // carriles final
     renderCarrilesFinal();
+    renderRankingFinal();
     // ranking clasificatoria en panel lateral izquierdo de final
     const rpf = document.getElementById('rankingParcialFinal');
     if (rpf && Object.keys(mejores).length > 0) {
@@ -949,6 +951,30 @@
   // ============================================================
   // REGISTRAR TIEMPO / DNF FINAL
   // ============================================================
+  function renderRankingFinal() {
+    const el = document.getElementById('rankingParcialFinal');
+    if (!el) return;
+    const lista = clasificados.map(p => {
+      const tf = tiemposFinal[p.id];
+      return { p, tiempo: tf && !tf.dnf ? tf.tiempo : null, dnf: tf?.dnf || false, registrado: !!tf };
+    }).sort((a, b) => {
+      if (!a.registrado && !b.registrado) return 0;
+      if (!a.registrado) return 1;
+      if (!b.registrado) return -1;
+      if (a.dnf && !b.dnf) return 1;
+      if (!a.dnf && b.dnf) return -1;
+      return a.tiempo - b.tiempo;
+    });
+    el.innerHTML = `<div class="ranking-mini"><h4>🏁 RANKING FINAL</h4>` +
+      lista.map((r, i) => `<div class="rank-row">
+        <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+        <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
+        <div class="rank-tiempo ${r.dnf?'rank-dnf':''}" style="${!r.registrado?'color:var(--muted)':''}">
+          ${r.dnf ? 'DNF' : r.tiempo !== null ? fmtMs(r.tiempo) : '–'}
+        </div>
+      </div>`).join('') + '</div>';
+  }
+
   function registrarTiempoFinalCarril(ci, msOverride) {
     const p = clasificados[ci];
     if (!p || tiemposFinal[p.id] !== undefined) return;
@@ -962,6 +988,7 @@
     const bd = document.getElementById(`cfbd${ci}`);
     if (bv) bv.disabled = true;
     if (bd) bd.disabled = true;
+    renderRankingFinal();
   }
 
   function registrarDNFFinalCarril(ci) {
@@ -976,6 +1003,7 @@
     const bd = document.getElementById(`cfbd${ci}`);
     if (bv) bv.disabled = true;
     if (bd) bd.disabled = true;
+    renderRankingFinal();
   }
 
   document.getElementById('btnVerPodio').addEventListener('click', () => {
