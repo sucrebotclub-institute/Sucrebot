@@ -483,12 +483,13 @@
       presentes.forEach(p => { intentos[p.id] = []; });
       clasificados = [...presentes];
       tiemposFinal = {};
+      stepActivar(2); // primero activar el paso para que el DOM esté visible
+      // luego inicializar
       resetCronF();
       document.getElementById('clasificadosInfo').innerHTML =
         `<b>${clasificados.length} participantes directos a la final:</b> ` +
         clasificados.map(p => `<span style="color:var(--cyan)">${p.robot}</span>`).join(', ');
       renderCarrilesFinal();
-      stepActivar(2); // saltar directamente al paso FINAL
       return;
     }
 
