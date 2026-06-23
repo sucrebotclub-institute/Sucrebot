@@ -216,7 +216,10 @@
           <div class="serial-status" id="serialStatus">Web Serial desconectado</div>
           <button class="btn btn-outline btn-sm" id="btnConectar">🔌 Conectar Arduino</button>
           <button class="btn btn-outline btn-sm" id="btnDesconectar" style="display:none">⏏ Desconectar</button>
-          <button class="btn btn-sm" style="background:#7b1fa2;color:#fff;margin-left:auto" id="btnCerrarCat">✕ Cerrar Categoría</button>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn btn-sm btn-anterior" id="btnVolverPresentes">← Presentes</button>
+            <button class="btn btn-sm" style="background:#7b1fa2;color:#fff" id="btnCerrarCat">✕ Cerrar Categoría</button>
+          </div>
         </div>
         <div class="serial-warn" id="serialWarn">⚠️ Conecta el Arduino (sensor IR) para registrar tiempos automáticamente. También puedes registrar manualmente.</div>
 
@@ -528,7 +531,11 @@
     document.getElementById('grupoInfo').textContent = `${totalGrupos} grupos en total · ${g.length} robot${g.length > 1 ? 's' : ''}`;
 
     // navegación
-    document.getElementById('btnGrupoAnterior').disabled = (grupoActual === 0 && turnoActual === 0);
+    const esElPrimero = (grupoActual === 0 && turnoActual === 0);
+    const btnAnt = document.getElementById('btnGrupoAnterior');
+    btnAnt.disabled = esElPrimero;
+    btnAnt.style.opacity = esElPrimero ? '0.3' : '1';
+    btnAnt.style.cursor = esElPrimero ? 'not-allowed' : 'pointer';
     const esUltimoGrupoTurno = grupoActual === grupos.length - 1;
     const esUltimoTurno = turnoActual === 1;
     const btnSig = document.getElementById('btnGrupoSiguiente');
@@ -1177,6 +1184,15 @@
   }
 
   // ============================================================
+  // VOLVER A PRESENTES
+  document.getElementById('btnVolverPresentes').addEventListener('click', () => {
+    if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
+    clearInterval(cronInterval);
+    grupos = []; mejores = {}; intentos = {};
+    turnoActual = 0; grupoActual = 0;
+    stepActivar(0);
+  });
+
   // CERRAR CATEGORÍA
   document.getElementById('btnCerrarCat').addEventListener('click', () => {
     if (!confirm('¿Cerrar la categoría Insectos? Esto reiniciará la competencia.')) return;
