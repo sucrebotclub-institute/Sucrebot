@@ -14,6 +14,19 @@
     body{background:#ffffff !important;color:#1a1a2e !important}
     main{min-height:calc(100vh - 174px);background:#f4f7fb}
     .wrapper{max-width:680px;margin:0 auto;padding:40px 20px 60px}
+
+    /* ── Pantalla de búsqueda por correo (cuando viene de REGISTRO) ── */
+    .correo-screen { text-align:center; padding:50px 20px; }
+    .correo-screen h2 { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:3px; color:var(--sucre-dark); margin-bottom:10px; }
+    .correo-screen p { font-size:14px; color:#7a7a8c; margin-bottom:24px; line-height:1.6; }
+    .correo-input-wrap { display:flex; gap:10px; max-width:420px; margin:0 auto 16px; }
+    .correo-input-wrap input { flex:1; background:#ffffff; border:1.5px solid #c8d8f0; color:#1a1a2e; font-family:'Exo 2',sans-serif; font-size:14px; padding:12px 16px; border-radius:10px; outline:none; transition:border-color .2s; }
+    .correo-input-wrap input:focus { border-color:var(--sucre-blue); }
+    .correo-input-wrap input::placeholder { color:#aab0c0; }
+    .btn-buscar { background:var(--sucre-blue); color:#ffffff; border:none; padding:12px 22px; border-radius:10px; font-family:'Exo 2',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:background .2s; white-space:nowrap; }
+    .btn-buscar:hover { background:var(--sucre-dark); }
+    .correo-divider { display:flex; align-items:center; gap:12px; max-width:420px; margin:16px auto; color:#bbb; font-size:12px; }
+    .correo-divider::before,.correo-divider::after { content:''; flex:1; border-top:1px solid #dde6f0; }
     .login-screen{text-align:center;padding:60px 20px}
     .login-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;color:var(--sucre-dark);margin-bottom:12px}
     .login-screen p{font-size:14px;color:#7a7a8c;margin-bottom:32px}
@@ -29,7 +42,7 @@
     .ficha-label{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.14em;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:6px}
     .ficha-robot{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:2px;color:#ffffff;line-height:1;margin-bottom:10px}
     .ficha-estado{display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:700;padding:5px 14px;border-radius:20px}
-    .estado-aprobado{background:#00ff88;color:#ffffff}
+    .estado-aprobado{background:#00ff88;color:#003a1a}
     .estado-pendiente{background:rgba(255,235,59,0.25);color:#ffeb3b;border:1px solid rgba(255,235,59,0.5)}
     .estado-nocumple{background:rgba(220,50,50,0.2);color:#ff6b6b;border:1px solid rgba(220,50,50,0.5)}
     .ficha-body{padding:28px 32px;background:var(--sucre-blue)}
@@ -72,7 +85,7 @@
     .btn-guardar:disabled{opacity:0.5;cursor:not-allowed}
     .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid rgba(0,255,136,0.4);color:var(--green);font-family:var(--font-mono);font-size:0.8rem;padding:12px 24px;border-radius:30px;transition:transform 0.3s ease;z-index:9999;white-space:nowrap}
     .toast.show{transform:translateX(-50%) translateY(0)}
-    @media(max-width:600px){.wrapper{padding:24px 12px 40px}.ficha-header{padding:20px}.ficha-body{padding:20px}.ficha-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.ficha-robot{font-size:1.6rem}}
+    @media(max-width:600px){.wrapper{padding:24px 12px 40px}.ficha-header{padding:20px}.ficha-body{padding:20px}.ficha-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.ficha-robot{font-size:1.6rem}.correo-input-wrap{flex-direction:column}.btn-buscar{width:100%}}
   </style>
 </head>
 <body>
@@ -86,7 +99,23 @@
 <main>
   <div class="wrapper">
 
-    <div id="screen-login" class="login-screen">
+    <!-- Pantalla: búsqueda por correo (viene de REGISTRO con ?correo=) -->
+    <div id="screen-correo" class="correo-screen" style="display:none;">
+      <h2>MI REGISTRO</h2>
+      <p>Ingresa el correo con el que te registraste para consultar el estado de tu inscripción.</p>
+      <div class="correo-input-wrap">
+        <input type="email" id="input-correo-busqueda" placeholder="tu@correo.com" onkeydown="if(event.key==='Enter') buscarPorCorreo()" />
+        <button class="btn-buscar" onclick="buscarPorCorreo()">Buscar</button>
+      </div>
+      <div class="correo-divider">o inicia sesión con Google</div>
+      <button class="btn-google" onclick="iniciarLogin()">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continuar con Google
+      </button>
+    </div>
+
+    <!-- Pantalla: login Google normal -->
+    <div id="screen-login" class="login-screen" style="display:none;">
       <h2>MI REGISTRO</h2>
       <p>Inicia sesión con el correo con el que te registraste para ver tu ficha y estado de aprobación.</p>
       <button class="btn-google" onclick="iniciarLogin()">
@@ -101,8 +130,10 @@
 
     <div id="screen-notfound" class="not-found" style="display:none;">
       <h2>NO ENCONTRAMOS TU REGISTRO</h2>
-      <p>El correo con el que iniciaste sesión no tiene ningún registro en SucreBot 2026.</p>
-      <p style="margin-top:8px;">¿Todavía no te registraste? <a href="https://sucrebotclub-institute.github.io/Sucrebot/REGISTRO/">Regístrate aquí →</a></p>
+      <p>No encontramos ningún registro con ese correo en SucreBot 2026.</p>
+      <p style="margin-top:8px;">Verifica que sea el mismo correo que usaste al registrarte.</p>
+      <p style="margin-top:16px;">¿Todavía no te registraste? <a href="https://sucrebotclub-institute.github.io/Sucrebot/REGISTRO/">Regístrate aquí →</a></p>
+      <p style="margin-top:12px;"><a href="#" onclick="reiniciarBusqueda(); return false;">← Intentar con otro correo</a></p>
     </div>
 
     <div id="screen-ficha" style="display:none;">
@@ -214,30 +245,78 @@
   const GAS_URL = CONFIG.GAS_URL();
   let participanteActual = null;
 
+  // ── Al cargar: detectar ?correo= en la URL ───────────────────
   document.addEventListener('componentsLoaded', function() {
-    const savedUser = localStorage.getItem('sucrebot_user');
-    if (savedUser) {
-      try { const userData = JSON.parse(savedUser); buscarParticipante(userData.email); }
-      catch (e) { console.error('Error al leer sesión:', e); }
+    const params     = new URLSearchParams(window.location.search);
+    const correoUrl  = params.get('correo');
+    const savedUser  = localStorage.getItem('sucrebot_user');
+
+    if (correoUrl) {
+      // Viene de REGISTRO con correo pre-llenado
+      document.getElementById('screen-correo').style.display = 'block';
+      const input = document.getElementById('input-correo-busqueda');
+      input.value = correoUrl;
+      // Buscar automáticamente
+      buscarParticipante(correoUrl);
+    } else if (savedUser) {
+      // Ya tiene sesión Google guardada
+      try {
+        const userData = JSON.parse(savedUser);
+        buscarParticipante(userData.email);
+      } catch(e) {
+        mostrarLogin();
+      }
+    } else {
+      mostrarLogin();
     }
   });
 
-  async function buscarParticipante(correo) {
-    document.getElementById('screen-login').style.display = 'none';
-    document.getElementById('screen-loading').style.display = 'block';
+  function mostrarLogin() {
+    document.getElementById('screen-login').style.display = 'block';
+  }
+
+  function reiniciarBusqueda() {
     document.getElementById('screen-notfound').style.display = 'none';
     document.getElementById('screen-ficha').style.display = 'none';
+    document.getElementById('screen-loading').style.display = 'none';
+    // Limpiar ?correo= de la URL sin recargar
+    const url = window.location.pathname;
+    window.history.replaceState({}, '', url);
+    document.getElementById('screen-correo').style.display = 'block';
+    document.getElementById('input-correo-busqueda').value = '';
+    document.getElementById('input-correo-busqueda').focus();
+  }
+
+  function buscarPorCorreo() {
+    const correo = document.getElementById('input-correo-busqueda').value.trim();
+    if (!correo || !correo.includes('@')) {
+      showToast('Ingresa un correo válido');
+      return;
+    }
+    buscarParticipante(correo);
+  }
+
+  async function buscarParticipante(correo) {
+    document.getElementById('screen-login').style.display    = 'none';
+    document.getElementById('screen-correo').style.display   = 'none';
+    document.getElementById('screen-loading').style.display  = 'block';
+    document.getElementById('screen-notfound').style.display = 'none';
+    document.getElementById('screen-ficha').style.display    = 'none';
     try {
       const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
       const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
       const lista = await r.json();
       const p = lista.find(x => x.correo && x.correo.toLowerCase() === correo.toLowerCase());
-      if (!p) { document.getElementById('screen-loading').style.display = 'none'; document.getElementById('screen-notfound').style.display = 'block'; return; }
+      if (!p) {
+        document.getElementById('screen-loading').style.display  = 'none';
+        document.getElementById('screen-notfound').style.display = 'block';
+        return;
+      }
       participanteActual = p;
       mostrarFicha(p);
-    } catch (error) {
+    } catch(error) {
       console.error('Error al buscar participante:', error);
-      document.getElementById('screen-loading').style.display = 'none';
+      document.getElementById('screen-loading').style.display  = 'none';
       document.getElementById('screen-notfound').style.display = 'block';
     }
   }
@@ -251,14 +330,14 @@
 
   function mostrarFicha(p) {
     document.getElementById('screen-loading').style.display = 'none';
-    document.getElementById('screen-ficha').style.display = 'block';
-    document.getElementById('f-robot').textContent = p.robot || '—';
-    document.getElementById('f-categoria').textContent = p.categoria || '—';
+    document.getElementById('screen-ficha').style.display   = 'block';
+    document.getElementById('f-robot').textContent      = p.robot       || '—';
+    document.getElementById('f-categoria').textContent  = p.categoria   || '—';
     document.getElementById('f-institucion').textContent = p.institucion || '—';
-    document.getElementById('f-ciudad').textContent = p.ciudad || '—';
-    document.getElementById('f-correo').textContent = p.correo || '—';
-    document.getElementById('f-nombre').textContent = p.nombre || '—';
-    document.getElementById('f-contacto').textContent = p.contacto || '—';
+    document.getElementById('f-ciudad').textContent     = p.ciudad      || '—';
+    document.getElementById('f-correo').textContent     = p.correo      || '—';
+    document.getElementById('f-nombre').textContent     = p.nombre      || '—';
+    document.getElementById('f-contacto').textContent   = p.contacto    || '—';
 
     const tieneEquipo = !!p.miembro2;
     document.getElementById('ficha-equipo-section').style.display = tieneEquipo ? 'block' : 'none';
@@ -269,17 +348,17 @@
 
     const aprobado = p.aprobado === 'APROBADO' || p.aprobado === true || p.aprobado === 'true';
     const nocumple = p.aprobado === 'NO CUMPLE' || p.aprobado === 'NOCUMPLE' || p.aprobado === 'nocumple';
-    const badge = document.getElementById('f-estado-badge');
-    const qrSection = document.getElementById('ficha-qr-section');
+    const badge          = document.getElementById('f-estado-badge');
+    const qrSection      = document.getElementById('ficha-qr-section');
     const pendienteSection = document.getElementById('ficha-pendiente-section');
     const avisoPendiente = document.getElementById('aviso-pendiente');
-    const avisoNocumple = document.getElementById('aviso-nocumple');
+    const avisoNocumple  = document.getElementById('aviso-nocumple');
 
     if (aprobado) {
       badge.className = 'ficha-estado estado-aprobado'; badge.textContent = '✅ Aprobado';
       qrSection.style.display = 'block'; pendienteSection.style.display = 'none';
       const textoQR = construirTextoQR(p);
-      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data=' + encodeURIComponent(textoQR);
+      const qrUrl   = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&margin=10&data=' + encodeURIComponent(textoQR);
       document.getElementById('f-qr-img').src = qrUrl;
       document.getElementById('f-qr-id').textContent = '🆔 ' + p.id;
     } else if (nocumple) {
@@ -300,13 +379,13 @@
   }
 
   function cargarFormulario(p) {
-    document.getElementById('edit-robot').value = p.robot || '';
-    document.getElementById('edit-categoria').value = p.categoria || '';
+    document.getElementById('edit-robot').value      = p.robot       || '';
+    document.getElementById('edit-categoria').value  = p.categoria   || '';
     document.getElementById('edit-institucion').value = p.institucion || '';
-    document.getElementById('edit-ciudad').value = p.ciudad || '';
-    document.getElementById('edit-nombre').value = p.nombre || '';
-    document.getElementById('edit-contacto').value = p.contacto || '';
-    document.getElementById('edit-miembro2').value = p.miembro2 || '';
+    document.getElementById('edit-ciudad').value     = p.ciudad      || '';
+    document.getElementById('edit-nombre').value     = p.nombre      || '';
+    document.getElementById('edit-contacto').value   = p.contacto    || '';
+    document.getElementById('edit-miembro2').value   = p.miembro2    || '';
   }
 
   async function guardarCambios() {
@@ -316,13 +395,13 @@
     const datos = {
       action: 'actualizarParticipante',
       id: participanteActual.id,
-      robot: document.getElementById('edit-robot').value.trim(),
-      categoria: document.getElementById('edit-categoria').value,
+      robot:       document.getElementById('edit-robot').value.trim(),
+      categoria:   document.getElementById('edit-categoria').value,
       institucion: document.getElementById('edit-institucion').value.trim(),
-      ciudad: document.getElementById('edit-ciudad').value.trim(),
-      nombre: document.getElementById('edit-nombre').value.trim(),
-      contacto: document.getElementById('edit-contacto').value.trim(),
-      miembro2: document.getElementById('edit-miembro2').value.trim()
+      ciudad:      document.getElementById('edit-ciudad').value.trim(),
+      nombre:      document.getElementById('edit-nombre').value.trim(),
+      contacto:    document.getElementById('edit-contacto').value.trim(),
+      miembro2:    document.getElementById('edit-miembro2').value.trim()
     };
     try {
       const qs = new URLSearchParams(datos).toString();
@@ -330,7 +409,7 @@
       const result = await r.json();
       if (result.ok) { showToast('✅ Cambios guardados correctamente'); setTimeout(() => location.reload(), 1500); }
       else { throw new Error(result.error || 'Error desconocido'); }
-    } catch (error) {
+    } catch(error) {
       console.error('Error completo:', error);
       showToast('❌ Error al guardar: ' + error.message);
       btn.disabled = false; btn.textContent = '💾 Guardar cambios';
