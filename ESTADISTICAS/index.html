@@ -171,6 +171,18 @@
     cargarTodo();
   });
 
+  async function fetchJSON() {
+    try {
+      const r = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const text = await r.text();
+      return JSON.parse(text);
+    } catch(e) {
+      console.warn('No se pudo cargar resultados.json:', e.message);
+      return {};
+    }
+  }
+
   async function cargarTodo() {
     const btn = document.getElementById('btn-refresh');
     btn.classList.add('loading');
@@ -178,16 +190,16 @@
 
     try {
       const [participantes, certificados, jsonVivo, estadoCats] = await Promise.all([
-        gasGet({ action: 'getParticipantes' }),
-        gasGet({ action: 'obtenerTodosCertificados' }),
-        fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()),
-        gasGet({ action: 'getEstadoCategorias' })
+        gasGet({ action: 'getParticipantes' }).catch(() => []),
+        gasGet({ action: 'obtenerTodosCertificados' }).catch(() => []),
+        fetchJSON(),
+        gasGet({ action: 'getEstadoCategorias' }).catch(() => ({}))
       ]);
 
       const parr = Array.isArray(participantes) ? participantes : [];
       const carr = Array.isArray(certificados)  ? certificados  : [];
 
-      renderTodo(parr, carr, jsonVivo, estadoCats);
+      renderTodo(parr, carr, jsonVivo || {}, estadoCats || {});
 
       document.getElementById('txt-actualizado').textContent =
         '📅 Actualizado: ' + new Date().toLocaleTimeString('es-EC');
