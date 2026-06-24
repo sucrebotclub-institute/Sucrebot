@@ -5,71 +5,108 @@
 // ════════════════════════════════════════════════════════════════════════
 
 const LOGO_SUCRE = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/logosucre.png';
+const LOGO_CLUB  = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/club-robotica-fondo-blanco.png';
 
 const CERTIFICADO_TEMPLATE = `
-<div class="cert" id="certificado-preview">
+<div class="cert-outer" id="certificado-preview">
 
   <div class="cert-top-band"></div>
 
-  <!-- Fondo geométrico -->
-  <div class="cert-bg">
-    <svg viewBox="0 0 1122 793" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#eef3fa" stop-opacity="1"/>
-          <stop offset="100%" stop-color="#dde8f4" stop-opacity="0"/>
-        </linearGradient>
-        <linearGradient id="cg2" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#e8f0f8" stop-opacity="0.8"/>
-          <stop offset="100%" stop-color="#cfe0f0" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <polygon points="0,0 500,0 0,500" fill="url(#cg1)"/>
-      <polygon points="0,0 320,0 0,320" fill="url(#cg2)" opacity="0.7"/>
-      <polygon points="0,200 280,0 0,600" fill="#e4eef8" opacity="0.4"/>
-      <polygon points="0,400 380,793 0,793" fill="#dce8f5" opacity="0.5"/>
-      <polygon points="120,793 480,300 560,793" fill="#e8f0f8" opacity="0.35"/>
-    </svg>
+  <!-- Franja horizontal de auspiciantes -->
+  <div class="cert-sponsors-top">
+    <span class="sp-label">Organiza</span>
+    <div class="sp-placeholder wide">Logo 1</div>
+    <div class="sp-placeholder wide">Logo 2</div>
+    <div class="sp-hsep"></div>
+    <span class="sp-label">Auspician</span>
+    <div class="sp-placeholder narrow">Logo 3</div>
+    <div class="sp-placeholder narrow">Logo 4</div>
+    <div class="sp-placeholder narrow">Logo 5</div>
+    <div class="sp-placeholder narrow">Logo 6</div>
   </div>
 
-  <!-- Líneas verticales decorativas -->
-  <div class="cert-line-l"></div>
-  <div class="cert-line-r"></div>
+  <div class="cert-main-row">
 
-  <!-- Cuerpo -->
-  <div class="cert-body">
-    <img src="${LOGO_SUCRE}" alt="Instituto Superior Universitario Sucre" class="cert-logo"/>
-    <div class="cert-divider"></div>
-    <p class="cert-confiere">Confiere el presente</p>
-    <p class="cert-titulo">Certificado a:</p>
-    <p class="cert-nombre">{{NOMBRE_PARTICIPANTE}}</p>
-    <div class="cert-divider-thin"></div>
-    <p class="cert-logro">{{TEXTO_LOGRO}}</p>
-  </div>
-
-  <!-- Sello / roseta -->
-  <div class="cert-sello">{{SELLO}}</div>
-
-  <!-- Firmas -->
-  <div class="cert-firmas">
-    <div class="cert-firma">
-      <div class="cert-firma-linea"></div>
-      <p class="cert-firma-nombre">Ing. Christian Ortega MSc.</p>
-      <p class="cert-firma-cargo">PRESIDENTE DEL COMITÉ ORGANIZADOR<br>SUCREBOT</p>
+    <!-- Sidebar izquierda -->
+    <div class="cert-sidebar">
+      <span class="sb-label">Auspician</span>
+      <div class="sp-placeholder-v tall">Logo A</div>
+      <div class="sp-placeholder-v med">Logo B</div>
+      <div class="sp-placeholder-v med">Logo C</div>
     </div>
-    <div class="cert-firma">
-      <div class="cert-firma-linea"></div>
-      <p class="cert-firma-nombre">Ing. Fabricio Tipantocta MSc.</p>
-      <p class="cert-firma-cargo">RELACIONES INTERINSTITUCIONALES<br>DEL COMITÉ ORGANIZADOR SUCREBOT</p>
+
+    <!-- Certificado central -->
+    <div class="cert">
+      <div class="cert-bg">
+        <svg viewBox="0 0 978 720" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#eef3fa"/><stop offset="100%" stop-color="#dde8f4" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="cg2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#e8f0f8" stop-opacity="0.8"/><stop offset="100%" stop-color="#cfe0f0" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="0,0 460,0 0,460" fill="url(#cg1)"/>
+          <polygon points="0,0 290,0 0,290" fill="url(#cg2)" opacity="0.7"/>
+          <polygon points="0,180 260,0 0,550" fill="#e4eef8" opacity="0.4"/>
+          <polygon points="0,370 350,720 0,720" fill="#dce8f5" opacity="0.5"/>
+          <polygon points="110,720 440,280 520,720" fill="#e8f0f8" opacity="0.35"/>
+        </svg>
+      </div>
+      <div class="cert-line-l"></div>
+      <div class="cert-line-r"></div>
+
+      <!-- Logos arriba -->
+      <div class="cert-logos-top">
+        <img src="${LOGO_CLUB}"  alt="Club Robótica Sucre" class="cert-logo-club"/>
+        <div class="cert-logos-sep"></div>
+        <img src="${LOGO_SUCRE}" alt="Instituto Superior Universitario Sucre" class="cert-logo-sucre2"/>
+      </div>
+      <div class="cert-divider"></div>
+
+      <!-- Cuerpo -->
+      <div class="cert-body">
+        <p class="cert-confiere">Confiere el presente</p>
+        <p class="cert-titulo">Certificado a:</p>
+        <p class="cert-nombre">{{NOMBRE_PARTICIPANTE}}</p>
+        <div class="cert-divider-thin"></div>
+        <p class="cert-logro">{{TEXTO_LOGRO}}</p>
+      </div>
+
+      <!-- Sello -->
+      <div class="cert-sello">{{SELLO}}</div>
+
+      <!-- Firmas -->
+      <div class="cert-firmas">
+        <div class="cert-firma">
+          <div class="cert-firma-linea"></div>
+          <p class="cert-firma-nombre">Ing. Christian Ortega MSc.</p>
+          <p class="cert-firma-cargo">PRESIDENTE DEL COMITÉ ORGANIZADOR<br>SUCREBOT</p>
+        </div>
+        <div class="cert-firma">
+          <div class="cert-firma-linea"></div>
+          <p class="cert-firma-nombre">Ing. Fabricio Tipantocta MSc.</p>
+          <p class="cert-firma-cargo">RELACIONES INTERINSTITUCIONALES<br>DEL COMITÉ ORGANIZADOR SUCREBOT</p>
+        </div>
+      </div>
+
+      <!-- Fecha y código -->
+      <div class="cert-meta">
+        <p class="cert-fecha">Quito D.M., {{FECHA_EVENTO}}</p>
+        <p class="cert-codigo">{{CODIGO_VERIFICACION}}</p>
+      </div>
     </div>
-  </div>
 
-  <!-- Fecha y código -->
-  <div class="cert-meta">
-    <p class="cert-fecha">Quito D.M., {{FECHA_EVENTO}}</p>
-    <p class="cert-codigo">{{CODIGO_VERIFICACION}}</p>
-  </div>
+    <!-- Sidebar derecha -->
+    <div class="cert-sidebar right">
+      <span class="sb-label">Auspician</span>
+      <div class="sp-placeholder-v tall">Logo D</div>
+      <div class="sp-placeholder-v med">Logo E</div>
+      <div class="sp-placeholder-v med">Logo F</div>
+    </div>
 
+  </div>
   <div class="cert-bottom-band"></div>
 </div>
 `;
@@ -77,17 +114,12 @@ const CERTIFICADO_TEMPLATE = `
 const CERTIFICADO_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Exo+2:wght@300;400;600;700;800;900&display=swap');
 
-.cert {
+.cert-outer {
   width: 1122px;
-  height: 793px;
   background: #ffffff;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-sizing: border-box;
+  display: flex; flex-direction: column;
   font-family: 'Exo 2', Arial, sans-serif;
+  box-sizing: border-box;
 }
 
 /* Bandas azules */
@@ -95,89 +127,129 @@ const CERTIFICADO_CSS = `
   width: 100%; height: 12px; flex-shrink: 0;
   background: linear-gradient(90deg, #0a2a5e 0%, #1a5ca8 50%, #0a2a5e 100%);
 }
-.cert-bottom-band { margin-top: auto; }
 
-/* Fondo geométrico */
+/* Franja horizontal auspiciantes */
+.cert-sponsors-top {
+  width: 100%; background: #f4f7fc;
+  border-bottom: 1px solid #d0ddef;
+  display: flex; align-items: center; justify-content: center;
+  gap: 28px; padding: 10px 80px; flex-shrink: 0;
+}
+.cert-sponsors-top .sp-label {
+  font-size: 9px; font-weight: 800; letter-spacing: 2px;
+  color: #1a5ca8; text-transform: uppercase; white-space: nowrap;
+}
+.sp-hsep { width: 1px; height: 28px; background: linear-gradient(180deg, transparent, #b0c4de, transparent); }
+.sp-placeholder {
+  height: 36px; border-radius: 6px;
+  background: #e8eef8; border: 1.5px dashed #a0b8d8;
+  display: flex; align-items: center; justify-content: center;
+  color: #7a9ac0; font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 0 16px; white-space: nowrap;
+}
+.sp-placeholder.wide { width: 100px; }
+.sp-placeholder.narrow { width: 80px; }
+
+/* Layout principal */
+.cert-main-row { display: flex; flex: 1; }
+
+/* Sidebars */
+.cert-sidebar {
+  width: 72px; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 0; gap: 20px;
+  border-right: 1px solid #e0eaf5; background: #f8fafd;
+}
+.cert-sidebar.right { border-right: none; border-left: 1px solid #e0eaf5; }
+.cert-sidebar .sb-label {
+  font-size: 8px; font-weight: 800; letter-spacing: 1.5px;
+  color: #1a5ca8; text-transform: uppercase;
+  writing-mode: vertical-rl; transform: rotate(180deg);
+}
+.cert-sidebar.right .sb-label { transform: none; }
+.sp-placeholder-v {
+  width: 48px; border-radius: 6px;
+  background: #e8eef8; border: 1.5px dashed #a0b8d8;
+  display: flex; align-items: center; justify-content: center;
+  color: #7a9ac0; font-size: 7px; font-weight: 700;
+  text-transform: uppercase; text-align: center; padding: 10px 4px;
+  writing-mode: vertical-rl;
+}
+.sp-placeholder-v.tall { height: 90px; }
+.sp-placeholder-v.med  { height: 70px; }
+
+/* Certificado central */
+.cert {
+  flex: 1; height: 720px;
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center;
+  background: #ffffff;
+}
+
 .cert-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .cert-bg svg { width: 100%; height: 100%; }
 
-/* Líneas verticales */
 .cert-line-l, .cert-line-r {
-  position: absolute; top: 12px; bottom: 12px; width: 4px; z-index: 2;
+  position: absolute; top: 0; bottom: 0; width: 3px; z-index: 2;
 }
-.cert-line-l { left: 52px; background: linear-gradient(180deg,transparent,#1a5ca8 20%,#1a5ca8 80%,transparent); }
-.cert-line-r { right: 52px; background: linear-gradient(180deg,transparent,#1a5ca8 20%,#1a5ca8 80%,transparent); }
+.cert-line-l { left: 36px; background: linear-gradient(180deg,transparent,#1a5ca8 15%,#1a5ca8 85%,transparent); }
+.cert-line-r { right: 36px; background: linear-gradient(180deg,transparent,#1a5ca8 15%,#1a5ca8 85%,transparent); }
 .cert-line-l::after, .cert-line-r::after { content: none; }
+
+/* Logos arriba */
+.cert-logos-top {
+  position: relative; z-index: 3; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 18px 90px 0; flex-shrink: 0;
+}
+.cert-logo-club  { height: 62px; object-fit: contain; }
+.cert-logos-sep  { width: 1px; height: 46px; background: linear-gradient(180deg,transparent,#1a5ca8,transparent); margin: 0 20px; }
+.cert-logo-sucre2 { height: 70px; object-fit: contain; }
+.cert-divider {
+  width: 440px; height: 1px;
+  background: linear-gradient(90deg, transparent, #1a5ca8 30%, #1a5ca8 70%, transparent);
+  margin: 10px auto 0; position: relative; z-index: 3;
+}
 
 /* Cuerpo */
 .cert-body {
   position: relative; z-index: 3;
   width: 100%; flex: 1;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 30px 100px 0;
-}
-
-.cert-logo { height: 90px; object-fit: contain; margin-bottom: 18px; }
-
-.cert-divider {
-  width: 480px; height: 1px;
-  background: linear-gradient(90deg, transparent, #1a5ca8 30%, #1a5ca8 70%, transparent);
-  margin-bottom: 18px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0 90px 80px;
 }
 .cert-divider-thin {
-  width: 280px; height: 1px;
+  width: 260px; height: 1px;
   background: linear-gradient(90deg, transparent, #b8c8dc, transparent);
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
-
-.cert-confiere {
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 20px; font-style: italic; color: #4a5568;
-  margin: 0 0 6px 0; letter-spacing: 0.5px;
-}
-.cert-titulo {
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 42px; font-weight: 700; color: #0a2a5e;
-  letter-spacing: 3px; text-transform: uppercase;
-  margin: 0 0 10px 0;
-}
-.cert-nombre {
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 52px; font-weight: 600; color: #0a2a5e;
-  letter-spacing: 1px; line-height: 1.1;
-  max-width: 860px; text-align: center;
-  margin: 0 0 10px 0;
-}
-.cert-logro {
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 18px; color: #4a5568; line-height: 1.8;
-  max-width: 720px; text-align: center; margin: 0 auto;
-}
+.cert-confiere { font-family: 'EB Garamond', Georgia, serif; font-size: 18px; font-style: italic; color: #4a5568; margin: 0 0 3px; }
+.cert-titulo    { font-family: 'EB Garamond', Georgia, serif; font-size: 38px; font-weight: 700; color: #0a2a5e; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 7px; }
+.cert-nombre    { font-family: 'EB Garamond', Georgia, serif; font-size: 48px; font-weight: 600; color: #0a2a5e; line-height: 1.1; max-width: 800px; text-align: center; margin: 0 0 7px; }
+.cert-logro     { font-family: 'EB Garamond', Georgia, serif; font-size: 16.5px; color: #4a5568; line-height: 1.8; max-width: 680px; text-align: center; margin: 0; }
 .cert-logro strong { color: #0a2a5e; font-weight: 700; }
 
 /* Sello */
-.cert-sello { position: absolute; bottom: 54px; right: 70px; z-index: 4; }
-.cert-sello svg { width: 110px; height: 145px; }
+.cert-sello { position: absolute; bottom: 48px; right: 54px; z-index: 4; }
+.cert-sello svg { width: 100px; height: 132px; }
 
 /* Firmas */
 .cert-firmas {
-  position: absolute; bottom: 52px; width: 100%;
-  display: flex; justify-content: space-around;
-  padding: 0 120px; z-index: 3;
+  position: absolute; bottom: 46px; width: 100%;
+  display: flex; justify-content: space-around; padding: 0 100px; z-index: 3;
 }
-.cert-firma { text-align: center; min-width: 240px; }
-.cert-firma-linea { width: 200px; height: 1px; background: #2b3a4d; margin: 0 auto 8px; }
-.cert-firma-nombre { font-size: 14px; font-weight: 700; color: #0a2a5e; margin: 0 0 3px 0; font-family: 'Exo 2', sans-serif; }
-.cert-firma-cargo { font-size: 9px; font-weight: 700; color: #5b6677; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.5; margin: 0; font-family: 'Exo 2', sans-serif; }
+.cert-firma { text-align: center; min-width: 220px; }
+.cert-firma-linea { width: 190px; height: 1px; background: #2b3a4d; margin: 0 auto 7px; }
+.cert-firma-nombre { font-size: 13px; font-weight: 700; color: #0a2a5e; margin: 0 0 2px; font-family: 'Exo 2', sans-serif; }
+.cert-firma-cargo  { font-size: 8.5px; font-weight: 700; color: #5b6677; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.5; font-family: 'Exo 2', sans-serif; margin: 0; }
 
 /* Fecha y código */
 .cert-meta {
-  position: absolute; bottom: 20px; width: 100%;
-  display: flex; justify-content: space-between; align-items: flex-end;
-  padding: 0 100px; z-index: 3;
+  position: absolute; bottom: 16px; width: 100%;
+  display: flex; justify-content: space-between; padding: 0 90px; z-index: 3;
 }
-.cert-fecha { font-family: 'EB Garamond', Georgia, serif; font-size: 16px; color: #4a5568; font-style: italic; margin: 0; }
-.cert-codigo { font-size: 9px; color: #b0b8c4; letter-spacing: 1px; font-family: monospace; margin: 0; }
+.cert-fecha  { font-family: 'EB Garamond', Georgia, serif; font-size: 15px; color: #4a5568; font-style: italic; margin: 0; }
+.cert-codigo { font-size: 8.5px; color: #b0b8c4; letter-spacing: 1px; font-family: monospace; margin: 0; }
 
 /* Modal */
 .cert-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
@@ -193,7 +265,6 @@ const CERTIFICADO_CSS = `
 .btn-guardar-cert:hover { background: #2ab870; transform: translateY(-2px); }
 .btn-guardar-cert:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 `;
-
 // ── TEXTOS ─────────────────────────────────────────────────────────────────────
 
 function obtenerTextoLogro(tipo, categoria) {
@@ -205,10 +276,10 @@ function obtenerTextoLogro(tipo, categoria) {
   };
   const t = norm[tipo] || 'participacion';
   const textos = {
-    '1er':          `Por haber obtenido el <strong>PRIMER LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.`,
-    '2do':          `Por haber obtenido el <strong>SEGUNDO LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.`,
-    '3er':          `Por haber obtenido el <strong>TERCER LUGAR</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.`,
-    'participacion':`Por su <strong>DESTACADA PARTICIPACIÓN</strong> en la categoría <strong>${categoria}</strong> del Torneo Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.`
+    '1er':          `Por haber obtenido el <strong>PRIMER LUGAR</strong> en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.`,
+    '2do':          `Por haber obtenido el <strong>SEGUNDO LUGAR</strong> en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.`,
+    '3er':          `Por haber obtenido el <strong>TERCER LUGAR</strong> en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.`,
+    'participacion':`Por su <strong>DESTACADA PARTICIPACIÓN</strong> en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.`
   };
   return textos[t];
 }
