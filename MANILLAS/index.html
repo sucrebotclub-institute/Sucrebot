@@ -236,7 +236,7 @@
       if (raw) {
         try {
           const arr = JSON.parse(raw);
-          participantes = arr.filter(p => p.aprobado === 'APROBADO');
+          participantes = arr.filter(p => p.aprobado === 'APROBADO' && !String(p.robot || '').trim().startsWith('[DEV]'));
           mostrarIndicadorCache(tsGuardado, false);
           renderLista();
           btn.disabled = false;
@@ -252,7 +252,7 @@
       if (Array.isArray(arr)) {
         localStorage.setItem(CACHE_KEY, JSON.stringify(arr));
         localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
-        participantes = arr.filter(p => p.aprobado === 'APROBADO');
+        participantes = arr.filter(p => p.aprobado === 'APROBADO' && !String(p.robot || '').trim().startsWith('[DEV]'));
         mostrarIndicadorCache(Date.now(), false);
         renderLista();
         if (forzar) showToast('✅ Datos actualizados desde el servidor');
@@ -262,7 +262,7 @@
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
         try {
-          participantes = JSON.parse(raw).filter(p => p.aprobado === 'APROBADO');
+          participantes = JSON.parse(raw).filter(p => p.aprobado === 'APROBADO' && !String(p.robot || '').trim().startsWith('[DEV]'));
           mostrarIndicadorCache(tsGuardado, true);
           renderLista();
           showToast('⚠️ Sin conexión — mostrando datos guardados', true);
