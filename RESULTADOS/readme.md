@@ -6,20 +6,23 @@ Reemplazar el contenido de `resultados.json` con:
 
 ```json
 {
-  "ts": 0,
-  "actualizado": "—",
+  "ts": 1782308329335,
+  "actualizado": "24/6/2026, 8:38:49 a. m.",
+  "ranking_instituciones": [ ... ],
+  "bracket": {
+    "ms_a": null,      ← null porque aún no se ha generado bracket
+    "ms_rc": null,
+    "bat": null
+  },
+  "soccer": null,      ← null porque aún no hay torneo generado
   "resultados": {
-    "ins": [],
+    "ins": [ ... ],
     "trp_a": [],
     "sl_a": [],
-    "sl_p": [],
-    "ms_a": [],
-    "ms_rc": [],
+    ...
     "bai": [],
-    "bat": [],
-    "trp_p": [],
-    "soc": [],
-    "cr": []
+    "dev": [],
+    "lk": []
   }
 }
 ```
