@@ -711,56 +711,24 @@
           ultimoTs  = nuevoTs;
           datosJSON = data;
           try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch(e) {}
+          // Alimentar bracket y soccer desde el JSON — sin llamar al GAS
+          if (data.bracket) {
+            ['ms_a','ms_rc','bat'].forEach(function(cat) {
+              bracketCache[cat] = data.bracket[cat] || null;
+            });
+          }
+          if (data.soccer !== undefined) {
+            soccerTorneo = data.soccer || null;
+          }
           renderTabs();
           actualizarVista();
         }
       } catch(e) { console.error('Error al cargar JSON:', e); }
     }
 
-    async function pollBracketGeneral(ruta) {
-      try {
-        const r    = await fetch(GAS_URL + '?action=getBracketGeneral&categoria=' + ruta);
-        const data = await r.json();
-        if (data.ok) {
-          const nuevo = data.bracket || null;
-          if (JSON.stringify(nuevo) !== JSON.stringify(bracketCache[ruta])) {
-            bracketCache[ruta] = nuevo;
-            renderTabs();
-            if (categoriaActiva === ruta) renderizarBracketGeneral(ruta);
-          }
-        }
-      } catch(e) { console.error('Error bracket ' + ruta + ':', e); }
-    }
-
-    async function pollSoccer() {
-      try {
-        const r    = await fetch(GAS_URL + '?action=getSoccerTorneo');
-        const data = await r.json();
-        if (data.ok) {
-          const nuevo = data.torneo || null;
-          const nuevoStr = JSON.stringify(nuevo);
-          if (nuevoStr !== JSON.stringify(soccerTorneo)) {
-            soccerTorneo = nuevo;
-            renderTabs();
-            if (categoriaActiva === 'soc') renderizarSoccer();
-          }
-        }
-      } catch(e) { console.error('Error soccer:', e); }
-    }
-
-    setInterval(pollJSON, 5000);
-    setInterval(() => {
-      pollBracketGeneral('ms_a');
-      pollBracketGeneral('ms_rc');
-      pollBracketGeneral('bat');
-    }, 8000);
-    setInterval(pollSoccer, 8000);
+    setInterval(pollJSON, 60000);
 
     pollJSON();
-    pollBracketGeneral('ms_a');
-    pollBracketGeneral('ms_rc');
-    pollBracketGeneral('bat');
-    pollSoccer();
   </script>
 </body>
 </html>
