@@ -24,15 +24,6 @@
     }
     .preview-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: #1a5ca8 !important; }
     .preview-sub   { font-size: 13px; color: #555 !important; margin-top: 2px; }
-    .btn-fullscreen {
-      display: inline-flex !important; align-items: center; gap: 10px;
-      background: linear-gradient(135deg, #1a5ca8, #2176d2) !important;
-      color: white !important; border: none; border-radius: 10px; padding: 14px 28px;
-      font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
-      cursor: pointer; box-shadow: 0 4px 16px rgba(26,92,168,0.35);
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .btn-fullscreen svg { width: 20px; height: 20px; }
     .schedule-preview-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     @media (max-width: 640px) { .schedule-preview-list { grid-template-columns: 1fr; } }
     .preview-slot {
@@ -215,14 +206,6 @@
           Programa oficial del evento · Club de Robótica Sucre
         </div>
       </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
-        <button class="btn-fullscreen" onclick="abrirFS()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-          </svg>
-          PANTALLA COMPLETA
-        </button>
-      </div>
       <div style="text-align:right;margin-bottom:6px;"><span style="font-size:11px;color:#9ca3af;font-family:'DM Mono',monospace;letter-spacing:1px;">Presiona <kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:1px 6px;font-size:10px;color:#374151;">F</kbd> para pantalla completa</span></div>
       <div id="normalGrid" style="margin-top:8px;"></div>
     </div>
@@ -377,11 +360,7 @@
     sections.forEach(sec=>{
       if(sec.type==='span') {
         const ev=sec.ev, st=getState(ev);
-        const sponsorRow = ev.tipo==='award'
-          ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex:1;">
-               <div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:2px;color:rgba(255,255,255,0.5);text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div>
-               <div style="display:flex;gap:5px;flex:1;"><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 1</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 2</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 3</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 4</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 5</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 6</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 7</div></div>
-             </div>` : '';
+        const sponsorRow = '';
         html += `<div class="fs-span">
           <div class="fs-span-row">
             <div class="fs-span-time">${ev.start}</div>
@@ -419,12 +398,6 @@
 
     html+=`</div>`; // close content wrapper
 
-    if(!compact) {
-      html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0 2px;border-top:1px solid #d1d9ed;margin-top:6px;flex-shrink:0;">
-        <div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:3px;color:#1a5ca8;text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div>
-        <div style="display:flex;gap:8px;flex:1;">${[1,2,3,4,5,6,7].map(i=>`<div style="flex:1;height:34px;border-radius:5px;border:1px dashed rgba(26,92,168,0.25);display:flex;align-items:center;justify-content:center;font-size:9px;color:#9ca3af;">Logo ${i}</div>`).join('')}</div>
-      </div>`;
-    }
 
     grid.innerHTML=html;
   }
