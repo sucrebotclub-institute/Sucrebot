@@ -697,6 +697,13 @@
         await gasPost({ action: 'renombrarLogo', fileId: logoFileId, nombre: idGenerado + '.' + ext });
       } catch(e) { /* no cr�tico */ }
 
+      // Renombrar comprobante con el ID real del participante
+      try {
+        const compFileId = archivoUrl.split('/d/')[1].split('/')[0];
+        const extComp = archivo.name.split('.').pop() || 'pdf';
+        await gasPost({ action: 'renombrarLogo', fileId: compFileId, nombre: idGenerado + '.' + extComp });
+      } catch(e) { /* no cr�tico */ }
+
       if (document.getElementById('f-institucion-select').value === '__nueva__' && institucion) {
         try {
           const raw = localStorage.getItem(INST_CACHE_KEY);
