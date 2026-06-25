@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>  
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cronograma · SucreBot 2026</title>
@@ -232,7 +232,7 @@
           PANTALLA COMPLETA
         </button>
       </div>
-      <div class="schedule-preview-list" id="previewList"></div>
+      <div id="normalGrid" style="margin-top:8px;"></div>
     </div>
   </div>
 </main>
@@ -817,9 +817,379 @@
   document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarFS(); });
 
   setInterval(tick, 1000);
-  setInterval(() => { if(document.getElementById('fsOverlay').classList.contains('active')) renderFSV2(); }, 30000);
+  setInterval(() => { if(document.getElementById('fsOverlay').classList.contains('active')) renderFSV2(); else renderNormalGrid(); }, 30000);
 
-  renderPreview();
+  renderNormalGrid();
+  tick();
+</script>
+
+</body>
+</html>  function renderNormalGrid() {
+    const grid = document.getElementById('normalGrid');
+    if (!grid) return;
+
+    const bandKeys = [...new Set(EVENTS.filter(e=>e.col!==null).map(e=>e.start))].sort();
+    const spanEvents = EVENTS.filter(e => e.col === null);
+    const colEvents  = EVENTS.filter(e => e.col !== null);
+
+    function rowSpan(ev) {
+      const s = toMin(ev.start), en = toMin(ev.end);
+      let span = 0;
+      bandKeys.forEach(k => { const km = toMin(k); if (km >= s && km < en) span++; });
+      return Math.max(1, span);
+    }
+
+    const cells = {};
+    colEvents.forEach(ev => {
+      const rowIdx = bandKeys.indexOf(ev.start);
+      if (!cells[rowIdx]) cells[rowIdx] = {};
+      cells[rowIdx][ev.col] = { ev, span: rowSpan(ev) };
+    });
+
+    const allStarts = [...new Set([...bandKeys, ...spanEvents.map(e=>e.start)])].sort();
+    let sections = [], curColRows = [];
+    allStarts.forEach(t => {
+      const spanEv = spanEvents.find(e => e.start === t);
+      if (spanEv) {
+        if (curColRows.length) { sections.push({ type:'cols', rows: curColRows }); curColRows = []; }
+        sections.push({ type:'span', ev: spanEv });
+      } else { curColRows.push(t); }
+    });
+    if (curColRows.length) sections.push({ type:'cols', rows: curColRows });
+
+    // Column headers
+    let html = `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:6px;">
+      ${COLS.map(c=>`<div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#1a5ca8;background:rgba(26,92,168,0.08);border:1px solid rgba(26,92,168,0.2);border-radius:6px;padding:6px 10px;text-align:center;">${c}</div>`).join('')}
+    </div>`;
+
+    sections.forEach(sec => {
+      if (sec.type === 'span') {
+        const ev = sec.ev;
+        const st = getState(ev);
+        const cls = st==='done' ? 'opacity:0.35;' : '';
+        const bg = ev.tipo==='break' ? 'rgba(22,163,74,0.08)' : ev.tipo==='award' ? 'rgba(245,158,11,0.1)' : 'rgba(26,92,168,0.07)';
+        const bc = ev.tipo==='break' ? 'rgba(22,163,74,0.3)' : ev.tipo==='award' ? 'rgba(245,158,11,0.35)' : 'rgba(26,92,168,0.25)';
+        const activeStyle = st==='now' ? 'background:#dbeafe !important;border-color:#93c5fd !important;' : '';
+        html += `<div style="display:flex;align-items:center;gap:16px;padding:10px 20px;border-radius:8px;background:${bg};border:1px solid ${bc};margin-bottom:8px;${cls}${activeStyle}">
+          <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#1a5ca8;min-width:44px;">${ev.start}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:#0e1e3a;flex:1;">${ev.name}</div>
+          ${ev.tipo==='award'?'<div style="font-size:20px;">&#127942;</div>':''}
+          ${st==='now'?'<div style="display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;letter-spacing:2px;color:#1d4ed8;"><div style="width:6px;height:6px;border-radius:50%;background:#1d4ed8;animation:dotPulse 1.4s ease infinite;"></div>EN CURSO</div>':''}
+        </div>`;
+      } else {
+        const rows = sec.rows;
+        const claimed = {};
+        html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${rows.length},auto);gap:8px;margin-bottom:8px;">`;
+        for (let r = 0; r < rows.length; r++) {
+          const t = rows[r];
+          const rowCells = cells[bandKeys.indexOf(t)] || {};
+          for (let c = 0; c < 5; c++) {
+            if (claimed[r+'-'+c]) continue;
+            const cell = rowCells[c];
+            if (!cell) { html += `<div style="grid-column:${c+1};grid-row:${r+1};"></div>`; continue; }
+            const { ev, span } = cell;
+            for (let s = 1; s < span && r+s < rows.length; s++) claimed[(r+s)+'-'+c] = true;
+            const st = getState(ev);
+            const done = st==='done' ? 'opacity:0.35;' : '';
+            const spanStyle = span > 1 ? `grid-row:${r+1} / span ${span};` : `grid-row:${r+1};`;
+            const color = getEvColor(ev.name);
+            html += `<div style="grid-column:${c+1};${spanStyle}background:${color};border-radius:8px;padding:10px 12px;${done}">
+              ${st==='now'?'<div style="display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.9);margin-bottom:4px;"><div style="width:5px;height:5px;border-radius:50%;background:#fff;animation:dotPulse 1.4s ease infinite;"></div>EN CURSO</div>':''}
+              <div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:rgba(255,255,255,0.8);">${ev.start}</div>
+              <div style="font-size:14px;font-weight:700;color:#ffffff;margin-top:3px;line-height:1.2;">${ev.name}</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px;">${ev.end}</div>
+            </div>`;
+          }
+        }
+        html += `</div>`;
+      }
+    });
+
+    // Sponsors
+    html += `<div style="display:flex;align-items:center;gap:14px;padding:12px 0 4px;border-top:1px solid #d1d9ed;margin-top:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:3px;color:#1a5ca8;text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div>
+      <div style="display:flex;align-items:center;gap:10px;flex:1;">
+        ${[1,2,3,4,5,6,7].map(i=>`<div style="flex:1;height:36px;border-radius:6px;border:1px dashed rgba(26,92,168,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:#9ca3af;font-family:'DM Mono',monospace;">Logo ${i}</div>`).join('')}
+      </div>
+    </div>`;
+
+    grid.innerHTML = html;
+  }
+
+  function renderPreview() { renderNormalGrid(); }
+
+
+  function toMin(t) { const [h,m]=t.split(':').map(Number); return h*60+m; }
+
+  function getState(ev) {
+    const now = new Date(), cur = now.getHours()*60+now.getMinutes();
+    const s = toMin(ev.start), e = toMin(ev.end);
+    if (cur >= s && cur < e) return 'now';
+    if (cur >= e) return 'done';
+    return 'upcoming';
+  }
+
+  function renderFS() {
+    const grid = document.getElementById('fsGrid');
+
+    // Build 6 column arrays
+    const colData = [[], [], [], [], [], []]; // col 5 = span row
+
+    EVENTS.forEach(ev => {
+      if (ev.col === null) {
+        colData[5].push(ev);
+      } else {
+        colData[ev.col].push(ev);
+      }
+    });
+
+    // Determine global row order by start time
+    const allStarts = [...new Set(EVENTS.map(e => e.start))].sort();
+
+    // Render: for each "time band" in order, if it's a span event render full-width row
+    // We'll render column by column and rely on CSS grid auto-placement
+    // Strategy: render all 5 content cols + inject span rows manually
+
+    let html = '';
+
+    // Column headers
+    COLS.forEach(c => {
+      html += `<div style="display:flex;flex-direction:column;">
+        <div class="fs-col-hdr">${c}</div>`;
+
+      const evs = colData[COLS.indexOf(c)] || [];
+
+      evs.forEach(ev => {
+        const st = getState(ev);
+        const cls = st==='now' ? 'is-now' : st==='done' ? 'is-done' : '';
+        html += `<div class="fs-ev ${cls}">
+          ${st==='now' ? '<div class="now-badge"><div class="now-dot"></div>EN CURSO</div>' : ''}
+          <div class="fs-ev-time">${ev.start} \u2013 ${ev.end}</div>
+          <div class="fs-ev-name">${ev.name}</div>
+        </div>`;
+      });
+
+      html += `</div>`;
+    });
+
+    grid.innerHTML = html;
+
+    // Inject span rows at the end as a second pass using absolute positioning is complex
+    // Instead render them appended and use CSS order — simpler: prepend them as full-width divs before the 5 cols
+    // We need to rebuild with a different approach
+
+    renderFSV2();
+  }
+
+  const COLOR_MAP = {"Seguidor de Línea Amateur": "#7B2D8B", "Seguidor de Línea Pro": "#7B2D8B", "Minisumo Autónomo": "#9B59B6", "MiniSumo RC Pro": "#F5A623", "Insectos Amateur": "#2980B9", "Lego Kids": "#2980B9", "Trepador Pro": "#16A085", "Trepador Amateur": "#1ABC9C", "Bailaín": "#27AE60", "Batalla 3Lb": "#E91E8C", "Robot Soccer – Fase de Grupos": "#E67E22", "Robot Soccer – Finales": "#E67E22", "Cubo Rubik": "#C0C0C0", "Impacto Tecnológico": "#D4AF37", "Inauguración": "#1a5ca8", "Receso": "#27AE60", "Premiación": "#D4AF37"};
+
+  function getEvColor(name) {
+    return COLOR_MAP[name] || '#1a5ca8';
+  }
+
+  function renderFSV2() {
+    const grid = document.getElementById('fsGrid');
+    grid.style.display = 'block';
+
+    // Collect unique time starts for non-span events to determine row index
+    const bandKeys = [...new Set(EVENTS.filter(e=>e.col!==null).map(e=>e.start))].sort();
+
+    // Group span events separately
+    const spanEvents = EVENTS.filter(e => e.col === null);
+    const colEvents  = EVENTS.filter(e => e.col !== null);
+
+    // Build grid: rows = bandKeys, cols = 5
+    // For each col event, compute how many rows it spans
+    function rowSpan(ev) {
+      const s = toMin(ev.start), en = toMin(ev.end);
+      let span = 0;
+      bandKeys.forEach(k => { const km = toMin(k); if (km >= s && km < en) span++; });
+      return Math.max(1, span);
+    }
+
+    // Build col arrays per column, tracking which rows are already occupied
+    const occupied = {}; // "rowIdx-colIdx" => true
+    // Sort col events by start so earlier ones claim rows first
+    const sorted = colEvents.slice().sort((a,b) => toMin(a.start)-toMin(b.start));
+
+    // Assign each event a starting row
+    const assigned = sorted.map(ev => {
+      const rowIdx = bandKeys.indexOf(ev.start);
+      return { ev, rowIdx, span: rowSpan(ev) };
+    });
+
+    // Build per-row per-col map
+    const cells = {}; // rowIdx => { colIdx: {ev, span} }
+    assigned.forEach(({ev, rowIdx, span}) => {
+      if (!cells[rowIdx]) cells[rowIdx] = {};
+      cells[rowIdx][ev.col] = { ev, span };
+    });
+
+    // Render: use CSS grid with explicit grid-row/grid-column
+    // We'll use a single CSS grid container for all col events
+    let html = '';
+
+    // --- SPAN EVENTS interleaved by time ---
+    // We need to render spans and col-rows in time order
+    // Collect all "time points" = bandKeys + span starts
+    const allStarts = [...new Set([...bandKeys, ...spanEvents.map(e=>e.start)])].sort();
+
+    // Track which bandKey rows have been rendered
+    let renderedRows = new Set();
+
+    // Use a CSS grid approach: one container per section between spans
+    let sections = []; // each section: { type:'span'|'cols', data }
+    let curColRows = [];
+
+    allStarts.forEach(t => {
+      const spanEv = spanEvents.find(e => e.start === t);
+      if (spanEv) {
+        if (curColRows.length) { sections.push({ type:'cols', rows: curColRows }); curColRows = []; }
+        sections.push({ type:'span', ev: spanEv });
+      } else {
+        curColRows.push(t);
+      }
+    });
+    if (curColRows.length) sections.push({ type:'cols', rows: curColRows });
+
+    sections.forEach(sec => {
+      if (sec.type === 'span') {
+        const ev = sec.ev;
+        const st = getState(ev);
+        const cls = st==='now' ? 'is-now' : st==='done' ? 'is-done' : '';
+        const tipoClass = ev.tipo==='break' ? 'is-break' : ev.tipo==='award' ? 'is-award' : 'is-special';
+        html += `<div class="fs-span ${cls} ${tipoClass}" style="margin-bottom:10px;">
+          <div class="fs-span-time">${ev.start}</div>
+          <div class="fs-span-name">${ev.name}</div>
+          ${ev.tipo==='award'?'<div style="font-size:22px;">&#127942;</div>':''}
+          ${st==='now'?'<div class="now-badge" style="margin-left:auto;"><div class="now-dot"></div>EN CURSO</div>':''}
+        </div>`;
+      } else {
+        // Col rows section — use CSS grid with grid-row for spanning
+        const rows = sec.rows;
+        const nRows = rows.length;
+        // Build a grid where each cell knows its row and col
+        // Cells that span multiple rows use grid-row: span N
+        const claimed = {}; // "r-c" => true (claimed by a spanning cell above)
+
+        html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${nRows},auto);gap:10px;margin-bottom:10px;">`;
+
+        for (let r = 0; r < rows.length; r++) {
+          const t = rows[r];
+          const rowCells = cells[bandKeys.indexOf(t)] || {};
+          for (let c = 0; c < 5; c++) {
+            if (claimed[r+'-'+c]) continue;
+            const cell = rowCells[c];
+            if (!cell) {
+              // empty — only render if not claimed
+              html += `<div style="grid-column:${c+1};grid-row:${r+1};"></div>`;
+              continue;
+            }
+            const { ev, span } = cell;
+            // Mark claimed rows below
+            for (let s = 1; s < span && r+s < rows.length; s++) claimed[(r+s)+'-'+c] = true;
+            const st = getState(ev);
+            const cls = st==='now' ? 'is-now' : st==='done' ? 'is-done' : '';
+            const spanStyle = span > 1 ? `grid-row:${r+1} / span ${span};` : `grid-row:${r+1};`;
+            html += `<div class="fs-ev ${cls}" style="grid-column:${c+1};${spanStyle}background:${getEvColor(ev.name)} !important;border:none !important;">
+              ${st==='now'?'<div class="now-badge" style="color:#fff;"><div class="now-dot" style="background:#fff;"></div>EN CURSO</div>':''}
+              <div class="fs-ev-time" style="color:rgba(255,255,255,0.8);">${ev.start}</div>
+              <div class="fs-ev-name" style="color:#ffffff;">${ev.name}</div>
+              <div class="fs-ev-det" style="color:rgba(255,255,255,0.6);">${ev.end}</div>
+            </div>`;
+          }
+        }
+        html += `</div>`;
+      }
+    });
+
+    // Column headers on top
+    const hdrHtml = `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:6px;">
+      ${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}
+    </div>`;
+
+    grid.innerHTML = hdrHtml + html;
+  }
+
+  function updateActive() {
+    document.querySelectorAll('.fs-ev, .fs-span').forEach(el => {
+      // re-render is easier
+    });
+    renderFSV2();
+  }
+
+  function tick() {
+    const n = new Date();
+    const t = [n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+    const cl = document.getElementById('fsClock'); if(cl) cl.textContent = t;
+    const cl2 = document.getElementById('fsClockFtr'); if(cl2) cl2.textContent = t;
+    const fd = document.getElementById('fsDate');
+    if(fd) fd.textContent = n.toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long'});
+  }
+
+  // Particles
+  function initParticles() {
+    const canvas = document.getElementById('fsCanvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, pts = [];
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+
+    function mkPt() {
+      return { x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-.5)*.25, vy: (Math.random()-.5)*.25,
+        r: Math.random()*1.5+.5, a: Math.random()*.4+.1 };
+    }
+
+    function init() { resize(); pts = Array.from({length:60}, mkPt); }
+
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      pts.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if(p.x<0||p.x>W) p.vx*=-1;
+        if(p.y<0||p.y>H) p.vy*=-1;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(26,92,168,${p.a * 0.3})`; ctx.fill();
+      });
+      // connectors
+      for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
+        const d = Math.hypot(pts[i].x-pts[j].x, pts[i].y-pts[j].y);
+        if(d<90) {
+          ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle=`rgba(26,92,168,${0.06*(1-d/90)})`; ctx.lineWidth=.5; ctx.stroke();
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+
+    init(); draw();
+    window.addEventListener('resize', () => { resize(); pts = Array.from({length:60}, mkPt); });
+  }
+
+  function abrirFS() {
+    document.getElementById('fsOverlay').classList.add('active');
+    renderFSV2();
+    tick();
+    initParticles();
+    (document.documentElement.requestFullscreen?.() || document.documentElement.webkitRequestFullscreen?.());
+  }
+  function cerrarFS() {
+    document.getElementById('fsOverlay').classList.remove('active');
+    document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+  }
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) document.getElementById('fsOverlay').classList.remove('active');
+  });
+  document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarFS(); });
+
+  setInterval(tick, 1000);
+  setInterval(() => { if(document.getElementById('fsOverlay').classList.contains('active')) renderFSV2(); else renderNormalGrid(); }, 30000);
+
+  renderNormalGrid();
   tick();
 </script>
 
