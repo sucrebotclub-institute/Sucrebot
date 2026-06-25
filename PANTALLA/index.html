@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>  
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cronograma · SucreBot 2026</title>
@@ -498,7 +498,6 @@
   </div>
 
   <div class="fs-body">
-    <div class="fs-section-lbl">&#9654; PROGRAMA DEL EVENTO · 16 DE JULIO DE 2026</div>
     <div class="fs-cols" id="fsGrid"></div>
     <div id="fsSponsors" style="display:flex;align-items:center;gap:14px;padding:10px 0 2px;border-top:1px solid #d1d9ed;margin-top:10px;flex-shrink:0;">
       <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:3px;color:#1a5ca8;text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div>
@@ -516,7 +515,7 @@
 
   <div class="fs-ftr">
     <div class="fs-ftr-url">sucrebotclub-institute.github.io</div>
-    <div class="fs-live-pill"><div class="fs-live-dot"></div>EN VIVO</div>
+    <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:#1a5ca8;letter-spacing:2px;" id="fsClockFtr">00:00:00</div>
     <div class="fs-ftr-url" id="fsDate"></div>
   </div>
 </div>
@@ -753,6 +752,7 @@
     const n = new Date();
     const t = [n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
     const cl = document.getElementById('fsClock'); if(cl) cl.textContent = t;
+    const cl2 = document.getElementById('fsClockFtr'); if(cl2) cl2.textContent = t;
     const fd = document.getElementById('fsDate');
     if(fd) fd.textContent = n.toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long'});
   }
