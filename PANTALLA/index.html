@@ -615,6 +615,12 @@
     renderFSV2();
   }
 
+  const COLOR_MAP = {"Seguidor de Línea Amateur": "#7B2D8B", "Seguidor de Línea Pro": "#7B2D8B", "Minisumo Autónomo": "#9B59B6", "MiniSumo RC Pro": "#F5A623", "Insectos Amateur": "#2980B9", "Lego Kids": "#2980B9", "Trepador Pro": "#16A085", "Trepador Amateur": "#1ABC9C", "Bailaín": "#27AE60", "Batalla 3Lb": "#E91E8C", "Robot Soccer – Fase de Grupos": "#E67E22", "Robot Soccer – Finales": "#E67E22", "Cubo Rubik": "#C0C0C0", "Impacto Tecnológico": "#D4AF37", "Inauguración": "#1a5ca8", "Receso": "#27AE60", "Premiación": "#D4AF37"};
+
+  function getEvColor(name) {
+    return COLOR_MAP[name] || '#1a5ca8';
+  }
+
   function renderFSV2() {
     const grid = document.getElementById('fsGrid');
     grid.style.display = 'block';
@@ -719,9 +725,9 @@
             const st = getState(ev);
             const cls = st==='now' ? 'is-now' : st==='done' ? 'is-done' : '';
             const spanStyle = span > 1 ? `grid-row:${r+1} / span ${span};` : `grid-row:${r+1};`;
-            html += `<div class="fs-ev ${cls}" style="grid-column:${c+1};${spanStyle}">
+            html += `<div class="fs-ev ${cls}" style="grid-column:${c+1};${spanStyle}border-left:3px solid ${getEvColor(ev.name)} !important;">
               ${st==='now'?'<div class="now-badge"><div class="now-dot"></div>EN CURSO</div>':''}
-              <div class="fs-ev-time">${ev.start}</div>
+              <div class="fs-ev-time" style="color:${getEvColor(ev.name)};">${ev.start}</div>
               <div class="fs-ev-name">${ev.name}</div>
               <div class="fs-ev-det">${ev.end}</div>
             </div>`;
