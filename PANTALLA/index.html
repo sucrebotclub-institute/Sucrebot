@@ -383,7 +383,6 @@
         html+=`</div>`;
       }
     });
-    html+=``).join('')}</div></div>`;
     html+=`</div>`;
     grid.innerHTML=html;
   }
@@ -431,8 +430,11 @@
   setInterval(tick, 1000);
   setInterval(()=>{ if(document.getElementById('fsOverlay').classList.contains('active')) buildGrid('fsGrid',true); else buildGrid('normalGrid',false); }, 30000);
 
-  window.addEventListener('load', ()=>{ buildGrid('normalGrid', false); });
   tick();
+  // Render normal grid with retries
+  setTimeout(()=>buildGrid('normalGrid',false), 0);
+  setTimeout(()=>buildGrid('normalGrid',false), 500);
+  setTimeout(()=>buildGrid('normalGrid',false), 1500);
 </script>
 
 </body>
