@@ -274,8 +274,6 @@
       <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/club-robotica-fondo-blanco.png" style="height:44px;width:auto;object-fit:contain;" alt="Club Robotica Sucre">
       <div style="width:1px;height:36px;background:rgba(26,92,168,0.2);flex-shrink:0;"></div>
       <div>
-        <div class="fs-brand-name">SucreBot 2026</div>
-      </div>
     </div>
     <div class="fs-center">
       <div style="font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#1a5ca8;font-weight:700;margin-bottom:5px;">4ta Edici&#243;n del Concurso Nacional de Rob&#243;tica SucreBot</div>
@@ -341,13 +339,13 @@
     allS.forEach(t=>{ const sp=spanEvs.find(e=>e.start===t); if(sp){ if(cur.length){sections.push({type:'cols',rows:cur});cur=[];} sections.push({type:'span',ev:sp}); } else cur.push(t); });
     if(cur.length) sections.push({type:'cols',rows:cur});
     const gap=compact?'5px':'7px', evPad=compact?'10px 12px':'12px 14px', evFS=compact?'16px':'18px';
-    let html=`<div style="display:flex;flex-direction:column;height:100%;min-height:0;">
+    let html=`<div style="display:flex;flex-direction:column;height:100%;min-height:0;gap:${gap};">
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
     sections.forEach(sec=>{
       if(sec.type==='span'){
         const ev=sec.ev,st=getState(ev),done='',isNow=st==='now'?'background:#2176d2;border-color:#5bc8f0;':'';
         const tc=ev.tipo==='break'?'is-break':ev.tipo==='award'?'is-award':'';
-        html+=`<div class="fs-span ${tc}" style="margin-bottom:${gap};${done}${isNow}${ev.tipo==='award'?'flex-direction:column;align-items:stretch;':''}padding:${ev.tipo==='award'?'10px':'8px'} 20px;">
+        html+=`<div class="fs-span ${tc}" style="${done}${isNow}${ev.tipo==='award'?'flex-direction:column;align-items:stretch;':''}padding:${ev.tipo==='award'?'10px':'8px'} 20px;">
           <div style="display:flex;align-items:center;gap:20px;">
             <div class="fs-span-time">${ev.start}</div>
             <div class="fs-span-name">${ev.name}</div>
@@ -361,7 +359,7 @@
         </div>`;
       } else {
         const rows=sec.rows,claimed={};
-        html+=`<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${rows.length},1fr);gap:${gap};margin-bottom:${gap};flex:1;">`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${rows.length},minmax(0,1fr));gap:${gap};flex:${rows.length};">`;
         for(let r=0;r<rows.length;r++){
           const rc=cells[bandKeys.indexOf(rows[r])]||{};
           for(let c=0;c<5;c++){
