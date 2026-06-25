@@ -232,6 +232,7 @@
           PANTALLA COMPLETA
         </button>
       </div>
+      <div style="text-align:right;margin-bottom:6px;"><span style="font-size:11px;color:#9ca3af;font-family:'DM Mono',monospace;letter-spacing:1px;">Presiona <kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:1px 6px;font-size:10px;color:#374151;">F</kbd> para pantalla completa</span></div>
       <div id="normalGrid" style="margin-top:8px;"></div>
     </div>
   </div>
@@ -259,15 +260,15 @@
   .fs-right {display:flex;align-items:center;gap:16px;}
   .fs-clock-big {font-family:'DM Mono',monospace;font-size:clamp(20px,2.2vw,30px);font-weight:700;letter-spacing:3px;color:#0e1e3a;background:rgba(26,92,168,0.08);border:2px solid #1a5ca8;padding:8px 18px;border-radius:8px;}
   .fs-body {position:relative;z-index:2;flex:1;overflow:hidden;padding:12px 48px 8px;display:flex;flex-direction:column;}
-  .fs-col-hdr {font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#1a5ca8;padding:6px 10px;border-radius:6px;background:rgba(26,92,168,0.08);border:1px solid rgba(26,92,168,0.2);text-align:center;margin-bottom:6px;}
+  .fs-col-hdr {font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#ffffff;padding:6px 10px;border-radius:6px;background:#1a5ca8;border:1px solid #1a5ca8;text-align:center;margin-bottom:6px;}
   .fs-ev {border-radius:6px;padding:8px 12px;position:relative;overflow:hidden;}
   .fs-ev.is-done {opacity:0.28;}
-  .fs-span {border-radius:6px;padding:8px 20px;display:flex;align-items:center;gap:20px;margin-bottom:8px;background:rgba(26,92,168,0.07);border:1px solid rgba(26,92,168,0.2);}
-  .fs-span.is-break {background:rgba(22,163,74,0.08);border-color:rgba(22,163,74,0.3);}
-  .fs-span.is-award {background:rgba(245,158,11,0.09);border-color:rgba(245,158,11,0.3);}
+  .fs-span {border-radius:6px;padding:8px 20px;display:flex;align-items:center;gap:20px;margin-bottom:8px;background:#1a5ca8;border:1px solid #1a5ca8;}
+  .fs-span.is-break {background:#1a5ca8;border-color:#1a5ca8;}
+  .fs-span.is-award {background:#1a5ca8;border-color:#1a5ca8;}
   .fs-span.is-done {opacity:0.28;}
-  .fs-span-time {font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:#1a5ca8;min-width:52px;flex-shrink:0;}
-  .fs-span-name {font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:#0e1e3a;flex:1;}
+  .fs-span-time {font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:#ffffff;min-width:52px;flex-shrink:0;}
+  .fs-span-name {font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:#ffffff;flex:1;}
   .fs-ftr {position:relative;z-index:2;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:6px 48px;border-top:1px solid #d1d9ed;background:#fff;}
   .fs-ftr-url {font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#6b7280;}
   .now-badge {display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1d4ed8;margin-bottom:4px;}
@@ -357,7 +358,7 @@
     let html=`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
     sections.forEach(sec=>{
       if(sec.type==='span'){
-        const ev=sec.ev,st=getState(ev),done=st==='done'?'opacity:0.28;':'',isNow=st==='now'?'background:#dbeafe;border-color:#93c5fd;':'';
+        const ev=sec.ev,st=getState(ev),done=st==='done'?'opacity:0.28;':'',isNow=st==='now'?'background:#2176d2;border-color:#5bc8f0;':'';
         const tc=ev.tipo==='break'?'is-break':ev.tipo==='award'?'is-award':'';
         html+=`<div class="fs-span ${tc}" style="margin-bottom:${gap};${done}${isNow}">
           <div class="fs-span-time">${ev.start}</div><div class="fs-span-name">${ev.name}</div>
@@ -429,7 +430,7 @@
     document.exitFullscreen?.() || document.webkitExitFullscreen?.();
   }
   document.addEventListener('fullscreenchange', ()=>{ if(!document.fullscreenElement) document.getElementById('fsOverlay').classList.remove('active'); });
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') cerrarFS(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') cerrarFS(); if(e.key==='f'||e.key==='F') abrirFS(); });
 
   setInterval(tick, 1000);
   setInterval(()=>{ if(document.getElementById('fsOverlay').classList.contains('active')) buildGrid('fsGrid',true); else buildGrid('normalGrid',false); }, 30000);
