@@ -690,6 +690,13 @@
 
       const idGenerado = respRegistro.id;
 
+      // Renombrar logo con el ID real del participante
+      try {
+        const logoFileId = logoUrl.split('id=')[1];
+        const ext = logoArchivo.name.split('.').pop() || 'png';
+        await gasPost({ action: 'renombrarLogo', fileId: logoFileId, nombre: idGenerado + '.' + ext });
+      } catch(e) { /* no cr�tico */ }
+
       if (document.getElementById('f-institucion-select').value === '__nueva__' && institucion) {
         try {
           const raw = localStorage.getItem(INST_CACHE_KEY);
