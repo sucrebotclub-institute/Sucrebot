@@ -238,7 +238,7 @@
 
 <!-- FS OVERLAY -->
 <style>
-  #fsOverlay {display:none;position:fixed;inset:0;z-index:99999;overflow:hidden;background:#f0f4fa;font-family:'Exo 2',sans-serif;}
+  #fsOverlay {display:none;position:fixed;inset:0;z-index:999999;overflow:hidden;background:#f0f4fa;font-family:'Exo 2',sans-serif;}
   #fsOverlay.active {display:flex!important;flex-direction:column!important;}
   #fsOverlay * {box-sizing:border-box;}
   html:has(#fsOverlay.active),body:has(#fsOverlay.active) {overflow:hidden!important;}
@@ -275,7 +275,6 @@
       <div style="width:1px;height:36px;background:rgba(26,92,168,0.2);flex-shrink:0;"></div>
       <div>
         <div class="fs-brand-name">SucreBot 2026</div>
-        <div class="fs-brand-sub">Club de Robótica &middot; Instituto Sucre</div>
       </div>
     </div>
     <div class="fs-center">
@@ -341,24 +340,24 @@
     let sections=[],cur=[];
     allS.forEach(t=>{ const sp=spanEvs.find(e=>e.start===t); if(sp){ if(cur.length){sections.push({type:'cols',rows:cur});cur=[];} sections.push({type:'span',ev:sp}); } else cur.push(t); });
     if(cur.length) sections.push({type:'cols',rows:cur});
-    const gap=compact?'6px':'8px', evPad=compact?'12px 14px':'14px 16px', evFS=compact?'17px':'19px';
+    const gap=compact?'5px':'7px', evPad=compact?'10px 12px':'12px 14px', evFS=compact?'16px':'18px';
     let html=`<div style="display:flex;flex-direction:column;height:100%;min-height:0;">
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
     sections.forEach(sec=>{
       if(sec.type==='span'){
         const ev=sec.ev,st=getState(ev),done='',isNow=st==='now'?'background:#2176d2;border-color:#5bc8f0;':'';
         const tc=ev.tipo==='break'?'is-break':ev.tipo==='award'?'is-award':'';
-        html+=`<div class="fs-span ${tc}" style="margin-bottom:${gap};${done}${isNow}flex-direction:column;align-items:stretch;padding:10px 20px;">
+        html+=`<div class="fs-span ${tc}" style="margin-bottom:${gap};${done}${isNow}${ev.tipo==='award'?'flex-direction:column;align-items:stretch;':''}padding:${ev.tipo==='award'?'10px':'8px'} 20px;">
           <div style="display:flex;align-items:center;gap:20px;">
             <div class="fs-span-time">${ev.start}</div>
             <div class="fs-span-name">${ev.name}</div>
             ${ev.tipo==='award'?'<div style="font-size:20px;">&#127942;</div>':''}
             ${st==='now'?'<div class="now-badge"><div class="now-dot"></div>EN CURSO</div>':''}
           </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          ${ev.tipo==='award'?`<div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex:1;">
             <div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:2px;color:rgba(255,255,255,0.5);text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div>
-            <div style="display:flex;align-items:center;gap:6px;flex:1;"><div style="flex:1;height:28px;border-radius:4px;border:1px dashed rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.5);">Logo 1</div><div style="flex:1;height:28px;border-radius:4px;border:1px dashed rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.5);">Logo 2</div><div style="flex:1;height:28px;border-radius:4px;border:1px dashed rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.5);">Logo 3</div><div style="flex:1;height:28px;border-radius:4px;border:1px dashed rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.5);">Logo 4</div><div style="flex:1;height:28px;border-radius:4px;border:1px dashed rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.5);">Logo 5</div><div style="flex:1;height:28px;border-radius:4px;border:1px dashed rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.5);">Logo 6</div><div style="flex:1;height:28px;border-radius:4px;border:1px dashed rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.5);">Logo 7</div></div>
-          </div>
+            <div style="display:flex;align-items:center;gap:6px;flex:1;height:100%;"><div style="flex:1;min-height:40px;border-radius:4px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4);">Logo 1</div><div style="flex:1;min-height:40px;border-radius:4px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4);">Logo 2</div><div style="flex:1;min-height:40px;border-radius:4px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4);">Logo 3</div><div style="flex:1;min-height:40px;border-radius:4px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4);">Logo 4</div><div style="flex:1;min-height:40px;border-radius:4px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4);">Logo 5</div><div style="flex:1;min-height:40px;border-radius:4px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4);">Logo 6</div><div style="flex:1;min-height:40px;border-radius:4px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4);">Logo 7</div></div>
+          </div>`:''}
         </div>`;
       } else {
         const rows=sec.rows,claimed={};
@@ -417,11 +416,13 @@
 
   function abrirFS() {
     document.getElementById('fsOverlay').classList.add('active');
+    const sh=document.querySelector('.sticky-header'); if(sh) sh.style.display='none';
     buildGrid('fsGrid', true); tick(); initParticles();
     (document.documentElement.requestFullscreen?.() || document.documentElement.webkitRequestFullscreen?.());
   }
   function cerrarFS() {
     document.getElementById('fsOverlay').classList.remove('active');
+    const sh=document.querySelector('.sticky-header'); if(sh) sh.style.display='';
     document.exitFullscreen?.() || document.webkitExitFullscreen?.();
   }
   document.addEventListener('fullscreenchange', ()=>{ if(!document.fullscreenElement) document.getElementById('fsOverlay').classList.remove('active'); });
