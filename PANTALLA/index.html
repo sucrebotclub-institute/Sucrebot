@@ -819,8 +819,10 @@
   setInterval(tick, 1000);
   setInterval(() => { if(document.getElementById('fsOverlay').classList.contains('active')) renderFSV2(); else renderNormalGrid(); }, 30000);
 
-  renderNormalGrid();
   tick();
+  // Esperar a que load-components.js termine de inyectar el DOM
+  window.addEventListener('load', () => { renderNormalGrid(); });
+  setTimeout(renderNormalGrid, 800);
 </script>
 
 </body>
