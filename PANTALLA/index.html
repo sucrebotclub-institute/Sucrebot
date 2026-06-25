@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>   
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cronograma · SucreBot 2026</title>
@@ -8,8 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@300;400;600;700&family=DM+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
-  <script src="../shared/js/config.js"></script>  
-  <style>   
+  <script src="../shared/js/config.js"></script>
+  <style>
     body { background: #f0f4fa !important; padding-top: 0 !important; }
     main { padding-top: 174px; min-height: 100vh; background: #f0f4fa; }
 
@@ -50,26 +50,209 @@
     .preview-name   { font-size:13px; font-weight:700; color:#111827 !important; }
     .preview-detail { font-size:11px; color:#4b5563 !important; }
 
-<script src="../shared/js/load-components.js"></script>
-<script src="../shared/js/auth.js"></script>
+    /* ══ FULLSCREEN OVERLAY ══════════════════════════════════════ */
+    /* fsOverlay defined below */
+
+    /* Todo dentro del overlay resetea herencia con colores propios */
+
+
+    #fsOverlay .fs-wrap {
+      display: flex; flex-direction: column; height: 100%;
+      background: #ffffff;
+    }
+
+    /* header */
+    #fsOverlay .fs-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 52px 16px;
+      border-bottom: 3px solid #1a5ca8;
+      background: #ffffff;
+      flex-shrink: 0;
+    }
+    #fsOverlay .fs-hl { display: flex; align-items: center; gap: 16px; }
+    #fsOverlay .fs-logo {
+      width: 46px; height: 46px; border-radius: 10px;
+      background: linear-gradient(135deg, #1a5ca8, #2176d2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+      color: #ffffff !important; flex-shrink: 0;
+    }
+    #fsOverlay .fs-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(24px,3vw,40px); letter-spacing: 3px; line-height: 1;
+      color: #0e1e3a !important;
+    }
+    #fsOverlay .fs-sub {
+      font-size: clamp(9px,1vw,12px); letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 3px; font-weight: 400;
+      color: #374151 !important;
+    }
+    #fsOverlay .fs-hr { display: flex; align-items: center; gap: 20px; }
+    #fsOverlay .fs-date {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(20px,2.5vw,36px); letter-spacing: 3px; line-height: 1;
+      color: #1a5ca8 !important; text-align: right;
+    }
+    #fsOverlay .fs-place {
+      font-size: clamp(9px,0.9vw,12px); letter-spacing: 2px; text-transform: uppercase;
+      text-align: right; margin-top: 3px;
+      color: #374151 !important;
+    }
+    #fsOverlay .fs-exit {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 18px; border-radius: 8px;
+      border: 2px solid #1a5ca8; background: #ffffff;
+      font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px;
+      color: #1a5ca8 !important; cursor: pointer; flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    #fsOverlay .fs-exit:hover { background: #e8f0fb; }
+    #fsOverlay .fs-exit svg { width: 16px; height: 16px; stroke: #1a5ca8; }
+
+    /* body */
+    #fsOverlay .fs-body {
+      flex: 1; overflow: hidden; padding: 18px 52px 10px;
+      display: flex; flex-direction: column;
+      background: #f5f7fb;
+    }
+    #fsOverlay .fs-lbl {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(11px,1.1vw,14px); letter-spacing: 4px;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+      color: #1a5ca8 !important;
+    }
+    #fsOverlay .fs-lbl::after {
+      content: ''; flex: 1; height: 2px;
+      background: #1a5ca8; opacity: 0.25;
+    }
+    #fsOverlay .fs-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px;
+    }
+
+    /* slots */
+    #fsOverlay .slot {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 16px; border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #d1d9ed;
+      border-left: 4px solid #1a5ca8;
+      max-width: none !important; width: auto !important;
+    }
+    #fsOverlay .slot.c-ap { border-left-color: #b45309; }
+    #fsOverlay .slot.c-co { border-left-color: #1a5ca8; }
+    #fsOverlay .slot.c-te { border-left-color: #6b21a8; }
+    #fsOverlay .slot.c-de { border-left-color: #166534; }
+    #fsOverlay .slot.c-cl { border-left-color: #9a3412; }
+    #fsOverlay .slot.c-pr { border-left-color: #b45309; }
+    #fsOverlay .slot.on  { background: #dbeafe; border-color: #93c5fd; border-left-color: #1d4ed8; }
+    #fsOverlay .slot.old { opacity: 0.32; }
+
+    #fsOverlay .s-time {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(13px,1.3vw,18px); font-weight: 700;
+      min-width: 54px; flex-shrink: 0;
+      color: #0e3a6e !important;
+    }
+    #fsOverlay .s-body { flex: 1; min-width: 0; }
+    #fsOverlay .s-name {
+      font-size: clamp(13px,1.35vw,18px); font-weight: 700; line-height: 1.2;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #111827 !important;
+    }
+    #fsOverlay .s-det {
+      font-size: clamp(10px,0.9vw,13px); margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #374151 !important;
+    }
+    #fsOverlay .s-badge {
+      font-size: clamp(9px,0.8vw,11px); font-family: 'DM Mono', monospace;
+      letter-spacing: 1px; text-transform: uppercase; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px; flex-shrink: 0;
+      white-space: nowrap;
+    }
+    #fsOverlay .slot.c-ap .s-badge { background:#fef08a; color:#713f12 !important; border:1px solid #ca8a04; }
+    #fsOverlay .slot.c-co .s-badge { background:#bfdbfe; color:#1e3a8a !important; border:1px solid #3b82f6; }
+    #fsOverlay .slot.c-te .s-badge { background:#e9d5ff; color:#4c1d95 !important; border:1px solid #7c3aed; }
+    #fsOverlay .slot.c-de .s-badge { background:#bbf7d0; color:#14532d !important; border:1px solid #16a34a; }
+    #fsOverlay .slot.c-cl .s-badge { background:#fed7aa; color:#7c2d12 !important; border:1px solid #ea580c; }
+    #fsOverlay .slot.c-pr .s-badge { background:#fef08a; color:#713f12 !important; border:1px solid #ca8a04; }
+
+    /* footer */
+    #fsOverlay .fs-footer {
+      padding: 10px 52px; display: flex; align-items: center; justify-content: space-between;
+      border-top: 2px solid #d1d9ed; flex-shrink: 0;
+      background: #ffffff;
+    }
+    #fsOverlay .fs-inst { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #4b5563 !important; }
+    #fsOverlay .fs-live { display: flex; align-items: center; gap: 8px; font-size: 13px; font-family: 'DM Mono', monospace; color: #374151 !important; }
+    #fsOverlay .fs-dot  { width:8px; height:8px; border-radius:50%; background:#16a34a; flex-shrink:0; animation: dotpulse 1.8s ease infinite; }
+    #fsOverlay .fs-clock { font-family: 'DM Mono', monospace; font-size: clamp(16px,1.5vw,22px); letter-spacing: 2px; font-weight: 700; color: #111827 !important; }
+
+    @keyframes dotpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  </style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<main>
+  <div class="wrapper" style="max-width:1200px;margin:0 auto;padding:40px 20px 60px">
+    <div class="cronograma-preview">
+      <div style="margin-bottom:28px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:#1a5ca8;border-radius:20px;padding:5px 14px;margin-bottom:14px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;"></span>
+          <span style="font-family:'Exo 2',sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;color:#fff;text-transform:uppercase;">SucreBot 2026 · Torneo de Robótica</span>
+        </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,42px);letter-spacing:2px;line-height:1.1;color:#1a2a4a;">
+          CRONOGRAMA <span style="color:#1a5ca8;">16 DE JULIO</span>
+        </div>
+        <div style="height:3px;width:100%;background:linear-gradient(90deg,#1a5ca8 0%,rgba(26,92,168,0.1) 100%);border-radius:2px;margin:10px 0 8px;"></div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#6b7280;">
+          Programa oficial del evento · Club de Robótica Sucre
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+        <button class="btn-fullscreen" onclick="abrirFS()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+          PANTALLA COMPLETA
+        </button>
+      </div>
+      <div style="text-align:right;margin-bottom:6px;"><span style="font-size:11px;color:#9ca3af;font-family:'DM Mono',monospace;letter-spacing:1px;">Presiona <kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:1px 6px;font-size:10px;color:#374151;">F</kbd> para pantalla completa</span></div>
+      <div id="normalGrid" style="margin-top:8px;"></div>
+    </div>
+  </div>
+</main>
+
+<div data-include="../shared/components/footer.html"></div>
 
 <style>
   #fsOverlay {
-    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-    z-index:999999; overflow:hidden; background:#f0f4fa;
-    font-family:'Exo 2',sans-serif;
+    display:none !important;
+    position:fixed !important;
+    top:0 !important; left:0 !important;
+    width:100vw !important; height:100vh !important;
+    z-index:2147483647 !important;
+    overflow:hidden !important;
+    background:#f0f4fa !important;
+    font-family:'Exo 2',sans-serif !important;
   }
-  #fsOverlay.active { display:flex; flex-direction:column; }
-  #fsOverlay * { box-sizing:border-box; }
+  #fsOverlay.active { display:flex !important; flex-direction:column !important; }
+  #fsOverlay * { box-sizing:border-box; font-family:'Exo 2',sans-serif; }
   .fs-hdr {
     flex-shrink:0; display:flex; align-items:center; justify-content:space-between;
-    padding:10px 40px; border-bottom:2px solid #1a5ca8; background:#fff;
+    padding:10px 40px; border-bottom:2px solid #1a5ca8; background:#ffffff;
   }
   .fs-brand { display:flex; align-items:center; gap:12px; }
-  .fs-center { text-align:center; }
+  .fs-center { text-align:center; flex:1; }
   .fs-right  { display:flex; align-items:center; gap:14px; }
   .fs-clock-big {
-    font-family:'Orbitron',monospace; font-size:clamp(16px,1.8vw,26px);
+    font-family:'Orbitron',monospace !important; font-size:clamp(16px,1.8vw,26px);
     font-weight:700; letter-spacing:2px; color:#0e1e3a;
     background:rgba(26,92,168,0.08); border:2px solid #1a5ca8;
     padding:6px 16px; border-radius:8px;
@@ -77,43 +260,42 @@
   .fs-body {
     flex:1; min-height:0; overflow:hidden;
     padding:8px 40px 6px; display:flex; flex-direction:column;
-    background:#f0f4fa;
   }
   .fs-col-hdr {
-    font-family:'Orbitron',monospace; font-size:10px; letter-spacing:2px;
-    text-transform:uppercase; color:#fff; background:#1a5ca8;
+    font-family:'Orbitron',monospace !important; font-size:10px; letter-spacing:2px;
+    text-transform:uppercase; color:#ffffff !important; background:#1a5ca8 !important;
     padding:6px 10px; border-radius:6px; text-align:center; margin-bottom:5px;
   }
   .fs-ev { border-radius:6px; overflow:hidden; }
   .fs-span {
-    border-radius:6px; margin-bottom:6px; background:#1a5ca8;
-    border:2px solid #000; display:flex; flex-direction:column;
-    padding:6px 16px;
+    border-radius:6px; margin-bottom:0; background:#1a5ca8 !important;
+    border:2px solid #000; display:flex; flex-direction:column; padding:6px 16px;
+    flex-shrink:0;
   }
   .fs-span-row { display:flex; align-items:center; gap:16px; }
-  .fs-span-time { font-family:'Orbitron',monospace; font-size:14px; font-weight:700; color:#fff; min-width:48px; }
-  .fs-span-name { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:3px; color:#fff; flex:1; }
+  .fs-span-time { font-family:'Orbitron',monospace !important; font-size:14px; font-weight:700; color:#ffffff !important; min-width:48px; }
+  .fs-span-name { font-family:'Bebas Neue',sans-serif !important; font-size:20px; letter-spacing:3px; color:#ffffff !important; flex:1; }
   .fs-ftr {
     flex-shrink:0; display:flex; align-items:center; justify-content:space-between;
-    padding:5px 40px; border-top:1px solid #d1d9ed; background:#fff;
-    font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#6b7280;
+    padding:5px 40px; border-top:1px solid #d1d9ed; background:#ffffff !important;
+    font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#6b7280 !important;
   }
-  .now-badge { display:inline-flex; align-items:center; gap:4px; font-size:8px; font-weight:700; letter-spacing:2px; color:#fff; margin-bottom:3px; }
-  .now-dot   { width:5px; height:5px; border-radius:50%; background:#fff; animation:dp 1.4s ease infinite; }
+  .now-badge { display:inline-flex; align-items:center; gap:4px; font-size:8px; font-weight:700; letter-spacing:2px; color:#fff !important; margin-bottom:3px; }
+  .now-dot   { width:5px; height:5px; border-radius:50%; background:#fff !important; animation:dp 1.4s ease infinite; }
   @keyframes dp { 0%,100%{opacity:1} 50%{opacity:0.3} }
 </style>
 
 <div id="fsOverlay">
   <div class="fs-hdr">
     <div class="fs-brand">
-      <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/club-robotica-fondo-blanco.png" style="height:40px;width:auto;object-fit:contain;">
+      <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/club-robotica-fondo-blanco.png" style="height:40px;width:auto;object-fit:contain;" alt="Club Robotica">
     </div>
     <div class="fs-center">
       <div style="font-family:'Orbitron',monospace;font-size:clamp(10px,1.1vw,14px);letter-spacing:2px;text-transform:uppercase;color:#1a5ca8;font-weight:700;">4ta Edici&#243;n del Concurso Nacional de Rob&#243;tica SucreBot</div>
       <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#1a5ca8;margin-top:3px;">Ciudad Mitad del Mundo &middot; Quito, Ecuador</div>
     </div>
     <div class="fs-right">
-      <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/logosucre.png" style="height:40px;width:auto;object-fit:contain;">
+      <img src="https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/logosucre.png" style="height:40px;width:auto;object-fit:contain;" alt="Instituto Sucre">
       <div style="width:1px;height:32px;background:rgba(26,92,168,0.25);"></div>
       <div class="fs-clock-big" id="fsClock">00:00:00</div>
     </div>
@@ -128,6 +310,8 @@
   </div>
 </div>
 
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
 <script>
   const COLS = ['Auditorio','Escenario 1','Escenario 2','Escenario 3','Escenario 4'];
   const COLOR_MAP = {"Seguidor de Línea Amateur": "#7B2D8B", "Seguidor de Línea Pro": "#7B2D8B", "Minisumo Autónomo": "#9B59B6", "MiniSumo RC Pro": "#F5A623", "Insectos": "#2980B9", "Lego Kids": "#2980B9", "Trepador Pro": "#16A085", "Trepador Amateur": "#1ABC9C", "Bailaín": "#27AE60", "Batalla 3Lb": "#E91E8C", "Robot Soccer – Fase de Grupos": "#E67E22", "Robot Soccer – Finales": "#E67E22", "Cubo Rubik": "#C0C0C0", "Impacto Tecnológico": "#D4AF37"};
@@ -182,23 +366,23 @@
     });
     if(cur.length) sections.push({type:'cols',rows:cur});
 
-    const gap=compact?'5px':'7px';
-    const evPad=compact?'8px 10px':'10px 12px';
-    const evFS=compact?'15px':'17px';
-    const rowH=compact?`calc((100vh - 260px) / 4)`:`130px`;
+    const gap   = compact ? '5px' : '7px';
+    const evPad = compact ? '8px 10px' : '10px 12px';
+    const evFS  = compact ? '15px' : '17px';
+    const rowH  = compact ? `calc((100vh - 265px) / 4)` : `130px`;
 
-    // Col headers
-    let html=`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};flex-shrink:0;">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
-
-    // Content wrapper fills remaining space
-    html+=`<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:${gap};">`;
+    let html = `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};flex-shrink:0;">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
+    html += `<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:${gap};">`;
 
     sections.forEach(sec=>{
-      if(sec.type==='span'){
+      if(sec.type==='span') {
         const ev=sec.ev, st=getState(ev);
-        const isNow=st==='now'?'outline:2px solid rgba(255,255,255,0.6);':'';
-        const sponsorRow = ev.tipo==='award' ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex:1;"><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:2px;color:rgba(255,255,255,0.5);text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div><div style="display:flex;gap:5px;flex:1;"><div style="flex:1;min-height:36px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 1</div><div style="flex:1;min-height:36px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 2</div><div style="flex:1;min-height:36px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 3</div><div style="flex:1;min-height:36px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 4</div><div style="flex:1;min-height:36px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 5</div><div style="flex:1;min-height:36px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 6</div><div style="flex:1;min-height:36px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 7</div></div></div>` : '';
-        html+=`<div class="fs-span" style="flex-shrink:0;${isNow}">
+        const sponsorRow = ev.tipo==='award'
+          ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex:1;">
+               <div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:2px;color:rgba(255,255,255,0.5);text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div>
+               <div style="display:flex;gap:5px;flex:1;"><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 1</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 2</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 3</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 4</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 5</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 6</div><div style="flex:1;min-height:40px;border-radius:5px;border:1px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.45);">Logo 7</div></div>
+             </div>` : '';
+        html += `<div class="fs-span">
           <div class="fs-span-row">
             <div class="fs-span-time">${ev.start}</div>
             <div class="fs-span-name">${ev.name}</div>
@@ -209,16 +393,17 @@
         </div>`;
       } else {
         const rows=sec.rows, claimed={};
-        html+=`<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${rows.length},${rowH});gap:${gap};flex:1;min-height:0;">`;
-        for(let r=0;r<rows.length;r++){
+        html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${rows.length},${rowH});gap:${gap};flex:${compact?1:'none'};min-height:0;">`;
+        for(let r=0;r<rows.length;r++) {
           const rc=cells[bandKeys.indexOf(rows[r])]||{};
-          for(let c=0;c<5;c++){
-            if(claimed[r+'-'+c])continue;
+          for(let c=0;c<5;c++) {
+            if(claimed[r+'-'+c]) continue;
             const cell=rc[c];
-            if(!cell){ html+=`<div style="grid-column:${c+1};grid-row:${r+1};"></div>`; continue; }
+            if(!cell) { html+=`<div style="grid-column:${c+1};grid-row:${r+1};"></div>`; continue; }
             const {ev,span}=cell;
             for(let s=1;s<span&&r+s<rows.length;s++) claimed[(r+s)+'-'+c]=true;
-            const st=getState(ev), sp=span>1?`grid-row:${r+1} / span ${span};`:`grid-row:${r+1};`;
+            const st=getState(ev);
+            const sp=span>1?`grid-row:${r+1} / span ${span};`:`grid-row:${r+1};`;
             const color=getEvColor(ev.name);
             html+=`<div class="fs-ev" style="grid-column:${c+1};${sp}background:${color};border:2px solid #000;padding:${evPad};">
               ${st==='now'?'<div class="now-badge"><div class="now-dot"></div>EN CURSO</div>':''}
@@ -234,7 +419,6 @@
 
     html+=`</div>`; // close content wrapper
 
-    // Normal page sponsors strip
     if(!compact) {
       html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0 2px;border-top:1px solid #d1d9ed;margin-top:6px;flex-shrink:0;">
         <div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:3px;color:#1a5ca8;text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div>
@@ -246,45 +430,42 @@
   }
 
   function tick() {
-    const n=new Date(),t=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
-    const cl=document.getElementById('fsClock'); if(cl)cl.textContent=t;
-    const cl2=document.getElementById('fsClockFtr'); if(cl2)cl2.textContent=t;
-    const fd=document.getElementById('fsDate'); if(fd)fd.textContent=n.toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long'});
-  }
-
-  function initParticles() {
-    const canvas=document.getElementById('fsCanvas'); if(!canvas)return;
-    const ctx=canvas.getContext('2d'); let W,H,pts=[];
-    const resize=()=>{W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;};
-    const mkPt=()=>{return{x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,r:Math.random()+.5,a:Math.random()*.1+.03};};
-    const draw=()=>{
-      ctx.clearRect(0,0,W,H);
-      pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
-        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(26,92,168,${p.a})`;ctx.fill();});
-      requestAnimationFrame(draw);
-    };
-    resize();pts=Array.from({length:40},mkPt);draw();
-    window.addEventListener('resize',()=>{resize();pts=Array.from({length:40},mkPt);});
+    const n=new Date(), t=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+    const cl=document.getElementById('fsClock'); if(cl) cl.textContent=t;
+    const cl2=document.getElementById('fsClockFtr'); if(cl2) cl2.textContent=t;
+    const fd=document.getElementById('fsDate'); if(fd) fd.textContent=n.toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long'});
   }
 
   function abrirFS() {
     document.getElementById('fsOverlay').classList.add('active');
-    buildGrid('fsGrid',true); tick(); initParticles();
+    buildGrid('fsGrid', true);
+    tick();
     (document.documentElement.requestFullscreen?.() || document.documentElement.webkitRequestFullscreen?.());
   }
   function cerrarFS() {
     document.getElementById('fsOverlay').classList.remove('active');
     document.exitFullscreen?.() || document.webkitExitFullscreen?.();
   }
-  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.getElementById('fsOverlay').classList.remove('active');});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarFS();if(e.key==='f'||e.key==='F')abrirFS();});
 
-  setInterval(tick,1000);
-  setInterval(()=>{if(document.getElementById('fsOverlay').classList.contains('active'))buildGrid('fsGrid',true);else buildGrid('normalGrid',false);},30000);
+  document.addEventListener('fullscreenchange', ()=>{
+    if(!document.fullscreenElement) document.getElementById('fsOverlay').classList.remove('active');
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape') cerrarFS();
+    if(e.key==='f'||e.key==='F') abrirFS();
+  });
+
+  setInterval(tick, 1000);
+  setInterval(()=>{
+    if(document.getElementById('fsOverlay').classList.contains('active'))
+      buildGrid('fsGrid', true);
+    else
+      buildGrid('normalGrid', false);
+  }, 30000);
 
   tick();
-  setTimeout(()=>buildGrid('normalGrid',false),0);
-  setTimeout(()=>buildGrid('normalGrid',false),800);
+  setTimeout(()=>buildGrid('normalGrid', false), 0);
+  setTimeout(()=>buildGrid('normalGrid', false), 800);
 </script>
 
 </body>
