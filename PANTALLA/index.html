@@ -206,7 +206,7 @@
           Programa oficial del evento · Club de Robótica Sucre
         </div>
       </div>
-      <div style="text-align:right;margin-bottom:6px;"><span style="font-size:11px;color:#9ca3af;font-family:'DM Mono',monospace;letter-spacing:1px;">Presiona <kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:1px 6px;font-size:10px;color:#374151;">F</kbd> para pantalla completa</span></div>
+      <div id="hintFs" style="text-align:right;margin-bottom:6px;display:none;"><span style="font-size:11px;color:#9ca3af;font-family:'DM Mono',monospace;letter-spacing:1px;">Presiona <kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:1px 6px;font-size:10px;color:#374151;">F</kbd> para pantalla completa</span></div>
       <div id="normalGrid" style="margin-top:8px;"></div>
     </div>
   </div>
@@ -414,6 +414,11 @@
   }
 
   function abrirFS() {
+    const token = localStorage.getItem('sucrebot_staff_token');
+    if (token !== 'SucreBot2026-CMI-Sucre-x7k9mQ') {
+      alert('Acceso restringido. Inicia sesión como staff para usar la pantalla completa.');
+      return;
+    }
     document.getElementById('fsOverlay').classList.add('active');
     buildGrid('fsGrid', true);
     tick();
@@ -433,6 +438,12 @@
   });
 
   setInterval(tick, 1000);
+
+  // Mostrar hint F solo a staff
+  if (localStorage.getItem('sucrebot_staff_token') === 'SucreBot2026-CMI-Sucre-x7k9mQ') {
+    const h = document.getElementById('hintFs');
+    if (h) h.style.display = 'block';
+  }
   setInterval(()=>{
     if(document.getElementById('fsOverlay').classList.contains('active'))
       buildGrid('fsGrid', true);
