@@ -251,7 +251,7 @@
   .fs-center {text-align:center;}
   .fs-place-small {font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#1a5ca8;margin-top:4px;}
   .fs-right {display:flex;align-items:center;gap:16px;}
-  .fs-clock-big {font-family:'DM Mono',monospace;font-size:clamp(20px,2.2vw,30px);font-weight:700;letter-spacing:3px;color:#0e1e3a;background:rgba(26,92,168,0.08);border:2px solid #1a5ca8;padding:8px 18px;border-radius:8px;}
+  .fs-clock-big {font-family:'Orbitron',monospace;font-size:clamp(18px,2vw,28px);font-weight:700;letter-spacing:2px;color:#0e1e3a;background:rgba(26,92,168,0.08);border:2px solid #1a5ca8;padding:8px 18px;border-radius:8px;}
   .fs-body {position:relative;z-index:2;flex:1;overflow:hidden;padding:10px 48px 6px;display:flex;flex-direction:column;min-height:0;}
   .fs-col-hdr {font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#ffffff;padding:6px 10px;border-radius:6px;background:#1a5ca8;border:1px solid #1a5ca8;text-align:center;margin-bottom:6px;}
   .fs-ev {border-radius:6px;padding:8px 12px;position:relative;overflow:hidden;}
@@ -275,7 +275,7 @@
       <div style="width:1px;height:36px;background:rgba(26,92,168,0.2);flex-shrink:0;"></div>
       <div>
         <div class="fs-brand-name">SucreBot 2026</div>
-        <div class="fs-brand-sub">Club de Rob&amp;oacute;tica &middot; Instituto Sucre</div>
+        <div class="fs-brand-sub">Club de Robótica &middot; Instituto Sucre</div>
       </div>
     </div>
     <div class="fs-center">
@@ -293,7 +293,7 @@
   </div>
   <div class="fs-ftr">
     <div class="fs-ftr-url">sucrebotclub-institute.github.io</div>
-    <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:#1a5ca8;letter-spacing:2px;" id="fsClockFtr">00:00:00</div>
+    <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:#1a5ca8;letter-spacing:2px;" id="fsClockFtr">00:00:00</div>
     <div class="fs-ftr-url" id="fsDate"></div>
   </div>
 </div>
@@ -341,7 +341,7 @@
     let sections=[],cur=[];
     allS.forEach(t=>{ const sp=spanEvs.find(e=>e.start===t); if(sp){ if(cur.length){sections.push({type:'cols',rows:cur});cur=[];} sections.push({type:'span',ev:sp}); } else cur.push(t); });
     if(cur.length) sections.push({type:'cols',rows:cur});
-    const gap=compact?'6px':'8px', evPad=compact?'10px 14px':'12px 16px', evFS=compact?'15px':'17px';
+    const gap=compact?'6px':'8px', evPad=compact?'12px 14px':'14px 16px', evFS=compact?'17px':'19px';
     let html=`<div style="display:flex;flex-direction:column;height:100%;min-height:0;">
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
     sections.forEach(sec=>{
@@ -374,7 +374,7 @@
             const st=getState(ev),done='',sp=span>1?`grid-row:${r+1} / span ${span};`:`grid-row:${r+1};`,color=getEvColor(ev.name);
             html+=`<div class="fs-ev" style="grid-column:${c+1};${sp}background:${color};border:2px solid #000;border-radius:8px;padding:${evPad};">
               ${st==='now'?'<div class="now-badge" style="color:rgba(255,255,255,0.9);"><div class="now-dot" style="background:#fff;animation:dotPulse 1.4s ease infinite;"></div>EN CURSO</div>':''}
-              <div style="font-family:DM Mono,monospace;font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);">${ev.start}</div>
+              <div style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);">${ev.start}</div>
               <div style="font-size:${evFS};font-weight:800;color:#fff;margin-top:4px;line-height:1.2;">${ev.name}</div>
               <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:3px;">${ev.end}</div>
             </div>`;
