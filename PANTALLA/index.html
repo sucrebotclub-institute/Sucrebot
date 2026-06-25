@@ -357,11 +357,13 @@
     let html = `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};flex-shrink:0;">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
     html += `<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:${gap};">`;
 
-    sections.forEach(sec=>{
+    sections.forEach((sec,secIdx)=>{
       if(sec.type==='span') {
         const ev=sec.ev, st=getState(ev);
         const sponsorRow = '';
-        html += `<div class="fs-span">
+        const isLastSec = secIdx === sections.length - 1;
+        const spanFlex = (compact && isLastSec) ? 'flex:1;' : '';
+        html += `<div class="fs-span" style="${spanFlex}">
           <div class="fs-span-row">
             <div class="fs-span-time">${ev.start}</div>
             <div class="fs-span-name">${ev.name}</div>
