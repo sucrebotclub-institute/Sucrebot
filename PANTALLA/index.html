@@ -242,7 +242,7 @@
 <!-- FULLSCREEN -->
 <style>
   #fsOverlay {
-    display: none; position: fixed; inset: 0; z-index: 99999; overflow: hidden;
+    display: none; position: fixed; inset: 0; z-index: 99999; overflow: hidden !important;
     background: #0b1535 !important;
     font-family: 'Exo 2', sans-serif;
     color: #ffffff !important;
@@ -255,6 +255,11 @@
   #fsOverlay * { box-sizing: border-box; }
 
   /* particles canvas */
+
+  html:has(#fsOverlay.active), body:has(#fsOverlay.active) { overflow: hidden !important; }
+  #fsOverlay.active { overflow: hidden !important; }
+  #fsOverlay.active * { scrollbar-width: none !important; }
+  #fsOverlay.active *::-webkit-scrollbar { display: none !important; }
   #fsCanvas { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 
   /* header */
@@ -489,28 +494,23 @@
     </div>
     <div class="fs-right">
       <div class="fs-clock-big" id="fsClock">00:00:00</div>
-      <button class="fs-exit-btn" onclick="cerrarFS()">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
-        </svg>
-        SALIR
-      </button>
+
     </div>
   </div>
 
   <div class="fs-body">
     <div class="fs-section-lbl">&#9654; PROGRAMA DEL EVENTO · 16 DE JULIO DE 2026</div>
     <div class="fs-cols" id="fsGrid"></div>
-    <div class="fs-sponsors-inline">
-      <div class="fs-sponsors-lbl-inline">AUSPICIANTES</div>
-      <div class="fs-sponsors-slots-inline">
-        <div class="fs-sponsor-slot-inline">Logo 1</div>
-        <div class="fs-sponsor-slot-inline">Logo 2</div>
-        <div class="fs-sponsor-slot-inline">Logo 3</div>
-        <div class="fs-sponsor-slot-inline">Logo 4</div>
-        <div class="fs-sponsor-slot-inline">Logo 5</div>
-        <div class="fs-sponsor-slot-inline">Logo 6</div>
-        <div class="fs-sponsor-slot-inline">Logo 7</div>
+    <div id="fsSponsors" style="display:flex;align-items:center;gap:14px;padding:10px 0 2px;border-top:1px solid rgba(91,200,240,0.15);margin-top:10px;flex-shrink:0;">
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:3px;color:rgba(91,200,240,0.4);text-transform:uppercase;white-space:nowrap;flex-shrink:0;">AUSPICIANTES</div>
+      <div style="display:flex;align-items:center;gap:10px;flex:1;">
+        <div style="flex:1;height:32px;border-radius:6px;border:1px dashed rgba(91,200,240,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(91,200,240,0.3);font-family:'DM Mono',monospace;">Logo 1</div>
+        <div style="flex:1;height:32px;border-radius:6px;border:1px dashed rgba(91,200,240,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(91,200,240,0.3);font-family:'DM Mono',monospace;">Logo 2</div>
+        <div style="flex:1;height:32px;border-radius:6px;border:1px dashed rgba(91,200,240,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(91,200,240,0.3);font-family:'DM Mono',monospace;">Logo 3</div>
+        <div style="flex:1;height:32px;border-radius:6px;border:1px dashed rgba(91,200,240,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(91,200,240,0.3);font-family:'DM Mono',monospace;">Logo 4</div>
+        <div style="flex:1;height:32px;border-radius:6px;border:1px dashed rgba(91,200,240,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(91,200,240,0.3);font-family:'DM Mono',monospace;">Logo 5</div>
+        <div style="flex:1;height:32px;border-radius:6px;border:1px dashed rgba(91,200,240,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(91,200,240,0.3);font-family:'DM Mono',monospace;">Logo 6</div>
+        <div style="flex:1;height:32px;border-radius:6px;border:1px dashed rgba(91,200,240,0.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(91,200,240,0.3);font-family:'DM Mono',monospace;">Logo 7</div>
       </div>
     </div>
   </div>
