@@ -343,8 +343,10 @@
       const iniciales = (p.robot || p.nombre || '?').slice(0, 2).toUpperCase();
       const m2        = (p.miembro2 && String(p.miembro2).trim() && String(p.miembro2).trim() !== '0')
                         ? String(p.miembro2).trim() : null;
+      const cardColor = CAT_COLOR[p.categoria] || '#1a5ca8';
+      const cardStyle = entregada ? '' : `background:${cardColor};border-color:${cardColor}cc;`;
       return `
-        <div class="p-card ${entregada ? 'entregada' : ''}" id="card-${p.id}" style="${entregada ? '' : 'background:' + (CAT_COLOR[p.categoria] || '#1a5ca8') + ';border-color:' + (CAT_COLOR[p.categoria] || '#1a5ca8') + 'cc;'}">
+        <div class="p-card ${entregada ? 'entregada' : ''}" id="card-${p.id}" style="${cardStyle}">
           <div class="p-avatar">${iniciales}</div>
           <div class="p-info">
             <div class="p-robot">${p.robot || '—'}</div>
