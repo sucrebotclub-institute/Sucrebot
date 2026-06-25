@@ -374,7 +374,9 @@
         </div>`;
       } else {
         const rows=sec.rows, claimed={};
-        html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${rows.length},${rowH});gap:${gap};flex:${compact?1:'none'};min-height:0;">`;
+        const flexVal = compact ? rows.length : 'none';
+        const rowHVal = compact ? '1fr' : rowH;
+        html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${rows.length},${rowHVal});gap:${gap};flex:${flexVal};min-height:0;">`;
         for(let r=0;r<rows.length;r++) {
           const rc=cells[bandKeys.indexOf(rows[r])]||{};
           for(let c=0;c<5;c++) {
