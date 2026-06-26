@@ -21,6 +21,7 @@ const CONFIG = {
     'vandrade@tecnologicosucre.edu.ec',
     'gherrera@tecnologicosucre.edu.ec',
     'msarzosa@tecnologicosucre.edu.ec',
+    'dj.rodriguezmorales1@gmail.com',
     'lmolina@tecnologicosucre.edu.ec'
   ]
 
