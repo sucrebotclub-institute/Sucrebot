@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body { background: #07111e !important; font-family: 'Exo 2', sans-serif; color: #c8d8f0; padding-top: 0 !important; }
     main { padding-top: 120px; min-height: 100vh; background: #07111e; }
@@ -28,6 +29,9 @@
     .btn-refresh { display: inline-flex; align-items: center; gap: 6px; background: #1a5ca8; color: #fff; font-family: 'Orbitron'; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; transition: background .2s; }
     .btn-refresh:hover { background: #1a3a6e; }
     .btn-refresh.loading { opacity: .6; pointer-events: none; }
+    .btn-excel { display: inline-flex; align-items: center; gap: 7px; background: #155c2a; color: #4ade80; font-family: 'Orbitron'; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 10px 20px; border-radius: 8px; border: 1px solid #22c55e44; cursor: pointer; transition: background .2s; }
+    .btn-excel:hover { background: #1a7a38; }
+    .btn-excel:disabled { opacity: .5; pointer-events: none; }
 
     /* ── ACCESO DENEGADO ── */
     .acceso-denegado { background: linear-gradient(135deg,#ff3b3b,#c41e3a); border-radius: 16px; padding: 60px 40px; text-align: center; max-width: 600px; margin: 60px auto; color: #fff; }
@@ -127,6 +131,9 @@
             <button class="btn-refresh" id="btn-refresh" onclick="cargarTodo()">
               🔄 Actualizar
             </button>
+            <button class="btn-excel" id="btn-excel" onclick="exportarExcel()" disabled>
+              📊 Exportar Excel
+            </button>
           </div>
         </div>
 
@@ -156,6 +163,7 @@
   };
 
   let _charts = {};
+  let _globalData = null; // stores last loaded data for Excel export
 
   function gasGet(params) {
     const qs = new URLSearchParams(params).toString();
@@ -201,6 +209,8 @@
       const carr = Array.isArray(certificados)  ? certificados  : [];
 
       renderTodo(parr, carr, jsonVivo || {}, estadoCats || {});
+      _globalData = { parr, carr, json: jsonVivo || {}, estadoCats: estadoCats || {} };
+      document.getElementById('btn-excel').disabled = false;
 
       document.getElementById('txt-actualizado').textContent =
         '📅 Actualizado: ' + new Date().toLocaleTimeString('es-EC');
@@ -697,6 +707,229 @@
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#5a8aaa', font: { family: 'DM Mono', size: 13 } }, beginAtZero: true, grid: { color: '#0d2040' } }, y: { ticks: { color: '#5a8aaa', font: { family: 'Exo 2', size: 13 } }, grid: { color: '#0d2040' } } } }
       });
     }
+  }
+
+  // ════════════════════════════════════════════════════════
+  //  EXPORTAR EXCEL
+  // ════════════════════════════════════════════════════════
+  function exportarExcel() {
+    if (!_globalData) return;
+    const { parr, carr, json, estadoCats } = _globalData;
+    const resultados = json.resultados || {};
+    const bracket    = json.bracket    || {};
+    const soccer     = json.soccer;
+    const rankInst   = json.ranking_instituciones || [];
+
+    const wb = XLSX.utils.book_new();
+    const FECHA = new Date().toLocaleDateString('es-EC');
+    const HORA  = new Date().toLocaleTimeString('es-EC');
+
+    // ── Estilo helpers ──────────────────────────────────────
+    function hdr(v)  { return { v, t:'s', s:{ font:{bold:true,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'1A5CA8'}}, alignment:{horizontal:'center'} } }; }
+    function subhdr(v){ return { v, t:'s', s:{ font:{bold:true,color:{rgb:'1A3A6E'}}, fill:{fgColor:{rgb:'D0E4FF'}}, alignment:{horizontal:'left'} } }; }
+    function num(v)  { return { v: Number(v)||0, t:'n' }; }
+    function pct(v)  { return { v: (Number(v)||0)/100, t:'n', z:'0.0%' }; }
+    function lbl(v)  { return { v: String(v||''), t:'s' }; }
+    function bold(v) { return { v: String(v||''), t:'s', s:{ font:{bold:true} } }; }
+
+    // ── Hoja 1: RESUMEN EJECUTIVO ───────────────────────────
+    const aprobados  = parr.filter(p => p.aprobado === 'APROBADO').length;
+    const enRevision = parr.filter(p => p.aprobado === 'EN REVISION').length;
+    const noCumple   = parr.filter(p => p.aprobado === 'NO CUMPLE').length;
+    const manillas   = parr.filter(p => p.manilla  === 'ENTREGADA').length;
+    const conEquipo  = parr.filter(p => p.miembro2 && String(p.miembro2).trim()).length;
+    const porInst    = {};
+    const porCat     = {};
+    const porCiudad  = {};
+    parr.forEach(p => {
+      const inst = String(p.institucion||'Sin institución').trim();
+      const cat  = p.categoria || 'Sin categoría';
+      const ciu  = String(p.ciudad||'Sin ciudad').trim();
+      porInst[inst]  = (porInst[inst]  || 0) + 1;
+      porCat[cat]    = (porCat[cat]    || 0) + 1;
+      porCiudad[ciu] = (porCiudad[ciu] || 0) + 1;
+    });
+
+    const CATS_CRONO = ['ins','trp_a','trp_p','sl_a','sl_p','cr'];
+    let totalIntentos = 0, totalDNF = 0;
+    CATS_CRONO.forEach(c => {
+      const arr = resultados[c] || [];
+      totalIntentos += arr.length;
+      totalDNF += arr.filter(r => r.tiempo === 'DNF').length;
+    });
+    let bracketJugados = 0, bracketPend = 0;
+    ['ms_a','ms_rc','bat'].forEach(c => {
+      const b = bracket[c];
+      if (!b || !b.fases) return;
+      b.fases.forEach(f => f.partidos.forEach(p => {
+        if (p.tipo === 'BYE') return;
+        p.estado === 'FINALIZADO' ? bracketJugados++ : bracketPend++;
+      }));
+    });
+    let socJugados = 0, socPend = 0;
+    if (soccer && soccer.partidos) soccer.partidos.forEach(p => {
+      if (!p.equipo_a_id) return;
+      p.estado === 'FINALIZADO' ? socJugados++ : socPend++;
+    });
+    const catsFin  = Object.values(estadoCats).filter(v => v.estado === 'finalizada').length;
+    const catsAct  = Object.values(estadoCats).filter(v => v.estado === 'activa').length;
+
+    const wsResumen = XLSX.utils.aoa_to_sheet([
+      [hdr('INFORME DE ESTADÍSTICAS — SUCREBOT 2026')],
+      [lbl('Generado:'), lbl(FECHA + ' ' + HORA)],
+      [],
+      [subhdr('📋 REGISTRO DE PARTICIPANTES')],
+      [bold('Indicador'), bold('Valor'), bold('Detalle')],
+      [lbl('Total inscritos'),      num(parr.length),   lbl('')],
+      [lbl('Aprobados'),            num(aprobados),     pct(parr.length ? aprobados/parr.length : 0)],
+      [lbl('En revisión'),          num(enRevision),    pct(parr.length ? enRevision/parr.length : 0)],
+      [lbl('No cumple'),            num(noCumple),      pct(parr.length ? noCumple/parr.length : 0)],
+      [lbl('Manillas entregadas'),  num(manillas),      lbl(`de ${aprobados} aprobados`)],
+      [lbl('Con subcapitán'),       num(conEquipo),     lbl(`${parr.length - conEquipo} individuales`)],
+      [lbl('Instituciones'),        num(Object.keys(porInst).length),  lbl('')],
+      [lbl('Provincias'),           num(Object.keys(porCiudad).length), lbl('')],
+      [],
+      [subhdr('⚡ EVENTO EN VIVO')],
+      [bold('Indicador'), bold('Valor'), bold('Detalle')],
+      [lbl('Categorías finalizadas'), num(catsFin),     lbl(`de 13`)],
+      [lbl('Categorías en curso'),    num(catsAct),     lbl('')],
+      [lbl('Sin iniciar'),            num(13-catsFin-catsAct), lbl('')],
+      [lbl('Intentos cronómetro'),   num(totalIntentos), lbl('')],
+      [lbl('DNFs'),                  num(totalDNF),      pct(totalIntentos ? totalDNF/totalIntentos : 0)],
+      [lbl('Partidos bracket jugados'), num(bracketJugados), lbl(`${bracketPend} pendientes`)],
+      [lbl('Partidos soccer jugados'),  num(socJugados),     lbl(`${socPend} pendientes`)],
+      [],
+      [subhdr('📜 CERTIFICADOS')],
+      [bold('Indicador'), bold('Valor')],
+      [lbl('Total generados'),   num(carr.length)],
+      [lbl('Con PDF subido'),    num(carr.filter(c => c.archivoUrl && String(c.archivoUrl).trim()).length)],
+      [lbl('Sin PDF'),           num(carr.filter(c => !c.archivoUrl || !String(c.archivoUrl).trim()).length)],
+      [lbl('Ganadores'),         num(carr.filter(c => String(c.tipo_certificado||'').toUpperCase()==='GANADOR').length)],
+      [lbl('Subcampeones'),      num(carr.filter(c => ['SUBCAMPEÓN','SUBCAMPEON'].includes(String(c.tipo_certificado||'').toUpperCase())).length)],
+      [lbl('Tercer lugar'),      num(carr.filter(c => String(c.tipo_certificado||'').toUpperCase()==='TERCER LUGAR').length)],
+      [lbl('Participación'),     num(carr.filter(c => ['PARTICIPACIÓN','PARTICIPACION'].includes(String(c.tipo_certificado||'').toUpperCase())).length)],
+    ]);
+    wsResumen['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:4} }];
+    wsResumen['!cols'] = [{wch:32},{wch:12},{wch:22}];
+    XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
+
+    // ── Hoja 2: PARTICIPANTES ───────────────────────────────
+    const parRows = [[
+      hdr('ID'), hdr('Nombre'), hdr('Robot'), hdr('Categoría'),
+      hdr('Institución'), hdr('Provincia'), hdr('Correo'), hdr('Contacto'),
+      hdr('Subcapitán'), hdr('Estado'), hdr('Manilla'), hdr('Equipo')
+    ]];
+    parr.forEach(p => parRows.push([
+      lbl(p.id), lbl(p.nombre), lbl(p.robot), lbl(p.categoria),
+      lbl(p.institucion), lbl(p.ciudad), lbl(p.correo), lbl(p.contacto),
+      lbl(p.miembro2 || ''), lbl(p.aprobado), lbl(p.manilla || ''), lbl(p.equipo || '')
+    ]));
+    const wsPar = XLSX.utils.aoa_to_sheet(parRows);
+    wsPar['!cols'] = [{wch:20},{wch:22},{wch:22},{wch:24},{wch:36},{wch:16},{wch:28},{wch:16},{wch:22},{wch:14},{wch:12},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, wsPar, 'Participantes');
+
+    // ── Hoja 3: POR CATEGORÍA ──────────────────────────────
+    const catRows = [[ hdr('Categoría'), hdr('Participantes'), hdr('% del total') ]];
+    Object.entries(porCat).sort((a,b)=>b[1]-a[1]).forEach(([c,n]) =>
+      catRows.push([lbl(c), num(n), pct(parr.length ? n/parr.length : 0)])
+    );
+    catRows.push([]);
+    catRows.push([bold('TOTAL'), num(parr.length), pct(1)]);
+    const wsCat = XLSX.utils.aoa_to_sheet(catRows);
+    wsCat['!cols'] = [{wch:30},{wch:18},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsCat, 'Por Categoría');
+
+    // ── Hoja 4: POR INSTITUCIÓN ────────────────────────────
+    const instRows = [[ hdr('#'), hdr('Institución'), hdr('Total'), hdr('Aprobados'), hdr('No aprobados'), hdr('% Aprobación') ]];
+    Object.entries(porInst).sort((a,b)=>b[1]-a[1]).forEach(([inst, n], i) => {
+      const aprobInst = parr.filter(p => String(p.institucion||'').trim()===inst && p.aprobado==='APROBADO').length;
+      instRows.push([num(i+1), lbl(inst), num(n), num(aprobInst), num(n-aprobInst), pct(n ? aprobInst/n : 0)]);
+    });
+    const wsInst = XLSX.utils.aoa_to_sheet(instRows);
+    wsInst['!cols'] = [{wch:6},{wch:40},{wch:10},{wch:14},{wch:16},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsInst, 'Por Institución');
+
+    // ── Hoja 5: POR PROVINCIA ──────────────────────────────
+    const provRows = [[ hdr('Provincia'), hdr('Participantes'), hdr('% del total') ]];
+    Object.entries(porCiudad).sort((a,b)=>b[1]-a[1]).forEach(([c,n]) =>
+      provRows.push([lbl(c), num(n), pct(parr.length ? n/parr.length : 0)])
+    );
+    const wsProv = XLSX.utils.aoa_to_sheet(provRows);
+    wsProv['!cols'] = [{wch:22},{wch:18},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsProv, 'Por Provincia');
+
+    // ── Hoja 6: CERTIFICADOS ───────────────────────────────
+    const certRows = [[
+      hdr('Código'), hdr('Nombre'), hdr('Categoría'), hdr('Institución'),
+      hdr('Tipo'), hdr('Fecha evento'), hdr('Fecha generación'), hdr('PDF')
+    ]];
+    carr.forEach(c => certRows.push([
+      lbl(c.codigo_verificacion), lbl(c.nombre_completo), lbl(c.categoria),
+      lbl(c.institucion), lbl(c.tipo_certificado), lbl(c.fecha_evento),
+      lbl(c.fecha_generacion), lbl(c.archivoUrl ? 'SÍ' : 'NO')
+    ]));
+    const wsCert = XLSX.utils.aoa_to_sheet(certRows);
+    wsCert['!cols'] = [{wch:18},{wch:26},{wch:24},{wch:36},{wch:16},{wch:16},{wch:22},{wch:6}];
+    XLSX.utils.book_append_sheet(wb, wsCert, 'Certificados');
+
+    // ── Hoja 7: RESULTADOS CRONÓMETRO ─────────────────────
+    const CRONO_LABEL = { ins:'Insectos', trp_a:'Trepador Amateur', trp_p:'Trepador Pro', sl_a:'Seguidor Línea Amateur', sl_p:'Seguidor Línea Pro', cr:'Cubo Rubik' };
+    const cronoRows = [[ hdr('Categoría'), hdr('Robot'), hdr('Tiempo'), hdr('Ronda'), hdr('Intento') ]];
+    CATS_CRONO.forEach(cat => {
+      const arr = resultados[cat] || [];
+      arr.forEach(r => cronoRows.push([lbl(CRONO_LABEL[cat]||cat), lbl(r.robot), lbl(r.tiempo), lbl(r.ronda||''), lbl(r.intento||'')]));
+    });
+    const wsCrono = XLSX.utils.aoa_to_sheet(cronoRows);
+    wsCrono['!cols'] = [{wch:24},{wch:24},{wch:12},{wch:10},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, wsCrono, 'Cronómetro');
+
+    // ── Hoja 8: BRACKET COMBATE ───────────────────────────
+    const BRKT_LABEL = { ms_a:'Minisumo Autónomo', ms_rc:'Minisumo RC', bat:'Batalla' };
+    const brkRows = [[ hdr('Categoría'), hdr('Fase'), hdr('Partido ID'), hdr('Equipo A'), hdr('Equipo B'), hdr('Ganador'), hdr('Marcador'), hdr('Estado') ]];
+    ['ms_a','ms_rc','bat'].forEach(cat => {
+      const b = bracket[cat];
+      if (!b || !b.fases) return;
+      b.fases.forEach(f => f.partidos.forEach(p => {
+        if (p.tipo === 'BYE') return;
+        brkRows.push([
+          lbl(BRKT_LABEL[cat]||cat), lbl(f.nombre), lbl(p.partido_id),
+          lbl(p.equipo_a_nombre), lbl(p.equipo_b_nombre),
+          lbl(p.ganador_id === p.equipo_a_id ? p.equipo_a_nombre : p.ganador_id === p.equipo_b_id ? p.equipo_b_nombre : ''),
+          lbl(p.marcador||''), lbl(p.estado)
+        ]);
+      }));
+    });
+    const wsBrkt = XLSX.utils.aoa_to_sheet(brkRows);
+    wsBrkt['!cols'] = [{wch:20},{wch:20},{wch:16},{wch:22},{wch:22},{wch:22},{wch:12},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, wsBrkt, 'Bracket Combate');
+
+    // ── Hoja 9: SOCCER ────────────────────────────────────
+    const socRows = [[ hdr('Grupo'), hdr('Partido ID'), hdr('Equipo A'), hdr('Equipo B'), hdr('Ganador'), hdr('Marcador'), hdr('Estado') ]];
+    if (soccer && soccer.partidos) {
+      soccer.partidos.forEach(p => {
+        if (!p.equipo_a_id) return;
+        socRows.push([
+          lbl(p.grupo), lbl(p.partido_id),
+          lbl(p.equipo_a_nombre), lbl(p.equipo_b_nombre),
+          lbl(p.ganador_id === p.equipo_a_id ? p.equipo_a_nombre : p.ganador_id === p.equipo_b_id ? p.equipo_b_nombre : ''),
+          lbl(p.marcador||''), lbl(p.estado)
+        ]);
+      });
+    }
+    const wsSoc = XLSX.utils.aoa_to_sheet(socRows);
+    wsSoc['!cols'] = [{wch:14},{wch:14},{wch:22},{wch:22},{wch:22},{wch:12},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, wsSoc, 'Soccer');
+
+    // ── Hoja 10: RANKING INSTITUCIONES ────────────────────
+    const rkRows = [[ hdr('#'), hdr('Institución'), hdr('Puntos'), hdr('🥇 Oros'), hdr('🥈 Platas'), hdr('🥉 Bronces') ]];
+    rankInst.forEach((r, i) => rkRows.push([num(i+1), lbl(r.institucion), num(r.puntos), num(r.oros), num(r.platas), num(r.bronces)]));
+    const wsRk = XLSX.utils.aoa_to_sheet(rkRows);
+    wsRk['!cols'] = [{wch:6},{wch:40},{wch:10},{wch:10},{wch:10},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, wsRk, 'Ranking Instituciones');
+
+    // ── Descargar ──────────────────────────────────────────
+    const fechaFile = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `SucreBot2026_Estadisticas_${fechaFile}.xlsx`);
   }
   </script>
 </body>
