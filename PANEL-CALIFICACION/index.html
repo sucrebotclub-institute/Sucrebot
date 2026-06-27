@@ -545,6 +545,7 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="irACalificar()">← Volver a Calificar</button>
           <button class="btn btn-primary btn-sm" onclick="exportarExcel()">📊 Exportar CSV</button>
+          <button class="btn btn-green btn-sm" id="btnTop3Ranking" style="display:none" onclick="irASeleccionarFinalistas()">🏆 Seleccionar TOP 3 Finalistas →</button>
           <button class="btn btn-green btn-sm" onclick="guardarPodio()">🏆 Guardar Podio</button>
           <button class="btn btn-terminar btn-sm" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
         </div>
@@ -1405,6 +1406,11 @@ function cerrarClasificados() { document.getElementById('lkFase2Panel').classLis
 // ── RANKING ───────────────────────────────────────────────────
 function irARanking()  { cargarRanking(); setStep(4); }
 function irACalificar() { setStep(3); }
+function irASeleccionarFinalistas() {
+  setStep(3);
+  // Abrir panel de selección de finalistas directamente
+  setTimeout(() => abrirClasificados(), 100);
+}
 
 function volverAConfigurar() {
   confirmar('⚙️','VOLVER A CONFIGURAR','Volverás al paso 1.','Volver','danger', () => {
@@ -1488,6 +1494,9 @@ async function cargarRanking() {
   const maxScore = state.rankingData[0]?.total || 1;
   document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[cat]}`;
   document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados`;
+  // Mostrar botón TOP 3 solo para bai y solo si aún no se han elegido finalistas
+  const btnTop3 = document.getElementById('btnTop3Ranking');
+  if (btnTop3) btnTop3.style.display = (cat === 'bai' && state.baiFase === 1) ? 'inline-flex' : 'none';
 
   const tbody = document.getElementById('rankingTbody');
   tbody.innerHTML = '';
