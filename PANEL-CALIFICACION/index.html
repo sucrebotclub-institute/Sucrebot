@@ -1309,13 +1309,22 @@ function siguienteRobot() {
   const cat  = state.categoria;
   const esLk = cat === 'lk';
   const esBai = cat === 'bai';
+  const esDev = cat === 'dev';
   let pendientes;
-  if (esLk && state.lkFase === 2)
+  if (esDev) {
+    // Para dev: pendiente = este juez específico no ha calificado aún
+    const juezActual = DEV_JUECES[state.devJuezIdx];
+    pendientes = state.participantes.filter(p => {
+      const jueces = state.calificaciones[p.id]?.jueces || [];
+      return !jueces.some(j => j.email === juezActual.email);
+    });
+  } else if (esLk && state.lkFase === 2) {
     pendientes = state.participantes.filter(p => state.lkClasificados.includes(p.id) && !state.calificaciones[p.id]?.fase2);
-  else if (esBai && state.baiFase === 2)
+  } else if (esBai && state.baiFase === 2) {
     pendientes = state.participantes.filter(p => state.baiFinalistas.includes(p.id) && !state.calificaciones[p.id]?.fase2);
-  else
+  } else {
     pendientes = state.participantes.filter(p => !state.calificaciones[p.id]?.guardado);
+  }
   const idx = pendientes.findIndex(p => p.id === state.selectedId);
   const sig = pendientes[idx + 1] || pendientes[0];
   if (sig) seleccionarRobot(sig.id);
