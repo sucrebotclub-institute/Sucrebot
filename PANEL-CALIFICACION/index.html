@@ -256,6 +256,20 @@
       .criterio-input-wrap { justify-content: flex-start; }
       .form-cal-header { flex-direction: column; }
     }
+
+    /* ── PRESENTES ── */
+    .presentes-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .presentes-counts { font-family: 'DM Mono'; font-size: .78rem; color: var(--text-dim); margin-top: 4px; }
+    .presentes-counts span { color: var(--cyan); font-weight: 600; }
+    .presentes-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+    .presentes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 24px; }
+    .presente-item { display: flex; align-items: center; gap: 12px; background: var(--panel-bg2); border: 1.5px solid var(--panel-border); border-radius: 10px; padding: 12px 16px; cursor: pointer; transition: all .2s; user-select: none; }
+    .presente-item:hover { border-color: var(--panel-border2); background: rgba(91,200,240,0.05); }
+    .presente-item.checked { border-color: var(--green); background: rgba(46,204,113,0.08); }
+    .presente-check { width: 22px; height: 22px; border-radius: 5px; border: 2px solid var(--panel-border2); background: var(--panel-bg3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .85rem; transition: all .2s; color: #fff; font-weight: 700; }
+    .presente-item.checked .presente-check { background: var(--green); border-color: var(--green); }
+    .presente-nombre { font-weight: 600; font-size: .9rem; color: var(--text-main); }
+    .presente-sub { font-size: .72rem; color: var(--text-dim); margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -300,8 +314,9 @@
 
 <div class="stepper-wrap">
   <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
-  <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Calificar</div></div>
-  <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label">Ranking</div></div>
+  <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Presentes</div></div>
+  <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label">Calificar</div></div>
+  <div class="step-item" id="step-dot-4"><div class="step-dot">4</div><div class="step-label">Ranking</div></div>
 </div>
 
 <div class="panel-wrap">
@@ -388,8 +403,29 @@
     </div>
   </div>
 
-  <!-- ══ PASO 2 ══ -->
+  <!-- ══ PASO 2: PRESENTES ══ -->
   <div class="step-panel" id="panel-2">
+    <div class="panel-card">
+      <div class="presentes-header">
+        <div>
+          <div class="panel-card-title" id="presentesTitulo">Robots Presentes</div>
+          <div class="presentes-counts">Total: <span id="presTotal">0</span> · Seleccionados: <span id="presCount">0</span></div>
+        </div>
+        <div class="presentes-acciones">
+          <button class="btn btn-outline btn-sm" onclick="presentesTodos()">Todos</button>
+          <button class="btn btn-outline btn-sm" onclick="presentesNinguno()">Ninguno</button>
+          <button class="btn btn-outline btn-sm" onclick="volverPaso1Cal()">← Volver</button>
+        </div>
+      </div>
+      <div class="presentes-grid" id="presentesGrid"></div>
+      <div class="btn-row" style="justify-content:flex-end">
+        <button class="btn btn-green" id="btnIniciarCalPresentes" disabled onclick="iniciarCalificacionConPresentes()">Iniciar Calificación →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PASO 3: CALIFICAR ══ -->
+  <div class="step-panel" id="panel-3">
 
     <!-- Barra selector de juez para dev -->
     <div id="devJuezBar" style="display:none;align-items:center;gap:10px;background:var(--panel-bg2);border:1px solid var(--panel-border2);border-radius:12px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;">
@@ -498,8 +534,8 @@
     </div>
   </div>
 
-  <!-- ══ PASO 3 ══ -->
-  <div class="step-panel" id="panel-3">
+  <!-- ══ PASO 4: RANKING ══ -->
+  <div class="step-panel" id="panel-4">
     <div class="panel-card">
       <div class="ranking-header">
         <div>
@@ -606,7 +642,8 @@ let state = {
   selectedId: null, rondaActual: {}, rankingData: [],
   lkFase: 1, lkClasificados: [],
   baiFase: 1, baiFinalistas: [],
-  devJuezIdx: 0,   // índice del juez activo en dev (0=Juez1, 1=Juez2, 2=Juez3)
+  devJuezIdx: 0,
+  presentes: new Set(),   // IDs de participantes presentes ese día
 };
 
 // ── CRONÓMETRO LK ─────────────────────────────────────────────
@@ -663,7 +700,7 @@ let toastTimer;
 function toast(msg, type='info') { const el = document.getElementById('toast'); el.textContent = msg; el.className = `show ${type}`; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3500); }
 function setStep(n) {
   state.step = n;
-  [1,2,3].forEach(i => {
+  [1,2,3,4].forEach(i => {
     document.getElementById(`step-dot-${i}`).className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
     document.getElementById(`panel-${i}`).className = 'step-panel' + (i === n ? ' active' : '');
   });
@@ -710,6 +747,7 @@ async function seleccionarCategoria(cat) {
     state.lkFase = 1; state.lkClasificados = [];
     state.baiFase = 1; state.baiFinalistas = [];
     state.devJuezIdx = 0;
+    state.presentes = new Set();
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
@@ -811,8 +849,17 @@ async function iniciarCalificacion() {
   }
 
   gasPost({ action: 'guardarCriterios', categoria: cat, criterios: state.criterios }).catch(() => {});
-
   localStorage.setItem('panel_cal_sesion', JSON.stringify({ categoria: cat, criterios: state.criterios, paso: 2 }));
+
+  // Ir al paso 2: selección de presentes
+  buildPasoPresentes();
+  setStep(2);
+}
+
+async function iniciarCalificacionConPresentes() {
+  const cat = state.categoria;
+  // Filtrar participantes a solo los presentes seleccionados
+  state.participantes = state.participantes.filter(p => state.presentes.has(p.id));
 
   loading(true, 'INICIANDO CALIFICACIÓN...');
   try {
@@ -851,12 +898,61 @@ async function iniciarCalificacion() {
   } catch(e) {}
   loading(false);
 
-  buildPaso2();
-  setStep(2);
+  buildPaso3();
+  setStep(3);
 }
 
-// ── PASO 2 ────────────────────────────────────────────────────
-function buildPaso2() {
+// ── PASO 2: PRESENTES ─────────────────────────────────────────
+function buildPasoPresentes() {
+  const cat = state.categoria;
+  const nombre = { bai: 'Bailarín', dev: 'Impacto Tecnológico', lk: 'Lego Kids' }[cat] || cat;
+  document.getElementById('presentesTitulo').textContent = `Robots Presentes — ${nombre}`;
+  document.getElementById('presTotal').textContent = state.participantes.length;
+  // Por defecto todos seleccionados
+  state.presentes = new Set(state.participantes.map(p => p.id));
+  renderPresentes();
+}
+
+function renderPresentes() {
+  const grid = document.getElementById('presentesGrid');
+  grid.innerHTML = '';
+  state.participantes.forEach(p => {
+    const checked = state.presentes.has(p.id);
+    const div = document.createElement('div');
+    div.className = 'presente-item' + (checked ? ' checked' : '');
+    div.dataset.id = p.id;
+    div.onclick = () => togglePresente(p.id, div);
+    div.innerHTML = `
+      <div class="presente-check">${checked ? '✓' : ''}</div>
+      <div>
+        <div class="presente-nombre">${p.robot || p.nombre}</div>
+        <div class="presente-sub">${p.nombre}${p.miembro2 ? ' · ' + p.miembro2 : ''} — ${p.institucion || '—'}</div>
+      </div>`;
+    grid.appendChild(div);
+  });
+  actualizarContadorPresentes();
+}
+
+function togglePresente(id, el) {
+  if (state.presentes.has(id)) state.presentes.delete(id);
+  else state.presentes.add(id);
+  el.classList.toggle('checked', state.presentes.has(id));
+  el.querySelector('.presente-check').textContent = state.presentes.has(id) ? '✓' : '';
+  actualizarContadorPresentes();
+}
+
+function actualizarContadorPresentes() {
+  const n = state.presentes.size;
+  document.getElementById('presCount').textContent = n;
+  document.getElementById('btnIniciarCalPresentes').disabled = n < 1;
+}
+
+function presentesTodos()   { state.participantes.forEach(p => state.presentes.add(p.id)); renderPresentes(); }
+function presentesNinguno() { state.presentes.clear(); renderPresentes(); }
+function volverPaso1Cal()   { setStep(1); }
+
+// ── PASO 3: CALIFICAR ─────────────────────────────────────────
+function buildPaso3() {
   const cat = state.categoria;
   document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[cat];
   const esLk = cat === 'lk';
@@ -1251,13 +1347,14 @@ function confirmarClasificados() {
 function cerrarClasificados() { document.getElementById('lkFase2Panel').classList.remove('show'); document.getElementById('emptyFormState').style.display = 'block'; }
 
 // ── RANKING ───────────────────────────────────────────────────
-function irARanking()  { cargarRanking(); setStep(3); }
-function irACalificar() { setStep(2); }
+function irARanking()  { cargarRanking(); setStep(4); }
+function irACalificar() { setStep(3); }
 
 function volverAConfigurar() {
   confirmar('⚙️','VOLVER A CONFIGURAR','Volverás al paso 1.','Volver','danger', () => {
     ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === state.categoria));
     document.getElementById('lkNota').classList.toggle('show', state.categoria === 'lk');
+    document.getElementById('devNota').classList.toggle('show', state.categoria === 'dev');
     document.getElementById('configuracionPanel').classList.add('show');
     document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
     document.getElementById('btnIniciarCal').disabled = false;
@@ -1290,6 +1387,7 @@ function terminarCategoria() {
       state.lkFase = 1; state.lkClasificados = [];
       state.baiFase = 1; state.baiFinalistas = [];
       state.devJuezIdx = 0;
+      state.presentes = new Set();
 
       ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
       document.getElementById('lkNota').classList.remove('show');
@@ -1399,7 +1497,7 @@ async function verRankingDesdePaso1() {
     state.criterios = cat === 'lk' ? [...LK_CRITERIOS_F1] : (cat === 'bai' ? BAI_CRITERIOS : DEFAULTS_CRITERIOS[cat]);
   }
   await cargarRanking();
-  setStep(3);
+  setStep(4);
 }
 
 async function guardarPodio() {
