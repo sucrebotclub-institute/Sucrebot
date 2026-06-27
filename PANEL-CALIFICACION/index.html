@@ -644,6 +644,7 @@ let state = {
   baiFase: 1, baiFinalistas: [],
   devJuezIdx: 0,
   presentes: new Set(),   // IDs de participantes presentes ese día
+  calificacionesPorJuez: {},  // notas por (participante, juez) para dev
 };
 
 // ── CRONÓMETRO LK ─────────────────────────────────────────────
@@ -748,6 +749,7 @@ async function seleccionarCategoria(cat) {
     state.baiFase = 1; state.baiFinalistas = [];
     state.devJuezIdx = 0;
     state.presentes = new Set();
+    state.calificacionesPorJuez = {};
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
@@ -893,9 +895,17 @@ async function iniciarCalificacionConPresentes() {
     if (cat === 'bai' && state.baiFinalistas.length) state.baiFase = 2;
     // Para dev: reconstruir info de jueces por participante
     if (cat === 'dev') {
-      Object.keys(state.calificaciones).forEach(pid => {
-        const puns = (res.puntuaciones || []).filter(p => p.id_participante === pid);
-        state.calificaciones[pid].jueces = puns.map(p => ({ email: p.juez_email, nombre: p.juez_nombre, total: p.total }));
+      state.calificacionesPorJuez = {};
+      (res.puntuaciones || []).forEach(p => {
+        const pid = p.id_participante;
+        state.calificaciones[pid] = state.calificaciones[pid] || { guardado: true, jueces: [] };
+        state.calificaciones[pid].jueces = state.calificaciones[pid].jueces || [];
+        const jIdx = state.calificaciones[pid].jueces.findIndex(j => j.email === p.juez_email);
+        if (jIdx >= 0) state.calificaciones[pid].jueces[jIdx] = { email: p.juez_email, nombre: p.juez_nombre, total: p.total };
+        else state.calificaciones[pid].jueces.push({ email: p.juez_email, nombre: p.juez_nombre, total: p.total });
+        if (!state.calificacionesPorJuez[pid]) state.calificacionesPorJuez[pid] = {};
+        const notasObj = p.notas || {};
+        state.calificacionesPorJuez[pid][p.juez_email] = { notas_json: JSON.stringify(notasObj), total: p.total };
       });
     }
   } catch(e) {}
@@ -1085,7 +1095,15 @@ function seleccionarRobot(id) {
   const criteriosCal = document.getElementById('criteriosCal');
   criteriosCal.innerHTML = '';
   let notasGuardadas = {};
-  if (cal?.notas_json) { try { notasGuardadas = JSON.parse(cal.notas_json); } catch(e){} }
+  const esDev = cat === 'dev';
+  if (esDev) {
+    // Para dev: cargar notas del juez activo específico
+    const juezActivo = DEV_JUECES[state.devJuezIdx];
+    const calJuez = (state.calificacionesPorJuez?.[id] || {})[juezActivo.email];
+    if (calJuez?.notas_json) { try { notasGuardadas = JSON.parse(calJuez.notas_json); } catch(e){} }
+  } else if (cal?.notas_json) {
+    try { notasGuardadas = JSON.parse(cal.notas_json); } catch(e){}
+  }
 
   criteriosActivos.forEach((c, i) => {
     // lk: criterio F2 especial
@@ -1272,6 +1290,12 @@ async function guardarCalificacion() {
         fase2: (esLk || esBai) ? (faseActual === 2) : false,
         jueces: juecesAcum
       };
+      // Para dev: guardar notas por juez para cargar correctamente al cambiar juez
+      if (esDev) {
+        if (!state.calificacionesPorJuez) state.calificacionesPorJuez = {};
+        if (!state.calificacionesPorJuez[id]) state.calificacionesPorJuez[id] = {};
+        state.calificacionesPorJuez[id][juezEmail] = { notas_json: JSON.stringify(notasJson), total: totalFinal };
+      }
       state.rondaActual[id] = ronda + 1;
       toast('✅ Calificación guardada', 'success');
       renderListaRobots();
@@ -1396,6 +1420,7 @@ function terminarCategoria() {
       state.baiFase = 1; state.baiFinalistas = [];
       state.devJuezIdx = 0;
       state.presentes = new Set();
+      state.calificacionesPorJuez = {};
 
       ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
       document.getElementById('lkNota').classList.remove('show');
