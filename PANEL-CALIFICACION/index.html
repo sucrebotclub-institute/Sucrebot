@@ -1217,10 +1217,17 @@ function renderListaRobots() {
     visibles = state.participantes.filter(p => state.baiFinalistas.includes(p.id));
 
   const total = visibles.length;
-  const calificados = Object.values(state.calificaciones).filter(c => c?.guardado).length;
+  const _cat = state.categoria;
+  const _esLkF2 = _cat === 'lk' && state.lkFase === 2;
+  const calificados = _esLkF2
+    ? state.lkClasificados.filter(id => state.calificaciones[id]?.fase2).length
+    : esMultiJuez(_cat)
+      ? Object.values(state.calificaciones).filter(c => (c?.jueces||[]).some(j => j.email === getJuezActivo(_cat)?.email)).length
+      : Object.values(state.calificaciones).filter(c => c?.guardado).length;
+  const _progTotal = _esLkF2 ? state.lkClasificados.length : state.participantes.length;
   document.getElementById('progCal').textContent = calificados;
-  document.getElementById('progTotal').textContent = state.participantes.length;
-  document.getElementById('progBar').style.width = state.participantes.length ? `${(calificados/state.participantes.length)*100}%` : '0%';
+  document.getElementById('progTotal').textContent = _progTotal;
+  document.getElementById('progBar').style.width = _progTotal ? `${(calificados/_progTotal)*100}%` : '0%';
   document.getElementById('countCalificados').textContent = calificados;
 
   if (!visibles.length) {
@@ -1232,9 +1239,12 @@ function renderListaRobots() {
     const esMulti = esMultiJuez(state.categoria);
     const juezActual = esMulti ? getJuezActivo(state.categoria) : null;
     // Para dev/bai: calificado = este juez específico ya guardó
-    const esCal = esMulti
-      ? (cal?.jueces || []).some(j => j.email === juezActual?.email)
-      : cal?.guardado;
+    const _lkF2 = state.categoria === 'lk' && state.lkFase === 2;
+    const esCal = _lkF2
+      ? cal?.fase2
+      : esMulti
+        ? (cal?.jueces || []).some(j => j.email === juezActual?.email)
+        : cal?.guardado;
     const esFase2 = cal?.fase2;
     const isSelected = state.selectedId === p.id;
     const div = document.createElement('div');
@@ -1548,14 +1558,14 @@ function siguienteRobot() {
   const esBai = cat === 'bai';
   const esDev = cat === 'dev';
   let pendientes;
-  if (esMultiJuez(cat)) {
+  if (esLk && state.lkFase === 2) {
+    pendientes = state.participantes.filter(p => state.lkClasificados.includes(p.id) && !state.calificaciones[p.id]?.fase2);
+  } else if (esMultiJuez(cat)) {
     const juezActual = getJuezActivo(cat);
     pendientes = state.participantes.filter(p => {
       const jueces = state.calificaciones[p.id]?.jueces || [];
       return !jueces.some(j => j.email === juezActual.email);
     });
-  } else if (esLk && state.lkFase === 2) {
-    pendientes = state.participantes.filter(p => state.lkClasificados.includes(p.id) && !state.calificaciones[p.id]?.fase2);
   } else if (esBai && state.baiFase === 2) {
     pendientes = state.participantes.filter(p => state.baiFinalistas.includes(p.id) && !state.calificaciones[p.id]?.fase2);
   } else {
