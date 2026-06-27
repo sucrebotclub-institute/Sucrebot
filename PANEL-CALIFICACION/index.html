@@ -1189,6 +1189,9 @@ function buildPaso3() {
   document.getElementById('lkCronometroBar').classList.toggle('show', esLk);
   document.getElementById('lkFase2Trigger').style.display = esLk ? 'block' : 'none';
   document.getElementById('juezBar').style.display = esMultiJuez(cat) ? 'flex' : 'none';
+  const juecesN = getJueces(cat) ? getJueces(cat).length : 3;
+  const btn2 = document.getElementById('btnJuez2');
+  if (btn2) btn2.style.display = juecesN >= 3 ? '' : 'none';
   if (esMultiJuez(cat)) renderJuezBar();
 
   // Actualizar label del trigger según categoría
