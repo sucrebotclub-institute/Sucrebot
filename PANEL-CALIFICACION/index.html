@@ -1866,6 +1866,17 @@ async function guardarPodio() {
     async () => {
       loading(true, 'GUARDANDO COMPETIDORES...');
       const TIPOS_PODIO = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
+
+      // Guardar podio manual (TOP 3) para que publicarJSON lo use como respaldo permanente
+      const posicionesPodio = state.rankingData.slice(0, 3).map((r, i) => ({
+        posicion: i + 1,
+        equipo_id: r.id,
+        equipo_nombre: r.robot || r.nombre
+      }));
+      try {
+        await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones: posicionesPodio });
+      } catch(e) { console.warn('guardarPodioManual error:', e); }
+
       for (let i = 0; i < state.rankingData.length; i++) {
         const r = state.rankingData[i];
         const p = state.participantes.find(x => x.id === r.id) || {};
