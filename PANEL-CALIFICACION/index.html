@@ -1834,7 +1834,7 @@ async function exportarExcel() {
         if (!puntuacionesPorParticipante[p.id_participante])
           puntuacionesPorParticipante[p.id_participante] = {};
         let notas = {};
-        try { notas = JSON.parse(p.criterios); } catch(e) {}
+        notas = p.notas || {};
         puntuacionesPorParticipante[p.id_participante][p.juez_email] = { total: p.total, notas };
       });
     } catch(e) { console.warn('No se pudieron cargar puntuaciones GAS', e); }
