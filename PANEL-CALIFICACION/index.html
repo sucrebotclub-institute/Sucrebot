@@ -156,6 +156,8 @@
     .criterio-input-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
     .criterio-nota-input { width: 72px; text-align: center; background: var(--panel-bg2); border: 1.5px solid var(--panel-border2); border-radius: 8px; padding: 8px 6px; color: var(--text-main); font-family: 'Orbitron'; font-size: 1.1rem; font-weight: 700; outline: none; transition: border-color .2s; }
     .criterio-nota-input:focus { border-color: var(--cyan); }
+    .criterio-nota-input-final { width: 72px; text-align: center; background: var(--panel-bg2); border: 1.5px solid rgba(124,58,237,0.4); border-radius: 8px; padding: 8px 6px; color: var(--text-main); font-family: 'Orbitron'; font-size: 1.1rem; font-weight: 700; outline: none; transition: border-color .2s; }
+    .criterio-nota-input-final:focus { border-color: #a78bfa; }
     .criterio-max { font-family: 'DM Mono'; font-size: .7rem; color: var(--text-dim); }
 
     .total-box { display: flex; align-items: center; justify-content: space-between; background: var(--panel-bg2); border: 1px solid var(--panel-border2); border-radius: 10px; padding: 14px 20px; margin-bottom: 16px; }
@@ -312,11 +314,13 @@
   <p class="pc-hero-sub">Evaluación por criterios · Bailarín · Impacto Tecnológico · Lego Kids</p>
 </div>
 
-<div class="stepper-wrap">
+<div class="stepper-wrap" id="stepperWrap">
   <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
   <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Presentes</div></div>
-  <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label">Calificar</div></div>
-  <div class="step-item" id="step-dot-4"><div class="step-dot">4</div><div class="step-label">Ranking</div></div>
+  <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label" id="label-dot-3">Calificar</div></div>
+  <div class="step-item" id="step-dot-4"><div class="step-dot">4</div><div class="step-label" id="label-dot-4">Ranking</div></div>
+  <div class="step-item" id="step-dot-5" style="display:none"><div class="step-dot">5</div><div class="step-label">Final</div></div>
+  <div class="step-item" id="step-dot-6" style="display:none"><div class="step-dot">6</div><div class="step-label">Ranking Final</div></div>
 </div>
 
 <div class="panel-wrap">
@@ -534,6 +538,103 @@
     </div>
   </div>
 
+  <!-- ══ PASO 5: CALIFICAR FINAL (bai) ══ -->
+  <div class="step-panel" id="panel-5">
+    <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px 20px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:1.2rem">🏆</span>
+      <div>
+        <div style="font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:#a78bfa;text-transform:uppercase">Ronda Final — Bailarín</div>
+        <div style="font-size:.8rem;color:var(--text-dim);margin-top:2px">Solo los 3 finalistas seleccionados. Mismos criterios, 100 pts.</div>
+      </div>
+    </div>
+    <!-- Barra juez para fase final -->
+    <div id="juezBarFinal" style="display:none;align-items:center;gap:10px;background:var(--panel-bg2);border:1px solid var(--panel-border2);border-radius:12px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;">
+      <span style="font-family:'Orbitron';font-size:.6rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;white-space:nowrap;">👤 Juez activo:</span>
+      <button id="btnJuezF0" onclick="cambiarJuez(0)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
+      <button id="btnJuezF1" onclick="cambiarJuez(1)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
+      <button id="btnJuezF2" onclick="cambiarJuez(2)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
+    </div>
+    <div class="calificar-split">
+      <div class="lista-robots">
+        <div class="lista-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div class="lista-header-title">FINALISTAS</div>
+            <button class="btn btn-outline btn-sm" onclick="setStep(4)" style="padding:4px 10px;font-size:.55rem">← Ranking</button>
+          </div>
+          <div class="lista-progress"><span id="progCalFinal">0</span> / <span id="progTotalFinal">0</span> calificados</div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progBarFinal" style="width:0%"></div></div>
+          <div style="margin-top:10px">
+            <button class="btn btn-ranking btn-sm" style="width:100%;justify-content:center" onclick="irARankingFinal()">📊 Ver Ranking Final →</button>
+          </div>
+        </div>
+        <div class="robots-list" id="robotsListFinal"></div>
+      </div>
+      <div>
+        <div class="panel-card" id="emptyFormStateFinal">
+          <div class="empty-state"><div class="empty-state-icon">👈</div><p>Selecciona un finalista para calificar la ronda final.</p></div>
+        </div>
+        <div class="form-cal" id="formCalFinal" style="display:none">
+          <div class="form-cal-header">
+            <div>
+              <div class="form-cal-robot" id="calFinalRobotNombre">—</div>
+              <div class="form-cal-inst" id="calFinalRobotInst">—</div>
+              <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div class="form-cal-id" id="calFinalRobotId">—</div>
+                <div class="fase-badge fase-2">🏆 Ronda Final</div>
+                <div class="fase-badge fase-1" id="calFinalJuezBadge" style="display:none">Juez</div>
+              </div>
+            </div>
+            <div style="text-align:right"><div id="calFinalEstadoBadge"></div></div>
+          </div>
+          <div class="criterios-cal" id="criteriosCalFinal"></div>
+          <div class="total-box">
+            <div><div class="total-label">Total Final</div><div class="total-de" id="totalDeFinal">/ 100</div></div>
+            <div class="total-valor" id="totalValorFinal">0</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notas adicionales (opcional)</label>
+            <textarea class="form-control" id="calNotasFinal" rows="2" placeholder="Observaciones del jurado..."></textarea>
+          </div>
+          <div class="btn-row" style="justify-content:space-between">
+            <button class="btn btn-ranking btn-sm" onclick="irARankingFinal()">📊 Ver Ranking Final</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-violet btn-sm" onclick="siguienteRobotFinal()">→ Siguiente</button>
+              <button class="btn btn-green" onclick="guardarCalificacionFinal()">💾 Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PASO 6: RANKING FINAL (bai) ══ -->
+  <div class="step-panel" id="panel-6">
+    <div class="panel-card">
+      <div class="ranking-header">
+        <div>
+          <div class="ranking-title" style="color:#a78bfa">🏆 RANKING FINAL — BAILARÍN</div>
+          <div style="font-family:'DM Mono';font-size:.75rem;color:var(--text-dim)" id="rankingStatsFinal">—</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="setStep(5)">← Volver a Final</button>
+          <button class="btn btn-primary btn-sm" onclick="exportarExcelFinal()">📊 Exportar CSV</button>
+          <button class="btn btn-green btn-sm" onclick="guardarPodioFinal()">🏆 Guardar Podio Final</button>
+          <button class="btn btn-terminar btn-sm" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="ranking-table">
+          <thead>
+            <tr><th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th><th>Eliminatoria</th><th>J1 / J2 / J3 Final</th><th>TOTAL FINAL</th><th>ESTADO</th></tr>
+          </thead>
+          <tbody id="rankingTbodyFinal">
+            <tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">🏆</div><p>Aún no hay calificaciones de la ronda final.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ PASO 4: RANKING ══ -->
   <div class="step-panel" id="panel-4">
     <div class="panel-card">
@@ -545,7 +646,7 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="irACalificar()">← Volver a Calificar</button>
           <button class="btn btn-primary btn-sm" onclick="exportarExcel()">📊 Exportar CSV</button>
-          <button class="btn btn-green btn-sm" id="btnTop3Ranking" style="display:none" onclick="irASeleccionarFinalistas()">🏆 Seleccionar TOP 3 Finalistas →</button>
+          <button class="btn btn-green btn-sm" id="btnTop3Ranking" style="display:none" onclick="abrirSelectorFinalistas()">🏆 Seleccionar TOP 3 Finalistas →</button>
           <button class="btn btn-green btn-sm" onclick="guardarPodio()">🏆 Guardar Podio</button>
           <button class="btn btn-terminar btn-sm" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
         </div>
@@ -654,6 +755,9 @@ let state = {
   baiJuezIdx: 0,
   presentes: new Set(),   // IDs de participantes presentes ese día
   calificacionesPorJuez: {},  // notas por (participante, juez) para dev/bai
+  calificacionesFinal: {},       // calificaciones ronda final bai
+  calificacionesFinalPorJuez: {}, // notas final por juez bai
+  selectedFinalId: null,
 };
 
 // ── CRONÓMETRO LK ─────────────────────────────────────────────
@@ -710,6 +814,19 @@ let toastTimer;
 function toast(msg, type='info') { const el = document.getElementById('toast'); el.textContent = msg; el.className = `show ${type}`; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3500); }
 function setStep(n) {
   state.step = n;
+  const totalSteps = state.categoria === 'bai' ? 6 : 4;
+  // Mostrar/ocultar pasos 5 y 6 según categoría
+  [5, 6].forEach(i => {
+    const dot = document.getElementById(`step-dot-${i}`);
+    if (dot) dot.style.display = state.categoria === 'bai' ? '' : 'none';
+    const panel = document.getElementById(`panel-${i}`);
+    if (panel) panel.className = 'step-panel' + (i === n ? ' active' : '');
+  });
+  // Actualizar labels de paso 3 y 4 según categoría
+  const label3 = document.getElementById('label-dot-3');
+  const label4 = document.getElementById('label-dot-4');
+  if (label3) label3.textContent = state.categoria === 'bai' ? 'Eliminatoria' : 'Calificar';
+  if (label4) label4.textContent = state.categoria === 'bai' ? 'Rk. Eliminatoria' : 'Ranking';
   [1,2,3,4].forEach(i => {
     document.getElementById(`step-dot-${i}`).className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
     document.getElementById(`panel-${i}`).className = 'step-panel' + (i === n ? ' active' : '');
@@ -767,6 +884,9 @@ async function seleccionarCategoria(cat) {
     state.baiJuezIdx = 0;
     state.presentes = new Set();
     state.calificacionesPorJuez = {};
+    state.calificacionesFinal = {};
+    state.calificacionesFinalPorJuez = {};
+    state.selectedFinalId = null;
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
@@ -1407,10 +1527,52 @@ function cerrarClasificados() { document.getElementById('lkFase2Panel').classLis
 function irARanking()  { cargarRanking(); setStep(4); }
 function irACalificar() { setStep(3); }
 function irASeleccionarFinalistas() {
-  setStep(3);
-  // Abrir panel de selección de finalistas directamente
-  setTimeout(() => abrirClasificados(), 100);
+  // Seleccionar finalistas y pasar a paso 5
+  abrirSelectorFinalistas();
 }
+
+function abrirSelectorFinalistas() {
+  // Mostrar modal de selección de finalistas sobre ranking
+  const ordenados = [...state.participantes]
+    .map(p => ({ ...p, fase1: state.calificaciones[p.id]?.fase1Total || state.calificaciones[p.id]?.total || 0 }))
+    .sort((a, b) => b.fase1 - a.fase1);
+  const actuales = state.baiFinalistas;
+  const grid = document.getElementById('clasificadosGrid');
+  grid.innerHTML = '';
+  ordenados.forEach(p => {
+    const checked = actuales.includes(p.id);
+    const div = document.createElement('div');
+    div.className = 'clasificado-item' + (checked ? ' checked' : '');
+    div.dataset.id = p.id;
+    div.onclick = () => toggleClasificado(p.id, div);
+    div.innerHTML = `<div class="clasificado-check">${checked ? '✓' : ''}</div><div><div class="clasificado-nombre">${p.robot||p.nombre}</div><div style="font-size:.75rem;color:var(--text-dim)">${p.institucion||'—'}</div></div><div class="clasificado-score">${(state.calificaciones[p.id]?.fase1Total||state.calificaciones[p.id]?.total||0).toFixed(1)} / 100</div>`;
+    grid.appendChild(div);
+  });
+  const panel = document.getElementById('lkFase2Panel');
+  const titulo = document.getElementById('lkFase2PanelTitle');
+  if (titulo) titulo.textContent = '🏆 Seleccionar TOP 3 Finalistas — Ronda Final';
+  // Cambiar confirmar para ir a paso 5
+  const btnConfirmar = panel.querySelector('button.btn-green');
+  if (btnConfirmar) btnConfirmar.setAttribute('onclick', 'confirmarFinalistasYIrAFinal()');
+  setStep(3);
+  document.getElementById('formCal').style.display = 'none';
+  document.getElementById('emptyFormState').style.display = 'none';
+  panel.classList.add('show');
+}
+
+function confirmarFinalistasYIrAFinal() {
+  const sel = [...document.querySelectorAll('.clasificado-item.checked')].map(el => el.dataset.id);
+  if (!sel.length) { toast('Selecciona al menos un finalista', 'error'); return; }
+  if (sel.length > 3) { toast('Máximo 3 finalistas', 'error'); return; }
+  state.baiFinalistas = sel;
+  state.baiFase = 2;
+  document.getElementById('lkFase2Panel').classList.remove('show');
+  toast(`✅ ${sel.length} finalistas seleccionados`, 'success');
+  buildPasoFinal();
+  setStep(5);
+}
+
+function irARankingFinal() { cargarRankingFinal(); setStep(6); }
 
 function volverAConfigurar() {
   confirmar('⚙️','VOLVER A CONFIGURAR','Volverás al paso 1.','Volver','danger', () => {
@@ -1452,6 +1614,9 @@ function terminarCategoria() {
       state.baiJuezIdx = 0;
       state.presentes = new Set();
       state.calificacionesPorJuez = {};
+      state.calificacionesFinal = {};
+      state.calificacionesFinalPorJuez = {};
+      state.selectedFinalId = null;
 
       ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
       document.getElementById('lkNota').classList.remove('show');
@@ -1644,11 +1809,283 @@ async function exportarExcel() {
     row.push(parseFloat(r.total).toFixed(2));
     rows.push(row);
   });
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
   const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download=`ranking_${CAT_NOMBRES[cat]}_${Date.now()}.csv`; a.click();
   URL.revokeObjectURL(url);
+  loading(false);
+}
+
+// ── PASO 5: RONDA FINAL (bai) ────────────────────────────────
+function buildPasoFinal() {
+  const finalistas = state.participantes.filter(p => state.baiFinalistas.includes(p.id));
+  document.getElementById('juezBarFinal').style.display = 'flex';
+  renderJuezBarFinal();
+  renderListaFinal(finalistas);
+  document.getElementById('emptyFormStateFinal').style.display = 'block';
+  document.getElementById('formCalFinal').style.display = 'none';
+}
+
+function renderJuezBarFinal() {
+  const juezIdx = state.baiJuezIdx;
+  BAI_JUECES.forEach((j, i) => {
+    const btn = document.getElementById(`btnJuezF${i}`);
+    if (!btn) return;
+    const calificados = state.baiFinalistas.filter(pid => {
+      const cal = state.calificacionesFinal?.[pid];
+      return (cal?.jueces || []).some(jj => jj.email === j.email);
+    }).length;
+    const activo = i === juezIdx;
+    btn.innerHTML = `${j.nombre}<br><span style="font-size:.6rem;opacity:.8">${calificados}/${state.baiFinalistas.length} calificados</span>`;
+    btn.style.background = activo ? '#a78bfa' : 'var(--panel-bg3)';
+    btn.style.color = activo ? '#fff' : 'var(--text-dim)';
+    btn.style.borderColor = activo ? '#a78bfa' : 'var(--panel-border2)';
+    btn.style.fontWeight = activo ? '700' : '400';
+  });
+}
+
+function renderListaFinal(finalistas) {
+  const lista = document.getElementById('robotsListFinal');
+  lista.innerHTML = '';
+  const juezActivo = BAI_JUECES[state.baiJuezIdx];
+  const calificados = finalistas.filter(p => (state.calificacionesFinal?.[p.id]?.jueces || []).some(j => j.email === juezActivo.email)).length;
+  document.getElementById('progCalFinal').textContent = calificados;
+  document.getElementById('progTotalFinal').textContent = finalistas.length;
+  document.getElementById('progBarFinal').style.width = finalistas.length ? `${(calificados/finalistas.length)*100}%` : '0%';
+  finalistas.forEach(p => {
+    const cal = state.calificacionesFinal?.[p.id];
+    const esCal = (cal?.jueces || []).some(j => j.email === juezActivo.email);
+    const isSelected = state.selectedFinalId === p.id;
+    const div = document.createElement('div');
+    div.className = 'robot-item' + (esCal ? ' calificado' : '') + (isSelected ? ' selected' : '');
+    div.onclick = () => seleccionarRobotFinal(p.id);
+    div.innerHTML = `
+      <div class="robot-estado">${isSelected ? '►' : esCal ? '✓' : '○'}</div>
+      <div class="robot-info">
+        <div class="robot-nombre">${p.robot || p.nombre}</div>
+        <div class="robot-inst">${p.institucion || '—'}</div>
+      </div>
+      ${esCal ? `<div class="robot-score" style="color:#a78bfa">${(cal.total||0).toFixed(1)}</div>` : ''}`;
+    lista.appendChild(div);
+  });
+}
+
+function seleccionarRobotFinal(id) {
+  state.selectedFinalId = id;
+  const p = state.participantes.find(x => x.id === id);
+  if (!p) return;
+  const juezActivo = BAI_JUECES[state.baiJuezIdx];
+  const cal = state.calificacionesFinal?.[id];
+  const calJuez = (state.calificacionesFinalPorJuez?.[id] || {})[juezActivo.email];
+  let notasGuardadas = {};
+  if (calJuez?.notas_json) { try { notasGuardadas = JSON.parse(calJuez.notas_json); } catch(e){} }
+
+  document.getElementById('emptyFormStateFinal').style.display = 'none';
+  document.getElementById('formCalFinal').style.display = 'block';
+  document.getElementById('calFinalRobotNombre').textContent = p.robot || p.nombre;
+  document.getElementById('calFinalRobotInst').textContent = p.institucion || '—';
+  document.getElementById('calFinalRobotId').textContent = p.id;
+  const juezBadge = document.getElementById('calFinalJuezBadge');
+  juezBadge.style.display = 'inline-flex';
+  juezBadge.textContent = '👤 ' + juezActivo.nombre;
+  const esCal = (cal?.jueces || []).some(j => j.email === juezActivo.email);
+  document.getElementById('calFinalEstadoBadge').innerHTML = esCal
+    ? '<span class="badge-fase2">🏆 Calificado</span>'
+    : '<span class="badge-pendiente">⬜ Pendiente</span>';
+
+  const criteriosCal = document.getElementById('criteriosCalFinal');
+  criteriosCal.innerHTML = '';
+  BAI_CRITERIOS.forEach((c, i) => {
+    const val = notasGuardadas[`cf${i}`] ?? '';
+    const row = document.createElement('div');
+    row.className = 'criterio-row';
+    row.innerHTML = `
+      <div>
+        <div class="criterio-nombre">${c.nombre}</div>
+        ${c.descripcion ? `<div class="criterio-desc">${c.descripcion}</div>` : ''}
+        <div class="criterio-peso-hint">0 – ${c.peso}</div>
+      </div>
+      <div class="criterio-input-wrap">
+        <input class="criterio-nota-input-final" type="number" min="0" max="${c.peso}" step="0.5"
+          value="${val}" data-idx="${i}" data-peso="${c.peso}"
+          oninput="actualizarTotalFinal()" placeholder="—">
+        <span class="criterio-max">/ ${c.peso}</span>
+      </div>`;
+    criteriosCal.appendChild(row);
+  });
+  actualizarTotalFinal();
+  renderListaFinal(state.participantes.filter(p => state.baiFinalistas.includes(p.id)));
+}
+
+function actualizarTotalFinal() {
+  let suma = 0, max = 0;
+  document.querySelectorAll('.criterio-nota-input-final').forEach(inp => {
+    suma += Math.min(parseFloat(inp.value) || 0, parseFloat(inp.dataset.peso) || 0);
+    max  += parseFloat(inp.dataset.peso) || 0;
+  });
+  document.getElementById('totalValorFinal').textContent = suma.toFixed(1);
+  document.getElementById('totalDeFinal').textContent = `/ ${max}`;
+}
+
+async function guardarCalificacionFinal() {
+  const id = state.selectedFinalId;
+  if (!id) return;
+  const p = state.participantes.find(x => x.id === id);
+  const juezActivo = BAI_JUECES[state.baiJuezIdx];
+  const inputs = document.querySelectorAll('.criterio-nota-input-final');
+  let suma = 0, valido = true;
+  const notasJson = { fase: 'final' };
+  inputs.forEach((inp, i) => {
+    const v = parseFloat(inp.value), peso = parseFloat(inp.dataset.peso) || 10;
+    if (isNaN(v) || v < 0 || v > peso) { valido = false; inp.style.borderColor = 'var(--red)'; return; }
+    inp.style.borderColor = '';
+    notasJson[`cf${i}`] = v;
+    suma += v;
+  });
+  if (!valido) { toast('Revisa los valores', 'error'); return; }
+
+  loading(true, 'GUARDANDO...');
+  try {
+    const res = await gasPost({
+      action: 'guardarPuntuacion',
+      id_participante: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
+      institucion: p.institucion || '', categoria: 'bai_final',
+      juez_email: juezActivo.email, juez_nombre: juezActivo.nombre,
+      criterios: {}, notas: notasJson, total: suma,
+      timestamp: new Date().toISOString()
+    });
+    if (res.ok) {
+      if (!state.calificacionesFinal) state.calificacionesFinal = {};
+      if (!state.calificacionesFinal[id]) state.calificacionesFinal[id] = { jueces: [] };
+      const jIdx = state.calificacionesFinal[id].jueces.findIndex(j => j.email === juezActivo.email);
+      if (jIdx >= 0) state.calificacionesFinal[id].jueces[jIdx] = { email: juezActivo.email, nombre: juezActivo.nombre, total: suma };
+      else state.calificacionesFinal[id].jueces.push({ email: juezActivo.email, nombre: juezActivo.nombre, total: suma });
+      state.calificacionesFinal[id].total = suma;
+      if (!state.calificacionesFinalPorJuez) state.calificacionesFinalPorJuez = {};
+      if (!state.calificacionesFinalPorJuez[id]) state.calificacionesFinalPorJuez[id] = {};
+      state.calificacionesFinalPorJuez[id][juezActivo.email] = { notas_json: JSON.stringify(notasJson), total: suma };
+      toast('✅ Calificación final guardada', 'success');
+      renderJuezBarFinal();
+      renderListaFinal(state.participantes.filter(pp => state.baiFinalistas.includes(pp.id)));
+      seleccionarRobotFinal(id);
+    } else { toast('Error: ' + (res.error || 'desconocido'), 'error'); }
+  } catch(e) { toast('Error de red', 'error'); }
+  loading(false);
+}
+
+function siguienteRobotFinal() {
+  const juezActivo = BAI_JUECES[state.baiJuezIdx];
+  const finalistas = state.participantes.filter(p => state.baiFinalistas.includes(p.id));
+  const pendientes = finalistas.filter(p => !(state.calificacionesFinal?.[p.id]?.jueces || []).some(j => j.email === juezActivo.email));
+  const idx = pendientes.findIndex(p => p.id === state.selectedFinalId);
+  const sig = pendientes[idx + 1] || pendientes[0];
+  if (sig) seleccionarRobotFinal(sig.id);
+  else toast('Todos los finalistas calificados ✅', 'success');
+}
+
+async function cargarRankingFinal() {
+  loading(true, 'CALCULANDO RANKING FINAL...');
+  try {
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
+    const rankingFinal = res.ranking || [];
+    document.getElementById('rankingStatsFinal').textContent = `${rankingFinal.length} finalistas evaluados`;
+    const tbody = document.getElementById('rankingTbodyFinal');
+    tbody.innerHTML = '';
+    if (!rankingFinal.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">🏆</div><p>Sin calificaciones de ronda final aún.</p></div></td></tr>';
+      loading(false); return;
+    }
+    const maxScore = rankingFinal[0]?.total || 1;
+    rankingFinal.forEach((r, i) => {
+      const pos = i + 1;
+      const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
+      const pct = maxScore > 0 ? (r.total / maxScore) * 100 : 0;
+      const jueces = r.jueces || [];
+      const notasJueces = BAI_JUECES.map(j => {
+        const jData = jueces.find(jj => jj.email === j.email);
+        return jData ? jData.total.toFixed(1) : '—';
+      }).join(' / ');
+      // Buscar puntaje eliminatoria
+      const elim = state.calificaciones[r.id];
+      const elimTotal = elim ? (elim.fase1Total || elim.total || 0).toFixed(1) : '—';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="pos-badge ${posClass}">${pos}</span></td>
+        <td style="font-weight:600">${r.robot||r.nombre}</td>
+        <td style="color:var(--text-dim);font-size:.82rem">${r.institucion||'—'}</td>
+        <td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${elimTotal}</td>
+        <td style="font-family:'DM Mono';font-size:.75rem;color:#a78bfa">${notasJueces}</td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%;background:#a78bfa"></div></div>
+            <div class="score-num" style="color:#a78bfa">${parseFloat(r.total).toFixed(1)}</div>
+          </div>
+        </td>
+        <td><span class="badge-fase2">🏆 Final</span></td>`;
+      tbody.appendChild(tr);
+    });
+  } catch(e) { toast('Error cargando ranking final', 'error'); }
+  loading(false);
+}
+
+async function guardarPodioFinal() {
+  loading(true, 'CARGANDO RANKING FINAL...');
+  try {
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
+    const rankingFinal = res.ranking || [];
+    if (!rankingFinal.length) { toast('No hay calificaciones de ronda final', 'error'); loading(false); return; }
+    const TIPOS_PODIO = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
+    loading(false);
+    confirmar('🏆','GUARDAR PODIO FINAL',
+      `¿Guardar el podio de la Ronda Final de Bailarín?
+TOP 3 con su posición, el resto como Participación.`,
+      'Guardar podio','success',
+      async () => {
+        loading(true, 'GUARDANDO PODIO...');
+        for (let i = 0; i < rankingFinal.length; i++) {
+          const r = rankingFinal[i];
+          const p = state.participantes.find(x => x.id === r.id) || {};
+          const tipo = i < 3 ? TIPOS_PODIO[i] : 'participacion';
+          const miembros = [];
+          if ((p.nombre||r.nombre||'').trim()) miembros.push({ nombre: (p.nombre||r.nombre).trim(), correo: p.correo||'' });
+          if ((p.miembro2||'').trim()) miembros.push({ nombre: p.miembro2.trim(), correo: '' });
+          for (const m of miembros) {
+            try {
+              await gasPost({ action:'guardarCertificado', id_participante:r.id, correo:m.correo,
+                nombre:m.nombre, nombre_completo:m.nombre, categoria:'Bailarín',
+                institucion:p.institucion||r.institucion||'', tipo_certificado:tipo, evento:'SucreBot 2026' });
+            } catch(e) {}
+          }
+        }
+        loading(false);
+        toast('✅ Podio final guardado', 'success');
+      }
+    );
+  } catch(e) { toast('Error', 'error'); loading(false); }
+}
+
+async function exportarExcelFinal() {
+  loading(true, 'GENERANDO CSV...');
+  try {
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
+    const ranking = res.ranking || [];
+    const header = ['#','Robot','Nombre','Institución','Eliminatoria','J1 Final','J2 Final','J3 Final','TOTAL FINAL'];
+    const rows = [header];
+    ranking.forEach((r, i) => {
+      const jueces = r.jueces || [];
+      const elim = state.calificaciones[r.id];
+      rows.push([i+1, r.robot||r.nombre, r.nombre, r.institucion||'',
+        elim ? (elim.fase1Total||elim.total||0).toFixed(1) : '—',
+        ...BAI_JUECES.map(j => { const jd = jueces.find(jj => jj.email===j.email); return jd ? jd.total.toFixed(1) : '—'; }),
+        parseFloat(r.total).toFixed(2)]);
+    });
+        const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+    const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`ranking_bai_final_${Date.now()}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) { toast('Error', 'error'); }
   loading(false);
 }
 
