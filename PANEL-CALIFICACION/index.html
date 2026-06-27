@@ -238,8 +238,9 @@
     .lk-crono-btn.pause { background: var(--orange); color: #fff; }
     .lk-crono-badge { font-family: 'Orbitron'; font-size: .6rem; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 20px; background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 
-    .lk-fase2-panel { display: none; margin-top: 20px; }
-    .lk-fase2-panel.show { display: block; }
+    .lk-fase2-panel { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,15,35,0.85); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+    .lk-fase2-panel.show { display: flex; }
+    .lk-fase2-panel .panel-card { max-width: 620px; width: 100%; max-height: 80vh; overflow-y: auto; }
     .clasificados-grid { display: grid; gap: 8px; margin-top: 12px; }
     .clasificado-item { display: flex; align-items: center; gap: 12px; background: var(--panel-bg2); border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 16px; cursor: pointer; transition: all .2s; }
     .clasificado-item:hover { border-color: var(--panel-border2); }
@@ -528,18 +529,7 @@
           </div>
         </div>
 
-        <!-- Panel clasificados / finalistas (Bailarín Fase Final · LK Fase 2) -->
-        <div class="lk-fase2-panel" id="lkFase2Panel">
-          <div class="panel-card">
-            <div class="panel-card-title" id="lkFase2PanelTitle">🏁 Clasificar a Fase 2 — Carrera</div>
-            <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px;">Selecciona los participantes que avanzan. El puntaje de la etapa anterior se muestra para referencia.</p>
-            <div class="clasificados-grid" id="clasificadosGrid"></div>
-            <div class="btn-row" style="justify-content:space-between;margin-top:20px">
-              <button class="btn btn-outline btn-sm" onclick="cerrarClasificados()">← Cancelar</button>
-              <button class="btn btn-green" onclick="confirmarClasificados()">✓ Confirmar selección</button>
-            </div>
-          </div>
-        </div>
+
       </div>
     </div>
   </div>
@@ -677,6 +667,18 @@
 
 </div>
 </div>
+  <!-- ══ MODAL SELECTOR FINALISTAS / CLASIFICADOS (overlay global) ══ -->
+  <div class="lk-fase2-panel" id="lkFase2Panel">
+    <div class="panel-card">
+      <div class="panel-card-title" id="lkFase2PanelTitle">🏁 Clasificar a Fase 2 — Carrera</div>
+      <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px;">Selecciona los participantes que avanzan. El puntaje de la etapa anterior se muestra para referencia.</p>
+      <div class="clasificados-grid" id="clasificadosGrid"></div>
+      <div class="btn-row" style="justify-content:space-between;margin-top:20px">
+        <button class="btn btn-outline btn-sm" onclick="cerrarClasificados()">← Cancelar</button>
+        <button class="btn btn-green" onclick="confirmarClasificados()">✓ Confirmar selección</button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <div data-include="../shared/components/footer.html"></div>
