@@ -467,15 +467,15 @@
           </div>
         </div>
 
-        <!-- Panel clasificados Fase 2 LK -->
+        <!-- Panel clasificados / finalistas (Bailarín Fase Final · LK Fase 2) -->
         <div class="lk-fase2-panel" id="lkFase2Panel">
           <div class="panel-card">
-            <div class="panel-card-title">🏁 Clasificar a Fase 2 — Carrera</div>
-            <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px;">Selecciona los participantes que pasan a Fase 2 (carrera). Recibirán <strong style="color:var(--cyan)">Tiempo de carrera (0–30 pts)</strong> adicional.</p>
+            <div class="panel-card-title" id="lkFase2PanelTitle">🏁 Clasificar a Fase 2 — Carrera</div>
+            <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px;">Selecciona los participantes que avanzan. El puntaje de la etapa anterior se muestra para referencia.</p>
             <div class="clasificados-grid" id="clasificadosGrid"></div>
             <div class="btn-row" style="justify-content:space-between;margin-top:20px">
               <button class="btn btn-outline btn-sm" onclick="cerrarClasificados()">← Cancelar</button>
-              <button class="btn btn-green" onclick="confirmarClasificados()">✓ Confirmar Clasificados</button>
+              <button class="btn btn-green" onclick="confirmarClasificados()">✓ Confirmar selección</button>
             </div>
           </div>
         </div>
@@ -529,20 +529,26 @@ const GAS = CONFIG.GAS_URL();
 const ALL_CATS = ['bai','dev','lk'];
 const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico', lk:'Lego Kids' };
 
+// ── CRITERIOS LK ──────────────────────────────────────────────
 const LK_CRITERIOS_F1 = [
   { nombre: 'Ensamble completo',  descripcion: 'Cumplimiento del instructivo de ensamble (Fase 1)', peso: 50 },
   { nombre: 'Funcionalidad',      descripcion: 'El prototipo funciona correctamente (Fase 1)',       peso: 20 },
 ];
 const LK_CRITERIO_F2 = { nombre: 'Tiempo de carrera', descripcion: 'Puntaje según tiempo de recorrido (Fase 2)', peso: 30 };
 
+// ── CRITERIOS BAI (reglamento oficial) ─────────────────────────
+// Fuente: Reglamento_Robot_Bailarin_Pro_Validado.docx — Tabla 1
+// Fase eliminatoria: todos compiten con la pista entregada 10 días antes (100 pts)
+// Fase final: top 3 presentan un mix propio ≤3 min (100 pts, mismos criterios)
+const BAI_CRITERIOS = [
+  { nombre: 'Sincronización musical',              descripcion: 'Precisión de movimientos en coherencia con el ritmo y melodía de la canción', peso: 40 },
+  { nombre: 'Puesta en escena y escenario',        descripcion: 'Coreografía fluida, uso del espacio y originalidad del escenario',           peso: 25 },
+  { nombre: 'Complejidad de movimientos',          descripcion: 'Movimientos avanzados y estabilidad del robot durante la ejecución',          peso: 25 },
+  { nombre: 'Originalidad',                        descripcion: 'Innovación en la coreografía, movimientos y diseño general del robot',        peso: 10 },
+];
+
 const DEFAULTS_CRITERIOS = {
-  bai: [
-    { nombre: 'Coreografía',       descripcion: 'Coordinación y secuencia de movimientos', peso: 5 },
-    { nombre: 'Sincronía Musical', descripcion: 'Sincronización con la música',             peso: 5 },
-    { nombre: 'Creatividad',       descripcion: 'Originalidad del diseño y presentación',   peso: 5 },
-    { nombre: 'Construcción',      descripcion: 'Calidad del hardware y acabados',           peso: 5 },
-    { nombre: 'Desempeño',         descripcion: 'Ejecución sin errores durante la rutina',  peso: 5 },
-  ],
+  bai: BAI_CRITERIOS,
   dev: [
     { nombre: 'Innovación',        descripcion: 'Originalidad de la propuesta tecnológica', peso: 5 },
     { nombre: 'Funcionalidad',     descripcion: 'El sistema funciona correctamente',         peso: 5 },
@@ -553,11 +559,21 @@ const DEFAULTS_CRITERIOS = {
   lk: LK_CRITERIOS_F1
 };
 
+// Categorías con 2 fases
+const CATS_DOS_FASES = { bai: true, lk: true };
+
+// Labels de fase por categoría
+const FASE_LABELS = {
+  bai: { f1: 'Eliminatoria', f2: 'Final' },
+  lk:  { f1: 'Ensamble',    f2: 'Carrera' },
+};
+
 let state = {
   step: 1, categoria: '', criterios: [],
   participantes: [], calificaciones: {},
   selectedId: null, rondaActual: {}, rankingData: [],
   lkFase: 1, lkClasificados: [],
+  baiFase: 1, baiFinalistas: [],   // ← nuevo: fases Bailarín
 };
 
 // ── CRONÓMETRO LK ─────────────────────────────────────────────
@@ -637,12 +653,29 @@ function confirmar(icon, title, msg, btnLabel, type, cb) {
 function cerrarModal() { document.getElementById('confirmModal').classList.remove('show'); _modalCb = null; }
 document.getElementById('modalConfirmBtn').onclick = () => { const cb = _modalCb; cerrarModal(); if (cb) cb(); };
 
+// ── HELPERS: ¿tiene dos fases? ─────────────────────────────────
+function esDasFases(cat) { return !!CATS_DOS_FASES[cat]; }
+function getFaseState(cat) {
+  if (cat === 'lk') return { fase: state.lkFase, clasificados: state.lkClasificados };
+  if (cat === 'bai') return { fase: state.baiFase, clasificados: state.baiFinalistas };
+  return { fase: 1, clasificados: [] };
+}
+function getFaseLabel(cat, n) { return (FASE_LABELS[cat] || { f1:'Fase 1', f2:'Fase 2' })['f' + n]; }
+// Para bai: fase 2 usa los mismos criterios (100 pts, misma tabla)
+// Para lk: fase 2 agrega LK_CRITERIO_F2
+function getCriteriosFase(cat, fase) {
+  if (cat === 'lk') return fase === 2 ? [...LK_CRITERIOS_F1, LK_CRITERIO_F2] : LK_CRITERIOS_F1;
+  return state.criterios; // bai: mismos criterios en ambas fases
+}
+
 // ── PASO 1 ────────────────────────────────────────────────────
 async function seleccionarCategoria(cat) {
   if (state.categoria && state.categoria !== cat) {
     gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] }).catch(() => {});
     localStorage.removeItem('panel_cal_sesion');
-    state.calificaciones = {}; state.rondaActual = {}; state.lkFase = 1; state.lkClasificados = [];
+    state.calificaciones = {}; state.rondaActual = {};
+    state.lkFase = 1; state.lkClasificados = [];
+    state.baiFase = 1; state.baiFinalistas = [];
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
@@ -733,6 +766,8 @@ async function iniciarCalificacion() {
 
   if (cat === 'lk') {
     state.criterios = [...LK_CRITERIOS_F1]; state.lkFase = 1;
+  } else if (cat === 'bai') {
+    state.criterios = BAI_CRITERIOS; state.baiFase = 1;
   } else {
     state.criterios = leerCriteriosConfig();
     if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
@@ -758,10 +793,17 @@ async function iniciarCalificacion() {
           fase2: esFase2
         };
         state.rondaActual[p.id_participante] = ronda + 1;
-        if (esFase2) state.lkClasificados.push(p.id_participante);
+        if (esFase2) {
+          if (cat === 'lk') state.lkClasificados.push(p.id_participante);
+          if (cat === 'bai') state.baiFinalistas.push(p.id_participante);
+        }
       }
     });
-    state.lkClasificados = [...new Set(state.lkClasificados)];
+    state.lkClasificados  = [...new Set(state.lkClasificados)];
+    state.baiFinalistas   = [...new Set(state.baiFinalistas)];
+    // Restaurar fase según datos guardados
+    if (cat === 'lk' && state.lkClasificados.length) state.lkFase = 2;
+    if (cat === 'bai' && state.baiFinalistas.length) state.baiFase = 2;
   } catch(e) {}
   loading(false);
 
@@ -771,10 +813,21 @@ async function iniciarCalificacion() {
 
 // ── PASO 2 ────────────────────────────────────────────────────
 function buildPaso2() {
-  document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[state.categoria];
-  const esLk = state.categoria === 'lk';
+  const cat = state.categoria;
+  document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[cat];
+  const esLk = cat === 'lk';
   document.getElementById('lkCronometroBar').classList.toggle('show', esLk);
-  document.getElementById('lkFase2Trigger').style.display = esLk ? 'block' : 'none';
+  document.getElementById('lkFase2Trigger').style.display = (esLk || cat === 'bai') ? 'block' : 'none';
+
+  // Actualizar label del trigger según categoría
+  if (cat === 'bai') {
+    document.getElementById('lkFase2Trigger').innerHTML =
+      `<button class="btn btn-outline btn-sm" onclick="abrirClasificados()" style="margin-top:8px">🏆 Seleccionar TOP 3 finalistas →</button>`;
+  } else if (esLk) {
+    document.getElementById('lkFase2Trigger').innerHTML =
+      `<button class="btn btn-outline btn-sm" onclick="abrirClasificados()" style="margin-top:8px">Seleccionar clasificados para Fase 2 →</button>`;
+  }
+
   renderListaRobots();
   document.getElementById('emptyFormState').style.display = 'block';
   document.getElementById('formCal').style.display = 'none';
@@ -782,20 +835,27 @@ function buildPaso2() {
 }
 
 function renderListaRobots() {
+  const cat   = state.categoria;
   const lista = document.getElementById('robotsList');
   lista.innerHTML = '';
-  const total = state.participantes.length;
+
+  // Para bai fase 2: solo mostrar finalistas
+  let visibles = state.participantes;
+  if (cat === 'bai' && state.baiFase === 2)
+    visibles = state.participantes.filter(p => state.baiFinalistas.includes(p.id));
+
+  const total = visibles.length;
   const calificados = Object.values(state.calificaciones).filter(c => c?.guardado).length;
   document.getElementById('progCal').textContent = calificados;
-  document.getElementById('progTotal').textContent = total;
-  document.getElementById('progBar').style.width = total ? `${(calificados/total)*100}%` : '0%';
+  document.getElementById('progTotal').textContent = state.participantes.length;
+  document.getElementById('progBar').style.width = state.participantes.length ? `${(calificados/state.participantes.length)*100}%` : '0%';
   document.getElementById('countCalificados').textContent = calificados;
 
-  if (!state.participantes.length) {
+  if (!visibles.length) {
     lista.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🤖</div><p>Sin participantes aprobados aún</p></div>';
     return;
   }
-  state.participantes.forEach(p => {
+  visibles.forEach(p => {
     const cal = state.calificaciones[p.id];
     const esCal = cal?.guardado;
     const esFase2 = cal?.fase2;
@@ -823,19 +883,27 @@ function seleccionarRobot(id) {
   const p = state.participantes.find(x => x.id === id);
   if (!p) return;
 
-  const esLk  = state.categoria === 'lk';
-  const cal   = state.calificaciones[id];
-  const esFase2Clasificado = esLk && state.lkClasificados.includes(id);
-  const yaCalF1 = esLk && cal?.guardado && !cal?.fase2;
-  const yaCalF2 = esLk && cal?.fase2;
+  const cat  = state.categoria;
+  const esLk = cat === 'lk';
+  const esBai = cat === 'bai';
+  const cal  = state.calificaciones[id];
+
+  // ── Determinar fase actual ──────────────────────────────────
   let faseActual = 1;
-  if (esFase2Clasificado && !yaCalF2) faseActual = 2;
-  else if (yaCalF2) faseActual = 2;
+  if (esLk) {
+    const esFase2Clas = state.lkClasificados.includes(id);
+    const yaCalF1 = cal?.guardado && !cal?.fase2;
+    const yaCalF2 = cal?.fase2;
+    if (esFase2Clas && !yaCalF2) faseActual = 2;
+    else if (yaCalF2) faseActual = 2;
+  } else if (esBai) {
+    const esFinalista = state.baiFinalistas.includes(id);
+    const yaCalF2 = cal?.fase2;
+    if (esFinalista && !yaCalF2) faseActual = 2;
+    else if (yaCalF2) faseActual = 2;
+  }
 
-  let criteriosActivos;
-  if (esLk) criteriosActivos = faseActual === 2 ? [...LK_CRITERIOS_F1, LK_CRITERIO_F2] : LK_CRITERIOS_F1;
-  else criteriosActivos = state.criterios;
-
+  const criteriosActivos = getCriteriosFase(cat, faseActual);
   const ronda = state.rondaActual[id] || 1;
 
   document.getElementById('lkFase2Panel').classList.remove('show');
@@ -848,11 +916,16 @@ function seleccionarRobot(id) {
   document.getElementById('calRondaBadge').style.display = 'inline-flex';
 
   const faseBadge = document.getElementById('calFaseBadge');
-  if (esLk) { faseBadge.style.display = 'inline-flex'; faseBadge.className = `fase-badge fase-${faseActual}`; faseBadge.textContent = `Fase ${faseActual}`; }
-  else faseBadge.style.display = 'none';
+  if (esLk || esBai) {
+    faseBadge.style.display = 'inline-flex';
+    faseBadge.className = `fase-badge fase-${faseActual}`;
+    faseBadge.textContent = getFaseLabel(cat, faseActual);
+  } else {
+    faseBadge.style.display = 'none';
+  }
 
   document.getElementById('calEstadoBadge').innerHTML = cal?.guardado
-    ? (yaCalF2 ? '<span class="badge-fase2">🏁 F1+F2</span>' : '<span class="badge-calificado">✓ Calificado</span>')
+    ? (cal?.fase2 ? '<span class="badge-fase2">🏁 F1+F2</span>' : '<span class="badge-calificado">✓ Calificado</span>')
     : '<span class="badge-pendiente">⬜ Pendiente</span>';
 
   const criteriosCal = document.getElementById('criteriosCal');
@@ -861,21 +934,30 @@ function seleccionarRobot(id) {
   if (cal?.notas_json) { try { notasGuardadas = JSON.parse(cal.notas_json); } catch(e){} }
 
   criteriosActivos.forEach((c, i) => {
-    const esCriterioF2 = esLk && c.nombre === LK_CRITERIO_F2.nombre;
-    const soloLectura  = esLk && !esCriterioF2 && faseActual === 2 && yaCalF1;
-    const valGuardado  = esCriterioF2 ? (notasGuardadas.fase2Carrera ?? '') : (notasGuardadas[`c${i}`] ?? '');
+    // lk: criterio F2 especial
+    const esCriterioLkF2 = esLk && c.nombre === LK_CRITERIO_F2.nombre;
+    // lk: solo lectura en fase 2 para criterios de fase 1
+    const soloLectura = esLk && !esCriterioLkF2 && faseActual === 2 && cal?.guardado && !cal?.fase2;
+    // bai: en fase 2 todos son editables (mismos criterios, calificación nueva)
+    const valGuardado = esCriterioLkF2
+      ? (notasGuardadas.fase2Carrera ?? '')
+      : (faseActual === 2 && esBai
+          ? (notasGuardadas[`f2_c${i}`] ?? '')
+          : (notasGuardadas[`c${i}`] ?? ''));
+
     const row = document.createElement('div');
     row.className = 'criterio-row';
     row.innerHTML = `
       <div>
-        <div class="criterio-nombre">${c.nombre}${esCriterioF2 ? ' <span style="color:var(--green);font-size:.7rem">(Fase 2)</span>' : ''}</div>
+        <div class="criterio-nombre">${c.nombre}${esCriterioLkF2 ? ' <span style="color:var(--green);font-size:.7rem">(Fase 2)</span>' : ''}</div>
         ${c.descripcion ? `<div class="criterio-desc">${c.descripcion}</div>` : ''}
         <div class="criterio-peso-hint">0 – ${c.peso}</div>
       </div>
       <div class="criterio-input-wrap">
         <input class="criterio-nota-input" type="number" min="0" max="${c.peso}" step="0.5"
           value="${valGuardado}" data-idx="${i}" data-peso="${c.peso}"
-          data-f2="${esCriterioF2 ? '1' : '0'}"
+          data-f2="${esCriterioLkF2 ? '1' : '0'}"
+          data-bai-f2="${(esBai && faseActual === 2) ? '1' : '0'}"
           ${soloLectura ? 'disabled' : ''}
           oninput="actualizarTotal()" placeholder="—">
         <span class="criterio-max">/ ${c.peso}</span>
@@ -901,29 +983,51 @@ async function guardarCalificacion() {
   const id = state.selectedId;
   if (!id) return;
 
-  const p = state.participantes.find(x => x.id === id);
-  const esLk  = state.categoria === 'lk';
+  const p      = state.participantes.find(x => x.id === id);
+  const cat    = state.categoria;
+  const esLk   = cat === 'lk';
+  const esBai  = cat === 'bai';
   const calPrev = state.calificaciones[id];
-  const faseActual = esLk
-    ? (state.lkClasificados.includes(id) && calPrev?.guardado && !calPrev?.fase2 ? 2
-       : calPrev?.fase2 ? 2 : 1) : null;
+
+  // Detectar fase actual
+  let faseActual = 1;
+  if (esLk) {
+    faseActual = (state.lkClasificados.includes(id) && calPrev?.guardado && !calPrev?.fase2) ? 2
+               : (calPrev?.fase2 ? 2 : 1);
+  } else if (esBai) {
+    faseActual = (state.baiFinalistas.includes(id) && calPrev?.guardado && !calPrev?.fase2) ? 2
+               : (calPrev?.fase2 ? 2 : 1);
+  }
 
   const inputs = document.querySelectorAll('.criterio-nota-input');
   let suma = 0, valido = true;
   const notasJson = {};
 
   inputs.forEach((inp, i) => {
-    if (inp.disabled) { suma += parseFloat(inp.value) || 0; if (inp.dataset.f2 !== '1') notasJson[`c${i}`] = parseFloat(inp.value)||0; return; }
     const v = parseFloat(inp.value), peso = parseFloat(inp.dataset.peso) || 10;
+    if (inp.disabled) {
+      // lk solo lectura: sumar valor previo
+      suma += parseFloat(inp.value) || 0;
+      if (inp.dataset.f2 !== '1') notasJson[`c${i}`] = parseFloat(inp.value)||0;
+      return;
+    }
     if (isNaN(v) || v < 0 || v > peso) { valido = false; inp.style.borderColor = 'var(--red)'; return; }
     inp.style.borderColor = '';
-    if (inp.dataset.f2 === '1') { notasJson.fase2Carrera = v; notasJson.fase = 2; }
-    else notasJson[`c${i}`] = v;
+    if (inp.dataset.f2 === '1') {
+      // lk fase 2 carrera
+      notasJson.fase2Carrera = v; notasJson.fase = 2;
+    } else if (inp.dataset.baiF2 === '1') {
+      // bai fase 2: guardar con prefijo f2 para distinguir
+      notasJson[`f2_c${i}`] = v; notasJson.fase = 2;
+    } else {
+      notasJson[`c${i}`] = v;
+    }
     suma += v;
   });
   if (!valido) { toast('Revisa los valores ingresados', 'error'); return; }
 
   let fase1Total = 0, fase2Total = 0, totalFinal = suma;
+
   if (esLk) {
     if (faseActual === 2) {
       fase1Total = calPrev?.fase1Total || 0;
@@ -931,12 +1035,21 @@ async function guardarCalificacion() {
       totalFinal = fase1Total + fase2Total;
       notasJson.fase1Total = fase1Total; notasJson.fase2Total = fase2Total;
     } else { fase1Total = suma; notasJson.fase1Total = fase1Total; }
+  } else if (esBai) {
+    if (faseActual === 2) {
+      // Fase final: nueva calificación completa (mismos criterios, 100 pts)
+      fase1Total = calPrev?.fase1Total || calPrev?.total || 0;
+      fase2Total = suma;
+      // Total final = puntaje de la ronda final (fase 2), fase 1 queda como referencia
+      totalFinal = fase2Total;
+      notasJson.fase1Total = fase1Total; notasJson.fase2Total = fase2Total;
+    } else {
+      fase1Total = suma; notasJson.fase1Total = fase1Total;
+    }
   }
 
   const ronda = state.rondaActual[id] || 1;
   const notas = document.getElementById('calNotas').value;
-
-  // Determinar juez_email y juez_nombre
   const juezEmail  = 'operador@sucrebot2026';
   const juezNombre = 'Operador';
 
@@ -949,7 +1062,7 @@ async function guardarCalificacion() {
     const res = await gasPost({
       action: 'guardarPuntuacion',
       id_participante: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
-      institucion: p.institucion || '', categoria: state.categoria,
+      institucion: p.institucion || '', categoria: cat,
       juez_email: juezEmail, juez_nombre: juezNombre,
       criterios: criteriosJson, notas: notasJson, total: totalFinal,
       timestamp: new Date().toISOString()
@@ -958,7 +1071,7 @@ async function guardarCalificacion() {
       state.calificaciones[id] = {
         total: totalFinal, ronda, notas_json: JSON.stringify(notasJson),
         guardado: true, notas, fase1Total, fase2Total,
-        fase2: esLk ? (faseActual === 2) : false
+        fase2: (esLk || esBai) ? (faseActual === 2) : false
       };
       state.rondaActual[id] = ronda + 1;
       toast('✅ Calificación guardada', 'success');
@@ -970,10 +1083,14 @@ async function guardarCalificacion() {
 }
 
 function siguienteRobot() {
-  const esLk = state.categoria === 'lk';
+  const cat  = state.categoria;
+  const esLk = cat === 'lk';
+  const esBai = cat === 'bai';
   let pendientes;
   if (esLk && state.lkFase === 2)
     pendientes = state.participantes.filter(p => state.lkClasificados.includes(p.id) && !state.calificaciones[p.id]?.fase2);
+  else if (esBai && state.baiFase === 2)
+    pendientes = state.participantes.filter(p => state.baiFinalistas.includes(p.id) && !state.calificaciones[p.id]?.fase2);
   else
     pendientes = state.participantes.filter(p => !state.calificaciones[p.id]?.guardado);
   const idx = pendientes.findIndex(p => p.id === state.selectedId);
@@ -982,32 +1099,59 @@ function siguienteRobot() {
   else toast('Todos los robots han sido calificados ✅', 'success');
 }
 
-// ── LK FASE 2 ─────────────────────────────────────────────────
+// ── SELECCIÓN DE CLASIFICADOS / FINALISTAS ────────────────────
 function abrirClasificados() {
+  const cat = state.categoria;
+  const esLk = cat === 'lk';
+  const esBai = cat === 'bai';
   document.getElementById('formCal').style.display = 'none';
   document.getElementById('emptyFormState').style.display = 'none';
   document.getElementById('lkFase2Panel').classList.add('show');
-  const ordenados = [...state.participantes].map(p => ({ ...p, fase1: state.calificaciones[p.id]?.fase1Total || 0 })).sort((a, b) => b.fase1 - a.fase1);
+
+  // Actualizar título del panel
+  const tituloPanel = document.getElementById('lkFase2PanelTitle');
+  if (tituloPanel) {
+    if (esBai) tituloPanel.textContent = '🏆 Seleccionar TOP 3 Finalistas — Ronda Final';
+    else tituloPanel.textContent = '🏁 Seleccionar clasificados para Fase 2';
+  }
+
+  // Actualizar label de puntaje máximo
+  const maxLabel = document.getElementById('clasificadoMaxLabel');
+  if (maxLabel) maxLabel.textContent = esBai ? '/ 100' : '/ 70';
+
+  const actuales = esBai ? state.baiFinalistas : state.lkClasificados;
+  const ordenados = [...state.participantes]
+    .map(p => ({ ...p, fase1: state.calificaciones[p.id]?.fase1Total || 0 }))
+    .sort((a, b) => b.fase1 - a.fase1);
+
   const grid = document.getElementById('clasificadosGrid');
   grid.innerHTML = '';
   ordenados.forEach(p => {
-    const checked = state.lkClasificados.includes(p.id);
+    const checked = actuales.includes(p.id);
     const div = document.createElement('div');
     div.className = 'clasificado-item' + (checked ? ' checked' : ''); div.dataset.id = p.id;
     div.onclick = () => toggleClasificado(p.id, div);
-    div.innerHTML = `<div class="clasificado-check">${checked ? '✓' : ''}</div><div><div class="clasificado-nombre">${p.robot||p.nombre}</div><div style="font-size:.75rem;color:var(--text-dim)">${p.institucion||'—'}</div></div><div class="clasificado-score">${(state.calificaciones[p.id]?.fase1Total||0).toFixed(1)} / 70</div>`;
+    div.innerHTML = `<div class="clasificado-check">${checked ? '✓' : ''}</div><div><div class="clasificado-nombre">${p.robot||p.nombre}</div><div style="font-size:.75rem;color:var(--text-dim)">${p.institucion||'—'}</div></div><div class="clasificado-score">${(state.calificaciones[p.id]?.fase1Total||0).toFixed(1)} ${esBai ? '/ 100' : '/ 70'}</div>`;
     grid.appendChild(div);
   });
 }
 function toggleClasificado(id, el) { el.classList.toggle('checked'); el.querySelector('.clasificado-check').textContent = el.classList.contains('checked') ? '✓' : ''; }
 function confirmarClasificados() {
+  const cat  = state.categoria;
   const sel = [...document.querySelectorAll('.clasificado-item.checked')].map(el => el.dataset.id);
   if (!sel.length) { toast('Selecciona al menos un participante', 'error'); return; }
-  state.lkClasificados = sel; state.lkFase = 2;
+
+  if (cat === 'bai') {
+    if (sel.length > 3) { toast('Máximo 3 finalistas para la Ronda Final', 'error'); return; }
+    state.baiFinalistas = sel; state.baiFase = 2;
+    toast(`✅ ${sel.length} finalistas seleccionados para la Ronda Final`, 'success');
+  } else {
+    state.lkClasificados = sel; state.lkFase = 2;
+    toast(`✅ ${sel.length} clasificados para Fase 2`, 'success');
+  }
   document.getElementById('lkFase2Panel').classList.remove('show');
   document.getElementById('emptyFormState').style.display = 'block';
   renderListaRobots();
-  toast(`✅ ${sel.length} clasificados para Fase 2`, 'success');
 }
 function cerrarClasificados() { document.getElementById('lkFase2Panel').classList.remove('show'); document.getElementById('emptyFormState').style.display = 'block'; }
 
@@ -1026,7 +1170,7 @@ function volverAConfigurar() {
   });
 }
 
-// ── TERMINAR CATEGORÍA ──────────────────────────────────────────
+// ── TERMINAR CATEGORÍA ────────────────────────────────────────
 function terminarCategoria() {
   if (!state.categoria) { toast('No hay categoría activa', 'error'); return; }
   const catNombre = CAT_NOMBRES[state.categoria];
@@ -1040,7 +1184,6 @@ function terminarCategoria() {
         await gasPost({ action: 'desbloquearCategoria', categoria: catNombre }).catch(() => {});
       } catch(e) { toast('Error al terminar categoría', 'error'); loading(false); return; }
 
-      // Reset completo de estado local
       localStorage.removeItem('panel_cal_sesion');
       state.categoria = '';
       state.criterios = [];
@@ -1049,10 +1192,9 @@ function terminarCategoria() {
       state.selectedId = null;
       state.rondaActual = {};
       state.rankingData = [];
-      state.lkFase = 1;
-      state.lkClasificados = [];
+      state.lkFase = 1; state.lkClasificados = [];
+      state.baiFase = 1; state.baiFinalistas = [];
 
-      // Reset visual paso 1
       ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
       document.getElementById('lkNota').classList.remove('show');
       document.getElementById('configuracionPanel').classList.remove('show');
@@ -1069,13 +1211,17 @@ function terminarCategoria() {
 
 async function cargarRanking() {
   loading(true, 'CALCULANDO RANKING...');
-  const esLk  = state.categoria === 'lk';
+  const cat  = state.categoria;
+  const esLk  = cat === 'lk';
+  const esBai = cat === 'bai';
+  const dosFases = esLk || esBai;
 
-  document.getElementById('thF1Col').textContent    = esLk ? 'F1 (70)' : 'PUNTOS';
-  document.getElementById('thF2Col').style.display  = esLk ? '' : 'none';
+  document.getElementById('thF1Col').textContent   = esLk ? 'F1 (70)' : (esBai ? 'Eliminatoria' : 'PUNTOS');
+  document.getElementById('thF2Col').style.display = dosFases ? '' : 'none';
+  if (esBai) document.getElementById('thF2Col').textContent = 'Final (100)';
 
   try {
-    const res = await gasGet({ action: 'getRankingCalificacion', categoria: state.categoria });
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: cat });
     state.rankingData = res.ranking || [];
   } catch(e) {
     state.rankingData = state.participantes.map(p => {
@@ -1085,13 +1231,12 @@ async function cargarRanking() {
   }
 
   const maxScore = state.rankingData[0]?.total || 1;
-  document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[state.categoria]}`;
-
+  document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[cat]}`;
   document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados`;
 
   const tbody = document.getElementById('rankingTbody');
   tbody.innerHTML = '';
-  const colspan = 5 + (esLk ? 1 : 0);
+  const colspan = 5 + (dosFases ? 1 : 0);
 
   if (!state.rankingData.length) {
     tbody.innerHTML = `<tr><td colspan="${colspan}"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Sin calificaciones aún.</p></div></td></tr>`;
@@ -1104,20 +1249,24 @@ async function cargarRanking() {
     const pct = maxScore > 0 ? (r.total / maxScore) * 100 : 0;
     const tr = document.createElement('tr');
 
-    // Columna jueces para bat
-    const f2Cell = esLk
-      ? `<td style="font-family:'DM Mono';font-size:.8rem;color:${r.fase2 ? 'var(--green)':'var(--text-dim)'}">${r.fase2 ? (r.fase2Total||0).toFixed(1) : '—'}</td>`
-      : '';
+    let f2Cell = '';
+    if (esLk) {
+      f2Cell = `<td style="font-family:'DM Mono';font-size:.8rem;color:${r.fase2 ? 'var(--green)':'var(--text-dim)'}">${r.fase2 ? (r.fase2Total||0).toFixed(1) : '—'}</td>`;
+    } else if (esBai) {
+      f2Cell = `<td style="font-family:'DM Mono';font-size:.8rem;color:${r.fase2 ? 'var(--green)':'var(--text-dim)'}">${r.fase2 ? (r.fase2Total||0).toFixed(1) : '—'}</td>`;
+    }
 
-    const estadoBadge = r.total > 0 ? (esLk && r.fase2 ? '<span class="badge-fase2">🏁 Completo</span>' : '<span class="badge-calificado">✓</span>') : '<span class="badge-pendiente">Pendiente</span>';
+    const estadoBadge = r.total > 0
+      ? (dosFases && r.fase2 ? '<span class="badge-fase2">🏁 Completo</span>' : '<span class="badge-calificado">✓</span>')
+      : '<span class="badge-pendiente">Pendiente</span>';
 
-    const f1Val = esLk ? (r.fase1Total||0).toFixed(1) : '—';
+    const f1Val = dosFases ? (r.fase1Total||0).toFixed(1) : '—';
 
     tr.innerHTML = `
       <td><span class="pos-badge ${posClass}">${pos}</span></td>
       <td style="font-weight:600">${r.robot||r.nombre}</td>
       <td style="color:var(--text-dim);font-size:.82rem">${r.institucion||'—'}</td>
-      <td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${esLk ? f1Val : ''}</td>
+      <td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${dosFases ? f1Val : ''}</td>
       ${f2Cell}
       <td>
         <div class="score-bar-wrap">
@@ -1141,7 +1290,10 @@ async function verRankingDesdePaso1() {
       state.participantes = todos.filter(p => p.categoria === CAT_NOMBRES[state.categoria] && p.aprobado === 'APROBADO');
     } catch(e) {}
   }
-  if (!state.criterios.length) state.criterios = state.categoria === 'lk' ? [...LK_CRITERIOS_F1] : DEFAULTS_CRITERIOS[state.categoria];
+  if (!state.criterios.length) {
+    const cat = state.categoria;
+    state.criterios = cat === 'lk' ? [...LK_CRITERIOS_F1] : (cat === 'bai' ? BAI_CRITERIOS : DEFAULTS_CRITERIOS[cat]);
+  }
   await cargarRanking();
   setStep(3);
 }
@@ -1190,22 +1342,26 @@ async function guardarPodio() {
 async function exportarExcel() {
   if (!state.rankingData.length) { toast('No hay datos', 'error'); return; }
   loading(true, 'GENERANDO CSV...');
-  const esLk  = state.categoria === 'lk';
+  const cat  = state.categoria;
+  const esLk  = cat === 'lk';
+  const esBai = cat === 'bai';
+  const dosFases = esLk || esBai;
   const header = ['#','Robot','Nombre','Institución'];
   if (esLk)  header.push('Fase 1 (70)','Fase 2 (30)');
+  if (esBai) header.push('Eliminatoria (100)','Final (100)');
   header.push(...state.criterios.map(c => c.nombre));
   header.push('TOTAL');
   const rows = [header];
   state.rankingData.forEach((r, i) => {
     const row = [i+1, r.robot||r.nombre, r.nombre, r.institucion||''];
-    if (esLk)  row.push((r.fase1Total||0).toFixed(1), r.fase2 ? (r.fase2Total||0).toFixed(1) : '—');
+    if (dosFases) row.push((r.fase1Total||0).toFixed(1), r.fase2 ? (r.fase2Total||0).toFixed(1) : '—');
     row.push(parseFloat(r.total).toFixed(2));
     rows.push(row);
   });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
   const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download=`ranking_${CAT_NOMBRES[state.categoria]}_${Date.now()}.csv`; a.click();
+  const a = document.createElement('a'); a.href=url; a.download=`ranking_${CAT_NOMBRES[cat]}_${Date.now()}.csv`; a.click();
   URL.revokeObjectURL(url);
   loading(false);
 }
