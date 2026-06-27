@@ -1871,7 +1871,8 @@ async function guardarPodio() {
       const posicionesPodio = state.rankingData.slice(0, 3).map((r, i) => ({
         posicion: i + 1,
         equipo_id: r.id,
-        equipo_nombre: r.robot || r.nombre
+        equipo_nombre: r.robot || r.nombre,
+        total: parseFloat(r.total) || 0
       }));
       try {
         await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones: posicionesPodio });
