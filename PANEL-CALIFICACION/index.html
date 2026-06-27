@@ -362,7 +362,13 @@
         👥 <strong>Impacto Tecnológico — 3 jueces simultáneos:</strong>
         Cada juez califica de forma independiente desde su dispositivo (100 pts).
         El ranking final usa el <strong>promedio</strong> de las 3 calificaciones.
-        Selecciona el juez activo en la barra antes de calificar.
+        Selecciona quién eres antes de continuar.
+      </div>
+
+      <!-- Selector de juez paso 1 -->
+      <div id="juezSelectorP1" style="display:none;margin-top:14px;background:var(--panel-bg2);border:1px solid var(--panel-border2);border-radius:12px;padding:16px 20px;">
+        <div style="font-family:'Orbitron';font-size:.65rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:12px;">👤 ¿Quién eres?</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;" id="juezSelectorBtns"></div>
       </div>
     </div>
 
@@ -891,7 +897,10 @@ async function seleccionarCategoria(cat) {
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
   document.getElementById('lkNota').classList.toggle('show', cat === 'lk');
-  document.getElementById('devNota').classList.toggle('show', cat === 'dev');
+  document.getElementById('devNota').classList.toggle('show', cat === 'dev' || cat === 'bai');
+  const mostrarJuezP1 = cat === 'dev' || cat === 'bai';
+  document.getElementById('juezSelectorP1').style.display = mostrarJuezP1 ? 'block' : 'none';
+  if (mostrarJuezP1) renderJuezSelectorP1(cat);
 
   state.categoria = cat;
   document.getElementById('configuracionPanel').classList.add('show');
@@ -1288,6 +1297,27 @@ function actualizarTotal() {
   document.getElementById('totalDe').textContent    = `/ ${max}`;
 }
 
+// ── SELECTOR DE JUEZ PASO 1 ──────────────────────────────────
+function renderJuezSelectorP1(cat) {
+  const jueces = CATS_MULTI_JUEZ[cat];
+  if (!jueces) return;
+  const juezIdx = getJuezIdx(cat);
+  const container = document.getElementById('juezSelectorBtns');
+  container.innerHTML = '';
+  jueces.forEach((j, i) => {
+    const btn = document.createElement('button');
+    const activo = i === juezIdx;
+    btn.style.cssText = `flex:1;min-width:120px;padding:12px 16px;font-family:'Orbitron';font-size:.65rem;letter-spacing:1.5px;border-radius:8px;border:2px solid ${activo ? 'var(--green)' : 'var(--panel-border2)'};cursor:pointer;transition:all .2s;background:${activo ? 'var(--green)' : 'var(--panel-bg3)'};color:${activo ? '#fff' : 'var(--text-dim)'};font-weight:${activo ? '700' : '400'};`;
+    btn.innerHTML = `${j.nombre}${activo ? '<br><span style="font-size:.55rem;opacity:.8">✓ Seleccionado</span>' : ''}`;
+    btn.onclick = () => {
+      setJuezIdx(cat, i);
+      localStorage.setItem('sucrebot_' + cat + '_juez', i);
+      renderJuezSelectorP1(cat);
+    };
+    container.appendChild(btn);
+  });
+}
+
 // ── SELECTOR DE JUEZ (dev + bai) ──────────────────────────────
 function renderJuezBar() {
   const cat = state.categoria;
@@ -1578,7 +1608,10 @@ function volverAConfigurar() {
   confirmar('⚙️','VOLVER A CONFIGURAR','Volverás al paso 1.','Volver','danger', () => {
     ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === state.categoria));
     document.getElementById('lkNota').classList.toggle('show', state.categoria === 'lk');
-    document.getElementById('devNota').classList.toggle('show', state.categoria === 'dev');
+    document.getElementById('devNota').classList.toggle('show', state.categoria === 'dev' || state.categoria === 'bai');
+    const mostrarJuezV = state.categoria === 'dev' || state.categoria === 'bai';
+    document.getElementById('juezSelectorP1').style.display = mostrarJuezV ? 'block' : 'none';
+    if (mostrarJuezV) renderJuezSelectorP1(state.categoria);
     document.getElementById('configuracionPanel').classList.add('show');
     document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
     document.getElementById('btnIniciarCal').disabled = false;
@@ -1620,6 +1653,8 @@ function terminarCategoria() {
 
       ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.remove('selected'));
       document.getElementById('lkNota').classList.remove('show');
+      document.getElementById('devNota').classList.remove('show');
+      document.getElementById('juezSelectorP1').style.display = 'none';
       document.getElementById('configuracionPanel').classList.remove('show');
       document.getElementById('btnVerRankingP1').style.display = 'none';
       document.getElementById('btnIniciarCal').disabled = true;
