@@ -1342,19 +1342,33 @@ async function guardarPodio() {
 async function exportarExcel() {
   if (!state.rankingData.length) { toast('No hay datos', 'error'); return; }
   loading(true, 'GENERANDO CSV...');
-  const cat  = state.categoria;
-  const esLk  = cat === 'lk';
-  const esBai = cat === 'bai';
+  const cat     = state.categoria;
+  const esLk    = cat === 'lk';
+  const esBai   = cat === 'bai';
   const dosFases = esLk || esBai;
   const header = ['#','Robot','Nombre','Institución'];
   if (esLk)  header.push('Fase 1 (70)','Fase 2 (30)');
   if (esBai) header.push('Eliminatoria (100)','Final (100)');
-  header.push(...state.criterios.map(c => c.nombre));
+  header.push(...state.criterios.map(c => c.nombre + ' (' + c.peso + ')'));
   header.push('TOTAL');
   const rows = [header];
   state.rankingData.forEach((r, i) => {
     const row = [i+1, r.robot||r.nombre, r.nombre, r.institucion||''];
     if (dosFases) row.push((r.fase1Total||0).toFixed(1), r.fase2 ? (r.fase2Total||0).toFixed(1) : '—');
+    // Valores por criterio desde state.calificaciones
+    const cal = state.calificaciones[r.id] || {};
+    let notasObj = {};
+    try { notasObj = JSON.parse(cal.notas_json || '{}'); } catch(e) {}
+    state.criterios.forEach((c, ci) => {
+      // Si hay fase 2 para bai, preferir valores de fase 2 (f2_cN), si no usar cN
+      let val = '—';
+      if (esBai && cal.fase2 && notasObj['f2_c' + ci] !== undefined) {
+        val = parseFloat(notasObj['f2_c' + ci]).toFixed(1);
+      } else if (notasObj['c' + ci] !== undefined) {
+        val = parseFloat(notasObj['c' + ci]).toFixed(1);
+      }
+      row.push(val);
+    });
     row.push(parseFloat(r.total).toFixed(2));
     rows.push(row);
   });
