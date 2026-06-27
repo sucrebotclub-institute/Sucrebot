@@ -770,26 +770,45 @@ let state = {
 
 // ── CRONÓMETRO LK ─────────────────────────────────────────────
 const LK_DURACION = 45 * 60;
-let cronoSegundos = LK_DURACION, cronoInterval = null, cronoRunning = false;
+const CRONO_KEY_START  = 'sucrebot_lk_crono_start';
+const CRONO_KEY_PAUSED = 'sucrebot_lk_crono_paused';
+let cronoInterval = null, cronoRunning = false;
+
+function getCronoSegundos() {
+  const paused = localStorage.getItem(CRONO_KEY_PAUSED);
+  if (paused !== null) return Math.max(0, parseInt(paused));
+  const start = localStorage.getItem(CRONO_KEY_START);
+  if (!start) return LK_DURACION;
+  const elapsed = Math.floor((Date.now() - parseInt(start)) / 1000);
+  return Math.max(0, LK_DURACION - elapsed);
+}
 
 function toggleCrono() {
   if (cronoRunning) {
+    const segsRestantes = getCronoSegundos();
+    localStorage.setItem(CRONO_KEY_PAUSED, segsRestantes);
+    localStorage.removeItem(CRONO_KEY_START);
     clearInterval(cronoInterval); cronoRunning = false;
     document.getElementById('lkCronoBtn').textContent = '▶ Reanudar';
     document.getElementById('lkCronoBtn').className = 'lk-crono-btn start';
   } else {
-    if (cronoSegundos <= 0) return;
+    const segsRestantes = getCronoSegundos();
+    if (segsRestantes <= 0) return;
+    localStorage.setItem(CRONO_KEY_START, Date.now() - (LK_DURACION - segsRestantes) * 1000);
+    localStorage.removeItem(CRONO_KEY_PAUSED);
     cronoRunning = true;
     document.getElementById('lkCronoBtn').textContent = '⏸ Pausar';
     document.getElementById('lkCronoBtn').className = 'lk-crono-btn pause';
-    cronoInterval = setInterval(tickCrono, 1000);
+    cronoInterval = setInterval(tickCrono, 500);
   }
 }
 function tickCrono() {
-  cronoSegundos--;
-  renderCrono();
-  if (cronoSegundos <= 0) {
+  const segs = getCronoSegundos();
+  renderCrono(segs);
+  if (segs <= 0) {
     clearInterval(cronoInterval); cronoRunning = false;
+    localStorage.removeItem(CRONO_KEY_START);
+    localStorage.removeItem(CRONO_KEY_PAUSED);
     document.getElementById('lkCronoBtn').style.display = 'none';
     document.getElementById('lkCronoBadge').style.display = 'inline-flex';
     document.getElementById('lkCronoSub').textContent = '¡Tiempo de Fase 1 agotado! Procede a clasificar para Fase 2.';
@@ -797,23 +816,49 @@ function tickCrono() {
     toast('⏰ ¡Tiempo de Fase 1 agotado!', 'info');
   }
 }
-function renderCrono() {
-  const min = Math.floor(cronoSegundos / 60), seg = cronoSegundos % 60;
+function renderCrono(segs) {
+  if (segs === undefined) segs = getCronoSegundos();
+  const min = Math.floor(segs / 60), seg = segs % 60;
   const el = document.getElementById('lkCronoDisplay');
-  el.textContent = `${String(min).padStart(2,'0')}:${String(seg).padStart(2,'0')}`;
-  const pct = (cronoSegundos / LK_DURACION) * 100;
+  if (!el) return;
+  el.textContent = String(min).padStart(2,'0') + ':' + String(seg).padStart(2,'0');
+  const pct = (segs / LK_DURACION) * 100;
   document.getElementById('lkCronoFill').style.width = pct + '%';
-  if (cronoSegundos <= 60) { el.className = 'lk-crono-display danger'; document.getElementById('lkCronoFill').style.background = 'var(--red)'; }
-  else if (cronoSegundos <= 5*60) { el.className = 'lk-crono-display warning'; document.getElementById('lkCronoFill').style.background = 'var(--orange)'; }
+  if (segs <= 60) { el.className = 'lk-crono-display danger'; document.getElementById('lkCronoFill').style.background = 'var(--red)'; }
+  else if (segs <= 5*60) { el.className = 'lk-crono-display warning'; document.getElementById('lkCronoFill').style.background = 'var(--orange)'; }
   else { el.className = 'lk-crono-display'; document.getElementById('lkCronoFill').style.background = 'var(--cyan)'; }
 }
 function resetCrono() {
-  clearInterval(cronoInterval); cronoRunning = false; cronoSegundos = LK_DURACION; renderCrono();
+  clearInterval(cronoInterval); cronoRunning = false;
+  localStorage.removeItem(CRONO_KEY_START);
+  localStorage.removeItem(CRONO_KEY_PAUSED);
+  renderCrono(LK_DURACION);
   document.getElementById('lkCronoBtn').textContent = '▶ Iniciar';
   document.getElementById('lkCronoBtn').className = 'lk-crono-btn start';
   document.getElementById('lkCronoBtn').style.display = '';
   document.getElementById('lkCronoBadge').style.display = 'none';
   document.getElementById('lkCronoSub').textContent = '45 minutos para calificar Ensamble y Funcionalidad';
+}
+function restaurarCrono() {
+  const segs = getCronoSegundos();
+  const estabaRunning = localStorage.getItem(CRONO_KEY_START) !== null;
+  const agotado = segs <= 0 && (localStorage.getItem(CRONO_KEY_START) === null && localStorage.getItem(CRONO_KEY_PAUSED) === null ? false : true);
+  if (agotado) {
+    renderCrono(0);
+    localStorage.removeItem(CRONO_KEY_START);
+    localStorage.removeItem(CRONO_KEY_PAUSED);
+    document.getElementById('lkCronoBtn').style.display = 'none';
+    document.getElementById('lkCronoBadge').style.display = 'inline-flex';
+    document.getElementById('lkCronoSub').textContent = '¡Tiempo de Fase 1 agotado! Procede a clasificar para Fase 2.';
+  } else {
+    renderCrono(segs);
+    if (estabaRunning) {
+      cronoRunning = true;
+      document.getElementById('lkCronoBtn').textContent = '⏸ Pausar';
+      document.getElementById('lkCronoBtn').className = 'lk-crono-btn pause';
+      cronoInterval = setInterval(tickCrono, 500);
+    }
+  }
 }
 
 // ── UTILIDADES ────────────────────────────────────────────────
@@ -1137,6 +1182,7 @@ function volverPaso1Cal()   { setStep(1); }
 
 // ── PASO 3: CALIFICAR ─────────────────────────────────────────
 function buildPaso3() {
+  if (state.categoria === 'lk') restaurarCrono();
   const cat = state.categoria;
   document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[cat];
   const esLk = cat === 'lk';
