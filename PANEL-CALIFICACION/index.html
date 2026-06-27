@@ -352,17 +352,18 @@
       </div>
 
       <div class="lk-nota" id="lkNota">
-        📋 <strong>Lego Kids — 2 fases:</strong>
+        📋 <strong>Lego Kids — 2 fases · 2 jueces:</strong>
         <strong>Fase 1</strong> (45 min): calificar <strong>Ensamble (50 pts)</strong> y <strong>Funcionalidad (20 pts)</strong> a todos.
         El juez selecciona quiénes clasifican a Fase 2.
-        <strong>Fase 2</strong> (carrera): ingresar <strong>Tiempo de carrera (0–30 pts)</strong> solo a clasificados.
-        Puntaje final = Fase 1 + Fase 2 = <strong>100 pts máx</strong>.
+        <strong>Fase 2</strong> (carrera): ingresar <strong>Tiempo de carrera</strong> según posición de llegada.
+        <span style="font-family:'DM Mono';font-size:.8em">1ro=30 · 2do=25 · 3ro=20 · 4to=15 · 5to=10 · 6to=5 · 7mo+=0</span>
+        Puntaje final = Fase 1 + Fase 2 = <strong>100 pts máx</strong>. Ranking usa <strong>promedio de 2 jueces</strong>.
       </div>
 
       <div class="lk-nota" id="devNota">
-        👥 <strong>Impacto Tecnológico — 3 jueces simultáneos:</strong>
-        Cada juez califica de forma independiente desde su dispositivo (100 pts).
-        El ranking final usa el <strong>promedio</strong> de las 3 calificaciones.
+        👥 <strong>Múltiples jueces simultáneos:</strong>
+        Cada juez califica de forma independiente desde su dispositivo.
+        El ranking final usa el <strong>promedio</strong> de las calificaciones.
         Selecciona quién eres antes de continuar.
       </div>
 
@@ -689,7 +690,7 @@ const LK_CRITERIOS_F1 = [
   { nombre: 'Ensamble completo',  descripcion: 'Cumplimiento del instructivo de ensamble (Fase 1)', peso: 50 },
   { nombre: 'Funcionalidad',      descripcion: 'El prototipo funciona correctamente (Fase 1)',       peso: 20 },
 ];
-const LK_CRITERIO_F2 = { nombre: 'Tiempo de carrera', descripcion: 'Puntaje según tiempo de recorrido (Fase 2)', peso: 30 };
+const LK_CRITERIO_F2 = { nombre: 'Tiempo de carrera', descripcion: '1ro=30 · 2do=25 · 3ro=20 · 4to=15 · 5to=10 · 6to=5 · 7mo+=0 pts', peso: 30 };
 
 // ── CRITERIOS BAI (reglamento oficial) ─────────────────────────
 // Fuente: Reglamento_Robot_Bailarin_Pro_Validado.docx — Tabla 1
@@ -730,7 +731,11 @@ const BAI_JUECES = [
 ];
 
 // Categorías con múltiples jueces simultáneos
-const CATS_MULTI_JUEZ = { dev: DEV_JUECES, bai: BAI_JUECES };
+const LK_JUECES = [
+  { email: 'juez1@lk', nombre: 'Juez 1 — LK' },
+  { email: 'juez2@lk', nombre: 'Juez 2 — LK' },
+];
+const CATS_MULTI_JUEZ = { dev: DEV_JUECES, bai: BAI_JUECES, lk: LK_JUECES };
 
 const DEFAULTS_CRITERIOS = {
   bai: BAI_CRITERIOS,
@@ -755,6 +760,7 @@ let state = {
   baiFase: 1, baiFinalistas: [],
   devJuezIdx: 0,
   baiJuezIdx: 0,
+  lkJuezIdx: 0,
   presentes: new Set(),   // IDs de participantes presentes ese día
   calificacionesPorJuez: {},  // notas por (participante, juez) para dev/bai
   calificacionesFinal: {},       // calificaciones ronda final bai
@@ -865,8 +871,16 @@ document.getElementById('modalConfirmBtn').onclick = () => { const cb = _modalCb
 
 // ── HELPERS: jueces múltiples ─────────────────────────────────
 function getJueces(cat) { return CATS_MULTI_JUEZ[cat] || null; }
-function getJuezIdx(cat) { return cat === 'bai' ? state.baiJuezIdx : state.devJuezIdx; }
-function setJuezIdx(cat, idx) { if (cat === 'bai') state.baiJuezIdx = idx; else state.devJuezIdx = idx; }
+function getJuezIdx(cat) {
+  if (cat === 'bai') return state.baiJuezIdx;
+  if (cat === 'lk')  return state.lkJuezIdx;
+  return state.devJuezIdx;
+}
+function setJuezIdx(cat, idx) {
+  if (cat === 'bai') state.baiJuezIdx = idx;
+  else if (cat === 'lk') state.lkJuezIdx = idx;
+  else state.devJuezIdx = idx;
+}
 function getJuezActivo(cat) { const j = getJueces(cat); return j ? j[getJuezIdx(cat)] : null; }
 function esMultiJuez(cat) { return !!CATS_MULTI_JUEZ[cat]; }
 
@@ -895,6 +909,7 @@ async function seleccionarCategoria(cat) {
     state.baiFase = 1; state.baiFinalistas = [];
     state.devJuezIdx = 0;
     state.baiJuezIdx = 0;
+    state.lkJuezIdx = 0;
     state.presentes = new Set();
     state.calificacionesPorJuez = {};
     state.calificacionesFinal = {};
@@ -904,8 +919,8 @@ async function seleccionarCategoria(cat) {
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
   document.getElementById('lkNota').classList.toggle('show', cat === 'lk');
-  document.getElementById('devNota').classList.toggle('show', cat === 'dev' || cat === 'bai');
-  const mostrarJuezP1 = cat === 'dev' || cat === 'bai';
+  document.getElementById('devNota').classList.toggle('show', cat === 'dev' || cat === 'bai' || cat === 'lk');
+  const mostrarJuezP1 = cat === 'dev' || cat === 'bai' || cat === 'lk';
   document.getElementById('juezSelectorP1').style.display = mostrarJuezP1 ? 'block' : 'none';
   if (mostrarJuezP1) renderJuezSelectorP1(cat);
 
@@ -994,6 +1009,8 @@ async function iniciarCalificacion() {
 
   if (cat === 'lk') {
     state.criterios = [...LK_CRITERIOS_F1]; state.lkFase = 1;
+    const juezGuardadoLk = parseInt(localStorage.getItem('sucrebot_lk_juez') || '0');
+    state.lkJuezIdx = (juezGuardadoLk >= 0 && juezGuardadoLk <= 1) ? juezGuardadoLk : 0;
   } else if (cat === 'bai') {
     state.criterios = BAI_CRITERIOS; state.baiFase = 1;
     const juezGuardadoBai = parseInt(localStorage.getItem('sucrebot_bai_juez') || '0');
