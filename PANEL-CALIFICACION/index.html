@@ -842,7 +842,10 @@ async function iniciarCalificacion() {
   } else if (cat === 'bai') {
     state.criterios = BAI_CRITERIOS; state.baiFase = 1;
   } else if (cat === 'dev') {
-    state.criterios = DEV_CRITERIOS; state.devJuezIdx = 0;
+    state.criterios = DEV_CRITERIOS;
+    // Restaurar juez guardado en este dispositivo
+    const juezGuardado = parseInt(localStorage.getItem('sucrebot_dev_juez') || '0');
+    state.devJuezIdx = (juezGuardado >= 0 && juezGuardado <= 2) ? juezGuardado : 0;
   } else {
     state.criterios = leerCriteriosConfig();
     if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
@@ -1152,6 +1155,7 @@ function renderDevJuezBar() {
 
 function cambiarJuezDev(idx) {
   state.devJuezIdx = idx;
+  localStorage.setItem('sucrebot_dev_juez', idx);
   state.selectedId = null;
   document.getElementById('formCal').style.display = 'none';
   document.getElementById('emptyFormState').style.display = 'block';
