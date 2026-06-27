@@ -820,23 +820,34 @@ let toastTimer;
 function toast(msg, type='info') { const el = document.getElementById('toast'); el.textContent = msg; el.className = `show ${type}`; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3500); }
 function setStep(n) {
   state.step = n;
-  const totalSteps = state.categoria === 'bai' ? 6 : 4;
-  // Mostrar/ocultar pasos 5 y 6 según categoría
-  [5, 6].forEach(i => {
+  const esBai = state.categoria === 'bai';
+  const totalSteps = esBai ? 6 : 4;
+
+  // Actualizar labels de paso 3 y 4
+  const label3 = document.getElementById('label-dot-3');
+  const label4 = document.getElementById('label-dot-4');
+  if (label3) label3.textContent = esBai ? 'Eliminatoria' : 'Calificar';
+  if (label4) label4.textContent = esBai ? 'Rk. Eliminatoria' : 'Ranking';
+
+  // Pasos 1-4
+  [1,2,3,4].forEach(i => {
     const dot = document.getElementById(`step-dot-${i}`);
-    if (dot) dot.style.display = state.categoria === 'bai' ? '' : 'none';
+    if (dot) dot.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
     const panel = document.getElementById(`panel-${i}`);
     if (panel) panel.className = 'step-panel' + (i === n ? ' active' : '');
   });
-  // Actualizar labels de paso 3 y 4 según categoría
-  const label3 = document.getElementById('label-dot-3');
-  const label4 = document.getElementById('label-dot-4');
-  if (label3) label3.textContent = state.categoria === 'bai' ? 'Eliminatoria' : 'Calificar';
-  if (label4) label4.textContent = state.categoria === 'bai' ? 'Rk. Eliminatoria' : 'Ranking';
-  [1,2,3,4].forEach(i => {
-    document.getElementById(`step-dot-${i}`).className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
-    document.getElementById(`panel-${i}`).className = 'step-panel' + (i === n ? ' active' : '');
+
+  // Pasos 5-6: solo para bai
+  [5, 6].forEach(i => {
+    const dot = document.getElementById(`step-dot-${i}`);
+    if (dot) {
+      dot.style.display = esBai ? '' : 'none';
+      if (esBai) dot.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
+    }
+    const panel = document.getElementById(`panel-${i}`);
+    if (panel) panel.className = 'step-panel' + (i === n ? ' active' : '');
   });
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 async function gasGet(params) { const r = await fetch(GAS + '?' + new URLSearchParams(params)); return r.json(); }
