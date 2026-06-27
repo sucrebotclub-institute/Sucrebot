@@ -1117,15 +1117,12 @@ function buildPaso3() {
   document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[cat];
   const esLk = cat === 'lk';
   document.getElementById('lkCronometroBar').classList.toggle('show', esLk);
-  document.getElementById('lkFase2Trigger').style.display = (esLk || cat === 'bai') ? 'block' : 'none';
+  document.getElementById('lkFase2Trigger').style.display = esLk ? 'block' : 'none';
   document.getElementById('juezBar').style.display = esMultiJuez(cat) ? 'flex' : 'none';
   if (esMultiJuez(cat)) renderJuezBar();
 
   // Actualizar label del trigger según categoría
-  if (cat === 'bai') {
-    document.getElementById('lkFase2Trigger').innerHTML =
-      `<button class="btn btn-outline btn-sm" onclick="abrirClasificados()" style="margin-top:8px">🏆 Seleccionar TOP 3 finalistas →</button>`;
-  } else if (esLk) {
+  if (esLk) {
     document.getElementById('lkFase2Trigger').innerHTML =
       `<button class="btn btn-outline btn-sm" onclick="abrirClasificados()" style="margin-top:8px">Seleccionar clasificados para Fase 2 →</button>`;
   }
