@@ -1703,7 +1703,7 @@ async function cargarRanking() {
 
   const tbody = document.getElementById('rankingTbody');
   tbody.innerHTML = '';
-  const colspan = 5 + (dosFases ? 1 : 0);
+  const colspan = 5 + (dosFases ? 1 : 0) + (!dosFases && esMultiJuez(cat) ? 1 : 0);
 
   if (!state.rankingData.length) {
     tbody.innerHTML = `<tr><td colspan="${colspan}"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Sin calificaciones aún.</p></div></td></tr>`;
@@ -1741,7 +1741,7 @@ async function cargarRanking() {
       <td><span class="pos-badge ${posClass}">${pos}</span></td>
       <td style="font-weight:600">${r.robot||r.nombre}</td>
       <td style="color:var(--text-dim);font-size:.82rem">${r.institucion||'—'}</td>
-      <td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${dosFases ? f1Val : ''}</td>
+      ${dosFases ? `<td style="font-family:'DM Mono';font-size:.8rem;color:var(--text-dim)">${f1Val}</td>` : ''}
       ${f2Cell}
       <td>
         <div class="score-bar-wrap">
