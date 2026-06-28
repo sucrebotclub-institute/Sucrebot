@@ -2212,14 +2212,27 @@ async function guardarPodioFinal() {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
     const rankingFinal = res.ranking || [];
     if (!rankingFinal.length) { toast('No hay calificaciones de ronda final', 'error'); loading(false); return; }
+
+    // Participantes de eliminatoria que NO pasaron a la final → Participación
+    const idsFinales = rankingFinal.map(r => r.id);
+    const participacionElim = state.participantes.filter(p => !idsFinales.includes(p.id));
     const TIPOS_PODIO = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
     loading(false);
     confirmar('🏆','GUARDAR PODIO FINAL',
-      `¿Guardar el podio de la Ronda Final de Bailarín?
-TOP 3 con su posición, el resto como Participación.`,
+      `¿Guardar el podio de Bailarín?\nTOP 3 con posición + ${participacionElim.length} eliminados como Participación.`,
       'Guardar podio','success',
       async () => {
         loading(true, 'GUARDANDO PODIO...');
+
+        // Guardar podio_manual con TOP 3 y totales finales
+        const posicionesPodio = rankingFinal.slice(0, 3).map((r, i) => ({
+          posicion: i + 1, equipo_id: r.id,
+          equipo_nombre: r.robot || r.nombre,
+          total: parseFloat(r.total) || 0
+        }));
+        try { await gasPost({ action: 'guardarPodioManual', categoria: 'bai', posiciones: posicionesPodio }); } catch(e) {}
+
+        // Guardar finalistas con su posición
         for (let i = 0; i < rankingFinal.length; i++) {
           const r = rankingFinal[i];
           const p = state.participantes.find(x => x.id === r.id) || {};
@@ -2235,13 +2248,27 @@ TOP 3 con su posición, el resto como Participación.`,
             } catch(e) {}
           }
         }
+
+        // Guardar participantes de eliminatoria que no pasaron a final como Participación
+        for (const p of participacionElim) {
+          const miembros = [];
+          if ((p.nombre||'').trim()) miembros.push({ nombre: p.nombre.trim(), correo: p.correo||'' });
+          if ((p.miembro2||'').trim()) miembros.push({ nombre: p.miembro2.trim(), correo: '' });
+          for (const m of miembros) {
+            try {
+              await gasPost({ action:'guardarCertificado', id_participante:p.id, correo:m.correo,
+                nombre:m.nombre, nombre_completo:m.nombre, categoria:'Bailarín',
+                institucion:p.institucion||'', tipo_certificado:'participacion', evento:'SucreBot 2026' });
+            } catch(e) {}
+          }
+        }
+
         loading(false);
         toast('✅ Podio final guardado', 'success');
       }
     );
   } catch(e) { toast('Error', 'error'); loading(false); }
 }
-
 async function exportarExcelFinal() {
   loading(true, 'GENERANDO CSV...');
   try {
