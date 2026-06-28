@@ -1708,21 +1708,8 @@ function terminarCategoria() {
     async () => {
       loading(true, 'TERMINANDO CATEGORÍA...');
       try {
-        // Para bai: guardar podio_manual desde bai_final ANTES de borrar puntuaciones
+        // Para bai: también resetear bai_final (resultados_publicados no se toca)
         if (state.categoria === 'bai') {
-          try {
-            const resFinal = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
-            const rankFinal = resFinal.ranking || [];
-            if (rankFinal.length > 0) {
-              const posiciones = rankFinal.slice(0, 3).map((r, i) => ({
-                posicion: i + 1, equipo_id: r.id,
-                equipo_nombre: r.robot || r.nombre,
-                total: parseFloat(r.total) || 0
-              }));
-              await gasPost({ action: 'guardarPodioManual', categoria: 'bai', posiciones });
-            }
-          } catch(e2) { console.warn('No se pudo guardar podio_manual antes de terminar:', e2); }
-          // También resetear bai_final
           await gasPost({ action: 'resetearCalificacionCategoria', categoria: 'bai_final' }).catch(() => {});
         }
         await gasPost({ action: 'resetearCalificacionCategoria', categoria: state.categoria });
@@ -1884,16 +1871,16 @@ async function guardarPodio() {
       loading(true, 'GUARDANDO COMPETIDORES...');
       const TIPOS_PODIO = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
 
-      // Guardar podio manual (TOP 3) para que publicarJSON lo use como respaldo permanente
-      const posicionesPodio = state.rankingData.slice(0, 3).map((r, i) => ({
-        posicion: i + 1,
-        equipo_id: r.id,
-        equipo_nombre: r.robot || r.nombre,
-        total: parseFloat(r.total) || 0
+      // Publicar ranking completo en resultados_publicados (permanente, no se borra al resetear)
+      const rankingPublicar = state.rankingData.map((r, i) => ({
+        id: r.id, nombre: r.nombre, robot: r.robot || r.nombre,
+        institucion: r.institucion || '',
+        total: parseFloat(r.total) || 0,
+        posicion: i + 1
       }));
       try {
-        await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones: posicionesPodio });
-      } catch(e) { console.warn('guardarPodioManual error:', e); }
+        await gasPost({ action: 'publicarPodioCalificacion', categoria: state.categoria, ranking: rankingPublicar });
+      } catch(e) { console.warn('publicarPodioCalificacion error:', e); }
 
       for (let i = 0; i < state.rankingData.length; i++) {
         const r = state.rankingData[i];
@@ -2241,13 +2228,12 @@ async function guardarPodioFinal() {
       async () => {
         loading(true, 'GUARDANDO PODIO...');
 
-        // Guardar podio_manual con TOP 3 y totales finales
-        const posicionesPodio = rankingFinal.slice(0, 3).map((r, i) => ({
-          posicion: i + 1, equipo_id: r.id,
-          equipo_nombre: r.robot || r.nombre,
-          total: parseFloat(r.total) || 0
-        }));
-        try { await gasPost({ action: 'guardarPodioManual', categoria: 'bai', posiciones: posicionesPodio }); } catch(e) {}
+        // Publicar ranking completo bai en resultados_publicados (permanente)
+        const rankingCompletoFinal = [
+          ...rankingFinal.map((r, i) => ({ id: r.id, nombre: r.nombre, robot: r.robot || r.nombre, institucion: r.institucion || '', total: parseFloat(r.total) || 0, posicion: i + 1 })),
+          ...participacionElim.map((p, i) => ({ id: p.id, nombre: p.nombre, robot: p.robot || p.nombre, institucion: p.institucion || '', total: 0, posicion: rankingFinal.length + i + 1 }))
+        ];
+        try { await gasPost({ action: 'publicarPodioCalificacion', categoria: 'bai', ranking: rankingCompletoFinal }); } catch(e) { console.warn('publicarPodioCalificacion bai error:', e); }
 
         // Guardar finalistas con su posición
         for (let i = 0; i < rankingFinal.length; i++) {
