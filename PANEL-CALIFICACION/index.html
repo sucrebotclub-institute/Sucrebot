@@ -737,6 +737,64 @@ const LK_JUECES = [
 ];
 const CATS_MULTI_JUEZ = { dev: DEV_JUECES, bai: BAI_JUECES, lk: LK_JUECES };
 
+// ── JUEZ REMOTO — tracking entre dispositivos ─────────────────
+const DEVICE_ID = (localStorage.getItem('sucrebot_device_id') || (() => {
+  const id = 'dev-' + Math.random().toString(36).slice(2,8);
+  localStorage.setItem('sucrebot_device_id', id);
+  return id;
+})());
+let juecesRemotos = {}; // { 'dev': { 0: true, 1: false, ... }, 'bai': {...} }
+let _juezPollInterval = null;
+
+async function publicarJuezActivo(cat, idx) {
+  if (!cat || idx === undefined) return;
+  try {
+    await gasPost({
+      action: 'setEstado',
+      ruta: 'juez_activo_' + cat + '_' + DEVICE_ID,
+      estado: { cat, idx, ts: Date.now() }
+    });
+  } catch(e) {}
+}
+
+async function pollJuecesRemotos() {
+  const cat = state.categoria;
+  if (!cat || !esMultiJuez(cat)) return;
+  try {
+    const resp = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getAllEstados' }));
+    const data = await resp.json();
+    const remotos = {};
+    const ahora = Date.now();
+    const TIMEOUT_MS = 60000; // 1 min sin actualizar = desconectado
+    Object.entries(data).forEach(([ruta, val]) => {
+      if (!ruta.startsWith('juez_activo_' + cat + '_')) return;
+      const deviceDe = ruta.replace('juez_activo_' + cat + '_', '');
+      if (deviceDe === DEVICE_ID) return; // ignorar el propio
+      const estado = val.estado || {};
+      if (!estado.ts || (ahora - estado.ts) > TIMEOUT_MS) return; // expirado
+      if (estado.cat === cat && estado.idx !== undefined) {
+        remotos[estado.idx] = true;
+      }
+    });
+    juecesRemotos[cat] = remotos;
+    renderJuezBar();
+    if (document.getElementById('juezSelectorP1')?.style.display !== 'none') {
+      renderJuezSelectorP1(cat);
+    }
+  } catch(e) {}
+}
+
+function iniciarPollJueces(cat) {
+  if (_juezPollInterval) clearInterval(_juezPollInterval);
+  juecesRemotos[cat] = {};
+  _juezPollInterval = setInterval(() => pollJuecesRemotos(), 10000);
+  pollJuecesRemotos(); // primera llamada inmediata
+}
+
+function detenerPollJueces() {
+  if (_juezPollInterval) { clearInterval(_juezPollInterval); _juezPollInterval = null; }
+}
+
 const DEFAULTS_CRITERIOS = {
   bai: BAI_CRITERIOS,
   dev: DEV_CRITERIOS,
@@ -952,6 +1010,7 @@ async function seleccionarCategoria(cat) {
     state.calificaciones = {}; state.rondaActual = {};
     state.lkFase = 1; state.lkClasificados = [];
     state.baiFase = 1; state.baiFinalistas = [];
+    detenerPollJueces();
     state.devJuezIdx = 0;
     state.baiJuezIdx = 0;
     state.lkJuezIdx = 0;
@@ -1192,7 +1251,10 @@ function buildPaso3() {
   const juecesN = getJueces(cat) ? getJueces(cat).length : 3;
   const btn2 = document.getElementById('btnJuez2');
   if (btn2) btn2.style.display = juecesN >= 3 ? '' : 'none';
-  if (esMultiJuez(cat)) renderJuezBar();
+  if (esMultiJuez(cat)) {
+    renderJuezBar();
+    iniciarPollJueces(cat);
+  }
 
   // Actualizar label del trigger según categoría
   if (esLk) {
@@ -1388,10 +1450,16 @@ function renderJuezSelectorP1(cat) {
     const btn = document.createElement('button');
     const activo = i === juezIdx;
     btn.style.cssText = `flex:1;min-width:120px;padding:12px 16px;font-family:'Orbitron';font-size:.65rem;letter-spacing:1.5px;border-radius:8px;border:2px solid ${activo ? 'var(--green)' : 'var(--panel-border2)'};cursor:pointer;transition:all .2s;background:${activo ? 'var(--green)' : 'var(--panel-bg3)'};color:${activo ? '#fff' : 'var(--text-dim)'};font-weight:${activo ? '700' : '400'};`;
-    btn.innerHTML = `${j.nombre}${activo ? '<br><span style="font-size:.55rem;opacity:.8">✓ Seleccionado</span>' : ''}`;
+    const enUsoRemoto = !activo && (juecesRemotos[cat] || {})[i];
+    btn.style.borderColor = activo ? 'var(--green)' : (enUsoRemoto ? '#f5a623' : 'var(--panel-border2)');
+    btn.style.background  = activo ? 'var(--green)' : (enUsoRemoto ? 'rgba(245,166,35,0.15)' : 'var(--panel-bg3)');
+    btn.style.color       = activo ? '#fff' : (enUsoRemoto ? '#f5a623' : 'var(--text-dim)');
+    btn.style.fontWeight  = activo ? '700' : (enUsoRemoto ? '600' : '400');
+    btn.innerHTML = `${j.nombre}${activo ? '<br><span style="font-size:.55rem;opacity:.8">✓ Seleccionado</span>' : (enUsoRemoto ? '<br><span style="font-size:.55rem;opacity:.8">⚠ En uso</span>' : '')}`;
     btn.onclick = () => {
       setJuezIdx(cat, i);
       localStorage.setItem('sucrebot_' + cat + '_juez', i);
+      publicarJuezActivo(cat, i);
       renderJuezSelectorP1(cat);
     };
     container.appendChild(btn);
@@ -1413,11 +1481,13 @@ function renderJuezBar() {
     }).length;
     const total = state.participantes.length;
     const activo = i === juezIdx;
-    btn.innerHTML = `${j.nombre}<br><span style="font-size:.6rem;opacity:.8">${calificados}/${total} calificados</span>`;
-    btn.style.background = activo ? 'var(--green)' : 'var(--panel-bg3)';
-    btn.style.color = activo ? '#fff' : 'var(--text-dim)';
-    btn.style.borderColor = activo ? 'var(--green)' : 'var(--panel-border2)';
-    btn.style.fontWeight = activo ? '700' : '400';
+    const enUsoLabel2 = !activo && (juecesRemotos[cat] || {})[i] ? ' <span style="color:#f5a623;font-size:.55rem">⚠ En uso</span>' : '';
+    btn.innerHTML = `${j.nombre}${enUsoLabel2}<br><span style="font-size:.6rem;opacity:.8">${calificados}/${total} calificados</span>`;
+    const enUsoRemoto2 = !activo && (juecesRemotos[cat] || {})[i];
+    btn.style.background  = activo ? 'var(--green)' : (enUsoRemoto2 ? 'rgba(245,166,35,0.15)' : 'var(--panel-bg3)');
+    btn.style.color       = activo ? '#fff' : (enUsoRemoto2 ? '#f5a623' : 'var(--text-dim)');
+    btn.style.borderColor = activo ? 'var(--green)' : (enUsoRemoto2 ? '#f5a623' : 'var(--panel-border2)');
+    btn.style.fontWeight  = activo ? '700' : (enUsoRemoto2 ? '600' : '400');
   });
 }
 
@@ -1425,6 +1495,7 @@ function cambiarJuez(idx) {
   const cat = state.categoria;
   setJuezIdx(cat, idx);
   localStorage.setItem('sucrebot_' + cat + '_juez', idx);
+  publicarJuezActivo(cat, idx);
   state.selectedId = null;
   document.getElementById('formCal').style.display = 'none';
   document.getElementById('emptyFormState').style.display = 'block';
