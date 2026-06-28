@@ -1708,6 +1708,23 @@ function terminarCategoria() {
     async () => {
       loading(true, 'TERMINANDO CATEGORÍA...');
       try {
+        // Para bai: guardar podio_manual desde bai_final ANTES de borrar puntuaciones
+        if (state.categoria === 'bai') {
+          try {
+            const resFinal = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
+            const rankFinal = resFinal.ranking || [];
+            if (rankFinal.length > 0) {
+              const posiciones = rankFinal.slice(0, 3).map((r, i) => ({
+                posicion: i + 1, equipo_id: r.id,
+                equipo_nombre: r.robot || r.nombre,
+                total: parseFloat(r.total) || 0
+              }));
+              await gasPost({ action: 'guardarPodioManual', categoria: 'bai', posiciones });
+            }
+          } catch(e2) { console.warn('No se pudo guardar podio_manual antes de terminar:', e2); }
+          // También resetear bai_final
+          await gasPost({ action: 'resetearCalificacionCategoria', categoria: 'bai_final' }).catch(() => {});
+        }
         await gasPost({ action: 'resetearCalificacionCategoria', categoria: state.categoria });
         await gasPost({ action: 'desbloquearCategoria', categoria: catNombre }).catch(() => {});
       } catch(e) { toast('Error al terminar categoría', 'error'); loading(false); return; }
