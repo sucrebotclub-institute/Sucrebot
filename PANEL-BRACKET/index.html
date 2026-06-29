@@ -368,6 +368,23 @@
   </div>
 </div>
 
+<!-- MODAL TERCER LUGAR -->
+<div class="modal-overlay" id="tercerLugarModal">
+  <div class="modal-box" style="max-width:420px;text-align:left;">
+    <div class="modal-icon" style="text-align:center;">🥉</div>
+    <div class="modal-title" style="text-align:center;">TERCER LUGAR</div>
+    <div class="modal-msg" style="text-align:center;">Selecciona quién ocupa el 3er lugar. El 1ro y 2do se toman automáticamente de la Final.</div>
+    <div class="podio-manual-campos" style="margin-top:16px;">
+      <label class="pm-label">🥉 3er lugar</label>
+      <select id="tercerLugarSelect" class="pm-select"></select>
+    </div>
+    <div class="modal-btns" style="margin-top:20px;">
+      <button class="btn btn-outline btn-sm" onclick="cerrarTercerLugar()">Cancelar</button>
+      <button class="btn btn-green btn-sm" onclick="guardarTercerLugar()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <!-- CRONÓMETRO SOCCER -->
 <div class="cronometro-overlay" id="cronOverlay">
   <div class="cron-box">
@@ -673,6 +690,7 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-outline btn-sm" onclick="volverPaso1()">← Inicio</button>
             <button class="btn btn-outline btn-sm" id="btnPodio" style="display:none;" onclick="guardarPodio()">💾 Guardar podio</button>
+            <button class="btn btn-outline btn-sm" id="btnTercerLugar" style="display:none;" onclick="abrirTercerLugar()">🥉 3er lugar</button>
             <button class="btn btn-outline btn-sm" id="btnVerPodio" style="display:none;" onclick="verPodioEnBracket()">🏆 Ver podio</button>
             <button class="btn btn-outline btn-sm" id="btnPodioManual" onclick="abrirPodioManual()">🏆 Podio Manual</button>
             <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
@@ -911,6 +929,10 @@ function renderBracket() {
   }
   document.getElementById('btnPodio').style.display=finalizado?'inline-flex':'none';
   document.getElementById('btnVerPodio').style.display=finalizado?'inline-flex':'none';
+  // Mostrar botón 3er lugar si hay SEMIFINAL y la FINAL está finalizada (sin fase 3ER LUGAR)
+  const hayBtnTercero = finalizado && fases.some(f=>f.nombre==='SEMIFINAL') && !fases.some(f=>f.nombre==='3ER LUGAR');
+  const btnTercero = document.getElementById('btnTercerLugar');
+  if (btnTercero) btnTercero.style.display = hayBtnTercero ? 'inline-flex' : 'none';
   container.innerHTML=fases.map(fase=>`<div class="bracket-fase"><div class="fase-label">${fase.nombre}</div><div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`).join('');
   if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; }
 }
@@ -1229,7 +1251,7 @@ async function verPodioEnBracket() {
 async function guardarPodio() {
   const podio=await obtenerPodioCalculado();
   if(!podio){ toast('Aún no hay suficiente información para guardar el podio','error'); return; }
-  if(!podio.soccer&&!podio.manual&&podio.partido3erPendiente){ toast('El partido por el 3er lugar aún no ha terminado','error'); return; }
+  if(!podio.soccer&&!podio.manual&&podio.partido3erPendiente&&!podio.tercero){ toast('El partido por el 3er lugar aún no ha terminado — usa "🥉 3er lugar" para asignarlo','error'); return; }
   if(!podio.soccer&&!podio.manual&&esTodosContraTodos()&&podio.empatado){ toast('Hay un empate sin resolver — usa "🏆 Podio Manual" primero','error'); return; }
 
   confirmar('🏆','GUARDAR PODIO',`¿Guardar el podio de ${CAT_INFO[state.categoria]?.nombre} en certificados?`,'Guardar','success',
@@ -1287,6 +1309,67 @@ function abrirPodioManual() {
   document.getElementById('podioManualModal').classList.add('show');
 }
 function cerrarPodioManual() { document.getElementById('podioManualModal').classList.remove('show'); }
+
+// ── TERCER LUGAR (bracket con semifinal, sin partido 3er lugar) ──
+function abrirTercerLugar() {
+  const fases = state.bracket?.fases || [];
+  const faseSemi = fases.find(f => f.nombre === 'SEMIFINAL');
+  const faseFinal = fases.find(f => f.nombre === 'FINAL');
+  if (!faseSemi || !faseFinal) { toast('No hay semifinal disponible', 'error'); return; }
+  const partidoFinal = faseFinal.partidos.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
+  if (!partidoFinal) { toast('La final aún no ha terminado', 'error'); return; }
+  // Perdedores de semifinal = los que no llegaron a la final
+  const finalistas = new Set([partidoFinal.equipo_a_id, partidoFinal.equipo_b_id]);
+  const candidatos = [];
+  faseSemi.partidos.forEach(p => {
+    if (p.estado === 'FINALIZADO' && p.ganador_id) {
+      // El perdedor del partido de semifinal
+      const perdedorId = p.ganador_id === p.equipo_a_id ? p.equipo_b_id : p.equipo_a_id;
+      const perdedorNom = p.ganador_id === p.equipo_a_id ? p.equipo_b_nombre : p.equipo_a_nombre;
+      if (perdedorId && !finalistas.has(perdedorId)) {
+        candidatos.push({ id: perdedorId, nombre: perdedorNom });
+      }
+    }
+  });
+  if (!candidatos.length) { toast('No se encontraron candidatos para el 3er lugar', 'error'); return; }
+  const sel = document.getElementById('tercerLugarSelect');
+  sel.innerHTML = candidatos.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+  document.getElementById('tercerLugarModal').classList.add('show');
+}
+
+function cerrarTercerLugar() { document.getElementById('tercerLugarModal').classList.remove('show'); }
+
+async function guardarTercerLugar() {
+  const sel = document.getElementById('tercerLugarSelect');
+  const terceroId = sel.value;
+  const terceroNom = sel.options[sel.selectedIndex]?.text || '';
+  if (!terceroId) { toast('Selecciona un equipo', 'error'); return; }
+  // Obtener 1ro y 2do de la final
+  const fases = state.bracket?.fases || [];
+  const faseFinal = fases.find(f => f.nombre === 'FINAL');
+  const pf = faseFinal?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
+  if (!pf) { toast('La final no está finalizada', 'error'); return; }
+  const primeroId  = pf.ganador_id;
+  const primeroNom = pf.ganador_id === pf.equipo_a_id ? pf.equipo_a_nombre : pf.equipo_b_nombre;
+  const segundoId  = pf.ganador_id === pf.equipo_a_id ? pf.equipo_b_id : pf.equipo_a_id;
+  const segundoNom = pf.ganador_id === pf.equipo_a_id ? pf.equipo_b_nombre : pf.equipo_a_nombre;
+  cerrarTercerLugar();
+  loading(true, 'GUARDANDO 3ER LUGAR...');
+  try {
+    const posiciones = [
+      { posicion: 1, equipo_id: primeroId,  equipo_nombre: primeroNom },
+      { posicion: 2, equipo_id: segundoId,  equipo_nombre: segundoNom },
+      { posicion: 3, equipo_id: terceroId,  equipo_nombre: terceroNom }
+    ];
+    const r = await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones });
+    if (!r.ok) throw new Error(r.error || 'Error');
+    // Actualizar podio en state para que guardarPodio lo use
+    state.podioManual = posiciones;
+    toast('🥉 3er lugar guardado — ahora usa "Guardar podio" para los certificados', 'success');
+    verPodioEnBracket();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  loading(false);
+}
 async function guardarPodioManualUI() {
   let equipos;
   if(state.tipo==='soccer'){
