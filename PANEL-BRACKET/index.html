@@ -1483,6 +1483,33 @@ function actualizarIntentosPenales() {
   if(a<3||b<3){faseEl.textContent=`Ronda inicial ${Math.min(Math.max(a,b)+1,3)} / 3`;}
   else{const rs=Math.max(a-3,b-3)+1;faseEl.textContent=`⚡ Muerte súbita — Ronda ${rs}`;}
 }
+function minutoTecnicoSoc(equipo) {
+  if(cron.fase==='fin')return;
+  const usados=equipo==='A'?cron.mtUsadoA:cron.mtUsadoB;
+  const nom=equipo==='A'?(cron.partido?.equipo_a_nombre||'A'):(cron.partido?.equipo_b_nombre||'B');
+  if(usados>=1){
+    toast(`⚠️ ${nom} ya usó su minuto técnico en este partido`,'error');
+    return;
+  }
+  if(!confirm(`¿Conceder el único minuto técnico a "${nom}"?`))return;
+  if(equipo==='A')cron.mtUsadoA++;else cron.mtUsadoB++;
+  const btn=document.getElementById(equipo==='A'?'btnMtA':'btnMtB');
+  btn.disabled=true; btn.style.opacity='0.4';
+  if(cron.corriendo){ cron.corriendo=false; clearInterval(cron.interval); document.getElementById('btnCronIniciar').disabled=false; document.getElementById('btnCronPausar').disabled=true; document.getElementById('btnCronIniciar').textContent='▶ Reanudar'; }
+  toast(`⏱ Minuto técnico para ${nom} — presiona Reanudar cuando termine`,'info');
+}
+function sinRobotsFuncionales(equipoSinRobots) {
+  if(!cron.partido)return;
+  const nomSin=equipoSinRobots==='A'?(cron.partido?.equipo_a_nombre||'A'):(cron.partido?.equipo_b_nombre||'B');
+  const nomGan=equipoSinRobots==='A'?(cron.partido?.equipo_b_nombre||'B'):(cron.partido?.equipo_a_nombre||'A');
+  if(!confirm(`"${nomSin}" se queda sin robots funcionales.\n¿Confirmar victoria de "${nomGan}" con +2 goles de diferencia?`))return;
+  if(cron.interval)clearInterval(cron.interval); cron.corriendo=false;
+  const gSin=equipoSinRobots==='A'?cron.golesA:cron.golesB, gGan=equipoSinRobots==='A'?cron.golesB:cron.golesA;
+  const gGanFinal=Math.max(gGan,gSin+2);
+  if(equipoSinRobots==='A')cron.golesB=gGanFinal;else cron.golesA=gGanFinal;
+  actualizarMarcadorCron();
+  descalificarEquipo(equipoSinRobots,'sin robots funcionales');
+}
 function definirPorPenales() { if(cron.penalesA===cron.penalesB){toast('Sigue el empate en penales','error');return;} cron.fase='fin'; terminarPartidoSoccer(); }
 
 function amonestar(equipo) {
@@ -1498,12 +1525,12 @@ function actualizarAmonestaciones() {
   elA.textContent=cron.amonA; elB.textContent=cron.amonB;
   elA.classList.toggle('alerta',cron.amonA>=5); elB.classList.toggle('alerta',cron.amonB>=5);
 }
-async function descalificarEquipo(equipoInfractor) {
+async function descalificarEquipo(equipoInfractor, motivoExterno) {
   if(!cron.partido)return;
   const nomInf=equipoInfractor==='A'?(cron.partido?.equipo_a_nombre||'A'):(cron.partido?.equipo_b_nombre||'B');
   const nomGan=equipoInfractor==='A'?(cron.partido?.equipo_b_nombre||'B'):(cron.partido?.equipo_a_nombre||'A');
-  if(!confirm(`¿Confirmas que "${nomInf}" pierde por descalificación?\nSe guardará el marcador con +2 goles a favor de "${nomGan}".`))return;
-  const motivo=prompt('Motivo breve:','5 amonestaciones'); if(motivo===null)return;
+  if(!motivoExterno && !confirm(`¿Confirmas que "${nomInf}" pierde por descalificación?\nSe guardará el marcador con +2 goles a favor de "${nomGan}".`))return;
+  const motivo=motivoExterno||prompt('Motivo breve:','descalificación'); if(motivo===null)return;
   if(cron.interval)clearInterval(cron.interval); cron.corriendo=false;
   const gInf=equipoInfractor==='A'?cron.golesA:cron.golesB, gGan=equipoInfractor==='A'?cron.golesB:cron.golesA;
   const gGanFinal=Math.max(gGan,gInf+2);
