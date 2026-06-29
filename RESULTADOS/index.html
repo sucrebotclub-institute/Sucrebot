@@ -718,22 +718,22 @@
         const r    = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-store' });
         const data = await r.json();
         const nuevoTs = data.ts || 0;
+        // Siempre alimentar bracket y soccer (el ts puede no cambiar si el GAS publicó rápido)
+        if (data.bracket) {
+          ['ms_a','ms_rc','bat'].forEach(function(cat) {
+            bracketCache[cat] = data.bracket[cat] || null;
+          });
+        }
+        if (data.soccer !== undefined) {
+          soccerTorneo = data.soccer || null;
+        }
         if (nuevoTs !== ultimoTs) {
           ultimoTs  = nuevoTs;
           datosJSON = data;
           try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch(e) {}
-          // Alimentar bracket y soccer desde el JSON — sin llamar al GAS
-          if (data.bracket) {
-            ['ms_a','ms_rc','bat'].forEach(function(cat) {
-              bracketCache[cat] = data.bracket[cat] || null;
-            });
-          }
-          if (data.soccer !== undefined) {
-            soccerTorneo = data.soccer || null;
-          }
           renderTabs();
-          actualizarVista();
         }
+        actualizarVista();
       } catch(e) { console.error('Error al cargar JSON:', e); }
     }
 
