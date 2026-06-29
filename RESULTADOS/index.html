@@ -513,7 +513,31 @@
         return `<div class="bracket-fase"><div class="${es3er ? 'fase-nombre fase-3er' : 'fase-nombre'}">${fase.nombre}</div>${partidosHTML}</div>`;
       }).join('');
       let podioHTML = '';
-      if (partidoFin) {
+      // ── Podio desde TODOS CONTRA TODOS (tabla de puntos) ──
+      const faseTCV = bracket.fases.find(f => f.nombre === 'TODOS CONTRA TODOS');
+      if (faseTCV && faseTCV.partidos.every(p => p.estado === 'FINALIZADO')) {
+        // Calcular tabla de posiciones localmente desde los partidos del TCV
+        const tablaTCV = {};
+        faseTCV.partidos.forEach(p => {
+          if (!tablaTCV[p.equipo_a_id]) tablaTCV[p.equipo_a_id] = { nombre: p.equipo_a_nombre, puntos: 0, jugados: 0 };
+          if (!tablaTCV[p.equipo_b_id]) tablaTCV[p.equipo_b_id] = { nombre: p.equipo_b_nombre, puntos: 0, jugados: 0 };
+          if (p.estado === 'FINALIZADO' && p.ganador_id) {
+            tablaTCV[p.equipo_a_id].jugados++; tablaTCV[p.equipo_b_id].jugados++;
+            if (p.ganador_id === p.equipo_a_id) tablaTCV[p.equipo_a_id].puntos += 3;
+            else tablaTCV[p.equipo_b_id].puntos += 3;
+          }
+        });
+        const listaTCV = Object.values(tablaTCV).sort((a,b) => b.puntos - a.puntos);
+        if (listaTCV.length >= 2) {
+          const medals = ['🥇','🥈','🥉'];
+          const labels = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
+          const classes = ['oro','plata','bronce'];
+          const cards = listaTCV.slice(0,3).map((e,i) =>
+            `<div class="podio-card ${classes[i]}"><div class="podio-card-icon">${medals[i]}</div><div class="podio-card-nombre">${e.nombre}</div><div class="podio-card-label">${labels[i]}</div></div>`
+          ).join('');
+          podioHTML = `<div class="podio-inline"><div class="podio-inline-title">🏆 PODIO — ${nombreCat.toUpperCase()}</div>${cards}</div>`;
+        }
+      } else if (partidoFin) {
         const ganId = partidoFin.ganador_id;
         const ganN  = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_a_nombre : partidoFin.equipo_b_nombre;
         const perN  = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_b_nombre : partidoFin.equipo_a_nombre;
