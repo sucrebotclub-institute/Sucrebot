@@ -1766,7 +1766,7 @@ function msRepetirAsalto() {
 
 // ── Eventos de puntuación (no terminan el asalto) ──────────────
 function msExpulsion(equipoExpulsor) {
-  if (ms.fase === 'fin' || ms.fase === 'fin_asalto') return;
+  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el asalto', 'error'); return; }
   const nom = equipoExpulsor === 'A' ? msNomA() : msNomB();
   if (equipoExpulsor === 'A') ms.asalto.ptsA++;
   else ms.asalto.ptsB++;
@@ -1775,7 +1775,7 @@ function msExpulsion(equipoExpulsor) {
 }
 
 function msAbandono(equipoQueAbandona) {
-  if (ms.fase === 'fin' || ms.fase === 'fin_asalto') return;
+  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el asalto', 'error'); return; }
   const ganador = equipoQueAbandona === 'A' ? 'B' : 'A';
   const nomAband = equipoQueAbandona === 'A' ? msNomA() : msNomB();
   const nomGana  = ganador === 'A' ? msNomA() : msNomB();
@@ -1786,7 +1786,7 @@ function msAbandono(equipoQueAbandona) {
 }
 
 function msAmonestar(equipo) {
-  if (ms.fase === 'fin' || ms.fase === 'fin_asalto') return;
+  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el asalto', 'error'); return; }
   const nom = equipo === 'A' ? msNomA() : msNomB();
   if (equipo === 'A') ms.asalto.ptsA--;
   else ms.asalto.ptsB--;
