@@ -524,6 +524,13 @@
           bronce = `<div class="podio-card bronce"><div class="podio-card-icon">🥉</div><div class="podio-card-nombre">${bN}</div><div class="podio-card-label">TERCER LUGAR</div></div>`;
         } else if (partido3er && partido3er.estado === 'PENDIENTE') {
           bronce = `<div class="podio-card bronce" style="opacity:.5;"><div class="podio-card-icon">🥉</div><div class="podio-card-nombre" style="font-size:.85rem;">${partido3er.equipo_a_nombre} vs ${partido3er.equipo_b_nombre}</div><div class="podio-card-label">3ER LUGAR — POR JUGAR</div></div>`;
+        } else {
+          // Fallback: leer del podio_manual del JSON
+          const podioMan = (datosJSON && datosJSON.podio_manual && datosJSON.podio_manual[ruta]) || [];
+          const terceroMan = podioMan.find(function(p) { return p.posicion === 3; });
+          if (terceroMan) {
+            bronce = `<div class="podio-card bronce"><div class="podio-card-icon">🥉</div><div class="podio-card-nombre">${terceroMan.equipo_nombre}</div><div class="podio-card-label">TERCER LUGAR</div></div>`;
+          }
         }
         podioHTML = `<div class="podio-inline"><div class="podio-inline-title">🏆 PODIO — ${nombreCat.toUpperCase()}</div><div class="podio-card oro"><div class="podio-card-icon">🥇</div><div class="podio-card-nombre">${ganN}</div><div class="podio-card-label">GANADOR</div></div><div class="podio-card plata"><div class="podio-card-icon">🥈</div><div class="podio-card-nombre">${perN}</div><div class="podio-card-label">SUBCAMPEÓN</div></div>${bronce}</div>`;
       }
