@@ -477,13 +477,13 @@
       <div class="ms-eq">
         <div class="ms-eq-nombre" id="msNombreA">A</div>
         <div class="ms-eq-pts" id="msPtsA">0</div>
-        <div class="ms-eq-amon" id="msAmonA">🟨 0 amon.</div>
+        <div class="ms-eq-amon" id="msAmonA">Asaltos: 0</div>
       </div>
       <div class="ms-vs">VS</div>
       <div class="ms-eq">
         <div class="ms-eq-nombre" id="msNombreB">B</div>
         <div class="ms-eq-pts" id="msPtsB">0</div>
-        <div class="ms-eq-amon" id="msAmonB">🟨 0 amon.</div>
+        <div class="ms-eq-amon" id="msAmonB">Asaltos: 0</div>
       </div>
     </div>
 
@@ -506,12 +506,14 @@
         <button class="btn-ms expulsion" onclick="msExpulsion('A')">🏟 Expulsión de A → +1 a A</button>
         <button class="btn-ms abandono" onclick="msAbandono('A')">🚩 A abandona → +1 a B</button>
         <button class="btn-ms amon"     onclick="msAmonestar('A')">🟨 Amonestar A → −1 a A</button>
+        <button class="btn-ms" style="background:rgba(139,139,139,.15);color:var(--muted);border:1px solid rgba(139,139,139,.3)" onclick="msRetiro('A')">🔧 A no funciona</button>
       </div>
       <div class="ms-col">
         <div class="ms-col-titulo" id="msColB">EQUIPO B</div>
         <button class="btn-ms expulsion" onclick="msExpulsion('B')">🏟 Expulsión de B → +1 a B</button>
         <button class="btn-ms abandono" onclick="msAbandono('B')">🚩 B abandona → +1 a A</button>
         <button class="btn-ms amon"     onclick="msAmonestar('B')">🟨 Amonestar B → −1 a B</button>
+        <button class="btn-ms" style="background:rgba(139,139,139,.15);color:var(--muted);border:1px solid rgba(139,139,139,.3)" onclick="msRetiro('B')">🔧 B no funciona</button>
       </div>
     </div>
 
@@ -1602,14 +1604,299 @@ async function finalizarCombate(equipoGanador,motivo) {
 //  Puntuación: Expulsión +1, Abandono +1, Amonestación -1
 //  Posiciones: Asalto 1=De espaldas, 2=De lado, 3=Frente a frente
 // ════════════════════════════════════════
+// ════════════════════════════════════════
+//  PANEL MINISUMO — Reglamento oficial
+//  • 3 asaltos siempre (posiciones: espaldas/lado/frente)
+//  • Puntos POR ASALTO: Expulsión +1, Abandono +1, Amonestación −1
+//  • Ganador de asalto = más puntos al terminar el tiempo
+//  • Ganador de combate = gana 2 de 3 asaltos
+//  • Retiro anticipado: capitán puede declarar que su robot no funciona
+// ════════════════════════════════════════
 const MS_POSICIONES = ['De espaldas', 'De lado', 'Frente a frente'];
 let ms = {
-  partido: null, asaltoActual: 0, fase: 'idle', corriendo: false, interval: null,
+  partido: null,
+  asaltoActual: 0,   // 0,1,2
+  fase: 'idle',      // idle|corriendo|pausado|fin_asalto|fin
+  corriendo: false,
+  interval: null,
   segundos: 180,
-  ptsA: 0, ptsB: 0, amonA: 0, amonB: 0,
-  // Por asalto: { ganador: 'A'|'B'|null, ptsA, ptsB, repetir }
-  asaltos: [ {ganador:null,ptsA:0,ptsB:0}, {ganador:null,ptsA:0,ptsB:0}, {ganador:null,ptsA:0,ptsB:0} ]
+  // Estado del asalto en curso
+  asalto: { ptsA: 0, ptsB: 0 },
+  // Resultado de cada asalto: null | 'A' | 'B'
+  asaltos: [null, null, null]
 };
+
+function msNomA() { return ms.partido.equipo_a_nombre || 'A'; }
+function msNomB() { return ms.partido.equipo_b_nombre || 'B'; }
+function msAsaltosGanados(eq) { return ms.asaltos.filter(x => x === eq).length; }
+
+function abrirMinisumo(partido) {
+  ms.partido = partido;
+  ms.asaltoActual = 0;
+  ms.fase = 'idle'; ms.corriendo = false;
+  ms.segundos = 180;
+  ms.asalto = { ptsA: 0, ptsB: 0 };
+  ms.asaltos = [null, null, null];
+  if (ms.interval) clearInterval(ms.interval);
+
+  document.getElementById('msTitulo').textContent = msNomA() + ' vs ' + msNomB();
+  document.getElementById('msColA').textContent = msNomA();
+  document.getElementById('msColB').textContent = msNomB();
+  document.getElementById('msNombreA').textContent = msNomA();
+  document.getElementById('msNombreB').textContent = msNomB();
+  document.getElementById('msEmpBtnA').textContent = '🏆 Gana ' + msNomA();
+  document.getElementById('msEmpBtnB').textContent = '🏆 Gana ' + msNomB();
+  document.getElementById('msEmpate').classList.remove('show');
+  document.getElementById('btnMsFinalizar').style.display = 'none';
+  document.getElementById('btnMsTerminarAsalto').style.display = '';
+  document.getElementById('btnMsIniciar').textContent = '▶ Iniciar';
+  document.getElementById('btnMsIniciar').disabled = false;
+  document.getElementById('btnMsPausar').disabled = true;
+
+  msActualizarUI();
+  document.getElementById('msOverlay').classList.add('show');
+}
+
+function cerrarMinisumo() {
+  if (ms.corriendo && !confirm('¿Cerrar sin guardar el resultado?')) return;
+  if (ms.interval) clearInterval(ms.interval);
+  ms.corriendo = false;
+  document.getElementById('msOverlay').classList.remove('show');
+}
+
+function msActualizarUI() {
+  const aNum = ms.asaltoActual + 1;
+  // Badge
+  if (ms.fase === 'fin') {
+    document.getElementById('msBadge').textContent = 'COMBATE FINALIZADO';
+  } else if (ms.fase === 'fin_asalto') {
+    document.getElementById('msBadge').textContent = 'ASALTO ' + aNum + ' TERMINADO';
+  } else {
+    document.getElementById('msBadge').textContent = 'ASALTO ' + aNum + ' · ' + MS_POSICIONES[ms.asaltoActual];
+  }
+
+  // Puntos del asalto actual
+  document.getElementById('msPtsA').textContent = ms.asalto.ptsA;
+  document.getElementById('msPtsB').textContent = ms.asalto.ptsB;
+
+  // Asaltos ganados como subtítulo de amonestaciones
+  document.getElementById('msAmonA').textContent = 'Asaltos: ' + msAsaltosGanados('A');
+  document.getElementById('msAmonB').textContent = 'Asaltos: ' + msAsaltosGanados('B');
+
+  // Cards de asaltos
+  ms.asaltos.forEach((ganador, i) => {
+    const el = document.getElementById('msAsalto' + i);
+    el.className = 'ms-asalto-item';
+    const resEl = document.getElementById('msRes' + i);
+    if (i === ms.asaltoActual && ms.fase !== 'fin') {
+      el.classList.add('activo');
+      resEl.textContent = ms.asalto.ptsA + ' — ' + ms.asalto.ptsB;
+      resEl.style.color = 'var(--cyan)';
+    } else if (ganador) {
+      const nom = ganador === 'A' ? msNomA() : msNomB();
+      resEl.textContent = '🏆 ' + nom;
+      resEl.style.color = ganador === 'A' ? 'var(--green)' : 'var(--red)';
+      el.classList.add(ganador === 'A' ? 'ganado-a' : 'ganado-b');
+    } else {
+      resEl.textContent = i < ms.asaltoActual ? '—' : '';
+      resEl.style.color = '';
+    }
+  });
+
+  msMostrarTiempo();
+}
+
+function msMostrarTiempo() {
+  const m = Math.floor(ms.segundos / 60), s = ms.segundos % 60;
+  const el = document.getElementById('msCronoNum');
+  el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  el.classList.toggle('alerta', ms.segundos <= 30 && ms.segundos > 0);
+}
+
+function msIniciarAsalto() {
+  if (ms.fase === 'fin') return;
+  ms.fase = 'corriendo'; ms.corriendo = true;
+  document.getElementById('btnMsIniciar').disabled = true;
+  document.getElementById('btnMsPausar').disabled = false;
+  document.getElementById('msCronoLabel').textContent = 'EN COMBATE';
+  if (ms.interval) clearInterval(ms.interval);
+  ms.interval = setInterval(() => {
+    if (ms.segundos > 0) {
+      ms.segundos--;
+      msMostrarTiempo();
+      if (ms.segundos === 30) toast('⚠️ 30 segundos restantes');
+    } else {
+      msPausarAsalto();
+      document.getElementById('msCronoLabel').textContent = 'TIEMPO AGOTADO';
+      toast('⏱ Tiempo terminado — termina el asalto');
+    }
+  }, 1000);
+}
+
+function msPausarAsalto() {
+  ms.corriendo = false;
+  if (ms.interval) clearInterval(ms.interval);
+  document.getElementById('btnMsIniciar').disabled = false;
+  document.getElementById('btnMsIniciar').textContent = '▶ Reanudar';
+  document.getElementById('btnMsPausar').disabled = true;
+  if (ms.fase === 'corriendo') {
+    ms.fase = 'pausado';
+    document.getElementById('msCronoLabel').textContent = 'PAUSADO';
+  }
+}
+
+function msRepetirAsalto() {
+  if (!confirm('¿Repetir este asalto? Se borran los puntos del asalto actual.')) return;
+  msPausarAsalto();
+  ms.asalto = { ptsA: 0, ptsB: 0 };
+  ms.segundos = 180;
+  ms.fase = 'idle';
+  document.getElementById('btnMsIniciar').textContent = '▶ Iniciar';
+  document.getElementById('msCronoLabel').textContent = 'LISTO · presiona Iniciar';
+  msActualizarUI();
+  toast('🔄 Asalto reiniciado');
+}
+
+// ── Eventos de puntuación (no terminan el asalto) ──────────────
+function msExpulsion(equipoExpulsor) {
+  if (ms.fase === 'fin' || ms.fase === 'fin_asalto') return;
+  const nom = equipoExpulsor === 'A' ? msNomA() : msNomB();
+  if (equipoExpulsor === 'A') ms.asalto.ptsA++;
+  else ms.asalto.ptsB++;
+  toast('🏟 Expulsión — ' + nom + ' +1 punto en este asalto', 'success');
+  msActualizarUI();
+}
+
+function msAbandono(equipoQueAbandona) {
+  if (ms.fase === 'fin' || ms.fase === 'fin_asalto') return;
+  const ganador = equipoQueAbandona === 'A' ? 'B' : 'A';
+  const nomAband = equipoQueAbandona === 'A' ? msNomA() : msNomB();
+  const nomGana  = ganador === 'A' ? msNomA() : msNomB();
+  if (ganador === 'A') ms.asalto.ptsA++;
+  else ms.asalto.ptsB++;
+  toast('🚩 ' + nomAband + ' abandonó — +1 a ' + nomGana, 'success');
+  msActualizarUI();
+}
+
+function msAmonestar(equipo) {
+  if (ms.fase === 'fin' || ms.fase === 'fin_asalto') return;
+  const nom = equipo === 'A' ? msNomA() : msNomB();
+  if (equipo === 'A') ms.asalto.ptsA--;
+  else ms.asalto.ptsB--;
+  toast('🟨 Amonestación −1 — ' + nom, 'error');
+  msActualizarUI();
+}
+
+// ── Retiro por robot no funcional (termina el combate) ─────────
+function msRetiro(equipoQueSeRetira) {
+  if (ms.fase === 'fin') return;
+  const ganador = equipoQueSeRetira === 'A' ? 'B' : 'A';
+  const nomRetira = equipoQueSeRetira === 'A' ? msNomA() : msNomB();
+  const nomGana   = ganador === 'A' ? msNomA() : msNomB();
+  if (!confirm(nomRetira + ' declara que su robot no puede continuar.\n¿Confirmar? ' + nomGana + ' gana el combate.')) return;
+  msPausarAsalto();
+  // Marcar asaltos restantes al ganador
+  for (let i = ms.asaltoActual; i < 3; i++) {
+    if (!ms.asaltos[i]) ms.asaltos[i] = ganador;
+  }
+  ms.fase = 'fin';
+  msActualizarUI();
+  document.getElementById('btnMsTerminarAsalto').style.display = 'none';
+  document.getElementById('btnMsFinalizar').style.display = 'block';
+  toast('🏆 ' + nomGana + ' gana por retiro', 'success');
+}
+
+// ── Terminar asalto: determina ganador por puntos ──────────────
+function msTerminarAsalto() {
+  msPausarAsalto();
+  ms.fase = 'fin_asalto';
+  const pA = ms.asalto.ptsA, pB = ms.asalto.ptsB;
+  let ganadorAsalto;
+
+  if (pA > pB) {
+    ganadorAsalto = 'A';
+  } else if (pB > pA) {
+    ganadorAsalto = 'B';
+  } else {
+    // Empate en asalto → juez decide
+    toast('⚖️ Empate en asalto (' + pA + '-' + pB + ') — el juez decide', 'error');
+    const eligioA = confirm('¿Quién ganó este asalto?\nOK = ' + msNomA() + '\nCancelar = ' + msNomB());
+    ganadorAsalto = eligioA ? 'A' : 'B';
+  }
+
+  ms.asaltos[ms.asaltoActual] = ganadorAsalto;
+  const nomGanAsalto = ganadorAsalto === 'A' ? msNomA() : msNomB();
+  toast('🏆 Asalto ' + (ms.asaltoActual + 1) + ' — ganó ' + nomGanAsalto, 'success');
+
+  // ¿Ya hay ganador por 2 de 3?
+  const gA = msAsaltosGanados('A'), gB = msAsaltosGanados('B');
+  if (gA >= 2 || gB >= 2 || ms.asaltoActual === 2) {
+    ms.fase = 'fin';
+    msActualizarUI();
+    document.getElementById('btnMsTerminarAsalto').style.display = 'none';
+    msMostrarResultadoFinal();
+    return;
+  }
+
+  // Pasar al siguiente asalto
+  ms.asaltoActual++;
+  ms.asalto = { ptsA: 0, ptsB: 0 };
+  ms.segundos = 180;
+  ms.fase = 'idle';
+  document.getElementById('btnMsIniciar').textContent = '▶ Iniciar';
+  document.getElementById('msCronoLabel').textContent = 'LISTO · presiona Iniciar';
+  msActualizarUI();
+  toast('Asalto ' + (ms.asaltoActual + 1) + ' · ' + MS_POSICIONES[ms.asaltoActual]);
+}
+
+function msMostrarResultadoFinal() {
+  const gA = msAsaltosGanados('A'), gB = msAsaltosGanados('B');
+  if (gA !== gB) {
+    document.getElementById('btnMsFinalizar').style.display = 'block';
+    toast('🏆 Ganador: ' + (gA > gB ? msNomA() : msNomB()), 'success');
+  } else {
+    // 1-1 sin 3er asalto (no debería pasar, pero por si acaso)
+    document.getElementById('msEmpate').classList.add('show');
+    toast('⚖️ Empate en asaltos — el juez decide', 'error');
+  }
+}
+
+function msDecisionJuez(equipo) {
+  document.getElementById('msEmpate').classList.remove('show');
+  // Asignar asalto pendiente al ganador
+  for (let i = 0; i < 3; i++) { if (!ms.asaltos[i]) ms.asaltos[i] = equipo; }
+  document.getElementById('btnMsFinalizar').style.display = 'block';
+  toast('⚖️ Decisión del juez: ' + (equipo === 'A' ? msNomA() : msNomB()), 'success');
+  msActualizarUI();
+}
+
+async function msFinalizarCombate() {
+  const gA = msAsaltosGanados('A'), gB = msAsaltosGanados('B');
+  const ganadorEquipo = gA >= gB ? 'A' : 'B';
+  const ganadorId     = ganadorEquipo === 'A' ? ms.partido.equipo_a_id : ms.partido.equipo_b_id;
+  const ganadorNombre = ganadorEquipo === 'A' ? msNomA() : msNomB();
+  const marcador      = gA + '-' + gB + ' asaltos';
+
+  if (!confirm('¿Confirmar?\nGanó: ' + ganadorNombre + '\nMarcador: ' + marcador)) return;
+
+  if (ms.interval) clearInterval(ms.interval);
+  loading(true, 'GUARDANDO RESULTADO...');
+  try {
+    const res = await gasPost({
+      action: 'registrarResultadoGeneral',
+      partido_id: ms.partido.partido_id || ms.partido.id,
+      ganador_id: ganadorId,
+      marcador,
+      categoria: state.categoria
+    });
+    if (!res.ok) throw new Error(res.error || 'Error');
+    state.bracket = res.bracket;
+    document.getElementById('msOverlay').classList.remove('show');
+    toast('🏆 Ganó ' + ganadorNombre, 'success');
+    renderBracket();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  loading(false);
+}
 
 function abrirMinisumo(partido) {
   ms.partido = partido;
