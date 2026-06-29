@@ -1313,25 +1313,19 @@ function cerrarPodioManual() { document.getElementById('podioManualModal').class
 // ── TERCER LUGAR (bracket con semifinal, sin partido 3er lugar) ──
 function abrirTercerLugar() {
   const fases = state.bracket?.fases || [];
-  const faseSemi = fases.find(f => f.nombre === 'SEMIFINAL');
   const faseFinal = fases.find(f => f.nombre === 'FINAL');
-  if (!faseSemi || !faseFinal) { toast('No hay semifinal disponible', 'error'); return; }
+  if (!faseFinal) { toast('No hay final disponible', 'error'); return; }
   const partidoFinal = faseFinal.partidos.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
   if (!partidoFinal) { toast('La final aún no ha terminado', 'error'); return; }
-  // Perdedores de semifinal = los que no llegaron a la final
+  // Excluir finalistas, mostrar todos los demás
   const finalistas = new Set([partidoFinal.equipo_a_id, partidoFinal.equipo_b_id]);
-  const candidatos = [];
-  faseSemi.partidos.forEach(p => {
-    if (p.estado === 'FINALIZADO' && p.ganador_id) {
-      // El perdedor del partido de semifinal
-      const perdedorId = p.ganador_id === p.equipo_a_id ? p.equipo_b_id : p.equipo_a_id;
-      const perdedorNom = p.ganador_id === p.equipo_a_id ? p.equipo_b_nombre : p.equipo_a_nombre;
-      if (perdedorId && !finalistas.has(perdedorId)) {
-        candidatos.push({ id: perdedorId, nombre: perdedorNom });
-      }
-    }
-  });
-  if (!candidatos.length) { toast('No se encontraron candidatos para el 3er lugar', 'error'); return; }
+  const mapa = {};
+  fases.forEach(fase => fase.partidos.forEach(p => {
+    if (p.equipo_a_id && !finalistas.has(p.equipo_a_id)) mapa[p.equipo_a_id] = p.equipo_a_nombre;
+    if (p.equipo_b_id && !finalistas.has(p.equipo_b_id)) mapa[p.equipo_b_id] = p.equipo_b_nombre;
+  }));
+  const candidatos = Object.entries(mapa).map(([id, nombre]) => ({ id, nombre }));
+  if (!candidatos.length) { toast('No hay candidatos para el 3er lugar', 'error'); return; }
   const sel = document.getElementById('tercerLugarSelect');
   sel.innerHTML = candidatos.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
   document.getElementById('tercerLugarModal').classList.add('show');
