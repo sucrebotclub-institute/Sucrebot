@@ -394,7 +394,18 @@
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
         const cached = JSON.parse(raw);
-        if (cached && cached.resultados) { datosJSON = cached; ultimoTs = cached.ts || 0; renderTabs(); actualizarVista(); }
+        if (cached && cached.resultados) {
+          datosJSON = cached;
+          ultimoTs = cached.ts || 0;
+          // Alimentar bracketCache y soccer desde el cache
+          if (cached.bracket) {
+            ['ms_a','ms_rc','bat'].forEach(function(cat) {
+              bracketCache[cat] = cached.bracket[cat] || null;
+            });
+          }
+          if (cached.soccer !== undefined) soccerTorneo = cached.soccer || null;
+          renderTabs(); actualizarVista();
+        }
       }
     } catch(e) {}
 
