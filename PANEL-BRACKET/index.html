@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="../shared/js/config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
@@ -693,6 +694,7 @@
             <button class="btn btn-outline btn-sm" id="btnTercerLugar" style="display:none;" onclick="abrirTercerLugar()">🥉 3er lugar</button>
             <button class="btn btn-outline btn-sm" id="btnVerPodio" style="display:none;" onclick="verPodioEnBracket()">🏆 Ver podio</button>
             <button class="btn btn-outline btn-sm" id="btnPodioManual" onclick="abrirPodioManual()">🏆 Podio Manual</button>
+            <button class="btn btn-outline btn-sm" id="btnExcelSoccer" style="display:none;" onclick="exportarExcelSoccer()">📊 Excel</button>
             <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
           </div>
         </div>
@@ -823,6 +825,7 @@ function actualizarTitulos() {
   const nombre=CAT_INFO[state.categoria]?.nombre||'';
   document.getElementById('paso2Titulo').textContent=state.tipo==='soccer'?`Equipos Presentes — ${nombre}`:`Robots Presentes — ${nombre}`;
   document.getElementById('paso3Titulo').textContent=state.tipo==='soccer'?`TORNEO SOCCER — ${nombre}`:`BRACKET — ${nombre}`;
+  document.getElementById('btnExcelSoccer').style.display=state.tipo==='soccer'?'inline-block':'none';
 }
 function renderSeleccion() {
   const lista=document.getElementById('participantesList'); const total=state.participantes.length;
@@ -1225,6 +1228,52 @@ async function obtenerPodioCalculado() {
   return { manual:false, primero:{id:ganadorId,nombre:ganadorNombre}, segundo:{id:perdedorId,nombre:perdedorNombre}, tercero, cuarto, partido3erPendiente };
 }
 
+function exportarExcelSoccer() {
+  const torneo=state.torneoSoc;
+  if(!torneo||!torneo.partidos||!torneo.partidos.length){ toast('No hay torneo de soccer generado','error'); return; }
+  const partidos=torneo.partidos;
+  const labelGrupo=(g)=>{
+    if(g==='FINAL') return 'Final';
+    if(g==='FINAL_TCV') return 'Final TCV';
+    if(g==='3ER_LUGAR') return '3er Lugar';
+    if(g==='3ER_AUTO') return '3er Lugar (auto)';
+    if(g==='DESEMPATE') return 'Desempate';
+    if(g==='FASE_UNICA') return 'Fase única';
+    if(g==='FASE_GRUPOS') return 'Fase de grupos';
+    if(g&&g.startsWith('GRUPO_')) return 'Grupo ' + g.split('_')[1];
+    return g||'';
+  };
+  const filas=partidos.map((p,i)=>({
+    '#':            i+1,
+    'Fase':         labelGrupo(p.grupo),
+    'Equipo A':     p.equipo_a_nombre || '— Por definir —',
+    'Equipo B':     p.equipo_b_nombre || '— Por definir —',
+    'Marcador':     p.marcador || '',
+    'Ganador':      p.ganador_id===p.equipo_a_id ? (p.equipo_a_nombre||'') : (p.ganador_id===p.equipo_b_id ? (p.equipo_b_nombre||'') : ''),
+    'Estado':       p.estado || ''
+  }));
+  const ws=XLSX.utils.json_to_sheet(filas);
+  ws['!cols']=[{wch:4},{wch:18},{wch:26},{wch:26},{wch:22},{wch:24},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Partidos Soccer');
+  // Hoja adicional con tablas de grupos si existen
+  if(torneo.tabla){
+    Object.keys(torneo.tabla).forEach(g=>{
+      const tabla=torneo.tabla[g];
+      if(!tabla||!tabla.length) return;
+      const filasTabla=tabla.map((t,i)=>({
+        '#': i+1, 'Equipo': t.nombre, 'PJ': t.jugados, 'G': t.victorias, 'P': t.derrotas,
+        'GF': t.favor, 'GC': t.contra, 'DIF': t.diferencia, 'PTS': t.puntos
+      }));
+      const wsTabla=XLSX.utils.json_to_sheet(filasTabla);
+      wsTabla['!cols']=[{wch:4},{wch:26},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6}];
+      XLSX.utils.book_append_sheet(wb,wsTabla,labelGrupo(g).substring(0,28));
+    });
+  }
+  const fecha=new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
+  XLSX.writeFile(wb,'SucreBot2026_Soccer_'+fecha+'.xlsx');
+  toast('✅ Excel de soccer generado','success');
+}
 async function verPodioEnBracket() {
   const podio=await obtenerPodioCalculado();
   if(!podio){ toast('Aún no hay suficiente información para mostrar el podio','error'); return; }
