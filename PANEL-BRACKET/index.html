@@ -1421,10 +1421,16 @@ function cronIniciar() {
   if(cron.fase==='idle')cron.fase='t1'; cron.corriendo=true;
   document.getElementById('btnCronIniciar').disabled=true; document.getElementById('btnCronPausar').disabled=false;
   if(cron.interval)clearInterval(cron.interval);
+  cron._tsInicio = Date.now();
+  cron._segAlIniciar = cron.segundos;
   cron.interval=setInterval(()=>{
-    if(cron.segundos>0){cron.segundos--;actualizarDisplayCron();if(cron.segundos===30)toast('⚠️ 30 segundos restantes','error');}
-    else{cronPausar();finDeTiempo();}
-  },1000);
+    const transcurrido = Math.floor((Date.now() - cron._tsInicio) / 1000);
+    const restantes = Math.max(0, cron._segAlIniciar - transcurrido);
+    cron.segundos = restantes;
+    actualizarDisplayCron();
+    if(restantes===30)toast('⚠️ 30 segundos restantes','error');
+    if(restantes===0){cronPausar();finDeTiempo();}
+  },250);
 }
 function cronPausar() { cron.corriendo=false; if(cron.interval)clearInterval(cron.interval); document.getElementById('btnCronIniciar').disabled=false; document.getElementById('btnCronPausar').disabled=true; document.getElementById('btnCronIniciar').textContent='▶ Reanudar'; }
 function cronReiniciar() { if(!confirm('¿Reiniciar el tiempo actual?'))return; cronPausar(); cron.segundos=cron.duracion*60; actualizarDisplayCron(); document.getElementById('btnCronIniciar').textContent='▶ Iniciar'; }
