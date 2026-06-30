@@ -607,7 +607,7 @@
     return new Promise((res, rej) => {
       const r = new FileReader();
       r.onload  = () => res(r.result.split(',')[1]);
-      r.onerror = rej;
+      r.onerror = () => rej(new Error('No se pudo leer el archivo "' + file.name + '". Si está en OneDrive/Drive, asegúrate de que esté descargado en tu dispositivo (no solo en la nube) y vuelve a seleccionarlo.'));
       r.readAsDataURL(file);
     });
   }
@@ -738,7 +738,9 @@
       mostrarSuccessPanel(idGenerado, correo);
 
     } catch(e) {
-      showToast('Error: ' + e.message, true);
+      console.error('Error en registro:', e);
+      const msg = (e && e.message) ? e.message : 'Ocurrió un problema inesperado. Verifica tu conexión e intenta de nuevo.';
+      showToast('Error: ' + msg, true);
     } finally {
       _registrando = false;
       btn.disabled = false;
