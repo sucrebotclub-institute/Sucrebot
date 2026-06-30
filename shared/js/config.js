@@ -2,7 +2,7 @@
 //  SUCREBOT 2026 — Configuración centralizada
 // ════════════════════════════════════════════════════════════════
 
-const CONFIG = {    
+const CONFIG = {     
     
   // ── Google Apps Script ──────────────────────────────────────
   DEPLOYMENT_ID: 'AKfycbyuuQNa0uyk8psPaMqgkuOfAyZBdjU_LPWEhJ2dn1kxsoto5-APDKEFPPyIxhbcgyWiEQ',      
