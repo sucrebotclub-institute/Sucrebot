@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Registro de Invitados</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="../shared/js/config.js"></script>
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <style>
+    :root {
+      --r-cyan: #5bc8f0; --r-cyan-bright: #90dcff;
+      --r-blue: #1a5ca8; --r-blue-dark: #1a3a6b; --r-blue-deep: #0a193c;
+      --r-green: #3dd68c;
+    }
+    body { background: #ffffff !important; color: #1a1c28 !important; }
+    .wrapper { max-width: 640px; margin: 0 auto; padding: 0 20px 40px; }
+    .page-hero { padding: 40px 0 20px; text-align: center; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--r-blue); border: 1px solid var(--r-blue); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; padding: 6px 16px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; }
+    .page-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: blink 1.6s infinite; }
+    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+    .page-hero h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 3px; color: var(--r-blue-dark); line-height: 1; }
+    .page-hero h2 span { color: var(--r-blue); }
+    .page-hero p { font-size: 13px; color: #7a7a8c; letter-spacing: 0.5px; margin-top: 8px; }
+
+    .info-strip { display: flex; align-items: flex-start; gap: 10px; background: #e8f4ff; border-left: 4px solid var(--r-blue); border-radius: 0 10px 10px 0; padding: 14px 16px; margin-bottom: 24px; }
+    .info-strip-icon { font-size: 18px; flex-shrink: 0; }
+    .info-strip-text { font-family: 'Exo 2', sans-serif; font-size: 12.5px; color: #1a3a6e; line-height: 1.7; }
+    .info-strip-text strong { color: var(--r-blue); }
+
+    .form-card { background: linear-gradient(135deg, var(--r-blue) 0%, #14497e 100%); border: 1.5px solid var(--r-blue); border-radius: 16px; padding: 28px; box-shadow: 0 4px 24px rgba(26,92,168,0.25); }
+    .form-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--r-cyan-bright); margin-bottom: 20px; font-weight: 700; text-transform: uppercase; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .field { position: relative; }
+    .field.full-width { grid-column: 1 / -1; }
+    .field label { display: block; font-family: 'Orbitron', monospace; font-size: 10px; color: rgba(255,255,255,0.95); margin-bottom: 6px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; }
+    .field-icon { position: absolute; left: 12px; bottom: 11px; width: 16px; height: 16px; color: var(--r-cyan); pointer-events: none; }
+    .field input, .field select { width: 100%; background: rgba(10,25,60,0.55); border: 1.5px solid rgba(255,255,255,0.12); color: #e8f0ff; font-family: 'Exo 2', sans-serif; font-size: 14px; padding: 10px 14px 10px 36px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; box-sizing: border-box; }
+    .field input:focus, .field select:focus { border-color: var(--r-cyan); background: rgba(10,25,60,0.75); box-shadow: 0 0 0 3px rgba(91,200,240,0.15); }
+    .field input::placeholder { color: rgba(255,255,255,0.3); }
+    .field select { cursor: pointer; appearance: auto; }
+    .field select option { background: var(--r-blue-deep); color: #e8f0ff; }
+
+    .btn-register { width: 100%; margin-top: 8px; background: #1a3a6b; border: 1.5px solid rgba(255,255,255,0.15); color: #ffffff; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; padding: 16px; border-radius: 10px; cursor: pointer; transition: background 0.2s, border-color 0.2s; letter-spacing: 0.15em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-register:hover:not(:disabled) { background: #1e4a8a; border-color: rgba(255,255,255,0.3); }
+    .btn-register:active { background: #152e5a; }
+    .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .toast { position: fixed; bottom: 30px; left: 30px; transform: translateY(100px); opacity: 0; background: #1e2438; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid var(--r-green); color: #f0f4ff; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 600; padding: 12px 16px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; z-index: 9999; max-width: 300px; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; box-shadow: 0 3px 12px rgba(0,0,0,0.3); }
+    .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+    .success-overlay { display: none; position: fixed; inset: 0; background: rgba(10,20,50,0.85); z-index: 10000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+    .success-overlay.show { display: flex; animation: fadeIn .3s ease; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    .success-card { background: linear-gradient(135deg, #0a2a5a 0%, #1a3a6b 100%); border: 1.5px solid rgba(91,200,240,0.35); border-radius: 20px; padding: 36px 32px; max-width: 460px; width: 100%; text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,0.6); }
+    .success-icon { font-size: 3rem; margin-bottom: 10px; }
+    .success-title { font-family: 'Orbitron', monospace; font-size: 13px; letter-spacing: 3px; color: #3dd68c; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+    .success-subtitle { font-family: 'Exo 2', sans-serif; font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 1px; margin-bottom: 16px; }
+    .success-id { font-family: 'DM Mono', monospace; font-size: 13px; background: rgba(0,0,0,0.3); color: #90dcff; border: 1px solid rgba(91,200,240,0.3); border-radius: 8px; padding: 9px 18px; display: inline-block; margin-bottom: 20px; letter-spacing: 1.5px; }
+    .success-msg { font-family: 'Exo 2', sans-serif; font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.75; margin-bottom: 24px; text-align: left; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 14px 16px; border-left: 3px solid rgba(91,200,240,0.4); }
+    .success-msg strong { color: #ffffff; }
+    .success-btn-primary { display: block; width: 100%; background: #1a5ca8; border: none; color: #ffffff; font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; padding: 15px; border-radius: 10px; cursor: pointer; letter-spacing: 0.15em; text-transform: uppercase; transition: background .2s; box-sizing: border-box; }
+    .success-btn-primary:hover { background: #1e6fc8; }
+
+    @media (max-width: 768px) {
+      .wrapper { padding: 0 12px 40px; }
+      .page-hero { padding: 20px 0 14px; }
+      .page-hero h2 { font-size: 1.6rem; letter-spacing: 1px; }
+      .form-card { padding: 18px 14px; border-radius: 12px; }
+      .form-grid { grid-template-columns: 1fr !important; }
+      .field.full-width { grid-column: auto; }
+      .toast { left: 12px; right: 12px; max-width: calc(100vw - 24px); bottom: 20px; }
+      .success-card { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+</div>
+
+<div class="wrapper">
+  <div class="page-hero">
+    <div class="page-hero-badge">
+      <div class="page-hero-badge-dot"></div>
+      SUCREBOT 2026 · TORNEO DE ROBÓTICA
+    </div>
+    <h2>REGISTRO DE <span>INVITADOS</span></h2>
+    <p>Acceso público al evento — 16 de julio de 2026, CMI Ciudad Mitad del Mundo</p>
+  </div>
+
+  <div class="info-strip">
+    <div class="info-strip-icon">📩</div>
+    <div class="info-strip-text">
+      Tras registrarte, tu solicitud será <strong>revisada por el equipo organizador</strong>.
+      Una vez aprobada, recibirás un correo con tu <strong>código QR de acceso</strong> para presentar en la entrada.
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">
+      <svg style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;color:var(--r-cyan-bright);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
+      DATOS DEL INVITADO
+    </div>
+
+    <div class="form-grid">
+      <div class="field full-width">
+        <label>Nombre Completo</label>
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input type="text" id="f-nombre" placeholder="Juan Pérez" tabindex="1">
+      </div>
+
+      <div class="field full-width">
+        <label>Correo Electrónico</label>
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+        <input type="email" id="f-correo" placeholder="juan@gmail.com" tabindex="2">
+      </div>
+
+      <div class="field">
+        <label>Teléfono / WhatsApp</label>
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.4A2 2 0 0 1 3.55 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l1.3-1.3a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <input type="tel" id="f-telefono" placeholder="0991234567" tabindex="3">
+      </div>
+
+      <div class="field">
+        <label>Acompañantes</label>
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <input type="number" id="f-acompanantes" placeholder="0" min="0" max="10" value="0" tabindex="4">
+      </div>
+
+      <div class="field full-width">
+        <label>Institución / Empresa <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(opcional)</span></label>
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <input type="text" id="f-institucion" placeholder="Nombre de tu institución, empresa o 'Público general'" tabindex="5">
+      </div>
+    </div>
+
+    <button class="btn-register" id="btn-registrar" onclick="registrarInvitado()" tabindex="6">
+      <svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
+      REGISTRARME COMO INVITADO
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toast-icon">✓</span>
+  <span id="toast-msg"></span>
+</div>
+
+<div class="success-overlay" id="success-overlay">
+  <div class="success-card">
+    <div class="success-icon">📨</div>
+    <div class="success-title">Solicitud enviada</div>
+    <div class="success-subtitle">Tu código de invitado</div>
+    <div class="success-id" id="success-id-display">—</div>
+    <div class="success-msg">
+      Hemos recibido tu solicitud de registro como <strong>invitado</strong>.
+      El equipo organizador la revisará y, una vez aprobada, recibirás un correo con tu
+      <strong>código QR de acceso</strong> al evento.
+    </div>
+    <button class="success-btn-primary" onclick="cerrarSuccessOverlay()">Entendido</button>
+  </div>
+</div>
+
+<div data-include="../shared/components/footer.html"></div>
+
+<script src="../shared/js/load-components.js"></script>
+<script src="../shared/js/auth.js"></script>
+
+<script>
+  let toastTimer = null;
+  const GAS_URL = CONFIG.GAS_URL();
+  let _registrando = false;
+
+  async function gasPost(data) {
+    const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(data), redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+    return r.json();
+  }
+
+  function showToast(msg, error = false) {
+    const t = document.getElementById('toast');
+    const icon = document.getElementById('toast-icon');
+    const text = document.getElementById('toast-msg');
+    text.textContent = msg;
+    if (error) { icon.textContent = '⚠'; t.style.borderLeftColor = '#e05555'; t.style.color = '#ffb3b3'; t.style.background = '#2a1a1a'; }
+    else       { icon.textContent = '✓'; t.style.borderLeftColor = '#3dd68c'; t.style.color = '#d0f5e8'; t.style.background = '#1e2438'; }
+    if (toastTimer) { clearTimeout(toastTimer); t.classList.remove('show'); }
+    requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+    toastTimer = setTimeout(() => { t.classList.remove('show'); toastTimer = null; }, 3500);
+  }
+
+  function limpiarFormulario() {
+    document.getElementById('f-nombre').value = '';
+    document.getElementById('f-correo').value = '';
+    document.getElementById('f-telefono').value = '';
+    document.getElementById('f-acompanantes').value = '0';
+    document.getElementById('f-institucion').value = '';
+  }
+
+  function mostrarSuccessPanel(id) {
+    document.getElementById('success-id-display').textContent = id;
+    document.getElementById('success-overlay').classList.add('show');
+  }
+
+  function cerrarSuccessOverlay() {
+    document.getElementById('success-overlay').classList.remove('show');
+  }
+
+  async function registrarInvitado() {
+    if (_registrando) return;
+
+    const nombre       = document.getElementById('f-nombre').value.trim();
+    const correo       = document.getElementById('f-correo').value.trim();
+    const telefono     = document.getElementById('f-telefono').value.trim();
+    const acompanantes = parseInt(document.getElementById('f-acompanantes').value) || 0;
+    const institucion  = document.getElementById('f-institucion').value.trim();
+
+    if (!nombre)  { showToast('El nombre completo es obligatorio', true); return; }
+    if (!correo || !correo.includes('@') || !correo.includes('.')) { showToast('Ingresa un correo electrónico válido', true); return; }
+    if (acompanantes < 0 || acompanantes > 10) { showToast('La cantidad de acompañantes debe estar entre 0 y 10', true); return; }
+
+    _registrando = true;
+    const btn = document.getElementById('btn-registrar');
+    const btnHtmlOriginal = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Enviando...';
+
+    try {
+      const resp = await gasPost({
+        action: 'setInvitado',
+        nombre, correo, telefono, acompanantes, institucion
+      });
+      if (!resp.ok || !resp.id) throw new Error(resp.error || 'No se pudo completar el registro');
+
+      const idGenerado = resp.id;
+
+      try {
+        await gasPost({
+          action: 'enviarQRInvitado',
+          correo, nombre, institucion, acompanantes,
+          id: idGenerado,
+          modoRevision: true
+        });
+      } catch(e) { /* no crítico */ }
+
+      limpiarFormulario();
+      mostrarSuccessPanel(idGenerado);
+
+    } catch(e) {
+      showToast('Error: ' + e.message, true);
+    } finally {
+      _registrando = false;
+      btn.disabled = false;
+      btn.innerHTML = btnHtmlOriginal;
+    }
+  }
+</script>
+</body>
+</html>
