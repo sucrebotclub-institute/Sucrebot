@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../shared/js/config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
@@ -42,6 +43,9 @@
     .btn-refrescar { background: #1a5ca8; border: none; color: #fff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
     .btn-refrescar:hover { background: #0e4a8f; }
     .btn-refrescar:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-excel { background: #1e8c3a; border: none; color: #fff; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .btn-excel:hover { background: #166d2c; }
+    .btn-excel:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* cache indicator */
     .cache-info { font-family: 'DM Mono', monospace; font-size: 10px; color: #7a7a8c; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
@@ -168,6 +172,10 @@
       <button class="btn-refrescar" id="btn-refrescar" onclick="refrescar(true)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
         Refrescar
+      </button>
+      <button class="btn-excel" id="btn-excel" onclick="exportarExcel()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Excel
       </button>
     </div>
 
@@ -453,6 +461,43 @@
   }
 
   document.getElementById('filtro-cat').addEventListener('change', renderLista);
+
+  function exportarExcel() {
+    const btn = document.getElementById('btn-excel');
+    const todos = JSON.parse(localStorage.getItem('sucrebot_manillas_cache') || '[]');
+    const reales = todos.filter(p => {
+      const n = String(p.nombre || '').toUpperCase();
+      const r = String(p.robot  || '').toUpperCase();
+      return !n.startsWith('[DEV]') && !r.startsWith('[DEV]');
+    });
+    if (!reales.length) { toast('No hay participantes registrados aún', 'error'); return; }
+    btn.disabled = true; btn.innerHTML = '⏳ Generando...';
+    const filas = reales.map((p, i) => ({
+      '#':           i + 1,
+      'ID':          p.id          || '',
+      'Capitán':     p.nombre      || '',
+      'Subcapitán':  p.miembro2    || '',
+      'Robot':       p.robot       || '',
+      'Categoría':   p.categoria   || '',
+      'Institución': p.institucion || '',
+      'Provincia':   p.ciudad      || '',
+      'Estado':      p.aprobado    || '',
+      'Manilla':     p.manilla === 'ENTREGADA' ? '✅ Entregada' : '⏳ Pendiente'
+    }));
+    const ws = XLSX.utils.json_to_sheet(filas);
+    // Anchos de columna
+    ws['!cols'] = [
+      {wch:4},{wch:22},{wch:28},{wch:28},{wch:24},
+      {wch:22},{wch:32},{wch:16},{wch:14},{wch:14}
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Participantes');
+    const fecha = new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
+    XLSX.writeFile(wb, 'SucreBot2026_Participantes_' + fecha + '.xlsx');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel';
+    toast('✅ Excel generado — ' + reales.length + ' participantes', 'success');
+  }
   document.getElementById('busqueda').addEventListener('input', renderLista);
 
   function showToast(msg, error = false) {
