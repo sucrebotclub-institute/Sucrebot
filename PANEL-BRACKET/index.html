@@ -580,7 +580,7 @@
         <button class="btn-comb inmovilizar" onclick="puntuar('A','Inmovilizar (10s)',10)">🔒 Inmovilizar (10s) +10</button>
         <button class="btn-comb embestida"   onclick="puntuar('A','Embestida',5)">💥 Embestida +5</button>
         <button class="btn-comb vuelco"      onclick="puntuar('A','Vuelco',15)">🔄 Vuelco +15</button>
-        <button class="btn-comb arma"        onclick="puntuar('A','Embestida con arma',15)">⚔️ Embestida con arma +15</button>
+        <button class="btn-comb arma"        onclick="puntuar('A','Ataque con arma',15)">⚔️ Ataque con arma +15</button>
         <button class="btn-comb amonestar"   onclick="amonestarBat('A',false)">🟨 Amonestación −5</button>
         <button class="btn-comb tecnico"     onclick="tiempoTecnico('A')">⏱ Tiempo técnico</button>
         <button class="btn-comb nocaut"      onclick="declararNocaut('A')">🏆 NOCAUT — A gana</button>
@@ -591,7 +591,7 @@
         <button class="btn-comb inmovilizar" onclick="puntuar('B','Inmovilizar (10s)',10)">🔒 Inmovilizar (10s) +10</button>
         <button class="btn-comb embestida"   onclick="puntuar('B','Embestida',5)">💥 Embestida +5</button>
         <button class="btn-comb vuelco"      onclick="puntuar('B','Vuelco',15)">🔄 Vuelco +15</button>
-        <button class="btn-comb arma"        onclick="puntuar('B','Embestida con arma',15)">⚔️ Embestida con arma +15</button>
+        <button class="btn-comb arma"        onclick="puntuar('B','Ataque con arma',15)">⚔️ Ataque con arma +15</button>
         <button class="btn-comb amonestar"   onclick="amonestarBat('B',false)">🟨 Amonestación −5</button>
         <button class="btn-comb tecnico"     onclick="tiempoTecnico('B')">⏱ Tiempo técnico</button>
         <button class="btn-comb nocaut"      onclick="declararNocaut('B')">🏆 NOCAUT — B gana</button>
@@ -1703,16 +1703,11 @@ function amonestarBat(equipo,silencioso) {
 function tiempoTecnico(equipo) {
   if(combate.fase==='fin')return;
   const nombre=equipo==='A'?document.getElementById('combNombreA').textContent:document.getElementById('combNombreB').textContent;
-  const usados=equipo==='A'?combate.tecnicoUsadoA:combate.tecnicoUsadoB;
-  const esProrroga=usados>=1;
-  const msg=esProrroga?`${nombre} ya usó su tiempo técnico. ¿Conceder PRÓRROGA? (cuenta como amonestación −5)`:
-    `¿Conceder 1 minuto técnico a ${nombre}?`;
-  if(!confirm(msg))return;
+  if(!confirm(`¿Pausar el combate por tiempo técnico/reparación para ${nombre}? (a discreción del juez)`))return;
   pausarCombate();
   if(equipo==='A')combate.tecnicoUsadoA++;else combate.tecnicoUsadoB++;
   combate.fase='tecnico';
   document.getElementById('combFaseBadge').textContent=`TIEMPO TÉCNICO — ${nombre}`;
-  if(esProrroga)amonestarBat(equipo,true);
   toast(`⏱ Tiempo técnico para ${nombre} — presiona Reanudar cuando termine`,'info');
 }
 function finDeTiempoCombate() {
