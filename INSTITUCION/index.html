@@ -207,57 +207,24 @@
       background: rgba(0,0,0,0.32);
       border-top: 1px solid rgba(91,200,240,0.25);
       margin: 32px -48px -120px;
-      padding: 16px 48px;
-      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      padding: 20px 48px;
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
     }
     .inst-hero-ausp-lbl {
-      font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px;
-      text-transform: uppercase; color: rgba(255,255,255,0.45); white-space: nowrap; flex-shrink: 0;
+      font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 2px;
+      text-transform: uppercase; color: rgba(255,255,255,0.5); white-space: nowrap; flex-shrink: 0;
     }
-    .inst-hero-ausp-div { width: 1px; height: 20px; background: rgba(255,255,255,0.15); flex-shrink: 0; }
-    .inst-hero-ausp-logos { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .inst-hero-ausp-div { width: 1px; height: 40px; background: rgba(255,255,255,0.15); flex-shrink: 0; }
+    .inst-hero-ausp-logos { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
     .inst-hero-ausp-pill {
-      background: rgba(255,255,255,0.92); border-radius: 7px; padding: 6px 12px;
-      display: flex; align-items: center; justify-content: center; height: 32px;
+      background: rgba(255,255,255,0.95); border-radius: 10px; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: center; height: 66px;
       text-decoration: none; transition: background 0.15s;
     }
     .inst-hero-ausp-pill:hover { background: #fff; }
     div.inst-hero-ausp-pill { cursor: default; }
-    .inst-hero-ausp-pill img { max-height: 20px; max-width: 90px; object-fit: contain; display: block; }
-    @media (max-width: 640px) { .inst-hero-ausp { margin: 24px -20px -110px; padding: 14px 20px; } }
-
-    /* ── AUSPICIANTES: sidebar sticky ── */
-    .inst-body-layout { display: flex; gap: 24px; align-items: flex-start; }
-    .inst-main-col { flex: 1; min-width: 0; }
-    .inst-sidebar-col { width: 190px; flex-shrink: 0; position: sticky; top: 190px; }
-    .inst-sidebar-card {
-      background: #ffffff; border-radius: 16px; border: 1px solid rgba(26,92,168,0.1);
-      box-shadow: 0 2px 16px rgba(26,92,168,0.08); padding: 18px 16px;
-    }
-    .inst-sidebar-title {
-      font-family: 'Orbitron', monospace; font-size: 8px; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; color: #1a5ca8; margin-bottom: 12px; padding-bottom: 10px;
-      border-bottom: 1px solid rgba(26,92,168,0.12);
-    }
-    .inst-sidebar-item {
-      display: flex; align-items: center; gap: 8px; padding: 8px 6px; border-radius: 8px;
-      text-decoration: none; margin-bottom: 4px; transition: background 0.15s;
-    }
-    .inst-sidebar-item:hover { background: #f0f4fa; }
-    div.inst-sidebar-item { cursor: default; }
-    .inst-sidebar-item img { max-height: 24px; max-width: 100%; object-fit: contain; display: block; }
-    .inst-sidebar-foot {
-      margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(26,92,168,0.1);
-      font-size: 8px; color: #9aaac8; letter-spacing: 1px; text-transform: uppercase; text-align: center;
-    }
-    @media (max-width: 900px) {
-      .inst-body-layout { flex-direction: column; }
-      .inst-sidebar-col { width: 100%; position: static; }
-      .inst-sidebar-card { padding: 14px; }
-      .inst-sidebar-title { text-align: center; }
-      .inst-sidebar-item { display: inline-flex; margin: 4px; }
-      .inst-sidebar-card > div:not(.inst-sidebar-title):not(.inst-sidebar-foot) { display: flex; flex-wrap: wrap; justify-content: center; }
-    }
+    .inst-hero-ausp-pill img { max-height: 42px; max-width: 150px; object-fit: contain; display: block; }
+    @media (max-width: 640px) { .inst-hero-ausp { margin: 24px -20px -110px; padding: 16px 20px; } }
 
   </style>
 </head>
@@ -287,9 +254,6 @@
         <div class="inst-hero-ausp-logos" id="instHeroAuspLogos"></div>
       </div>
     </div>
-
-    <div class="inst-body-layout">
-    <div class="inst-main-col">
 
     <!-- QUIÉNES SOMOS -->
     <div class="inst-section" id="quienes-somos">
@@ -397,18 +361,6 @@
       </div>
     </div>
 
-    </div><!-- /inst-main-col -->
-
-    <div class="inst-sidebar-col">
-      <div class="inst-sidebar-card">
-        <div class="inst-sidebar-title">Auspiciantes</div>
-        <div id="instSidebarAuspItems"></div>
-        <div class="inst-sidebar-foot">Con su apoyo</div>
-      </div>
-    </div>
-
-    </div><!-- /inst-body-layout -->
-
   </div>
 </main>
 
@@ -423,15 +375,11 @@
 
   const heroBox = document.getElementById('instHeroAuspLogos');
   if (heroBox) {
-    heroBox.innerHTML = AUSPICIANTES.map(function(a) {
+    const orden = typeof ausSinAdyacentesDuplicados === 'function'
+      ? ausSinAdyacentesDuplicados(AUSPICIANTES)
+      : AUSPICIANTES;
+    heroBox.innerHTML = orden.map(function(a) {
       return ausRenderPill(a, 'inst-hero-ausp-pill', '');
-    }).join('');
-  }
-
-  const sidebarBox = document.getElementById('instSidebarAuspItems');
-  if (sidebarBox) {
-    sidebarBox.innerHTML = AUSPICIANTES.map(function(a) {
-      return ausRenderPill(a, 'inst-sidebar-item', '');
     }).join('');
   }
 })();
