@@ -686,7 +686,12 @@
         id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
         miembro2, comprobante, archivoUrl, logoUrl, equipo
       });
-      if (!respRegistro.ok || !respRegistro.id) throw new Error('No se pudo completar el registro');
+      if (!respRegistro.ok || !respRegistro.id) {
+        if (respRegistro.error === 'COMPROBANTE_DUPLICADO') {
+          throw new Error('Este comprobante ya ha sido registrado' + (respRegistro.nombre ? ' (usado por ' + respRegistro.nombre + ')' : ''));
+        }
+        throw new Error(respRegistro.error || 'No se pudo completar el registro');
+      }
 
       const idGenerado = respRegistro.id;
 
