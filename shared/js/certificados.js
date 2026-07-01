@@ -22,7 +22,6 @@ const CERTIFICADO_TEMPLATE = `
 
     <!-- Sidebar izquierda -->
     <div class="cert-sidebar">
-      <span class="sb-label">Auspician</span>
       <div class="cert-sidebar-logos" id="certSponsorsLeft"></div>
     </div>
 
@@ -91,7 +90,6 @@ const CERTIFICADO_TEMPLATE = `
 
     <!-- Sidebar derecha -->
     <div class="cert-sidebar right">
-      <span class="sb-label">Auspician</span>
       <div class="cert-sidebar-logos" id="certSponsorsRight"></div>
     </div>
 
@@ -147,13 +145,6 @@ const CERTIFICADO_CSS = `
   border-right: 1px solid #e0eaf5; background: #f8fafd;
 }
 .cert-sidebar.right { border-right: none; border-left: 1px solid #e0eaf5; }
-.cert-sidebar .sb-label {
-  font-size: 8px; font-weight: 800; letter-spacing: 1.5px;
-  color: #1a5ca8; text-transform: uppercase;
-  writing-mode: vertical-rl; transform: rotate(180deg);
-  margin-bottom: 4px;
-}
-.cert-sidebar.right .sb-label { transform: none; }
 .cert-sidebar-logos { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
 .cert-sp-pill-v {
   background: #ffffff; border: 1px solid #d8e2f0; border-radius: 8px;
