@@ -77,7 +77,7 @@
 .ausp-marquee-wrapper::before,.ausp-marquee-wrapper::after{content:'';position:absolute;top:0;bottom:0;width:60px;z-index:2;pointer-events:none;}
 .ausp-marquee-wrapper::before{left:0;background:linear-gradient(to right,#0e2a5a,transparent);}
 .ausp-marquee-wrapper::after{right:0;background:linear-gradient(to left,#0e2a5a,transparent);}
-.ausp-marquee-track{display:flex;gap:14px;width:max-content;padding:0 12px;animation:ausp-scroll 30s linear infinite;}
+.ausp-marquee-track{display:flex;gap:14px;width:max-content;padding:0 12px;animation:ausp-scroll 30s linear infinite;will-change:transform;}
 .ausp-marquee-track:hover{animation-play-state:paused;}
 @keyframes ausp-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .ausp-pill{background:#fff;border-radius:10px;padding:10px 20px;display:flex;align-items:center;justify-content:center;height:52px;cursor:pointer;text-decoration:none;transition:transform 0.2s;}
@@ -89,10 +89,45 @@ div.ausp-pill{cursor:default;}
 <script>
 (function() {
   if (typeof AUSPICIANTES === 'undefined') return;
-  const track = document.getElementById('auspMarqueeTrack');
-  if (!track) return;
-  const dobles = AUSPICIANTES.concat(AUSPICIANTES); // duplicado para loop continuo
-  track.innerHTML = dobles.map(function(a) { return ausRenderPill(a, 'ausp-pill', ''); }).join('');
+  const track   = document.getElementById('auspMarqueeTrack');
+  const wrapper = track ? track.closest('.ausp-marquee-wrapper') : null;
+  if (!track || !wrapper || !AUSPICIANTES.length) return;
+
+  const SPEED_PX_S = 55; // velocidad constante del carrusel, sin importar cuántos auspiciantes haya
+
+  function construirCarrusel() {
+    // 1. Renderizar un solo set para medir su ancho real
+    const setHTML = AUSPICIANTES.map(function(a) { return ausRenderPill(a, 'ausp-pill', ''); }).join('');
+    track.style.animation = 'none';
+    track.innerHTML = setHTML;
+    const setWidth     = track.scrollWidth || 1;
+    const wrapperWidth = wrapper.clientWidth || window.innerWidth;
+
+    // 2. Calcular cuántas copias hacen falta para que MEDIO track cubra
+    //    siempre el ancho visible (así -50% nunca deja un hueco en blanco)
+    const setsPorMitad = Math.max(1, Math.ceil(wrapperWidth / setWidth));
+    const copias        = setsPorMitad * 2;
+
+    let html = '';
+    for (let i = 0; i < copias; i++) html += setHTML;
+    track.innerHTML = html;
+
+    // 3. Duración proporcional a la distancia real recorrida (mitad del track)
+    //    para que la velocidad visual sea siempre la misma
+    const totalWidth = track.scrollWidth || (setWidth * copias);
+    const distancia   = totalWidth / 2;
+    const duracion    = Math.max(8, distancia / SPEED_PX_S);
+
+    track.style.animation = `ausp-scroll ${duracion}s linear infinite`;
+  }
+
+  construirCarrusel();
+
+  let resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(construirCarrusel, 300);
+  });
 })();
 </script>
 
