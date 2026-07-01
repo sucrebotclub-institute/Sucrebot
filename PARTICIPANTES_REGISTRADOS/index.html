@@ -511,7 +511,11 @@
   }
 
   function cargarListaLocal() {
-    const lista    = _participantesIndex;
+    const lista    = _participantesIndex.filter(p => {
+      const n = String(p.nombre || '').toUpperCase();
+      const r = String(p.robot  || '').toUpperCase();
+      return !n.startsWith('[DEV]') && !r.startsWith('[DEV]');
+    });
     actualizarEstadisticas(lista);
     renderizarCategorias(lista);
     const filtroCategoria = document.getElementById('filtro-categoria').value;
