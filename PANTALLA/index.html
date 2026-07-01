@@ -307,9 +307,17 @@
     background:#1a5ca8; padding:3px 8px; border-radius:10px; width:fit-content;
   }
   .now-dot   { width:5px; height:5px; border-radius:50%; background:#fff !important; animation:dp 1.4s ease infinite; }
+  .fs-ev-manilla {
+    display:flex; align-items:center; justify-content:flex-end; gap:5px;
+    margin-top:6px; flex-shrink:0;
+  }
+  .fs-ev-manilla-label {
+    font-size:9px; font-weight:600; letter-spacing:0.3px;
+    color:rgba(26,92,168,0.65); white-space:nowrap;
+  }
   .fs-ev-tag {
-    position:absolute; top:8px; right:8px; width:16px; height:16px;
-    border-radius:4px; border:1.5px solid rgba(0,0,0,0.25);
+    width:15px; height:15px; border-radius:4px;
+    border:1.5px solid rgba(0,0,0,0.25); flex-shrink:0;
   }
   @keyframes dp { 0%,100%{opacity:1} 50%{opacity:0.3} }
 </style>
@@ -473,13 +481,16 @@
             const sp=span>1?`grid-row:${r+1} / span ${span};`:`grid-row:${r+1};`;
             const color=getEvColor(ev.name);
             const sponsorFooter = compact ? fsSponsorFooterHTML() : '';
-            html+=`<div class="fs-ev" style="grid-column:${c+1};${sp}background:#ffffff;border:2px solid #000;padding:${evPad};display:flex;flex-direction:column;height:100%;position:relative;">
-              <div class="fs-ev-tag" style="background:${color};"></div>
+            html+=`<div class="fs-ev" style="grid-column:${c+1};${sp}background:#ffffff;border:2px solid #000;padding:${evPad};display:flex;flex-direction:column;height:100%;">
               ${st==='now'?'<div class="now-badge"><div class="now-dot"></div>EN CURSO</div>':''}
               <div style="font-family:Orbitron,monospace;font-size:${compact?'14px':'12px'};font-weight:700;color:#1a5ca8;">${ev.start}</div>
               <div style="font-size:${evFS};font-weight:700;color:#0e2a5a;margin-top:3px;line-height:1.2;">${ev.name}</div>
               <div style="font-size:10px;color:rgba(26,92,168,0.65);margin-top:2px;">${ev.end}</div>
               ${sponsorFooter}
+              <div class="fs-ev-manilla">
+                <span class="fs-ev-manilla-label">Color de manilla:</span>
+                <span class="fs-ev-tag" style="background:${color};"></span>
+              </div>
             </div>`;
           }
         }
