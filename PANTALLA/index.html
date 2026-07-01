@@ -30,17 +30,13 @@
     .schedule-preview-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     @media (max-width: 640px) { .schedule-preview-list { grid-template-columns: 1fr; } }
 
-    /* ── Cronograma normal (no fullscreen): scroll horizontal en móvil ── */
-    #normalGrid { overflow-x: hidden; }
-    .fs-grid-wrap { min-width: 0; }
-    @media (max-width: 900px) {
-      #normalGrid {
-        overflow-x: auto; -webkit-overflow-scrolling: touch;
-        padding-bottom: 10px;
-      }
-      #normalGrid .fs-grid-wrap { min-width: 760px; }
-      #hintScroll { display: block !important; }
+    /* ── Cronograma normal (no fullscreen): siempre grande + scroll horizontal ── */
+    #normalGrid {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding-bottom: 10px;
     }
+    #normalGrid .fs-grid-wrap { min-width: 900px; }
     .preview-slot {
       display: flex !important; align-items: center; gap: 12px;
       padding: 10px 14px; border-radius: 8px; background: #f0f4fb !important;
@@ -501,16 +497,26 @@
     const h = document.getElementById('hintFs');
     if (h) h.style.display = 'block';
   }
+
+  // El hint "Desliza para ver todos los escenarios" solo se muestra si el
+  // grid realmente necesita scroll (es decir, si no entra completo en pantalla)
+  function actualizarHintScroll() {
+    const g = document.getElementById('normalGrid');
+    const h = document.getElementById('hintScroll');
+    if (!g || !h) return;
+    h.style.display = g.scrollWidth > g.clientWidth + 4 ? 'block' : 'none';
+  }
+  window.addEventListener('resize', actualizarHintScroll);
+
   setInterval(()=>{
     if(document.getElementById('fsOverlay').classList.contains('active'))
       buildGrid('fsGrid', true);
-    else
-      buildGrid('normalGrid', false);
+    else { buildGrid('normalGrid', false); actualizarHintScroll(); }
   }, 30000);
 
   tick();
-  setTimeout(()=>buildGrid('normalGrid', false), 0);
-  setTimeout(()=>buildGrid('normalGrid', false), 800);
+  setTimeout(()=>{ buildGrid('normalGrid', false); actualizarHintScroll(); }, 0);
+  setTimeout(()=>{ buildGrid('normalGrid', false); actualizarHintScroll(); }, 800);
 </script>
 
 </body>
