@@ -147,11 +147,10 @@ const CERTIFICADO_CSS = `
 .cert-sidebar.right { border-right: none; border-left: 1px solid #e0eaf5; }
 .cert-sidebar-logos { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
 .cert-sp-pill-v {
-  background: #ffffff; border: 1px solid #d8e2f0; border-radius: 8px;
-  width: 76px; padding: 8px 6px;
+  width: 78px; padding: 4px;
   display: flex; align-items: center; justify-content: center;
 }
-.cert-sp-pill-v img { max-height: 46px; max-width: 62px; object-fit: contain; display: block; }
+.cert-sp-pill-v img { max-height: 54px; max-width: 78px; object-fit: contain; display: block; }
 
 /* Certificado central */
 .cert {
