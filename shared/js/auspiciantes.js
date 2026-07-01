@@ -16,12 +16,18 @@ const AUSPICIANTES = [
     nombre: 'BYD',
     logo: 'byd.png',
     url: 'https://www.instagram.com/byd_ecuador/',
-    tooltip: '@byd_ecuador · @bydauto.ec'
+    tooltip: '@byd_ecuador'
+  },
+  {
+    nombre: 'BYD Auto Ec',
+    logo: 'byd.png',
+    url: 'https://www.instagram.com/bydauto.ec/',
+    tooltip: '@bydauto.ec'
   },
   {
     nombre: 'JEP Cooperativa',
     logo: 'jep.png',
-    url: null
+    url: 'https://www.jep.coop/'
   },
   {
     nombre: 'AX-TEC',
