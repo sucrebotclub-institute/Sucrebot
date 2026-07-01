@@ -286,6 +286,17 @@
     flex-shrink:0;
   }
   .fs-span-row { display:flex; align-items:center; gap:16px; }
+  .fs-span-sponsors {
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+    gap:28px; flex:1; min-height:0; padding:24px 40px;
+  }
+  .fs-span-sponsors img {
+    height:58px; max-width:170px; object-fit:contain;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.9))
+            drop-shadow(0 0 2px rgba(255,255,255,0.9))
+            drop-shadow(0 2px 6px rgba(0,0,0,0.45))
+            brightness(1.08);
+  }
   .fs-span-time { font-family:'Orbitron',monospace !important; font-size:14px; font-weight:700; color:#ffffff !important; min-width:48px; }
   .fs-span-name { font-family:'Bebas Neue',sans-serif !important; font-size:20px; letter-spacing:3px; color:#ffffff !important; flex:1; }
   .fs-ftr {
@@ -376,6 +387,14 @@
     return `<div class="fs-ev-sponsors"><img src="${ausLogoUrl(a)}" alt="${a.nombre}" loading="lazy"/></div>`;
   }
 
+  // Muestra TODOS los auspiciantes (uno cada uno, sin repetir) en el espacio
+  // libre de la banda de Premiación, que es la más grande de la pantalla.
+  function fsAllSponsorsHTML() {
+    if (typeof AUSPICIANTES === 'undefined' || !AUSPICIANTES.length) return '';
+    return `<div class="fs-span-sponsors">${AUSPICIANTES.map(a =>
+      `<img src="${ausLogoUrl(a)}" alt="${a.nombre}" loading="lazy"/>`).join('')}</div>`;
+  }
+
   function buildGrid(targetId, compact) {
     const grid=document.getElementById(targetId); if(!grid) return;
     const bandKeys=[...new Set(EVENTS.filter(e=>e.col!==null).map(e=>e.start))].sort();
@@ -410,7 +429,7 @@
     sections.forEach((sec,secIdx)=>{
       if(sec.type==='span') {
         const ev=sec.ev, st=getState(ev);
-        const sponsorRow = '';
+        const sponsorRow = (compact && ev.tipo==='award') ? fsAllSponsorsHTML() : '';
         const isLastSec = secIdx === sections.length - 1;
         const spanFlex = (compact && isLastSec) ? 'flex:1;' : '';
         html += `<div class="fs-span" style="${spanFlex}">
