@@ -36,6 +36,11 @@
       -webkit-overflow-scrolling: touch !important;
       padding-bottom: 10px;
     }
+    /* .fs-grid-wrap es el único hijo directo de #fsGrid/#normalGrid (ambos flex-column
+       en su contenedor). Debe seguir siendo flex-column con flex:1 para que, en
+       fullscreen, el grid ocupe toda la altura disponible como antes de envolverlo
+       — si no, colapsa a su altura natural y deja un espacio en blanco abajo. */
+    .fs-grid-wrap { display: flex; flex-direction: column; flex: 1; min-height: 0; }
     #normalGrid .fs-grid-wrap { min-width: 900px; }
     .preview-slot {
       display: flex !important; align-items: center; gap: 12px;
@@ -265,13 +270,13 @@
   }
   .fs-ev { border-radius:6px; overflow:hidden; }
   .fs-ev-sponsors {
-    display:flex; align-items:center; gap:5px; margin-top:auto;
-    padding-top:6px; flex-wrap:wrap;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: auto; padding-top: 8px;
   }
   .fs-ev-sponsors img {
-    height:20px; max-width:58px; object-fit:contain;
-    background:#ffffff; border-radius:4px; padding:2px 5px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.25);
+    height: 34px; max-width: 82%; object-fit: contain;
+    background: #ffffff; border-radius: 6px; padding: 5px 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
   }
   .fs-span {
     border-radius:6px; margin-bottom:0; background:#1a5ca8 !important;
@@ -364,12 +369,9 @@
   let _fsAuspPtr = 0;
   function fsSponsorFooterHTML() {
     if (typeof AUSPICIANTES === 'undefined' || !AUSPICIANTES.length) return '';
-    const n = Math.min(3, AUSPICIANTES.length);
-    const logos = [];
-    for (let i = 0; i < n; i++) logos.push(AUSPICIANTES[(_fsAuspPtr + i) % AUSPICIANTES.length]);
-    _fsAuspPtr = (_fsAuspPtr + n) % AUSPICIANTES.length;
-    return `<div class="fs-ev-sponsors">${logos.map(a =>
-      `<img src="${ausLogoUrl(a)}" alt="${a.nombre}" loading="lazy"/>`).join('')}</div>`;
+    const a = AUSPICIANTES[_fsAuspPtr % AUSPICIANTES.length];
+    _fsAuspPtr = (_fsAuspPtr + 1) % AUSPICIANTES.length;
+    return `<div class="fs-ev-sponsors"><img src="${ausLogoUrl(a)}" alt="${a.nombre}" loading="lazy"/></div>`;
   }
 
   function buildGrid(targetId, compact) {
