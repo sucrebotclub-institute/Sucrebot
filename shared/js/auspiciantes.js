@@ -41,7 +41,7 @@ const AUSPICIANTES = [
   },
   {
     nombre: 'NEO-MAKER LAB',
-    logo: 'neomaker.jpg',
+    logo: 'neomaker.png',
     url: null
   },
   {
@@ -56,22 +56,22 @@ const AUSPICIANTES = [
   },
   {
     nombre: 'InnovArte STEAM',
-    logo: 'innovarte.jpg',
+    logo: 'innovarte.png',
     url: null
   },
   {
     nombre: 'Peluditos Glam',
-    logo: 'peluditosglam.jpg',
+    logo: 'peluditosglam.png',
     url: 'https://instagram.com/peluditosglam'
   },
   {
     nombre: 'Maker CK3D',
-    logo: 'makerck3d.jpg',
+    logo: 'makerck3d.png',
     url: 'https://share.google/jNQIpqjdwLw8N6ggB'
   },
   {
     nombre: 'CELIT',
-    logo: 'celit.jpg',
+    logo: 'celit.png',
     url: 'https://www.celitecuador.com'
   }
 ];
