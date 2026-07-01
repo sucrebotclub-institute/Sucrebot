@@ -120,37 +120,36 @@ const CERTIFICADO_CSS = `
   width: 100%; background: #f4f7fc;
   border-bottom: 1px solid #d0ddef;
   display: flex; align-items: center; justify-content: center;
-  gap: 16px; padding: 10px 80px; flex-shrink: 0;
+  gap: 22px; padding: 14px 80px; flex-shrink: 0;
 }
 .cert-sponsors-top .sp-label {
   font-size: 9px; font-weight: 800; letter-spacing: 2px;
   color: #1a5ca8; text-transform: uppercase; white-space: nowrap;
 }
-.cert-sponsors-top-logos { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.cert-sponsors-top-logos { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; justify-content: center; }
 .cert-sp-pill {
-  background: #ffffff; border: 1px solid #d8e2f0; border-radius: 6px;
-  height: 34px; padding: 4px 12px;
+  padding: 2px;
   display: flex; align-items: center; justify-content: center;
 }
-.cert-sp-pill img { max-height: 22px; max-width: 84px; object-fit: contain; display: block; }
+.cert-sp-pill img { max-height: 38px; max-width: 130px; object-fit: contain; display: block; }
 
 /* Layout principal */
 .cert-main-row { display: flex; flex: 1; }
 
 /* Sidebars */
 .cert-sidebar {
-  width: 92px; flex-shrink: 0;
+  width: 118px; flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center;
-  padding: 20px 8px; gap: 14px;
+  padding: 28px 10px;
   border-right: 1px solid #e0eaf5; background: #f8fafd;
 }
 .cert-sidebar.right { border-right: none; border-left: 1px solid #e0eaf5; }
-.cert-sidebar-logos { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+.cert-sidebar-logos { display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; width: 100%; height: 100%; }
 .cert-sp-pill-v {
-  width: 78px; padding: 4px;
+  width: 98px; padding: 4px;
   display: flex; align-items: center; justify-content: center;
 }
-.cert-sp-pill-v img { max-height: 54px; max-width: 78px; object-fit: contain; display: block; }
+.cert-sp-pill-v img { max-height: 72px; max-width: 98px; object-fit: contain; display: block; }
 
 /* Certificado central */
 .cert {
