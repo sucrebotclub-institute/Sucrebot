@@ -135,6 +135,72 @@ div.ausp-pill{cursor:default;}
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(construirCarrusel, 300);
   });
+
+  // ── Arrastre manual (mouse "clic sostenido" y dedo en móvil) ──────────
+  // Al empezar a arrastrar se quita la animación automática y el track
+  // pasa a seguir el puntero libremente. Al soltar, tras una pausa breve,
+  // el carrusel vuelve a deslizarse solo desde el inicio.
+  wrapper.style.cursor = 'grab';
+  wrapper.style.touchAction = 'pan-y';
+  wrapper.style.userSelect = 'none';
+
+  let dragging = false, startX = 0, baseX = 0, resumeTimer = null, movedDist = 0;
+
+  function getTranslateX(el) {
+    const t = getComputedStyle(el).transform;
+    if (!t || t === 'none') return 0;
+    const m = t.match(/matrix\(([^)]+)\)/);
+    if (!m) return 0;
+    const parts = m[1].split(',').map(function(v) { return parseFloat(v); });
+    return parts[4] || 0;
+  }
+
+  function startDrag(e) {
+    dragging = true;
+    movedDist = 0;
+    clearTimeout(resumeTimer);
+    baseX = getTranslateX(track);
+    track.style.transition = 'none';
+    track.style.animation = 'none';
+    track.style.transform = 'translateX(' + baseX + 'px)';
+    startX = e.clientX;
+    wrapper.style.cursor = 'grabbing';
+    if (wrapper.setPointerCapture) { try { wrapper.setPointerCapture(e.pointerId); } catch(err) {} }
+  }
+
+  function moveDrag(e) {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    movedDist = Math.abs(dx);
+    track.style.transform = 'translateX(' + (baseX + dx) + 'px)';
+  }
+
+  // Si hubo arrastre real, se cancela el clic resultante para no abrir
+  // el link del auspiciante sin querer al soltar el dedo/mouse.
+  function suprimirClicSiguiente(e) { e.preventDefault(); e.stopPropagation(); }
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    wrapper.style.cursor = 'grab';
+    if (movedDist > 6) {
+      track.addEventListener('click', suprimirClicSiguiente, { capture: true, once: true });
+    }
+    resumeTimer = setTimeout(function() {
+      track.style.transition = 'transform 0.6s ease';
+      track.style.transform = 'translateX(0px)';
+      setTimeout(function() {
+        track.style.transition = '';
+        construirCarrusel();
+      }, 620);
+    }, 2200);
+  }
+
+  wrapper.addEventListener('pointerdown', startDrag);
+  wrapper.addEventListener('pointermove', moveDrag);
+  wrapper.addEventListener('pointerup', endDrag);
+  wrapper.addEventListener('pointercancel', endDrag);
+  wrapper.addEventListener('pointerleave', endDrag);
 })();
 </script>
 
