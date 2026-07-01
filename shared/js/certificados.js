@@ -131,7 +131,7 @@ const CERTIFICADO_CSS = `
   padding: 2px;
   display: flex; align-items: center; justify-content: center;
 }
-.cert-sp-pill img { max-height: 38px; max-width: 130px; object-fit: contain; display: block; }
+.cert-sp-pill img { max-height: 38px; max-width: 130px; display: block; }
 
 /* Layout principal */
 .cert-main-row { display: flex; flex: 1; }
@@ -149,7 +149,7 @@ const CERTIFICADO_CSS = `
   width: 98px; padding: 4px;
   display: flex; align-items: center; justify-content: center;
 }
-.cert-sp-pill-v img { max-height: 72px; max-width: 98px; object-fit: contain; display: block; }
+.cert-sp-pill-v img { max-height: 72px; max-width: 98px; display: block; }
 
 /* Certificado central */
 .cert {
@@ -175,9 +175,9 @@ const CERTIFICADO_CSS = `
   display: flex; align-items: center; justify-content: center;
   padding: 18px 90px 0; flex-shrink: 0;
 }
-.cert-logo-club  { height: 62px; object-fit: contain; }
+.cert-logo-club  { height: 62px; }
 .cert-logos-sep  { width: 1px; height: 46px; background: linear-gradient(180deg,transparent,#1a5ca8,transparent); margin: 0 20px; }
-.cert-logo-sucre2 { height: 70px; object-fit: contain; }
+.cert-logo-sucre2 { height: 70px; }
 .cert-divider {
   width: 440px; height: 1px;
   background: linear-gradient(90deg, transparent, #1a5ca8 30%, #1a5ca8 70%, transparent);
@@ -334,7 +334,7 @@ function certSponsorPill(nombre, vertical) {
   const a = AUSPICIANTES.find(function(x) { return x.nombre === nombre; });
   if (!a) return '';
   const cls = vertical ? 'cert-sp-pill-v' : 'cert-sp-pill';
-  return `<div class="${cls}"><img src="${ausLogoUrl(a)}" alt="${a.nombre}" crossorigin="anonymous"/></div>`;
+  return `<div class="${cls}"><img src="${ausLogoUrl(a)}" alt="${a.nombre}"/></div>`;
 }
 
 function renderCertSponsors(root) {
