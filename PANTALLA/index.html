@@ -269,14 +269,6 @@
     padding:6px 10px; border-radius:6px; text-align:center; margin-bottom:5px;
   }
   .fs-ev { border-radius:6px; overflow:hidden; }
-  .fs-ev-sponsors {
-    display: flex; align-items: center; justify-content: center;
-    flex: 1; min-height: 0;
-  }
-  .fs-ev-sponsors img {
-    height: 78px; max-width: 92%; object-fit: contain;
-    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.18));
-  }
   .fs-span {
     border-radius:6px; margin-bottom:0; background:#1a5ca8 !important;
     border:2px solid #000; display:flex; flex-direction:column; padding:6px 16px;
@@ -309,7 +301,7 @@
   .now-dot   { width:5px; height:5px; border-radius:50%; background:#fff !important; animation:dp 1.4s ease infinite; }
   .fs-manilla-mini {
     position:relative; display:flex; align-items:center; gap:5px;
-    margin-top:6px; flex-shrink:0; padding:4px 8px; border-radius:5px;
+    margin-top:auto; flex-shrink:0; padding:4px 8px; border-radius:5px;
     overflow:hidden; border:1px solid rgba(0,0,0,0.18);
   }
   .fs-manilla-pattern {
@@ -418,18 +410,6 @@
     if(cur>=s&&cur<e) return 'now'; if(cur>=e) return 'done'; return 'upcoming';
   }
 
-  // Rotación round-robin de auspiciantes en las tarjetas del fullscreen.
-  // El puntero avanza entre llamadas (no se reinicia en cada buildGrid) para
-  // que, con los refrescos automáticos cada 30s, distintos auspiciantes
-  // vayan apareciendo en cada tarjeta a lo largo del evento.
-  let _fsAuspPtr = 0;
-  function fsSponsorFooterHTML() {
-    if (typeof AUSPICIANTES === 'undefined' || !AUSPICIANTES.length) return '';
-    const a = AUSPICIANTES[_fsAuspPtr % AUSPICIANTES.length];
-    _fsAuspPtr = (_fsAuspPtr + 1) % AUSPICIANTES.length;
-    return `<div class="fs-ev-sponsors"><img src="${ausLogoUrl(a)}" alt="${a.nombre}" loading="lazy"/></div>`;
-  }
-
   // Muestra TODOS los auspiciantes (uno por CADA LOGO ÚNICO, sin repetir) en
   // el espacio libre de la banda de Premiación. Algunos auspiciantes comparten
   // el mismo logo (ej. BYD / BYD Auto Ec con distintos links) — aquí solo
@@ -443,7 +423,7 @@
       return true;
     });
     return `<div class="fs-span-sponsors">${unicos.map(a =>
-      `<img src="${ausLogoUrl(a)}" alt="${a.nombre}" loading="lazy"/>`).join('')}</div>`;
+      `<img src="${ausLogoUrl(a)}" alt="${a.nombre}" onerror="this.style.display='none'"/>`).join('')}</div>`;
   }
 
   function buildGrid(targetId, compact) {
