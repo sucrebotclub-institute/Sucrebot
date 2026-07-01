@@ -14,15 +14,8 @@ const CERTIFICADO_TEMPLATE = `
 
   <!-- Franja horizontal de auspiciantes -->
   <div class="cert-sponsors-top">
-    <span class="sp-label">Organiza</span>
-    <div class="sp-placeholder wide">Logo 1</div>
-    <div class="sp-placeholder wide">Logo 2</div>
-    <div class="sp-hsep"></div>
     <span class="sp-label">Auspician</span>
-    <div class="sp-placeholder narrow">Logo 3</div>
-    <div class="sp-placeholder narrow">Logo 4</div>
-    <div class="sp-placeholder narrow">Logo 5</div>
-    <div class="sp-placeholder narrow">Logo 6</div>
+    <div class="cert-sponsors-top-logos" id="certSponsorsTop"></div>
   </div>
 
   <div class="cert-main-row">
@@ -30,9 +23,7 @@ const CERTIFICADO_TEMPLATE = `
     <!-- Sidebar izquierda -->
     <div class="cert-sidebar">
       <span class="sb-label">Auspician</span>
-      <div class="sp-placeholder-v tall">Logo A</div>
-      <div class="sp-placeholder-v med">Logo B</div>
-      <div class="sp-placeholder-v med">Logo C</div>
+      <div class="cert-sidebar-logos" id="certSponsorsLeft"></div>
     </div>
 
     <!-- Certificado central -->
@@ -101,9 +92,7 @@ const CERTIFICADO_TEMPLATE = `
     <!-- Sidebar derecha -->
     <div class="cert-sidebar right">
       <span class="sb-label">Auspician</span>
-      <div class="sp-placeholder-v tall">Logo D</div>
-      <div class="sp-placeholder-v med">Logo E</div>
-      <div class="sp-placeholder-v med">Logo F</div>
+      <div class="cert-sidebar-logos" id="certSponsorsRight"></div>
     </div>
 
   </div>
@@ -133,31 +122,28 @@ const CERTIFICADO_CSS = `
   width: 100%; background: #f4f7fc;
   border-bottom: 1px solid #d0ddef;
   display: flex; align-items: center; justify-content: center;
-  gap: 28px; padding: 10px 80px; flex-shrink: 0;
+  gap: 16px; padding: 10px 80px; flex-shrink: 0;
 }
 .cert-sponsors-top .sp-label {
   font-size: 9px; font-weight: 800; letter-spacing: 2px;
   color: #1a5ca8; text-transform: uppercase; white-space: nowrap;
 }
-.sp-hsep { width: 1px; height: 28px; background: linear-gradient(180deg, transparent, #b0c4de, transparent); }
-.sp-placeholder {
-  height: 36px; border-radius: 6px;
-  background: #e8eef8; border: 1.5px dashed #a0b8d8;
+.cert-sponsors-top-logos { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.cert-sp-pill {
+  background: #ffffff; border: 1px solid #d8e2f0; border-radius: 6px;
+  height: 34px; padding: 4px 12px;
   display: flex; align-items: center; justify-content: center;
-  color: #7a9ac0; font-size: 9px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; padding: 0 16px; white-space: nowrap;
 }
-.sp-placeholder.wide { width: 100px; }
-.sp-placeholder.narrow { width: 80px; }
+.cert-sp-pill img { max-height: 22px; max-width: 84px; object-fit: contain; display: block; }
 
 /* Layout principal */
 .cert-main-row { display: flex; flex: 1; }
 
 /* Sidebars */
 .cert-sidebar {
-  width: 72px; flex-shrink: 0;
+  width: 92px; flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center;
-  padding: 20px 0; gap: 20px;
+  padding: 20px 8px; gap: 14px;
   border-right: 1px solid #e0eaf5; background: #f8fafd;
 }
 .cert-sidebar.right { border-right: none; border-left: 1px solid #e0eaf5; }
@@ -165,18 +151,16 @@ const CERTIFICADO_CSS = `
   font-size: 8px; font-weight: 800; letter-spacing: 1.5px;
   color: #1a5ca8; text-transform: uppercase;
   writing-mode: vertical-rl; transform: rotate(180deg);
+  margin-bottom: 4px;
 }
 .cert-sidebar.right .sb-label { transform: none; }
-.sp-placeholder-v {
-  width: 48px; border-radius: 6px;
-  background: #e8eef8; border: 1.5px dashed #a0b8d8;
+.cert-sidebar-logos { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+.cert-sp-pill-v {
+  background: #ffffff; border: 1px solid #d8e2f0; border-radius: 8px;
+  width: 76px; padding: 8px 6px;
   display: flex; align-items: center; justify-content: center;
-  color: #7a9ac0; font-size: 7px; font-weight: 700;
-  text-transform: uppercase; text-align: center; padding: 10px 4px;
-  writing-mode: vertical-rl;
 }
-.sp-placeholder-v.tall { height: 90px; }
-.sp-placeholder-v.med  { height: 70px; }
+.cert-sp-pill-v img { max-height: 46px; max-width: 62px; object-fit: contain; display: block; }
 
 /* Certificado central */
 .cert {
@@ -350,6 +334,42 @@ function obtenerSelloSVG(tipo) {
   </svg>`;
 }
 
+// ── AUSPICIANTES: distribución fija en 3 zonas del certificado ────────────
+// (requiere shared/js/auspiciantes.js cargado antes que este archivo)
+const CERT_SPONSORS_TOP   = ['BYD', 'JEP Cooperativa', 'Eléctrica GRM', "Cytronic's Plant", 'InnovArte STEAM'];
+const CERT_SPONSORS_LEFT  = ['AX-TEC', 'daly bella', 'CELIT'];
+const CERT_SPONSORS_RIGHT = ['NEO-MAKER LAB', 'Peluditos Glam', 'Maker CK3D'];
+
+function certSponsorPill(nombre, vertical) {
+  if (typeof AUSPICIANTES === 'undefined') return '';
+  const a = AUSPICIANTES.find(function(x) { return x.nombre === nombre; });
+  if (!a) return '';
+  const cls = vertical ? 'cert-sp-pill-v' : 'cert-sp-pill';
+  return `<div class="${cls}"><img src="${ausLogoUrl(a)}" alt="${a.nombre}" crossorigin="anonymous"/></div>`;
+}
+
+function renderCertSponsors(root) {
+  const scope = root || document;
+  const top   = scope.querySelector('#certSponsorsTop');
+  const left  = scope.querySelector('#certSponsorsLeft');
+  const right = scope.querySelector('#certSponsorsRight');
+  if (top)   top.innerHTML   = CERT_SPONSORS_TOP.map(function(n)  { return certSponsorPill(n, false); }).join('');
+  if (left)  left.innerHTML  = CERT_SPONSORS_LEFT.map(function(n)  { return certSponsorPill(n, true); }).join('');
+  if (right) right.innerHTML = CERT_SPONSORS_RIGHT.map(function(n) { return certSponsorPill(n, true); }).join('');
+}
+
+// Espera a que todas las <img> de un contenedor terminen de cargar (o fallen)
+function esperarImagenes(container) {
+  const imgs = Array.from(container.querySelectorAll('img'));
+  return Promise.all(imgs.map(function(img) {
+    if (img.complete) return Promise.resolve();
+    return new Promise(function(resolve) {
+      img.addEventListener('load', resolve, { once: true });
+      img.addEventListener('error', resolve, { once: true });
+    });
+  }));
+}
+
 // ── HTML DEL CERTIFICADO ───────────────────────────────────────────────────────
 
 function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
@@ -409,6 +429,7 @@ function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fech
   }
 
   document.getElementById('cert-preview-container').innerHTML = htmlCert;
+  renderCertSponsors(document.getElementById('cert-preview-container'));
 
   const saveBtn = document.getElementById('btn-guardar-cert');
   if (saveBtn) {
@@ -483,9 +504,11 @@ async function generarYSubirPDF(pObj, tipo, fechaEvento, codigoCert, nombreFinal
   tempDiv.style.cssText = 'position:absolute;left:-9999px;top:0;';
   tempDiv.innerHTML = htmlCert;
   document.body.appendChild(tempDiv);
+  renderCertSponsors(tempDiv);
 
   try {
     await document.fonts.ready;
+    await esperarImagenes(tempDiv);
     const canvas = await html2canvas(tempDiv.firstElementChild, {
       scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff'
     });
