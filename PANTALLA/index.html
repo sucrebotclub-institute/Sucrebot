@@ -18,6 +18,9 @@
       background: white; border-radius: 16px; padding: 32px;
       box-shadow: 0 4px 24px rgba(26,92,168,0.10); margin-bottom: 24px;
     }
+    @media (max-width: 480px) {
+      .cronograma-preview { padding: 18px 12px; }
+    }
     .preview-header {
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
@@ -26,6 +29,18 @@
     .preview-sub   { font-size: 13px; color: #555 !important; margin-top: 2px; }
     .schedule-preview-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     @media (max-width: 640px) { .schedule-preview-list { grid-template-columns: 1fr; } }
+
+    /* ── Cronograma normal (no fullscreen): scroll horizontal en móvil ── */
+    #normalGrid { overflow-x: hidden; }
+    .fs-grid-wrap { min-width: 0; }
+    @media (max-width: 900px) {
+      #normalGrid {
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px;
+      }
+      #normalGrid .fs-grid-wrap { min-width: 760px; }
+      #hintScroll { display: block !important; }
+    }
     .preview-slot {
       display: flex !important; align-items: center; gap: 12px;
       padding: 10px 14px; border-radius: 8px; background: #f0f4fb !important;
@@ -207,6 +222,9 @@
         </div>
       </div>
       <div id="hintFs" style="text-align:right;margin-bottom:6px;display:none;"><span style="font-size:11px;color:#9ca3af;font-family:'DM Mono',monospace;letter-spacing:1px;">Presiona <kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:1px 6px;font-size:10px;color:#374151;">F</kbd> para pantalla completa</span></div>
+      <div id="hintScroll" style="display:none;text-align:center;margin-bottom:8px;">
+        <span style="font-size:11px;color:#9ca3af;font-family:'Exo 2',sans-serif;letter-spacing:1px;">⇆ Desliza para ver todos los escenarios</span>
+      </div>
       <div id="normalGrid" style="margin-top:8px;"></div>
     </div>
   </div>
@@ -385,7 +403,8 @@
     const evFS  = compact ? '22px' : '17px';
     const rowH  = compact ? `calc((100vh - 265px) / 4)` : `130px`;
 
-    let html = `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};flex-shrink:0;">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
+    let html = `<div class="fs-grid-wrap">`;
+    html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};flex-shrink:0;">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
     html += `<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:${gap};">`;
 
     sections.forEach((sec,secIdx)=>{
@@ -437,7 +456,7 @@
     });
 
     html+=`</div>`; // close content wrapper
-
+    html+=`</div>`; // close fs-grid-wrap
 
     grid.innerHTML=html;
   }
