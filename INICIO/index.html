@@ -137,14 +137,17 @@ div.ausp-pill{cursor:default;}
   });
 
   // ── Arrastre manual (mouse "clic sostenido" y dedo en móvil) ──────────
-  // Al empezar a arrastrar se quita la animación automática y el track
-  // pasa a seguir el puntero libremente. Al soltar, tras una pausa breve,
-  // el carrusel vuelve a deslizarse solo desde el inicio.
+  // Clave: en pointerdown NO se toca nada (ni animación ni transform).
+  // Solo si el puntero se mueve más de un umbral se "confirma" el drag y
+  // recién ahí se pausa la animación y se toma control del track. Así un
+  // clic/tap simple nunca es interceptado y el link del auspiciante sigue
+  // abriendo normalmente.
   wrapper.style.cursor = 'grab';
   wrapper.style.touchAction = 'pan-y';
-  wrapper.style.userSelect = 'none';
 
-  let dragging = false, startX = 0, baseX = 0, resumeTimer = null, movedDist = 0;
+  const UMBRAL_DRAG = 8; // px de movimiento horizontal para confirmar arrastre
+  let potentialDrag = false, dragging = false;
+  let startX = 0, startY = 0, baseX = 0, resumeTimer = null;
 
   function getTranslateX(el) {
     const t = getComputedStyle(el).transform;
@@ -156,36 +159,46 @@ div.ausp-pill{cursor:default;}
   }
 
   function startDrag(e) {
-    dragging = true;
-    movedDist = 0;
+    potentialDrag = true;
+    dragging = false;
     clearTimeout(resumeTimer);
-    baseX = getTranslateX(track);
-    track.style.transition = 'none';
-    track.style.animation = 'none';
-    track.style.transform = 'translateX(' + baseX + 'px)';
     startX = e.clientX;
-    wrapper.style.cursor = 'grabbing';
-    if (wrapper.setPointerCapture) { try { wrapper.setPointerCapture(e.pointerId); } catch(err) {} }
-  }
-
-  function moveDrag(e) {
-    if (!dragging) return;
-    const dx = e.clientX - startX;
-    movedDist = Math.abs(dx);
-    track.style.transform = 'translateX(' + (baseX + dx) + 'px)';
+    startY = e.clientY;
   }
 
   // Si hubo arrastre real, se cancela el clic resultante para no abrir
   // el link del auspiciante sin querer al soltar el dedo/mouse.
   function suprimirClicSiguiente(e) { e.preventDefault(); e.stopPropagation(); }
 
+  function moveDrag(e) {
+    if (!potentialDrag) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    if (!dragging) {
+      if (Math.abs(dx) < UMBRAL_DRAG) return; // aún podría ser un clic/tap, no tocar nada
+      if (Math.abs(dy) > Math.abs(dx)) { potentialDrag = false; return; } // gesto vertical: dejar scroll normal de la página
+
+      // Recién aquí se confirma que es un arrastre real
+      dragging = true;
+      wrapper.style.userSelect = 'none';
+      wrapper.style.cursor = 'grabbing';
+      baseX = getTranslateX(track);
+      track.style.transition = 'none';
+      track.style.animation = 'none';
+      if (wrapper.setPointerCapture) { try { wrapper.setPointerCapture(e.pointerId); } catch(err) {} }
+    }
+
+    track.style.transform = 'translateX(' + (baseX + dx) + 'px)';
+  }
+
   function endDrag() {
+    potentialDrag = false;
+    wrapper.style.cursor = 'grab';
+    wrapper.style.userSelect = '';
     if (!dragging) return;
     dragging = false;
-    wrapper.style.cursor = 'grab';
-    if (movedDist > 6) {
-      track.addEventListener('click', suprimirClicSiguiente, { capture: true, once: true });
-    }
+    track.addEventListener('click', suprimirClicSiguiente, { capture: true, once: true });
     resumeTimer = setTimeout(function() {
       track.style.transition = 'transform 0.6s ease';
       track.style.transform = 'translateX(0px)';
