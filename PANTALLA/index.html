@@ -387,11 +387,19 @@
     return `<div class="fs-ev-sponsors"><img src="${ausLogoUrl(a)}" alt="${a.nombre}" loading="lazy"/></div>`;
   }
 
-  // Muestra TODOS los auspiciantes (uno cada uno, sin repetir) en el espacio
-  // libre de la banda de Premiación, que es la más grande de la pantalla.
+  // Muestra TODOS los auspiciantes (uno por CADA LOGO ÚNICO, sin repetir) en
+  // el espacio libre de la banda de Premiación. Algunos auspiciantes comparten
+  // el mismo logo (ej. BYD / BYD Auto Ec con distintos links) — aquí solo
+  // interesa la imagen, así que se deduplica por archivo de logo.
   function fsAllSponsorsHTML() {
     if (typeof AUSPICIANTES === 'undefined' || !AUSPICIANTES.length) return '';
-    return `<div class="fs-span-sponsors">${AUSPICIANTES.map(a =>
+    const vistos = {};
+    const unicos = AUSPICIANTES.filter(function(a) {
+      if (vistos[a.logo]) return false;
+      vistos[a.logo] = true;
+      return true;
+    });
+    return `<div class="fs-span-sponsors">${unicos.map(a =>
       `<img src="${ausLogoUrl(a)}" alt="${a.nombre}" loading="lazy"/>`).join('')}</div>`;
   }
 
