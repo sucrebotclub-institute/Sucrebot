@@ -119,14 +119,14 @@ const CERTIFICADO_CSS = `
 .cert-sponsors-top {
   width: 100%; background: #f4f7fc;
   border-bottom: 1px solid #d0ddef;
-  display: flex; align-items: center; justify-content: center;
-  gap: 22px; padding: 14px 80px; flex-shrink: 0;
+  display: flex; align-items: center;
+  gap: 24px; padding: 14px 60px; flex-shrink: 0;
 }
 .cert-sponsors-top .sp-label {
   font-size: 9px; font-weight: 800; letter-spacing: 2px;
-  color: #1a5ca8; text-transform: uppercase; white-space: nowrap;
+  color: #1a5ca8; text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
 }
-.cert-sponsors-top-logos { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; justify-content: center; }
+.cert-sponsors-top-logos { display: flex; align-items: center; justify-content: space-evenly; flex: 1; width: 100%; }
 .cert-sp-pill {
   padding: 2px;
   display: flex; align-items: center; justify-content: center;
