@@ -402,7 +402,7 @@ function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fech
     header.appendChild(closeBtn);
     const previewContainer = document.createElement('div');
     previewContainer.id = 'cert-preview-container';
-    previewContainer.style.cssText = 'overflow-x:auto;';
+    previewContainer.style.cssText = 'display:flex;justify-content:center;overflow:hidden;';
     const actions = document.createElement('div');
     actions.className = 'cert-modal-actions';
     const saveBtn = document.createElement('button');
@@ -431,12 +431,51 @@ function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fech
   }
 
   modal.classList.add('show');
+  requestAnimationFrame(function() { requestAnimationFrame(ajustarCertificadoAPantalla); });
 }
 
 function cerrarModalCertificado() {
   const modal = document.getElementById('cert-modal');
   if (modal) modal.classList.remove('show');
 }
+
+// ── ESCALAR CERTIFICADO PARA QUE QUEPA SIN SCROLL ──────────────────────────────
+function ajustarCertificadoAPantalla() {
+  const container = document.getElementById('cert-preview-container');
+  const certOuter  = container ? container.querySelector('.cert-outer') : null;
+  const content    = document.querySelector('.cert-modal-content');
+  if (!container || !certOuter || !content) return;
+
+  // Medir tamaño natural (sin escalar) del certificado
+  certOuter.style.transform = 'none';
+  const naturalWidth  = certOuter.offsetWidth;
+  const naturalHeight = certOuter.offsetHeight;
+  if (!naturalWidth || !naturalHeight) return;
+
+  // Espacio disponible dentro del modal (descontando header + acciones + padding)
+  const header  = document.querySelector('.cert-modal-header');
+  const actions = document.querySelector('.cert-modal-actions');
+  const headerH  = header  ? header.offsetHeight  : 0;
+  const actionsH = actions ? actions.offsetHeight : 0;
+  const contentStyles = window.getComputedStyle(content);
+  const paddingV = parseFloat(contentStyles.paddingTop) + parseFloat(contentStyles.paddingBottom);
+  const paddingH = parseFloat(contentStyles.paddingLeft) + parseFloat(contentStyles.paddingRight);
+
+  const availWidth  = Math.min(content.clientWidth, window.innerWidth * 0.94) - paddingH;
+  const availHeight = window.innerHeight * 0.9 - headerH - actionsH - paddingV - 24; // 24px margen de aire
+
+  const escala = Math.min(availWidth / naturalWidth, availHeight / naturalHeight, 1);
+
+  certOuter.style.transformOrigin = 'top center';
+  certOuter.style.transform = `scale(${escala})`;
+  container.style.height = (naturalHeight * escala) + 'px';
+  container.style.width  = '100%';
+}
+
+window.addEventListener('resize', function() {
+  const modal = document.getElementById('cert-modal');
+  if (modal && modal.classList.contains('show')) ajustarCertificadoAPantalla();
+});
 
 // ── GUARDAR DESDE MI-REGISTRO (legacy) ────────────────────────────────────────
 
