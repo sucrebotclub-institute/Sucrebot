@@ -97,7 +97,7 @@ div.ausp-pill{cursor:default;}
 
   function construirCarrusel() {
     // 1. Renderizar un solo set para medir su ancho real
-    const setHTML = AUSPICIANTES.map(function(a) { return ausRenderPill(a, 'ausp-pill', ''); }).join('');
+    const setHTML = ausSinAdyacentesDuplicados(AUSPICIANTES).map(function(a) { return ausRenderPill(a, 'ausp-pill', ''); }).join('');
     track.style.animation = 'none';
     track.innerHTML = setHTML;
     const setWidth     = track.scrollWidth || 1;
