@@ -12,18 +12,7 @@ const CERTIFICADO_TEMPLATE = `
 
   <div class="cert-top-band"></div>
 
-  <!-- Franja horizontal de auspiciantes -->
-  <div class="cert-sponsors-top">
-    <span class="sp-label">Auspician</span>
-    <div class="cert-sponsors-top-logos" id="certSponsorsTop"></div>
-  </div>
-
   <div class="cert-main-row">
-
-    <!-- Sidebar izquierda -->
-    <div class="cert-sidebar">
-      <div class="cert-sidebar-logos" id="certSponsorsLeft"></div>
-    </div>
 
     <!-- Certificado central -->
     <div class="cert">
@@ -90,6 +79,7 @@ const CERTIFICADO_TEMPLATE = `
 
     <!-- Sidebar derecha -->
     <div class="cert-sidebar right">
+      <span class="sp-label-v">Auspician</span>
       <div class="cert-sidebar-logos" id="certSponsorsRight"></div>
     </div>
 
@@ -115,41 +105,31 @@ const CERTIFICADO_CSS = `
   background: linear-gradient(90deg, #0a2a5e 0%, #1a5ca8 50%, #0a2a5e 100%);
 }
 
-/* Franja horizontal auspiciantes */
-.cert-sponsors-top {
-  width: 100%; background: #f4f7fc;
-  border-bottom: 1px solid #d0ddef;
-  display: flex; align-items: center;
-  gap: 24px; padding: 14px 60px; flex-shrink: 0;
-}
-.cert-sponsors-top .sp-label {
-  font-size: 9px; font-weight: 800; letter-spacing: 2px;
-  color: #1a5ca8; text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
-}
-.cert-sponsors-top-logos { display: flex; align-items: center; justify-content: space-evenly; flex: 1; width: 100%; }
-.cert-sp-pill {
-  padding: 2px;
-  display: flex; align-items: center; justify-content: center;
-}
-.cert-sp-pill img { max-height: 38px; max-width: 130px; display: block; }
-
 /* Layout principal */
 .cert-main-row { display: flex; flex: 1; }
 
-/* Sidebars */
-.cert-sidebar {
-  width: 118px; flex-shrink: 0;
+/* Sidebar derecha (único lugar de auspiciantes) */
+.cert-sidebar.right {
+  width: 200px; flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center;
-  padding: 28px 10px;
-  border-right: 1px solid #e0eaf5; background: #f8fafd;
+  padding: 22px 14px;
+  border-left: 1px solid #e0eaf5; background: #f8fafd;
 }
-.cert-sidebar.right { border-right: none; border-left: 1px solid #e0eaf5; }
-.cert-sidebar-logos { display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; width: 100%; height: 100%; }
+.sp-label-v {
+  font-size: 9px; font-weight: 800; letter-spacing: 2px;
+  color: #1a5ca8; text-transform: uppercase; white-space: nowrap;
+  margin-bottom: 14px; flex-shrink: 0;
+}
+.cert-sidebar-logos {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px 10px; width: 100%; flex: 1;
+  align-content: center; justify-items: center; align-items: center;
+}
 .cert-sp-pill-v {
-  width: 98px; padding: 4px;
+  width: 100%; padding: 4px;
   display: flex; align-items: center; justify-content: center;
 }
-.cert-sp-pill-v img { max-height: 72px; max-width: 98px; display: block; }
+.cert-sp-pill-v img { max-height: 56px; max-width: 82px; display: block; }
 
 /* Certificado central */
 .cert {
@@ -323,11 +303,14 @@ function obtenerSelloSVG(tipo) {
   </svg>`;
 }
 
-// ── AUSPICIANTES: distribución fija en 3 zonas del certificado ────────────
+// ── AUSPICIANTES: todos en la barra lateral derecha ────────────────────────
 // (requiere shared/js/auspiciantes.js cargado antes que este archivo)
-const CERT_SPONSORS_TOP   = ['BYD', 'JEP Cooperativa', 'Eléctrica GRM', "Cytronic's Plant", 'InnovArte STEAM'];
-const CERT_SPONSORS_LEFT  = ['AX-TEC', 'daly bella', 'CELIT', 'Microtero Electronic'];
-const CERT_SPONSORS_RIGHT = ['NEO-MAKER LAB', 'Peluditos Glam', 'Maker CK3D', '3DIMAX'];
+// Nota: 'BYD Auto Ec' se excluye intencionalmente por ser el mismo logo que 'BYD'
+const CERT_SPONSORS_RIGHT = [
+  'BYD', 'JEP Cooperativa', 'AX-TEC', 'daly bella', 'NEO-MAKER LAB',
+  'Eléctrica GRM', "Cytronic's Plant", 'InnovArte STEAM', 'Peluditos Glam',
+  'Maker CK3D', 'CELIT', 'Microtero Electronic', '3DIMAX'
+];
 
 function certSponsorPill(nombre, vertical) {
   if (typeof AUSPICIANTES === 'undefined') return '';
@@ -339,11 +322,7 @@ function certSponsorPill(nombre, vertical) {
 
 function renderCertSponsors(root) {
   const scope = root || document;
-  const top   = scope.querySelector('#certSponsorsTop');
-  const left  = scope.querySelector('#certSponsorsLeft');
   const right = scope.querySelector('#certSponsorsRight');
-  if (top)   top.innerHTML   = CERT_SPONSORS_TOP.map(function(n)  { return certSponsorPill(n, false); }).join('');
-  if (left)  left.innerHTML  = CERT_SPONSORS_LEFT.map(function(n)  { return certSponsorPill(n, true); }).join('');
   if (right) right.innerHTML = CERT_SPONSORS_RIGHT.map(function(n) { return certSponsorPill(n, true); }).join('');
 }
 
