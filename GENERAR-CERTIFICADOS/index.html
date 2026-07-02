@@ -173,9 +173,6 @@
 
 <script>
 const GAS_URL = CONFIG.GAS_URL();
-const STAFF_EMAILS_CERT = [
-  'sucrebotclub@tecnologicosucre.edu.ec'
-];
 
 let estado = {};
 
@@ -209,14 +206,10 @@ const TIPO_INTERNO = {
 function strVal(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
 
 document.addEventListener('componentsLoaded', () => {
-  const raw = localStorage.getItem('sucrebot_user');
-  if (!raw) { show('acceso-denegado'); return; }
-  try {
-    const u = JSON.parse(raw);
-    if (!STAFF_EMAILS_CERT.includes(u.email)) { show('acceso-denegado'); return; }
-    show('contenido-staff');
-    cargarDatos();
-  } catch(e) { show('acceso-denegado'); }
+  const token = localStorage.getItem('sucrebot_staff_token');
+  if (token !== 'SucreBot2026-CMI-Sucre-x7k9mQ') { show('acceso-denegado'); return; }
+  show('contenido-staff');
+  cargarDatos();
 });
 function show(id) { document.getElementById(id).style.display = 'block'; }
 
