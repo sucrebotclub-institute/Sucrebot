@@ -45,7 +45,8 @@ const AUSPICIANTES = [
   {
     nombre: 'daly bella',
     logo: 'dalybella.png',
-    url: null
+    url: null,
+    cartaImg: 'cartas/dalybella-carta.jpg'
   },
   {
     nombre: 'NEO-MAKER LAB',
