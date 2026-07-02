@@ -39,7 +39,8 @@ const AUSPICIANTES = [
   {
     nombre: 'AX-TEC',
     logo: 'axtec.png',
-    url: null
+    url: 'https://www.tiktok.com/@axtec.ec',
+    tooltip: '@axtec.ec'
   },
   {
     nombre: 'daly bella',
