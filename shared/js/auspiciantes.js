@@ -31,16 +31,30 @@ const AUSPICIANTES = [
     url: 'https://www.jep.coop/'
   },
   {
+    nombre: 'INGCO Ecuador',
+    logo: 'ingco.png',
+    url: 'https://www.facebook.com/IngcoEcuadorOficial'
+  },
+  {
+    nombre: 'Microtero Electronic',
+    logo: 'microtero.png',
+    url: 'https://www.facebook.com/share/1JzEKcK884/'
+  },
+  {
+    nombre: 'Eléctrica GRM',
+    logo: 'electricagrm.png',
+    url: 'https://electricagrm.com/'
+  },
+  {
     nombre: 'AX-TEC',
     logo: 'axtec.png',
     url: 'https://www.tiktok.com/@axtec.ec',
     tooltip: '@axtec.ec'
   },
   {
-    nombre: 'daly bella',
-    logo: 'dalybella.png',
-    url: null,
-    cartaImg: 'cartas/dalybella-carta.jpg'
+    nombre: 'CELIT',
+    logo: 'celit.png',
+    url: 'https://www.celitecuador.com'
   },
   {
     nombre: 'NEO-MAKER LAB',
@@ -60,9 +74,10 @@ const AUSPICIANTES = [
     url: 'https://vt.tiktok.com/ZSCHxho8V/'
   },
   {
-    nombre: 'Eléctrica GRM',
-    logo: 'electricagrm.png',
-    url: 'https://electricagrm.com/'
+    nombre: 'daly bella',
+    logo: 'dalybella.png',
+    url: null,
+    cartaImg: 'cartas/dalybella-carta.jpg'
   },
   {
     nombre: "Cytronic's Plant",
@@ -81,21 +96,6 @@ const AUSPICIANTES = [
     logo: 'peluditosglam.png',
     url: 'https://instagram.com/peluditosglam',
     cartaImg: 'cartas/peluditosglam-carta.jpg'
-  },
-  {
-    nombre: 'CELIT',
-    logo: 'celit.png',
-    url: 'https://www.celitecuador.com'
-  },
-  {
-    nombre: 'Microtero Electronic',
-    logo: 'microtero.png',
-    url: 'https://www.facebook.com/share/1JzEKcK884/'
-  },
-  {
-    nombre: 'INGCO Ecuador',
-    logo: 'ingco.png',
-    url: 'https://www.facebook.com/IngcoEcuadorOficial'
   },
   {
     nombre: 'PROCOINEEC',
