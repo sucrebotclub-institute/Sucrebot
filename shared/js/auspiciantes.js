@@ -97,6 +97,11 @@ const AUSPICIANTES = [
     nombre: '3DIMAX',
     logo: '3dimax.png',
     url: 'https://vt.tiktok.com/ZSCHxho8V/'
+  },
+  {
+    nombre: 'INGCO Ecuador',
+    logo: 'ingco.png',
+    url: 'https://www.facebook.com/IngcoEcuadorOficial'
   }
 ];
 
