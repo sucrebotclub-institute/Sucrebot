@@ -699,6 +699,14 @@ document.getElementById('cfg-intentos').addEventListener('change',function(){if(
 function exportarExcel(){
   try{const wb=XLSX.utils.book_new();const cat=categoriaActual||'Sin categoría';Object.keys(rondasData).map(Number).sort((a,b)=>a-b).forEach(r=>{XLSX.utils.book_append_sheet(wb,crearHoja(rondasData[r],r,cat,false),'Ronda '+r);});const ult=Object.keys(rondasData).map(Number).filter(r=>rondasData[r].cerrada).sort((a,b)=>b-a)[0]||rondaActual;XLSX.utils.book_append_sheet(wb,crearHoja(rondasData[ult],ult,cat,true),'Ranking General');XLSX.writeFile(wb,'SucreBot_'+cat.replace(/[^a-zA-Z0-9]/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.xlsx');showToast('✓ Excel descargado');}catch(e){showToast('❌ Error Excel',true);}
 }
+function tiempoAFraccionDia(t){
+  if(!t||typeof t!=='string')return null;
+  const p=t.split(':');
+  if(p.length!==3)return null;
+  const mn=Number(p[0]),sg=Number(p[1]),cs=Number(p[2]);
+  if(!Number.isFinite(mn)||!Number.isFinite(sg)||!Number.isFinite(cs))return null;
+  return (mn*60+sg+cs/100)/86400;
+}
 function crearHoja(rd,r,cat,esGeneral){
   const todos=rd.clasificados;const maxI=Math.max(...todos.map(c=>(c.tiempos||[c.tiempo]).length),1);
   const conT=[...todos].filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
@@ -706,7 +714,20 @@ function crearHoja(rd,r,cat,esGeneral){
   const aoa=[[esGeneral?'SucreBot — Ranking General':'SucreBot — Ronda '+r],['Categoría: '+cat],[],['#','Robot','Nombre','Institución','Ciudad','Mejor Tiempo',...Array.from({length:maxI},(_,i)=>'I'+(i+1))]];
   lista.forEach((c,i)=>aoa.push([c.esDNF?'DNF':i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo,...(c.tiempos||[c.tiempo])]));
   if(!esGeneral&&rd.eliminados?.length){aoa.push([],['ELIMINADOS']);rd.eliminados.forEach((c,i)=>aoa.push([i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo||'—']));}
-  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...Array(maxI).fill({wch:12})];return ws;
+  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...Array(maxI).fill({wch:12})];
+  // Aplicar formato de hora (mm:ss.00) a las celdas de tiempo — quedan como
+  // valor numérico real de Excel (fracción de día), no como texto plano
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  for(let R=range.s.r;R<=range.e.r;R++){
+    for(let C=range.s.c;C<=range.e.c;C++){
+      const addr=XLSX.utils.encode_cell({r:R,c:C});
+      const cell=ws[addr];
+      if(!cell||cell.t!=='s')continue;
+      const frac=tiempoAFraccionDia(cell.v);
+      if(frac!==null){cell.t='n';cell.v=frac;cell.z='mm:ss.00';}
+    }
+  }
+  return ws;
 }
 
 function cerrarModal(id){document.getElementById(id).classList.remove('show');}
