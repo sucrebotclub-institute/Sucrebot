@@ -471,17 +471,29 @@ function limpiarParticipante(){
   if(categoriaActual)fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general'})}).catch(()=>{});
 }
 
-function iniciarCrono(){
+// Categorías donde el sensor solo detiene (no arranca) el tiempo —
+// aquí es donde existe la ventana de carrera entre el clic de
+// "Iniciar" y el momento real en que el ESP32 arma el sensor.
+const CATS_ARM_ESPERA=['Trepador (Amateur)','Trepador (Pro)'];
+
+async function iniciarCrono(){
   if(rondaActual===0){showToast('⚠️ Ronda 0 es solo revisión',true);return;}
   if(!participanteActual){showToast('⚠️ Sin participante',true);return;}
   if(cronoInterval)return;
   if(intentosLog.length>=maxIntentos){showToast('⚠️ '+participanteActual.robot+' ya completó sus '+maxIntentos+' intentos',true);return;}
+  const CATS_NO_R=[...CATS_SEG,...CATS_PULSADOR];
+  if(CATS_ARM_ESPERA.includes(categoriaActual)&&typeof window.puertoConectado==='function'&&window.puertoConectado()&&typeof window.armarYEsperar==='function'){
+    document.getElementById('crono-status').textContent='ARMANDO SENSOR…';
+    const confirmado=await window.armarYEsperar(400);
+    if(!confirmado)console.warn('ARMED no confirmado por el ESP32 (timeout) — se continúa igual');
+  }else if(!CATS_NO_R.includes(categoriaActual)){
+    enviarSerial('R');
+  }
+  if(cronoInterval)return; // por si detenerCrono() u otro evento llegó durante la espera
   cronoInicio=Date.now();cronoInterval=setInterval(tickCrono,10);
   document.getElementById('crono-display').className='crono-display running';
   document.getElementById('crono-status').textContent='EN MARCHA · Intento '+intentoActual+' de '+maxIntentos;
   document.getElementById('btn-dnf').style.display='block';ocultarBotonesAccion();
-  const CATS_NO_R=[...CATS_SEG,...CATS_PULSADOR];
-  if(!CATS_NO_R.includes(categoriaActual))enviarSerial('R');
 }
 
 function detenerCrono(){
@@ -806,6 +818,7 @@ document.addEventListener('componentsLoaded',async function(){
 <script>
 (function(){
   let puerto=null,writer=null,buffer='';
+  let armadoResolvers=[];
   const CATS_SENSOR=['Trepador (Amateur)','Trepador (Pro)'];
   const CATS_SEGUIDOR=['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
   const CATS_PULSADOR=['Cubo Rubik'];
@@ -889,6 +902,7 @@ document.addEventListener('componentsLoaded',async function(){
 
   function procesarMensaje(msg){
     if(!msg)return;
+    if(msg==='ARMED'){const rs=armadoResolvers;armadoResolvers=[];rs.forEach(r=>r());return;}
     if(!CATS_SERIAL.includes(categoriaActual))return;
     if(rondaActual===0)return;
     if(!participanteActual)return;
@@ -906,6 +920,19 @@ document.addEventListener('componentsLoaded',async function(){
   }
 
   window.enviarSerial=async function(cmd){if(!writer)return;try{await writer.write(cmd);}catch(e){}};
+
+  window.puertoConectado=function(){return !!puerto;};
+
+  // Envía 'R' y espera confirmación "ARMED" del ESP32 (o hace timeout).
+  // Devuelve true si llegó la confirmación, false si venció el timeout.
+  window.armarYEsperar=function(timeoutMs){
+    return new Promise(resolve=>{
+      let resuelto=false;
+      const to=setTimeout(()=>{if(!resuelto){resuelto=true;resolve(false);}},timeoutMs||400);
+      armadoResolvers.push(()=>{if(!resuelto){resuelto=true;clearTimeout(to);resolve(true);}});
+      window.enviarSerial('R');
+    });
+  };
 
   document.addEventListener('componentsLoaded',()=>{
     inyectarBoton();
