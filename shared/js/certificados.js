@@ -312,7 +312,8 @@ function obtenerSelloSVG(tipo) {
 const CERT_SPONSORS_RIGHT = [
   'BYD', 'JEP Cooperativa', 'AX-TEC', 'daly bella', 'NEO-MAKER LAB',
   'Eléctrica GRM', "Cytronic's Plant", 'InnovArte STEAM', 'Peluditos Glam',
-  'Maker CK3D', 'CELIT', 'Microtero Electronic', '3DIMAX', 'INGCO Ecuador'
+  'Maker CK3D', 'CELIT', 'Microtero Electronic', '3DIMAX', 'INGCO Ecuador',
+  'PROCOINEEC'
 ];
 
 function certSponsorPill(nombre, vertical) {
