@@ -102,6 +102,11 @@ const AUSPICIANTES = [
     nombre: 'INGCO Ecuador',
     logo: 'ingco.png',
     url: 'https://www.facebook.com/IngcoEcuadorOficial'
+  },
+  {
+    nombre: 'PROCOINEEC',
+    logo: 'procoineec.png',
+    url: 'https://www.facebook.com/Procoineec'
   }
 ];
 
