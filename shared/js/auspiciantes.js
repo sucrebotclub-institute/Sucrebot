@@ -92,6 +92,11 @@ const AUSPICIANTES = [
     nombre: 'Microtero Electronic',
     logo: 'microtero.png',
     url: 'https://www.facebook.com/share/1JzEKcK884/'
+  },
+  {
+    nombre: '3DIMAX',
+    logo: '3dimax.png',
+    url: 'https://vt.tiktok.com/ZSCHxho8V/'
   }
 ];
 
