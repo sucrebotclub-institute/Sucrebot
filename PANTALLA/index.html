@@ -501,7 +501,10 @@
   }
 
   document.addEventListener('fullscreenchange', ()=>{
-    if(!document.fullscreenElement) document.getElementById('fsOverlay').classList.remove('active');
+    if(!document.fullscreenElement) {
+      document.getElementById('fsOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
   });
   document.addEventListener('keydown', e=>{
     if(e.key==='Escape') cerrarFS();
