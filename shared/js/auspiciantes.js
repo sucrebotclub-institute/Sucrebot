@@ -83,6 +83,11 @@ const AUSPICIANTES = [
     nombre: 'CELIT',
     logo: 'celit.png',
     url: 'https://www.celitecuador.com'
+  },
+  {
+    nombre: 'Microtero Electronic',
+    logo: 'microtero.png',
+    url: 'https://www.facebook.com/share/1JzEKcK884/'
   }
 ];
 
