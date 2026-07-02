@@ -858,7 +858,7 @@ document.addEventListener('componentsLoaded',async function(){
       puerto=await navigator.serial.requestPort();
       await puerto.open({baudRate:115200});
       const enc=new TextEncoderStream();
-      enc.readable.pipeTo(puerto.writable);
+      enc.readable.pipeTo(puerto.writable).catch(()=>{});
       writer=enc.writable.getWriter();
       actualizarBoton(document.getElementById('btn-serial'),true);
       document.getElementById('aviso-sensor').classList.remove('visible');
@@ -880,7 +880,7 @@ document.addEventListener('componentsLoaded',async function(){
 
   async function escuchar(){
     const dec=new TextDecoderStream();
-    puerto.readable.pipeTo(dec.writable);
+    puerto.readable.pipeTo(dec.writable).catch(()=>{});
     const lector=dec.readable.getReader();
     try{
       while(true){
