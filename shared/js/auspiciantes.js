@@ -66,7 +66,8 @@ const AUSPICIANTES = [
   {
     nombre: 'InnovArte STEAM',
     logo: 'innovarte.png',
-    url: null
+    url: 'https://www.instagram.com/innovartesteam/',
+    tooltip: '@innovartesteam'
   },
   {
     nombre: 'Peluditos Glam',
