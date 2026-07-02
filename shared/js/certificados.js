@@ -326,8 +326,8 @@ function obtenerSelloSVG(tipo) {
 // ── AUSPICIANTES: distribución fija en 3 zonas del certificado ────────────
 // (requiere shared/js/auspiciantes.js cargado antes que este archivo)
 const CERT_SPONSORS_TOP   = ['BYD', 'JEP Cooperativa', 'Eléctrica GRM', "Cytronic's Plant", 'InnovArte STEAM'];
-const CERT_SPONSORS_LEFT  = ['AX-TEC', 'daly bella', 'CELIT'];
-const CERT_SPONSORS_RIGHT = ['NEO-MAKER LAB', 'Peluditos Glam', 'Maker CK3D'];
+const CERT_SPONSORS_LEFT  = ['AX-TEC', 'daly bella', 'CELIT', 'Microtero Electronic'];
+const CERT_SPONSORS_RIGHT = ['NEO-MAKER LAB', 'Peluditos Glam', 'Maker CK3D', '3DIMAX'];
 
 function certSponsorPill(nombre, vertical) {
   if (typeof AUSPICIANTES === 'undefined') return '';
