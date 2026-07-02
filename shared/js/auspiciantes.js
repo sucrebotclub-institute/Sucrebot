@@ -26,12 +26,6 @@ const AUSPICIANTES = [
     tooltip: '@byd_ecuador'
   },
   {
-    nombre: 'BYD Auto Ec',
-    logo: 'byd.png',
-    url: 'https://www.instagram.com/bydauto.ec/',
-    tooltip: '@bydauto.ec'
-  },
-  {
     nombre: 'JEP Cooperativa',
     logo: 'jep.png',
     url: 'https://www.jep.coop/'
@@ -54,6 +48,16 @@ const AUSPICIANTES = [
     url: 'https://www.instagram.com/neo_makerlab',
     tooltip: '@neo_makerlab',
     cartaImg: 'cartas/neomaker-carta.jpg'
+  },
+  {
+    nombre: 'Maker CK3D',
+    logo: 'makerck3d.png',
+    url: 'https://share.google/jNQIpqjdwLw8N6ggB'
+  },
+  {
+    nombre: '3DIMAX',
+    logo: '3dimax.png',
+    url: 'https://vt.tiktok.com/ZSCHxho8V/'
   },
   {
     nombre: 'Eléctrica GRM',
@@ -79,11 +83,6 @@ const AUSPICIANTES = [
     cartaImg: 'cartas/peluditosglam-carta.jpg'
   },
   {
-    nombre: 'Maker CK3D',
-    logo: 'makerck3d.png',
-    url: 'https://share.google/jNQIpqjdwLw8N6ggB'
-  },
-  {
     nombre: 'CELIT',
     logo: 'celit.png',
     url: 'https://www.celitecuador.com'
@@ -92,11 +91,6 @@ const AUSPICIANTES = [
     nombre: 'Microtero Electronic',
     logo: 'microtero.png',
     url: 'https://www.facebook.com/share/1JzEKcK884/'
-  },
-  {
-    nombre: '3DIMAX',
-    logo: '3dimax.png',
-    url: 'https://vt.tiktok.com/ZSCHxho8V/'
   },
   {
     nombre: 'INGCO Ecuador',
@@ -122,7 +116,7 @@ function ausCartaUrl(item) {
 
 // Reordena una lista para que dos entradas con el mismo logo (ej. BYD + BYD Auto Ec)
 // nunca queden adyacentes. Útil para el carrusel. Funciona con cualquier cantidad
-// de duplicados a futuro, no solo el caso actual de BYD.
+// de duplicados que puedan aparecer a futuro (actualmente no hay ninguno).
 function ausSinAdyacentesDuplicados(lista) {
   const grupos = {};
   lista.forEach(function(item) {
