@@ -122,14 +122,17 @@ const CERTIFICADO_CSS = `
 }
 .cert-sidebar-logos {
   display: grid; grid-template-columns: repeat(2, 1fr);
-  gap: 12px 10px; width: 100%; flex: 1;
-  align-content: center; justify-items: center; align-items: center;
+  grid-auto-rows: 78px;
+  gap: 8px 6px; width: 100%; flex: 1;
+  align-content: center; justify-items: stretch; align-items: stretch;
 }
 .cert-sp-pill-v {
-  width: 100%; padding: 4px;
+  width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
+  background: #ffffff; border: 1px solid #e6edf6; border-radius: 6px;
+  box-sizing: border-box; padding: 6px;
 }
-.cert-sp-pill-v img { max-height: 56px; max-width: 82px; display: block; }
+.cert-sp-pill-v img { max-height: 100%; max-width: 100%; object-fit: contain; display: block; }
 
 /* Certificado central */
 .cert {
