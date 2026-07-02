@@ -51,7 +51,8 @@ const AUSPICIANTES = [
   {
     nombre: 'NEO-MAKER LAB',
     logo: 'neomaker.png',
-    url: null,
+    url: 'https://www.instagram.com/neo_makerlab',
+    tooltip: '@neo_makerlab',
     cartaImg: 'cartas/neomaker-carta.jpg'
   },
   {
