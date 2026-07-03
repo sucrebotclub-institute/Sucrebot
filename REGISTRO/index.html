@@ -719,6 +719,9 @@
         if (respRegistro.error === 'COMPROBANTE_DUPLICADO') {
           throw new Error('Este comprobante ya ha sido registrado' + (respRegistro.nombre ? ' (usado por ' + respRegistro.nombre + ')' : ''));
         }
+        if (respRegistro.error === 'CATEGORIA_CERRADA') {
+          throw new Error(respRegistro.mensaje || 'Esa categoría tiene las inscripciones agotadas');
+        }
         throw new Error(respRegistro.error || 'No se pudo completar el registro');
       }
 
