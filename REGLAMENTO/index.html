@@ -157,6 +157,19 @@
         .btn-reg-audio:hover { background: #e055ac; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,110,199,0.3); }
         .btn-reg-preview { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
         .btn-reg-preview:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+        .btn-reg-preview-pista { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+        .btn-reg-preview-pista:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+        .btn-reg-pista { background: #7ee787; color: #0a2a12; }
+        .btn-reg-pista:hover { background: #63d16c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(126,231,135,0.3); }
+
+        /* Preview imagen de pista */
+        .reg-imagen-wrap {
+            display: none; margin: 0 20px 16px;
+            border-radius: 8px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .reg-imagen-wrap.show { display: block; }
+        .reg-imagen-wrap img { width: 100%; display: block; background: #fff; }
 
         /* Preview iframe */
         .reg-iframe-wrap {
@@ -245,7 +258,7 @@ const CATEGORIAS = [
   {
     nivel: '🏆 Pro',
     items: [
-      { emoji: '➡️', nombre: 'Seguidor de línea ST (Pro)',       desc: 'Seguimiento autónomo avanzado',       disponible: true, driveId: '1PC1Vsmq7t-zXG4XvhNsBzJkFBfqRVnij', actualizado: '2026-06-23' },
+      { emoji: '➡️', nombre: 'Seguidor de línea ST (Pro)',       desc: 'Seguimiento autónomo avanzado',       disponible: true, driveId: '1PC1Vsmq7t-zXG4XvhNsBzJkFBfqRVnij', actualizado: '2026-06-23', pistaImg: '../shared/images/pistas/seguidor-pro-velocidad.png' },
       { emoji: '⚔️', nombre: 'Minisumo Autónomo',               desc: 'Combate autónomo en ring circular',   disponible: true, driveId: '1jA1rpxHkfF2qPllJLlZOilzkNphn0Ag8', actualizado: '2026-06-23' },
       { emoji: '🕹️', nombre: 'Minisumo RC',                     desc: 'Combate con control remoto',          disponible: true, driveId: '1oAZSwjWpGIjJm0WEUqY27W_G0OArn2n_', actualizado: '2026-06-23' },
       { emoji: '💃', nombre: 'Bailarín',                         desc: 'Coreografía sincronizada con música', disponible: true, driveId: '1ASoMKzt00Gp98X2o-cFfIAQzDrQBoHNk', actualizado: '2026-06-23', audioId: '170AHI7Nhi12Ys6HgKYkCdAgL72dbywm5' },
@@ -273,6 +286,7 @@ function renderReglamentos() {
     grupo.items.forEach((cat, i) => {
       const id = `reg-${grupo.nivel.replace(/\s/g,'-')}-${i}`;
       const iframeId = `iframe-${id}`;
+      const imgWrapId = `img-${id}`;
       html += `
       <div class="reg-card" id="${id}">
         <div class="reg-card-header">
@@ -300,10 +314,27 @@ function renderReglamentos() {
              href="https://drive.google.com/uc?export=download&id=${cat.audioId}"
              target="_blank" rel="noopener">🎵 Descargar Música</a>
           ` : ''}
+          ${cat.pistaImg ? `
+          <a class="btn-reg btn-reg-pista"
+             href="${cat.pistaImg}"
+             download="Pista-${cat.nombre.replace(/[^a-zA-Z0-9]+/g,'-')}-SucreBot2026.png">🗺️ Descargar Pista</a>
+          <button class="btn-reg btn-reg-preview-pista" onclick="toggleImagenPista('${imgWrapId}', '${cat.pistaImg}', this)">
+            👁 Ver Pista
+          </button>
+          ` : ''}
           <button class="btn-reg btn-reg-preview" onclick="togglePreview('${iframeId}', '${cat.driveId}', this)">
             👁 Vista previa
           </button>
         </div>
+        ${cat.pistaImg ? `
+        <div class="reg-imagen-wrap" id="${imgWrapId}">
+          <div class="reg-iframe-header">
+            <span>Pista · ${cat.nombre}</span>
+            <button class="btn-cerrar-iframe" onclick="cerrarImagenPista('${imgWrapId}', event)">✕</button>
+          </div>
+          <img src="" alt="Pista ${cat.nombre}" loading="lazy" />
+        </div>
+        ` : ''}
         <div class="reg-iframe-wrap" id="${iframeId}">
           <div class="reg-iframe-header">
             <span>${cat.nombre}</span>
@@ -343,6 +374,30 @@ function cerrarIframe(iframeId, e) {
   wrap.querySelector('iframe').src = '';
   const btn = wrap.previousElementSibling?.querySelector('.btn-reg-preview');
   if (btn) btn.textContent = '👁 Vista previa';
+}
+
+function toggleImagenPista(imgWrapId, srcImg, btn) {
+  const wrap = document.getElementById(imgWrapId);
+  const img = wrap.querySelector('img');
+  const visible = wrap.classList.contains('show');
+  if (visible) {
+    wrap.classList.remove('show');
+    img.src = '';
+    btn.textContent = '👁 Ver Pista';
+  } else {
+    img.src = srcImg;
+    wrap.classList.add('show');
+    btn.textContent = '🔼 Ocultar';
+  }
+}
+
+function cerrarImagenPista(imgWrapId, e) {
+  e.stopPropagation();
+  const wrap = document.getElementById(imgWrapId);
+  wrap.classList.remove('show');
+  wrap.querySelector('img').src = '';
+  const btn = wrap.previousElementSibling?.querySelector('.btn-reg-preview-pista');
+  if (btn) btn.textContent = '👁 Ver Pista';
 }
 
 function formatearFecha(fechaStr) {
