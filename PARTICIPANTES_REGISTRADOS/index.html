@@ -634,7 +634,11 @@
   }
 
   function renderizarInstitucionesGestor() {
-    const lista=_participantesIndex;
+    const lista=_participantesIndex.filter(p => {
+      const n = String(p.nombre || '').toUpperCase();
+      const r = String(p.robot  || '').toUpperCase();
+      return !n.startsWith('[DEV]') && !r.startsWith('[DEV]');
+    });
     const conteo={};
     lista.forEach(p=>{const inst=strVal(p.institucion)||'(sin institución)';conteo[inst]=(conteo[inst]||0)+1;});
     const ordenadas=Object.entries(conteo).sort((a,b)=>b[1]-a[1]);
