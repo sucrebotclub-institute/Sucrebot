@@ -88,6 +88,13 @@
     .miembros-aviso-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
     .miembros-aviso-text { font-family: 'Exo 2', sans-serif; font-size: 11.5px; color: rgba(255,255,255,0.75); line-height: 1.6; }
     .miembros-aviso-text strong { color: #90dcff; }
+    /* Aviso categoría cerrada */
+    .categoria-cerrada-wrap { display: none; margin-top: 10px; animation: fadeIn .25s ease; }
+    .categoria-cerrada-wrap.show { display: block; }
+    .categoria-cerrada-aviso { display: flex; align-items: flex-start; gap: 10px; background: rgba(224,85,85,0.1); border: 1px solid rgba(224,85,85,0.4); border-radius: 8px; padding: 10px 14px; }
+    .categoria-cerrada-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .categoria-cerrada-text { font-family: 'Exo 2', sans-serif; font-size: 11.5px; color: #ffb3b3; line-height: 1.6; }
+    .categoria-cerrada-text strong { color: #ff8a8a; }
     .logo-uploader { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
     .logo-uploader label.logo-label { font-family: 'Orbitron', monospace; font-size: 10px; color: rgba(255,255,255,0.95); margin-bottom: 6px; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; display: block; width: 100%; text-align: left; }
     .logo-drop-zone { width: 200px; height: 38px; border: 1.5px dashed rgba(91,200,240,0.4); border-radius: 8px; background: rgba(10,25,60,0.55); display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 7px; cursor: pointer; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; flex-shrink: 0; padding: 0 10px; box-sizing: border-box; }
@@ -392,10 +399,19 @@
             </optgroup>
             <optgroup label="🌟 OPEN">
               <option value="Cubo Rubik">Cubo Rubik</option>
-              <option value="Lego Kids">Lego Kids</option>
+              <option value="Lego Kids" disabled>Lego Kids (CERRADA)</option>
               <option value="Impacto Tecnológico">Impacto Tecnológico</option>
             </optgroup>
           </select>
+        </div>
+      </div>
+
+      <div class="categoria-cerrada-wrap" id="categoriaCerradaWrap">
+        <div class="categoria-cerrada-aviso">
+          <div class="categoria-cerrada-icon">⛔</div>
+          <div class="categoria-cerrada-text">
+            <strong>Inscripciones cerradas.</strong> La categoría <strong>Lego Kids</strong> ya no acepta nuevos registros. Selecciona otra categoría o escríbenos a <span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span> si tienes dudas.
+          </div>
         </div>
       </div>
 
@@ -593,11 +609,21 @@
     dropZone.classList.remove('has-logo'); logoUploader.classList.remove('has-logo');
   }
 
+  const CATEGORIAS_CERRADAS = ['Lego Kids'];
+
   function onCategoriaChange() {
     const cat = document.getElementById('f-categoria').value;
     const wrap = document.getElementById('soccerEquipoWrap');
     if (cat === 'Robot soccer') wrap.classList.add('show');
     else { wrap.classList.remove('show'); document.getElementById('f-equipo').value = ''; }
+
+    const cerradaWrap = document.getElementById('categoriaCerradaWrap');
+    if (CATEGORIAS_CERRADAS.includes(cat)) {
+      cerradaWrap.classList.add('show');
+      document.getElementById('f-categoria').value = '';
+    } else {
+      cerradaWrap.classList.remove('show');
+    }
   }
 
   async function gasPost(data) {
@@ -658,6 +684,7 @@
     if (contacto.length < 7) { showToast('El número debe tener al menos 7 dígitos', true); return; }
     if (!correo)      { showToast('El correo electrónico es obligatorio', true); return; }
     if (!categoria)   { showToast('Selecciona una categoría', true); return; }
+    if (CATEGORIAS_CERRADAS.includes(categoria)) { showToast('La categoría Lego Kids está cerrada para nuevas inscripciones', true); return; }
     if (categoria === 'Robot soccer' && !equipo) { showToast('El nombre del equipo es obligatorio para Robot soccer', true); return; }
     if (!comprobante) { showToast('El número de comprobante es obligatorio', true); return; }
     if (!archivo)     { showToast('Debes adjuntar el comprobante de pago', true); return; }
