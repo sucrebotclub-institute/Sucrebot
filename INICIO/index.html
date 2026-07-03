@@ -101,7 +101,7 @@ div.ausp-pill{cursor:default;}
   const wrapper = track ? track.closest('.ausp-marquee-wrapper') : null;
   if (!track || !wrapper || !AUSPICIANTES.length) return;
 
-  const SPEED_PX_S = 15; // velocidad constante del carrusel, sin importar cuántos auspiciantes haya
+  const SPEED_PX_S = 22; // velocidad constante del carrusel, sin importar cuántos auspiciantes haya
 
   function construirCarrusel() {
     // 1. Renderizar un solo set para medir su ancho real
@@ -127,6 +127,7 @@ div.ausp-pill{cursor:default;}
     const duracion    = Math.max(8, distancia / SPEED_PX_S);
 
     track.style.animation = `ausp-scroll ${duracion}s linear infinite`;
+    track.style.animationDelay = '';
   }
 
   construirCarrusel();
@@ -200,14 +201,29 @@ div.ausp-pill{cursor:default;}
     if (!dragging) return;
     dragging = false;
     track.addEventListener('click', suprimirClicSiguiente, { capture: true, once: true });
-    resumeTimer = setTimeout(function() {
-      track.style.transition = 'transform 0.6s ease';
-      track.style.transform = 'translateX(0px)';
-      setTimeout(function() {
-        track.style.transition = '';
-        construirCarrusel();
-      }, 620);
-    }, 2200);
+    resumeTimer = setTimeout(reanudarDesdeAqui, 1000);
+  }
+
+  // Reanuda el auto-scroll SIN regresar al inicio: calcula en qué punto
+  // del ciclo de la animación equivale la posición donde quedó el track
+  // tras el arrastre (usando módulo, ya que el track está duplicado y
+  // cualquier posición desplazada por "distancia" luce idéntica), fija
+  // esa posición exacta y reactiva la animación con un animation-delay
+  // negativo para que continúe visualmente sin salto.
+  function reanudarDesdeAqui() {
+    const distancia = (track.scrollWidth || 1) / 2;
+    const duracion  = Math.max(8, distancia / SPEED_PX_S);
+
+    let normalizado = getTranslateX(track) % distancia;
+    if (normalizado > 0) normalizado -= distancia; // fuerza rango [-distancia, 0)
+    const progreso = (-normalizado) / distancia;    // 0..1 dentro del ciclo
+
+    track.style.transition = 'none';
+    track.style.transform  = 'translateX(' + normalizado + 'px)';
+    void track.offsetWidth; // forzar reflow antes de reactivar la animación
+    track.style.animation = `ausp-scroll ${duracion}s linear infinite`;
+    track.style.animationDelay = '-' + (progreso * duracion).toFixed(3) + 's';
+    track.style.transform = '';
   }
 
   wrapper.addEventListener('pointerdown', startDrag);
