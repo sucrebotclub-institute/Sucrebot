@@ -104,6 +104,10 @@
     .config-input { width: 60px; background: var(--surface-light); border: 2px solid #e2e8f0; color: var(--surface); font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; padding: 6px 8px; border-radius: 8px; outline: none; text-align: center; }
     .config-input:focus { border-color: var(--cyan); }
     .config-title { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--cyan); font-weight: 700; margin-bottom: 8px; }
+    .fase-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .fase-num { font-family: var(--font-mono); font-size: 0.65rem; color: var(--cyan); font-weight: 700; width: 22px; flex-shrink: 0; }
+    .fase-nombre { flex: 1; min-width: 0; text-align: left; padding-left: 8px; font-size: 0.7rem !important; }
+    .fase-intentos { width: 44px !important; flex-shrink: 0; }
     .badges-wrap { display: flex; flex-direction: column; gap: 6px; }
     .badge-ronda { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 6px; background: var(--cyan); color: var(--surface); font-weight: 700; text-align: center; width: 100%; }
     .badge-intento { font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 14px; border-radius: 6px; background: var(--accent2); color: var(--text); font-weight: 700; text-align: center; width: 100%; }
@@ -279,7 +283,7 @@
         <div class="col-config">
           <div class="card-dark"><div class="card-label">CATEGORÍA ACTIVA</div><div id="cat-activa-label" style="font-family:'Bebas Neue';font-size:1.1rem;color:var(--cyan);letter-spacing:1px;">—</div></div>
           <div class="aviso-sensor" id="aviso-sensor"><div class="aviso-sensor-icon">🔌</div><div class="aviso-sensor-texto"><b id="aviso-sensor-titulo">CONECTA EL DISPOSITIVO</b><span id="aviso-sensor-desc">Antes de iniciar la competencia, conecta el ESP32 usando el botón de abajo.</span></div></div>
-          <div class="card-dark"><div class="config-title">CONFIG</div><div class="config-row"><label>Rondas:</label><input type="number" class="config-input" id="cfg-rondas" value="3" min="1" max="10" /></div><div style="height:8px"></div><div class="config-row"><label>Intentos:</label><input type="number" class="config-input" id="cfg-intentos" value="2" min="1" max="5" /></div></div>
+          <div class="card-dark"><div class="config-title">CONFIG</div><div class="config-row"><label>Rondas:</label><input type="number" class="config-input" id="cfg-rondas" value="1" min="1" max="10" /></div><div style="height:10px"></div><div class="config-title" style="margin-bottom:6px">INTENTOS POR RONDA</div><div id="cfg-fases-wrap"></div></div>
           <div class="card-dark badges-wrap"><span class="badge-ronda" id="badge-ronda">RONDA 0 · REVISIÓN</span><span class="badge-intento" id="badge-intento">—</span></div>
           <button class="btn-iniciar-comp" id="btn-iniciar-comp" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
           <button class="btn-bloque btn-cerrar-cat" id="btn-cerrar-cat" style="display:none" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
@@ -336,10 +340,48 @@ const AVISO_SENSOR  = {
 };
 
 let categoriaActual=null,participanteActual=null,pollingInterval=null,cronoInterval=null,cronoInicio=null;
-let rondaActual=0,intentoActual=1,maxRondas=3,maxIntentos=2;
+let rondaActual=0,intentoActual=1,maxRondas=1,maxIntentos=2;
 let rondasData={0:{clasificados:[],eliminados:[],cerrada:false}};
 let intentosLog=[],competenciaIniciada=false,ultimoIdLimpiado=null,ultimoIdLimpiadoTs=0;
 let presentes=[],seleccionados=new Set();
+
+// Config de intentos (y nombre opcional) por cada ronda — permite que, por ejemplo,
+// la Ronda 1 (Clasificatoria) tenga 2 intentos y la Ronda 2 (Final) tenga 1 solo.
+// Es puramente local a esta pantalla: no requiere cambios en Code.gs.
+let fasesConfig={};
+function getIntentosRonda(r){return(fasesConfig[r]&&fasesConfig[r].intentos)||2;}
+function getNombreRonda(r){return(fasesConfig[r]&&fasesConfig[r].nombre)||'';}
+
+function renderFasesConfig(){
+  const n=parseInt(document.getElementById('cfg-rondas').value)||1;
+  const wrap=document.getElementById('cfg-fases-wrap');if(!wrap)return;
+  let html='';
+  for(let i=1;i<=n;i++){
+    const prev=fasesConfig[i]||{};
+    const nombre=(prev.nombre||'').replace(/"/g,'&quot;');
+    const intentos=prev.intentos||2;
+    html+='<div class="fase-row"><span class="fase-num">R'+i+'</span>'
+      +'<input type="text" class="config-input fase-nombre" id="cfg-nombre-r'+i+'" placeholder="Nombre (opcional)" value="'+nombre+'" '+(competenciaIniciada?'disabled':'')+' />'
+      +'<input type="number" class="config-input fase-intentos" id="cfg-intentos-r'+i+'" min="1" max="5" value="'+intentos+'" title="Intentos" '+(competenciaIniciada?'disabled':'')+' /></div>';
+  }
+  wrap.innerHTML=html;
+  if(!competenciaIniciada){
+    for(let i=1;i<=n;i++){
+      const elN=document.getElementById('cfg-nombre-r'+i),elI=document.getElementById('cfg-intentos-r'+i);
+      if(elN)elN.addEventListener('change',()=>{fasesConfig[i]=fasesConfig[i]||{};fasesConfig[i].nombre=elN.value.trim();});
+      if(elI)elI.addEventListener('change',()=>{fasesConfig[i]=fasesConfig[i]||{};fasesConfig[i].intentos=parseInt(elI.value)||2;if(rondaActual===i)maxIntentos=fasesConfig[i].intentos;});
+    }
+  }
+}
+
+function leerFasesConfig(){
+  const n=parseInt(document.getElementById('cfg-rondas').value)||1;
+  for(let i=1;i<=n;i++){
+    const elN=document.getElementById('cfg-nombre-r'+i),elI=document.getElementById('cfg-intentos-r'+i);
+    fasesConfig[i]={nombre:(elN&&elN.value.trim())||'',intentos:parseInt(elI&&elI.value)||2};
+  }
+  return fasesConfig;
+}
 
 function setStep(n){[1,2,3].forEach(i=>{document.getElementById('step-dot-'+i).className='step-item'+(i<n?' done':i===n?' active':'');document.getElementById('panel-'+i).className='step-panel'+(i===n?' active':'');});window.scrollTo({top:0,behavior:'smooth'});}
 
@@ -394,12 +436,13 @@ async function confirmarIniciarCrono(){
   const selArr=presentes.filter(p=>seleccionados.has(p.id));
   rondasData={0:{clasificados:[],eliminados:[],cerrada:false}};
   selArr.forEach((p,i)=>{rondasData[0].clasificados.push({...p,tiempo:'—',tiempos:[],esDNF:false,ronda:0,ts:Date.now()+i});});
-  rondaActual=0;intentoActual=1;maxRondas=3;maxIntentos=2;competenciaIniciada=false;intentosLog=[];participanteActual=null;
+  rondaActual=0;intentoActual=1;maxRondas=1;maxIntentos=2;competenciaIniciada=false;intentosLog=[];participanteActual=null;fasesConfig={};
   document.getElementById('cat-activa-label').textContent=catNombre;
   document.getElementById('btn-cerrar-cat').style.display='block';
-  document.getElementById('cfg-rondas').value='3';document.getElementById('cfg-intentos').value='2';
-  document.getElementById('cfg-rondas').disabled=false;document.getElementById('cfg-intentos').disabled=false;
-  document.getElementById('cfg-rondas').style.opacity='';document.getElementById('cfg-intentos').style.opacity='';
+  document.getElementById('cfg-rondas').value='1';
+  document.getElementById('cfg-rondas').disabled=false;
+  document.getElementById('cfg-rondas').style.opacity='';
+  renderFasesConfig();
   document.getElementById('btn-iniciar-comp').classList.remove('oculto');
   document.getElementById('btn-excel').classList.remove('visible');
   const bcr=document.getElementById('btn-cerrar-ronda');bcr.disabled=false;bcr.style.opacity='';bcr.style.display='none';bcr.innerHTML='🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>';
@@ -415,7 +458,7 @@ function volverPaso1Desde3(){
   if(cronoInterval){clearInterval(cronoInterval);cronoInterval=null;}
   if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
   if(categoriaActual){desbloquearCategoria(categoriaActual);localStorage.removeItem('cronometro_categoria_activa');}
-  categoriaActual=null;participanteActual=null;rondaActual=0;intentoActual=1;maxRondas=3;maxIntentos=2;
+  categoriaActual=null;participanteActual=null;rondaActual=0;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
   rondasData={0:{clasificados:[],eliminados:[],cerrada:false}};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);
 }
@@ -592,15 +635,18 @@ function ocultarBotonesAccion(){['btn-sig-intento','btn-sig-part','btn-saltar'].
 function actualizarBadges(){
   const bronda=document.getElementById('badge-ronda'),bint=document.getElementById('badge-intento'),bcr=document.getElementById('btn-cerrar-ronda'),numEl=document.getElementById('cerrar-ronda-num');
   if(rondaActual===0){bronda.textContent='RONDA 0 · REVISIÓN';bint.textContent='—';bcr.style.display='none';}
-  else{bronda.textContent='RONDA '+rondaActual;bint.textContent='INTENTO '+intentoActual;bcr.style.display='block';}
+  else{const nombreFase=getNombreRonda(rondaActual);bronda.textContent=(nombreFase?nombreFase.toUpperCase()+' · ':'')+'RONDA '+rondaActual;bint.textContent='INTENTO '+intentoActual;bcr.style.display='block';}
   if(numEl)numEl.textContent=rondaActual;
 }
 
 function iniciarCompetencia(){
   if(!categoriaActual){showToast('⚠️ Selecciona una categoría primero',true);return;}
-  maxRondas=parseInt(document.getElementById('cfg-rondas').value)||3;maxIntentos=parseInt(document.getElementById('cfg-intentos').value)||2;
-  if(!confirm('¿Iniciar competencia?\n• Rondas: '+maxRondas+'\n• Intentos: '+maxIntentos+'\n\nEsto bloqueará la configuración.'))return;
-  competenciaIniciada=true;document.getElementById('cfg-rondas').disabled=true;document.getElementById('cfg-intentos').disabled=true;document.getElementById('cfg-rondas').style.opacity='0.5';document.getElementById('cfg-intentos').style.opacity='0.5';document.getElementById('btn-iniciar-comp').classList.add('oculto');
+  maxRondas=parseInt(document.getElementById('cfg-rondas').value)||1;
+  leerFasesConfig();
+  maxIntentos=getIntentosRonda(1);
+  const resumen=Array.from({length:maxRondas},(_,i)=>{const r=i+1,n=getNombreRonda(r);return'• Ronda '+r+(n?' ('+n+')':'')+': '+getIntentosRonda(r)+' intento(s)';}).join('\n');
+  if(!confirm('¿Iniciar competencia?\n'+resumen+'\n\nEsto bloqueará la configuración.'))return;
+  competenciaIniciada=true;document.getElementById('cfg-rondas').disabled=true;document.getElementById('cfg-rondas').style.opacity='0.5';renderFasesConfig();document.getElementById('btn-iniciar-comp').classList.add('oculto');
   const ronda0=getRonda(0);rondaActual=1;intentoActual=1;
   rondasData[1]={clasificados:ronda0.clasificados.map((c,i)=>({...c,tiempo:'—',tiempos:[],esDNF:false,ronda:1,ts:Date.now()+i})),eliminados:[],cerrada:false};
   actualizarBadges();renderRondas();limpiarParticipante();guardarEstado();showToast('🏁 Competencia iniciada · '+rondasData[1].clasificados.length+' participantes');
@@ -670,7 +716,7 @@ function pedirCerrarRonda(){if(getRonda(rondaActual).clasificados.length===0){sh
 function confirmarCerrarRonda(){
   cerrarModal('modal-ronda');getRonda(rondaActual).cerrada=true;
   fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general'})}).catch(()=>{});
-  if(rondaActual<maxRondas){const ant=rondaActual++;intentoActual=1;actualizarBadges();getRonda(rondaActual).clasificados=getRonda(ant).clasificados.filter(c=>!c.esDNF).map((c,i)=>({...c,tiempo:'—',tiempos:[],esDNF:false,ronda:rondaActual,ts:c.ts+rondaActual+i}));actualizarContador();renderRondas();limpiarParticipante();desbloquearBtn();guardarEstado();showToast('🏁 Ronda '+ant+' cerrada · Ronda '+rondaActual+' lista');}
+  if(rondaActual<maxRondas){const ant=rondaActual++;intentoActual=1;maxIntentos=getIntentosRonda(rondaActual);actualizarBadges();getRonda(rondaActual).clasificados=getRonda(ant).clasificados.filter(c=>!c.esDNF).map((c,i)=>({...c,tiempo:'—',tiempos:[],esDNF:false,ronda:rondaActual,ts:c.ts+rondaActual+i}));actualizarContador();renderRondas();limpiarParticipante();desbloquearBtn();guardarEstado();const nom=getNombreRonda(rondaActual);showToast('🏁 Ronda '+ant+' cerrada · Ronda '+rondaActual+(nom?' ('+nom+')':'')+' lista · '+maxIntentos+' intento(s)');}
   else{const btn=document.getElementById('btn-cerrar-ronda');btn.disabled=true;btn.innerHTML='✓ Competencia finalizada';btn.style.opacity='0.5';renderRondas();limpiarParticipante();guardarEstado();document.getElementById('btn-excel').classList.add('visible');document.getElementById('btn-podio').classList.add('visible');showToast('🏆 ¡Competencia finalizada!');setTimeout(()=>exportarExcel(),500);}
 }
 
@@ -682,20 +728,20 @@ async function confirmarCerrarCategoria(){
     const ruta=getRuta()||'general';
     await Promise.all([fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta})}),fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null})})]);
     if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
-    categoriaActual=null;participanteActual=null;rondaActual=0;intentoActual=1;maxRondas=3;maxIntentos=2;
+    categoriaActual=null;participanteActual=null;rondaActual=0;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
     rondasData={0:{clasificados:[],eliminados:[],cerrada:false}};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
     reiniciarCrono();limpiarParticipante();actualizarBadges();renderRondas();document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));showToast('✅ Categoría cerrada');setStep(1);
   }catch(e){showToast('❌ Error al cerrar categoría',true);}
 }
 
-function guardarEstado(){if(!categoriaActual)return;const estado={rondaActual,intentoActual,maxRondas,maxIntentos,rondasData,categoria:categoriaActual,competenciaIniciada};localStorage.setItem(getKey(),JSON.stringify(estado));const ruta=getRuta();if(!ruta)return;fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado})}).catch(()=>{});}
+function guardarEstado(){if(!categoriaActual)return;const estado={rondaActual,intentoActual,maxRondas,maxIntentos,fasesConfig,rondasData,categoria:categoriaActual,competenciaIniciada};localStorage.setItem(getKey(),JSON.stringify(estado));const ruta=getRuta();if(!ruta)return;fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado})}).catch(()=>{});}
 
 function cargarEstado(cat){
   try{
     const key='sucrebot_estado_'+(RUTAS[cat]||'general');const raw=localStorage.getItem(key);if(!raw)return false;
-    const e=JSON.parse(raw);rondaActual=e.rondaActual??0;intentoActual=e.intentoActual||1;maxRondas=e.maxRondas||3;maxIntentos=e.maxIntentos||2;rondasData=e.rondasData||{0:{clasificados:[],eliminados:[],cerrada:false}};competenciaIniciada=e.competenciaIniciada||false;
-    document.getElementById('cfg-rondas').value=maxRondas;document.getElementById('cfg-intentos').value=maxIntentos;
-    if(competenciaIniciada){document.getElementById('cfg-rondas').disabled=true;document.getElementById('cfg-intentos').disabled=true;document.getElementById('cfg-rondas').style.opacity='0.5';document.getElementById('cfg-intentos').style.opacity='0.5';document.getElementById('btn-iniciar-comp').classList.add('oculto');}
+    const e=JSON.parse(raw);rondaActual=e.rondaActual??0;intentoActual=e.intentoActual||1;maxRondas=e.maxRondas||1;fasesConfig=e.fasesConfig||{};maxIntentos=e.maxIntentos||getIntentosRonda(rondaActual||1);rondasData=e.rondasData||{0:{clasificados:[],eliminados:[],cerrada:false}};competenciaIniciada=e.competenciaIniciada||false;
+    document.getElementById('cfg-rondas').value=maxRondas;renderFasesConfig();
+    if(competenciaIniciada){document.getElementById('cfg-rondas').disabled=true;document.getElementById('cfg-rondas').style.opacity='0.5';document.getElementById('btn-iniciar-comp').classList.add('oculto');}
     actualizarBadges();renderRondas();actualizarContador();
     const ultimaRondaCerrada=getRonda(rondaActual).cerrada||(rondaActual>=maxRondas&&getRonda(maxRondas).cerrada);
     if(ultimaRondaCerrada){const btn=document.getElementById('btn-cerrar-ronda');btn.disabled=true;btn.innerHTML='✓ Competencia finalizada';btn.style.opacity='0.5';document.getElementById('btn-excel').classList.add('visible');document.getElementById('btn-podio').classList.add('visible');}
@@ -705,8 +751,7 @@ function cargarEstado(cat){
 
 async function guardarResultadoGAS(tiempo){if(!participanteActual||!categoriaActual)return;try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'pushResultado',participanteId:participanteActual.id,nombre:participanteActual.nombre||'',robot:participanteActual.robot||'',institucion:participanteActual.institucion||'',tiempo,ronda:rondaActual,intento:intentoActual,ruta:getRuta()||'general',fecha:new Date().toISOString()})});}catch(e){console.error('Error guardar resultado:',e);}}
 
-document.getElementById('cfg-rondas').addEventListener('change',function(){if(competenciaIniciada){showToast('⚠️ No se puede cambiar durante la competencia',true);this.value=maxRondas;return;}maxRondas=parseInt(this.value)||3;guardarEstado();});
-document.getElementById('cfg-intentos').addEventListener('change',function(){if(competenciaIniciada){showToast('⚠️ No se puede cambiar durante la competencia',true);this.value=maxIntentos;return;}maxIntentos=parseInt(this.value)||2;guardarEstado();});
+document.getElementById('cfg-rondas').addEventListener('input',function(){if(competenciaIniciada){showToast('⚠️ No se puede cambiar durante la competencia',true);this.value=maxRondas;return;}maxRondas=parseInt(this.value)||1;renderFasesConfig();guardarEstado();});
 
 function exportarExcel(){
   try{const wb=XLSX.utils.book_new();const cat=categoriaActual||'Sin categoría';Object.keys(rondasData).map(Number).sort((a,b)=>a-b).forEach(r=>{XLSX.utils.book_append_sheet(wb,crearHoja(rondasData[r],r,cat,false),'Ronda '+r);});const ult=Object.keys(rondasData).map(Number).filter(r=>rondasData[r].cerrada).sort((a,b)=>b-a)[0]||rondaActual;XLSX.utils.book_append_sheet(wb,crearHoja(rondasData[ult],ult,cat,true),'Ranking General');XLSX.writeFile(wb,'SucreBot_'+cat.replace(/[^a-zA-Z0-9]/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.xlsx');showToast('✓ Excel descargado');}catch(e){showToast('❌ Error Excel',true);}
@@ -749,19 +794,16 @@ function showToast(msg,error=false){const t=document.getElementById('toast');t.t
 async function guardarPodioCrono(){
   const catNombre=categoriaActual||'';if(!catNombre){showToast('⚠️ Sin categoría activa',true);return;}
   const mapaParticipantes=new Map();
+  // Se procesan las rondas en orden ascendente y cada robot se SOBREESCRIBE por completo
+  // con los datos de la ronda más alta en la que participó (no se mezcla el tiempo de
+  // una ronda anterior —p.ej. clasificatoria— con el de la ronda final).
   Object.keys(rondasData).map(Number).filter(r=>r>0).sort((a,b)=>a-b).forEach(r=>{
     const rd=rondasData[r];
     [...rd.clasificados,...rd.eliminados].forEach(c=>{
       if(!c.robot)return;
       const full=presentes.find(p=>p.id===c.id)||{};
-      const existing=mapaParticipantes.get(c.robot);
-      if(!existing){
-        mapaParticipantes.set(c.robot,{...c,correo:c.correo||full.correo||'',miembro2:c.miembro2||full.miembro2||''});
-      }else{
-        if(!c.esDNF&&c.tiempo!=='—'&&c.tiempo!=='DNF'&&tiempoASegundos(c.tiempo)<tiempoASegundos(existing.tiempo)){existing.tiempo=c.tiempo;existing.esDNF=false;}
-        if(!existing.miembro2)existing.miembro2=c.miembro2||full.miembro2||'';
-        if(!existing.correo)existing.correo=c.correo||full.correo||'';
-      }
+      const prev=mapaParticipantes.get(c.robot);
+      mapaParticipantes.set(c.robot,{...c,correo:c.correo||prev?.correo||full.correo||'',miembro2:c.miembro2||prev?.miembro2||full.miembro2||''});
     });
   });
   if(mapaParticipantes.size===0){showToast('⚠️ No hay participantes en el ranking',true);return;}
