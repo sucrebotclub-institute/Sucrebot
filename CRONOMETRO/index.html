@@ -502,9 +502,8 @@ function recibirParticipante(p){
   participanteActual=p;
   const rd=getRonda(rondaActual);const yaEnRanking=rd.clasificados.find(c=>c.id===p.id||c.robot===p.robot);const tiemposYa=yaEnRanking?(yaEnRanking.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00'):[];intentosLog=tiemposYa.map((t,i)=>({ronda:rondaActual,intento:i+1,tiempo:t,esDNF:t==='DNF'}));intentoActual=intentosLog.length+1;
   actualizarBadges();reiniciarCrono();
-  if(intentosLog.length>=maxIntentos){bloquearBtn();document.getElementById('btn-sig-part').classList.add('visible');document.getElementById('crono-status').textContent='✓ '+intentosLog.length+'/'+maxIntentos+' intentos completados';}else{desbloquearBtn();}
   ocultarBotonesAccion();
-  if(intentosLog.length>=maxIntentos)document.getElementById('btn-sig-part').classList.add('visible');
+  if(intentosLog.length>=maxIntentos){bloquearBtn();mostrarBtnSigPart();document.getElementById('crono-status').textContent='✓ '+intentosLog.length+'/'+maxIntentos+' intentos completados';}else{desbloquearBtn();}
   const strip=document.getElementById('participante-strip');strip.className='participante-strip';
   strip.innerHTML='<div><div class="p-robot">'+(p.robot||'—')+'</div><div class="p-inst">'+(p.institucion||'')+(p.ciudad?' · '+p.ciudad:'')+'</div></div><div class="p-badge">LISTO ✓</div>';
   enviarSerial('R');
@@ -629,7 +628,7 @@ function registrarIntento(tiempo){
   intentosLog.push({ronda:rondaActual,intento:intentoActual,tiempo,esDNF});
   agregarAlRanking(tiempo,esDNF);guardarResultadoGAS(tiempo);ocultarBotonesAccion();
   if(intentosLog.length<maxIntentos){document.getElementById('btn-sig-intento').classList.add('visible');document.getElementById('crono-status').textContent=esDNF?'DNF · '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)':'⏸ '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)';}
-  else{bloquearBtn();document.getElementById('btn-sig-part').classList.add('visible');document.getElementById('crono-status').textContent=esDNF?'⛔ DNF · '+maxIntentos+'/'+maxIntentos+' intentos':'✓ COMPLETÓ '+maxIntentos+'/'+maxIntentos+' INTENTOS';}
+  else{bloquearBtn();mostrarBtnSigPart();document.getElementById('crono-status').textContent=esDNF?'⛔ DNF · '+maxIntentos+'/'+maxIntentos+' intentos':'✓ COMPLETÓ '+maxIntentos+'/'+maxIntentos+' INTENTOS';}
   guardarEstado();
 }
 
@@ -637,6 +636,14 @@ function siguienteIntento(){intentoActual++;actualizarBadges();reiniciarCrono();
 function pasarSiguienteParticipante(){const nom=participanteActual?.robot||'participante';limpiarParticipante();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='⏳ ESPERANDO SIGUIENTE PARTICIPANTE';showToast('✓ '+nom+' — listo');}
 function saltarParticipante(){if(participanteActual&&intentosLog.length<maxIntentos){if(!confirm('⚠️ '+participanteActual.robot+' solo hizo '+intentosLog.length+'/'+maxIntentos+' intentos.\n¿Saltar de todas formas?'))return;}limpiarParticipante();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='⏳ ESPERANDO SIGUIENTE PARTICIPANTE';showToast('⏭ Esperando siguiente participante');}
 function ocultarBotonesAccion(){['btn-sig-intento','btn-sig-part','btn-saltar'].forEach(id=>document.getElementById(id).classList.remove('visible'));}
+function mostrarBtnSigPart(){
+  const btn=document.getElementById('btn-sig-part');if(!btn)return;
+  const rd=getRonda(rondaActual);
+  const robotActual=participanteActual?participanteActual.robot:null;
+  const quedanPendientes=rd.clasificados.some(c=>c.robot!==robotActual&&(c.tiempos||[]).length<maxIntentos);
+  btn.textContent=quedanPendientes?'⏭ Siguiente participante':'✅ Finalizar último participante';
+  btn.classList.add('visible');
+}
 
 function actualizarBadges(){
   const bronda=document.getElementById('badge-ronda'),bint=document.getElementById('badge-intento'),bcr=document.getElementById('btn-cerrar-ronda'),numEl=document.getElementById('cerrar-ronda-num');
@@ -691,7 +698,7 @@ function seleccionarCompetido(ts,r){
   const tiemposYa=(c.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00');
   intentosLog=tiemposYa.map((t,i)=>({ronda:rondaActual,intento:i+1,tiempo:t,esDNF:t==='DNF'}));intentoActual=intentosLog.length+1;
   actualizarBadges();reiniciarCrono();ocultarBotonesAccion();
-  if(intentosLog.length>=maxIntentos){bloquearBtn();document.getElementById('btn-sig-part').classList.add('visible');document.getElementById('crono-status').textContent='✓ '+intentosLog.length+'/'+maxIntentos+' intentos completados';}
+  if(intentosLog.length>=maxIntentos){bloquearBtn();mostrarBtnSigPart();document.getElementById('crono-status').textContent='✓ '+intentosLog.length+'/'+maxIntentos+' intentos completados';}
   else{desbloquearBtn();document.getElementById('crono-status').textContent='LISTO · Intento '+intentoActual+' de '+maxIntentos;}
   const strip=document.getElementById('participante-strip');strip.className='participante-strip';
   const badgeTexto=intentosLog.length>=maxIntentos?'✓ '+intentosLog.length+'/'+maxIntentos:'LISTO ✓';
