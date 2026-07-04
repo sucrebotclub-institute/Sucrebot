@@ -773,8 +773,30 @@ async function guardarResultadoGAS(tiempo){if(!participanteActual||!categoriaAct
 
 document.getElementById('cfg-rondas').addEventListener('input',function(){if(competenciaIniciada){showToast('⚠️ No se puede cambiar durante la competencia',true);this.value=maxRondas;return;}maxRondas=parseInt(this.value)||1;renderFasesConfig();guardarEstado();});
 
+function construirRankingGeneralData(){
+  // Recorre TODAS las rondas en orden ascendente y cada robot se SOBREESCRIBE por
+  // completo con los datos de la ronda más alta en la que participó — igual que
+  // guardarPodioCrono(). Incluye tanto clasificados como eliminados de cada ronda,
+  // para que aparezcan TODOS los que participaron, no solo quienes llegaron a la última.
+  const mapa=new Map();
+  Object.keys(rondasData).map(Number).sort((a,b)=>a-b).forEach(r=>{
+    const rd=rondasData[r];
+    [...rd.clasificados,...rd.eliminados].forEach(c=>{
+      if(!c.robot)return;
+      mapa.set(c.robot,{...c,ronda:r});
+    });
+  });
+  return [...mapa.values()];
+}
+
 function exportarExcel(){
-  try{const wb=XLSX.utils.book_new();const cat=categoriaActual||'Sin categoría';Object.keys(rondasData).map(Number).sort((a,b)=>a-b).forEach(r=>{XLSX.utils.book_append_sheet(wb,crearHoja(rondasData[r],r,cat,false),'Ronda '+r);});const ult=Object.keys(rondasData).map(Number).filter(r=>rondasData[r].cerrada).sort((a,b)=>b-a)[0]||rondaActual;XLSX.utils.book_append_sheet(wb,crearHoja(rondasData[ult],ult,cat,true),'Ranking General');XLSX.writeFile(wb,'SucreBot_'+cat.replace(/[^a-zA-Z0-9]/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.xlsx');showToast('✓ Excel descargado');}catch(e){showToast('❌ Error Excel',true);}
+  try{
+    const wb=XLSX.utils.book_new();const cat=categoriaActual||'Sin categoría';
+    Object.keys(rondasData).map(Number).sort((a,b)=>a-b).forEach(r=>{XLSX.utils.book_append_sheet(wb,crearHoja(rondasData[r],r,cat,false),'Ronda '+r);});
+    const rankingGeneral=construirRankingGeneralData();
+    XLSX.utils.book_append_sheet(wb,crearHoja({clasificados:rankingGeneral,eliminados:[]},'General',cat,true),'Ranking General');
+    XLSX.writeFile(wb,'SucreBot_'+cat.replace(/[^a-zA-Z0-9]/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.xlsx');showToast('✓ Excel descargado');
+  }catch(e){showToast('❌ Error Excel',true);}
 }
 function tiempoAFraccionDia(t){
   if(!t||typeof t!=='string')return null;
@@ -786,12 +808,36 @@ function tiempoAFraccionDia(t){
 }
 function crearHoja(rd,r,cat,esGeneral){
   const todos=rd.clasificados;const maxI=Math.max(...todos.map(c=>(c.tiempos||[c.tiempo]).length),1);
-  const conT=[...todos].filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
-  const dnfs=todos.filter(c=>c.esDNF);const sin=todos.filter(c=>c.tiempo==='—');const lista=[...conT,...sin,...dnfs];
-  const aoa=[[esGeneral?'SucreBot — Ranking General':'SucreBot — Ronda '+r],['Categoría: '+cat],[],['#','Robot','Nombre','Institución','Ciudad','Mejor Tiempo',...Array.from({length:maxI},(_,i)=>'I'+(i+1))]];
-  lista.forEach((c,i)=>aoa.push([c.esDNF?'DNF':i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo,...(c.tiempos||[c.tiempo])]));
+  let lista;
+  if(esGeneral){
+    // Prioriza ronda alcanzada (los finalistas siempre por encima de quienes quedaron
+    // en clasificatoria, sin importar el tiempo bruto) y dentro de cada ronda, por tiempo.
+    const porRonda={};
+    todos.forEach(c=>{const rn=c.ronda||0;(porRonda[rn]=porRonda[rn]||[]).push(c);});
+    lista=[];
+    Object.keys(porRonda).map(Number).sort((a,b)=>b-a).forEach(rn=>{
+      const grupo=porRonda[rn];
+      const conT=grupo.filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
+      const sin=grupo.filter(c=>c.tiempo==='—'&&!c.esDNF);
+      const dnfs=grupo.filter(c=>c.esDNF);
+      lista.push(...conT,...sin,...dnfs);
+    });
+  }else{
+    const conT=[...todos].filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
+    const dnfs=todos.filter(c=>c.esDNF);const sin=todos.filter(c=>c.tiempo==='—');
+    lista=[...conT,...sin,...dnfs];
+  }
+  const headerBase=['#','Robot','Nombre','Institución','Ciudad','Mejor Tiempo'];
+  if(esGeneral)headerBase.push('Ronda alcanzada');
+  const aoa=[[esGeneral?'SucreBot — Ranking General':'SucreBot — Ronda '+r],['Categoría: '+cat],[],[...headerBase,...Array.from({length:maxI},(_,i)=>'I'+(i+1))]];
+  lista.forEach((c,i)=>{
+    const fila=[c.esDNF?'DNF':i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo];
+    if(esGeneral)fila.push('Ronda '+(c.ronda||'—'));
+    fila.push(...(c.tiempos||[c.tiempo]));
+    aoa.push(fila);
+  });
   if(!esGeneral&&rd.eliminados?.length){aoa.push([],['ELIMINADOS']);rd.eliminados.forEach((c,i)=>aoa.push([i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo||'—']));}
-  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...Array(maxI).fill({wch:12})];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...(esGeneral?[{wch:14}]:[]),...Array(maxI).fill({wch:12})];
   // Aplicar formato de hora (mm:ss.00) a las celdas de tiempo — quedan como
   // valor numérico real de Excel (fracción de día), no como texto plano
   const range=XLSX.utils.decode_range(ws['!ref']);
