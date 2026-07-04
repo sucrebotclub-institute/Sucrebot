@@ -308,7 +308,7 @@
           <div class="btn-row-crono" style="margin-top:8px"><button class="btn-crono btn-dnf" id="btn-dnf" onclick="marcarDNF()">⛔ DNF — No completó</button></div>
           <button class="btn-accion btn-siguiente-intento"      id="btn-sig-intento"  onclick="siguienteIntento()">➜ Siguiente intento</button>
           <button class="btn-accion btn-siguiente-participante" id="btn-sig-part"     onclick="pasarSiguienteParticipante()">⏭ Siguiente participante</button>
-          <button class="btn-accion btn-saltar"                 id="btn-saltar"       onclick="saltarParticipante()">⏭ Saltar participante</button>
+          <button class="btn-accion btn-saltar"                 id="btn-saltar"       onclick="saltarParticipante()">⏭ Pasar a otro (volver luego)</button>
           <button class="btn-cerrar-ronda" id="btn-cerrar-ronda" onclick="pedirCerrarRonda()" style="display:none">🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span></button>
         </div>
         <div class="col-ranking">
@@ -631,14 +631,14 @@ function registrarIntento(tiempo){
   if(!participanteActual)return;const esDNF=tiempo==='DNF';
   intentosLog.push({ronda:rondaActual,intento:intentoActual,tiempo,esDNF});
   agregarAlRanking(tiempo,esDNF);guardarResultadoGAS(tiempo);ocultarBotonesAccion();
-  if(intentosLog.length<maxIntentos){bloquearBtn();esperandoConfirmacionIntento=true;document.getElementById('btn-sig-intento').classList.add('visible');document.getElementById('crono-status').textContent=esDNF?'DNF · '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)':'⏸ '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)';}
+  if(intentosLog.length<maxIntentos){bloquearBtn();esperandoConfirmacionIntento=true;document.getElementById('btn-sig-intento').classList.add('visible');document.getElementById('btn-saltar').classList.add('visible');document.getElementById('crono-status').textContent=esDNF?'DNF · '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)':'⏸ '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)';}
   else{bloquearBtn();mostrarBtnSigPart();document.getElementById('crono-status').textContent=esDNF?'⛔ DNF · '+maxIntentos+'/'+maxIntentos+' intentos':'✓ COMPLETÓ '+maxIntentos+'/'+maxIntentos+' INTENTOS';}
   guardarEstado();
 }
 
 function siguienteIntento(){intentoActual++;esperandoConfirmacionIntento=false;actualizarBadges();reiniciarCrono();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='LISTO · Intento '+intentoActual+' de '+maxIntentos;enviarSerial('R');}
 function pasarSiguienteParticipante(){const nom=participanteActual?.robot||'participante';limpiarParticipante();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='⏳ ESPERANDO SIGUIENTE PARTICIPANTE';showToast('✓ '+nom+' — listo');}
-function saltarParticipante(){if(participanteActual&&intentosLog.length<maxIntentos){if(!confirm('⚠️ '+participanteActual.robot+' solo hizo '+intentosLog.length+'/'+maxIntentos+' intentos.\n¿Saltar de todas formas?'))return;}limpiarParticipante();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='⏳ ESPERANDO SIGUIENTE PARTICIPANTE';showToast('⏭ Esperando siguiente participante');}
+function saltarParticipante(){if(participanteActual&&intentosLog.length<maxIntentos){if(!confirm(participanteActual.robot+' ha completado '+intentosLog.length+'/'+maxIntentos+' intento(s).\nSe guarda su progreso — podrás continuar más tarde seleccionándolo con ▶ desde el ranking.\n¿Pasar a otro participante?'))return;}limpiarParticipante();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='⏳ ESPERANDO SIGUIENTE PARTICIPANTE';showToast('⏭ Esperando siguiente participante');}
 function ocultarBotonesAccion(){['btn-sig-intento','btn-sig-part','btn-saltar'].forEach(id=>document.getElementById(id).classList.remove('visible'));}
 function mostrarBtnSigPart(){
   const btn=document.getElementById('btn-sig-part');if(!btn)return;
