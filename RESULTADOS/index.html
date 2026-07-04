@@ -742,16 +742,30 @@
       document.getElementById('tv-cat').textContent   = RUTAS_NOMBRE[ruta] || ruta;
       const datos    = datosJSON.resultados[ruta];
       const porRobot = {};
+      // Se agrupan los tiempos POR RONDA de cada robot (no todos juntos), para poder
+      // usar únicamente los de la ronda más alta que alcanzó (jerarquía real: la final
+      // manda sobre la clasificatoria, tal como exige el reglamento).
       datos.forEach(d => {
-        if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, tiempos: [], rondaMax: 1 };
-        if (tiempoValido(d.tiempo) || d.tiempo === 'DNF') porRobot[d.robot].tiempos.push(d.tiempo);
+        if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, porRonda: {}, rondaMax: 1 };
         const ronda = Number(d.ronda) || 1;
+        if (!porRobot[d.robot].porRonda[ronda]) porRobot[d.robot].porRonda[ronda] = [];
+        if (tiempoValido(d.tiempo) || d.tiempo === 'DNF') porRobot[d.robot].porRonda[ronda].push(d.tiempo);
         if (ronda > porRobot[d.robot].rondaMax) porRobot[d.robot].rondaMax = ronda;
       });
-      const clasificados = Object.values(porRobot).filter(r => r.tiempos.length > 0).map(r => {
-        const validos     = r.tiempos.filter(tiempoValido);
-        const mejorTiempo = validos.length ? validos.reduce((m, a) => tiempoASegundos(a) < tiempoASegundos(m) ? a : m) : 'DNF';
-        return { robot: r.robot, tiempo: mejorTiempo, ronda: r.rondaMax, esDNF: validos.length === 0 };
+      const clasificados = Object.values(porRobot).map(r => {
+        const tiemposFinal = r.porRonda[r.rondaMax] || [];
+        const validosFinal = tiemposFinal.filter(tiempoValido);
+        const mejorTiempo  = validosFinal.length ? validosFinal.reduce((m, a) => tiempoASegundos(a) < tiempoASegundos(m) ? a : m) : 'DNF';
+        const esDNF        = validosFinal.length === 0;
+        // Si la ronda más alta (ej. la final) quedó en DNF y hubo rondas previas (ej.
+        // clasificatoria), se guarda el mejor tiempo anterior solo como referencia visual.
+        let referencia = null;
+        if (esDNF && r.rondaMax > 1) {
+          const anteriores = [];
+          for (let rn = 1; rn < r.rondaMax; rn++) (r.porRonda[rn] || []).forEach(t => { if (tiempoValido(t)) anteriores.push(t); });
+          if (anteriores.length) referencia = anteriores.reduce((m, a) => tiempoASegundos(a) < tiempoASegundos(m) ? a : m);
+        }
+        return { robot: r.robot, tiempo: mejorTiempo, ronda: r.rondaMax, esDNF, referencia };
       });
       clasificados.sort((a, b) => { if (a.esDNF && !b.esDNF) return 1; if (!a.esDNF && b.esDNF) return -1; return tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo); });
       if (clasificados.length === 0) { mostrarVacio(); return; }
@@ -761,7 +775,8 @@
         const claseCirc = c.esDNF ? 'pc-n' : (pos === 1 ? 'pc-1' : pos === 2 ? 'pc-2' : pos === 3 ? 'pc-3' : 'pc-n');
         const emoji     = (!c.esDNF && pos === 1) ? '🥇' : (!c.esDNF && pos === 2) ? '🥈' : (!c.esDNF && pos === 3) ? '🥉' : (c.esDNF ? '—' : pos);
         const tClase    = c.esDNF ? 'tiempo-valor dnf' : 'tiempo-valor';
-        return `<tr class="row-altura ${claseRow}"><td class="td-pos"><span class="pos-circle ${claseCirc}">${emoji}</span></td><td class="td-robot"><div class="robot-name">${c.robot}</div></td><td class="td-mejor"><span class="${tClase}">${c.esDNF ? 'DNF' : c.tiempo}</span></td><td class="td-ronda"><span class="ronda-num">Ronda ${c.ronda}</span></td></tr>`;
+        const refHtml   = c.referencia ? `<div style="font-family:var(--font-mono);font-size:0.6rem;color:#94a3b8;margin-top:2px;">Clasificatoria: ${c.referencia}</div>` : '';
+        return `<tr class="row-altura ${claseRow}"><td class="td-pos"><span class="pos-circle ${claseCirc}">${emoji}</span></td><td class="td-robot"><div class="robot-name">${c.robot}</div></td><td class="td-mejor"><span class="${tClase}">${c.esDNF ? 'DNF' : c.tiempo}</span>${refHtml}</td><td class="td-ronda"><span class="ronda-num">Ronda ${c.ronda}</span></td></tr>`;
       }).join('');
       document.getElementById('tv-tabla-wrap').innerHTML = `<table><thead><tr><th class="c">#</th><th>Robot / Equipo</th><th class="c">Mejor Tiempo</th><th class="c">Ronda</th></tr></thead><tbody>${filas}</tbody></table>`;
     }
