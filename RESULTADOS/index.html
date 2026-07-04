@@ -767,7 +767,7 @@
         }
         return { robot: r.robot, tiempo: mejorTiempo, ronda: r.rondaMax, esDNF, referencia };
       });
-      clasificados.sort((a, b) => { if (a.esDNF && !b.esDNF) return 1; if (!a.esDNF && b.esDNF) return -1; return tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo); });
+      clasificados.sort((a, b) => { if (a.ronda !== b.ronda) return b.ronda - a.ronda; if (a.esDNF && !b.esDNF) return 1; if (!a.esDNF && b.esDNF) return -1; return tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo); });
       if (clasificados.length === 0) { mostrarVacio(); return; }
       const filas = clasificados.map((c, i) => {
         const pos       = i + 1;
