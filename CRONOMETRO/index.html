@@ -349,6 +349,7 @@ let categoriaActual=null,participanteActual=null,pollingInterval=null,cronoInter
 let rondaActual=1,intentoActual=1,maxRondas=1,maxIntentos=2;
 let rondasData={};
 let intentosLog=[],competenciaIniciada=false,ultimoIdLimpiado=null,ultimoIdLimpiadoTs=0;
+let esperandoConfirmacionIntento=false;
 let presentes=[],seleccionados=new Set();
 
 // Config de intentos (y nombre opcional) por cada ronda — permite que, por ejemplo,
@@ -500,6 +501,7 @@ function iniciarPolling(){
 function recibirParticipante(p){
   if(!competenciaIniciada){showToast('⚠️ Configura e inicia la competencia primero',true);return;}
   participanteActual=p;
+  esperandoConfirmacionIntento=false;
   const rd=getRonda(rondaActual);const yaEnRanking=rd.clasificados.find(c=>c.id===p.id||c.robot===p.robot);const tiemposYa=yaEnRanking?(yaEnRanking.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00'):[];intentosLog=tiemposYa.map((t,i)=>({ronda:rondaActual,intento:i+1,tiempo:t,esDNF:t==='DNF'}));intentoActual=intentosLog.length+1;
   actualizarBadges();reiniciarCrono();
   ocultarBotonesAccion();
@@ -512,7 +514,7 @@ function recibirParticipante(p){
 
 function limpiarParticipante(){
   if(participanteActual?.id){ultimoIdLimpiado=participanteActual.id;ultimoIdLimpiadoTs=Date.now();}
-  participanteActual=null;intentosLog=[];intentoActual=1;actualizarBadges();
+  participanteActual=null;intentosLog=[];intentoActual=1;esperandoConfirmacionIntento=false;actualizarBadges();
   const strip=document.getElementById('participante-strip');strip.className='participante-strip empty';
   strip.innerHTML='<div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner o selección...</div></div><div class="p-badge">—</div>';
   ocultarBotonesAccion();
@@ -528,6 +530,7 @@ async function iniciarCrono(){
   if(!competenciaIniciada){showToast('⚠️ Configura e inicia la competencia primero',true);return;}
   if(!participanteActual){showToast('⚠️ Sin participante',true);return;}
   if(cronoInterval)return;
+  if(esperandoConfirmacionIntento){showToast('⚠️ Presiona "Siguiente Intento" antes de continuar',true);return;}
   if(intentosLog.length>=maxIntentos){showToast('⚠️ '+participanteActual.robot+' ya completó sus '+maxIntentos+' intentos',true);return;}
   const CATS_NO_R=[...CATS_SEG,...CATS_PULSADOR];
   if(CATS_ARM_ESPERA.includes(categoriaActual)&&typeof window.puertoConectado==='function'&&window.puertoConectado()&&typeof window.armarYEsperar==='function'){
@@ -568,6 +571,7 @@ async function reiniciarCrono(){
       return; // cancelado — no se toca nada
     }
     intentosLog.splice(idxLog, 1);
+    esperandoConfirmacionIntento=false;
     quitarTiempoDelRanking(participanteActual.robot, intentoABorrar.tiempo, rondaActual);
     try {
       await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({
@@ -627,12 +631,12 @@ function registrarIntento(tiempo){
   if(!participanteActual)return;const esDNF=tiempo==='DNF';
   intentosLog.push({ronda:rondaActual,intento:intentoActual,tiempo,esDNF});
   agregarAlRanking(tiempo,esDNF);guardarResultadoGAS(tiempo);ocultarBotonesAccion();
-  if(intentosLog.length<maxIntentos){document.getElementById('btn-sig-intento').classList.add('visible');document.getElementById('crono-status').textContent=esDNF?'DNF · '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)':'⏸ '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)';}
+  if(intentosLog.length<maxIntentos){bloquearBtn();esperandoConfirmacionIntento=true;document.getElementById('btn-sig-intento').classList.add('visible');document.getElementById('crono-status').textContent=esDNF?'DNF · '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)':'⏸ '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)';}
   else{bloquearBtn();mostrarBtnSigPart();document.getElementById('crono-status').textContent=esDNF?'⛔ DNF · '+maxIntentos+'/'+maxIntentos+' intentos':'✓ COMPLETÓ '+maxIntentos+'/'+maxIntentos+' INTENTOS';}
   guardarEstado();
 }
 
-function siguienteIntento(){intentoActual++;actualizarBadges();reiniciarCrono();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='LISTO · Intento '+intentoActual+' de '+maxIntentos;enviarSerial('R');}
+function siguienteIntento(){intentoActual++;esperandoConfirmacionIntento=false;actualizarBadges();reiniciarCrono();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='LISTO · Intento '+intentoActual+' de '+maxIntentos;enviarSerial('R');}
 function pasarSiguienteParticipante(){const nom=participanteActual?.robot||'participante';limpiarParticipante();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='⏳ ESPERANDO SIGUIENTE PARTICIPANTE';showToast('✓ '+nom+' — listo');}
 function saltarParticipante(){if(participanteActual&&intentosLog.length<maxIntentos){if(!confirm('⚠️ '+participanteActual.robot+' solo hizo '+intentosLog.length+'/'+maxIntentos+' intentos.\n¿Saltar de todas formas?'))return;}limpiarParticipante();desbloquearBtn();ocultarBotonesAccion();document.getElementById('crono-status').textContent='⏳ ESPERANDO SIGUIENTE PARTICIPANTE';showToast('⏭ Esperando siguiente participante');}
 function ocultarBotonesAccion(){['btn-sig-intento','btn-sig-part','btn-saltar'].forEach(id=>document.getElementById(id).classList.remove('visible'));}
@@ -694,6 +698,7 @@ function seleccionarCompetido(ts,r){
   if(participanteActual&&participanteActual.robot!==c.robot){if(!confirm('Ya tienes "'+participanteActual.robot+'". ¿Cambiar a "'+c.robot+'"?'))return;}
   fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general'})}).catch(()=>{});
   participanteActual={id:c.id,robot:c.robot,nombre:c.nombre,institucion:c.institucion,ciudad:c.ciudad,categoria:c.categoria,correo:c.correo||'',miembro2:c.miembro2||''};
+  esperandoConfirmacionIntento=false;
   fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setActivo',ruta:getRuta()||'general',participante:{...participanteActual,timestamp:Date.now()}})}).catch(()=>{});
   const tiemposYa=(c.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00');
   intentosLog=tiemposYa.map((t,i)=>({ronda:rondaActual,intento:i+1,tiempo:t,esDNF:t==='DNF'}));intentoActual=intentosLog.length+1;
