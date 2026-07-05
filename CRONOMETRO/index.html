@@ -224,6 +224,9 @@
       #cronometro { font-size:4rem; }
       .btn-row-crono { grid-template-columns:1fr; gap:8px; }
     }
+    body.fs-activo .sticky-header { display:none !important; }
+    body.fs-activo main { padding-top:14px !important; }
+    #fsHint { text-align:center; font-family:var(--font-mono); font-size:.65rem; color:#94a3b8; letter-spacing:.08em; margin:0 0 4px; }
   </style>
 </head>
 <body>
@@ -235,6 +238,7 @@
 </div>
 
 <main>
+<div id="fsHint">Presiona F para pantalla completa</div>
 <div style="max-width:1400px;margin:0 auto;padding:0 16px 60px;">
 
   <div class="pb-hero" style="padding-top:48px;">
@@ -1059,6 +1063,31 @@ document.addEventListener('componentsLoaded',async function(){
     if(categoriaActual&&CATS_SERIAL.includes(categoriaActual))setTimeout(()=>window.mostrarBotonSerial(true),300);
   });
   if(document.readyState==='complete')setTimeout(()=>{inyectarBoton();},500);
+})();
+</script>
+
+<!-- PANTALLA COMPLETA (tecla F) -->
+<script>
+(function(){
+  function enCampoTexto(e){const t=e.target.tagName;return t==='INPUT'||t==='TEXTAREA'||t==='SELECT'||e.target.isContentEditable;}
+  function actualizarHint(){
+    const hint=document.getElementById('fsHint');if(!hint)return;
+    hint.textContent=document.body.classList.contains('fs-activo')?'Presiona ESC para salir de pantalla completa':'Presiona F para pantalla completa';
+  }
+  function toggleFullscreen(){
+    const activo=document.body.classList.toggle('fs-activo');
+    if(activo){const el=document.documentElement;(el.requestFullscreen?el.requestFullscreen():Promise.resolve()).catch(()=>{});}
+    else{if(document.fullscreenElement)document.exitFullscreen&&document.exitFullscreen().catch(()=>{});}
+    actualizarHint();
+  }
+  document.addEventListener('keydown',function(e){
+    if(enCampoTexto(e))return;
+    if(e.key==='f'||e.key==='F'){e.preventDefault();toggleFullscreen();}
+  });
+  document.addEventListener('fullscreenchange',function(){
+    if(!document.fullscreenElement)document.body.classList.remove('fs-activo');
+    actualizarHint();
+  });
 })();
 </script>
 </body>
