@@ -273,6 +273,9 @@
     .presente-item.checked .presente-check { background: var(--green); border-color: var(--green); }
     .presente-nombre { font-weight: 600; font-size: .9rem; color: var(--text-main); }
     .presente-sub { font-size: .72rem; color: var(--text-dim); margin-top: 2px; }
+    body.fs-activo .sticky-header{display:none !important}
+    body.fs-activo main{padding-top:14px !important}
+    #fsHint{text-align:center;font-size:.65rem;color:var(--text-dim);letter-spacing:.08em;margin:0 0 4px}
   </style>
 </head>
 <body>
@@ -304,6 +307,7 @@
 </div>
 
 <main>
+<div id="fsHint">Presiona F para pantalla completa</div>
 <div class="wrapper" style="max-width:1200px;margin:0 auto;padding:0 20px 60px">
 
 <div class="pc-hero">
@@ -2414,6 +2418,31 @@ document.addEventListener('componentsLoaded', () => {
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
   loading(false);
 });
+</script>
+
+<!-- PANTALLA COMPLETA (tecla F) -->
+<script>
+(function(){
+  function enCampoTexto(e){const t=e.target.tagName;return t==='INPUT'||t==='TEXTAREA'||t==='SELECT'||e.target.isContentEditable;}
+  function actualizarHint(){
+    const hint=document.getElementById('fsHint');if(!hint)return;
+    hint.textContent=document.body.classList.contains('fs-activo')?'Presiona ESC para salir de pantalla completa':'Presiona F para pantalla completa';
+  }
+  function toggleFullscreen(){
+    const activo=document.body.classList.toggle('fs-activo');
+    if(activo){const el=document.documentElement;(el.requestFullscreen?el.requestFullscreen():Promise.resolve()).catch(()=>{});}
+    else{if(document.fullscreenElement)document.exitFullscreen&&document.exitFullscreen().catch(()=>{});}
+    actualizarHint();
+  }
+  document.addEventListener('keydown',function(e){
+    if(enCampoTexto(e))return;
+    if(e.key==='f'||e.key==='F'){e.preventDefault();toggleFullscreen();}
+  });
+  document.addEventListener('fullscreenchange',function(){
+    if(!document.fullscreenElement)document.body.classList.remove('fs-activo');
+    actualizarHint();
+  });
+})();
 </script>
 </body>
 </html>
