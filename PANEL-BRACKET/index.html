@@ -330,6 +330,9 @@
     .pm-select{background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Exo 2';font-size:.9rem;outline:none;width:100%}
     .pm-select:focus{border-color:var(--cyan)}
     .aviso-desemp{background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.3);border-radius:8px;padding:10px 14px;font-size:.8rem;color:var(--orange);margin-top:8px}
+    body.fs-activo .sticky-header{display:none !important}
+    body.fs-activo main{padding-top:14px !important}
+    #fsHint{text-align:center;font-family:'Orbitron';font-size:.65rem;color:var(--muted);letter-spacing:.08em;margin:0 0 4px}
   </style>
 </head>
 <body>
@@ -616,6 +619,7 @@
 </div>
 
 <main>
+  <div id="fsHint">Presiona F para pantalla completa</div>
   <div class="pb-wrap">
     <div class="pb-hero">
       <div class="pb-badge"><div class="pb-badge-dot"></div>PANEL OPERADOR</div>
@@ -2060,6 +2064,31 @@ async function msFinalizarCombate() {
 }
 
 document.addEventListener('componentsLoaded',()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} });
+</script>
+
+<!-- PANTALLA COMPLETA (tecla F) -->
+<script>
+(function(){
+  function enCampoTexto(e){const t=e.target.tagName;return t==='INPUT'||t==='TEXTAREA'||t==='SELECT'||e.target.isContentEditable;}
+  function actualizarHint(){
+    const hint=document.getElementById('fsHint');if(!hint)return;
+    hint.textContent=document.body.classList.contains('fs-activo')?'Presiona ESC para salir de pantalla completa':'Presiona F para pantalla completa';
+  }
+  function toggleFullscreen(){
+    const activo=document.body.classList.toggle('fs-activo');
+    if(activo){const el=document.documentElement;(el.requestFullscreen?el.requestFullscreen():Promise.resolve()).catch(()=>{});}
+    else{if(document.fullscreenElement)document.exitFullscreen&&document.exitFullscreen().catch(()=>{});}
+    actualizarHint();
+  }
+  document.addEventListener('keydown',function(e){
+    if(enCampoTexto(e))return;
+    if(e.key==='f'||e.key==='F'){e.preventDefault();toggleFullscreen();}
+  });
+  document.addEventListener('fullscreenchange',function(){
+    if(!document.fullscreenElement)document.body.classList.remove('fs-activo');
+    actualizarHint();
+  });
+})();
 </script>
 </body>
 </html>
