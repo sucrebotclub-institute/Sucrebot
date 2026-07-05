@@ -150,6 +150,9 @@
     /* EMPTY STATE */
     .empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-family:'Orbitron';font-size:.7rem;letter-spacing:2px}
     .serial-warn{display:none;background:#1a5ca8;border:1px solid #2a7ad8;border-radius:8px;padding:10px 14px;font-size:.8rem;color:#fff;margin-bottom:16px}
+    body.fs-activo .sticky-header{display:none !important}
+    body.fs-activo main{padding-top:14px !important}
+    #fsHint{text-align:center;font-family:'Orbitron';font-size:.65rem;color:var(--muted);letter-spacing:.08em;margin:0 0 4px}
   </style>
 </head>
 <body>
@@ -159,6 +162,7 @@
     <div data-include="../shared/components/nav.html"></div>
   </div>
   <main>
+    <div id="fsHint">Presiona F para pantalla completa</div>
     <div class="ins-hero">
       <div class="ins-badge"><span class="ins-badge-dot"></span>STAFF · INSECTOS</div>
       <div class="ins-title">CARRERA DE <span>INSECTOS</span></div>
@@ -1344,6 +1348,31 @@
   document.addEventListener('componentsLoaded', () => {
     cargarParticipantes();
   });
+  </script>
+
+  <!-- PANTALLA COMPLETA (tecla F) -->
+  <script>
+  (function(){
+    function enCampoTexto(e){const t=e.target.tagName;return t==='INPUT'||t==='TEXTAREA'||t==='SELECT'||e.target.isContentEditable;}
+    function actualizarHint(){
+      const hint=document.getElementById('fsHint');if(!hint)return;
+      hint.textContent=document.body.classList.contains('fs-activo')?'Presiona ESC para salir de pantalla completa':'Presiona F para pantalla completa';
+    }
+    function toggleFullscreen(){
+      const activo=document.body.classList.toggle('fs-activo');
+      if(activo){const el=document.documentElement;(el.requestFullscreen?el.requestFullscreen():Promise.resolve()).catch(()=>{});}
+      else{if(document.fullscreenElement)document.exitFullscreen&&document.exitFullscreen().catch(()=>{});}
+      actualizarHint();
+    }
+    document.addEventListener('keydown',function(e){
+      if(enCampoTexto(e))return;
+      if(e.key==='f'||e.key==='F'){e.preventDefault();toggleFullscreen();}
+    });
+    document.addEventListener('fullscreenchange',function(){
+      if(!document.fullscreenElement)document.body.classList.remove('fs-activo');
+      actualizarHint();
+    });
+  })();
   </script>
 </body>
 </html>
