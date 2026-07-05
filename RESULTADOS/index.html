@@ -257,6 +257,9 @@
       .score-bar-wrap { min-width: 120px; }
       .td-inst-bar { display: none; }
     }
+    body.fs-activo .sticky-header { display: none !important; }
+    body.fs-activo main { padding-top: 8px !important; }
+    #fsHint { text-align: center; font-family: var(--font-mono); font-size: .65rem; color: #94a3b8; letter-spacing: .08em; margin: 0 0 8px; }
   </style>
 </head>
 <body>
@@ -302,6 +305,7 @@
   </div>
 
   <main class="screen">
+    <div id="fsHint">Presiona F para pantalla completa</div>
     <div class="page-header">
       <div class="page-header-left">
         <img src="../shared/images/robot-campeon.png" alt="Robot campeón">
@@ -848,6 +852,31 @@
     setInterval(pollJSON, 60000);
 
     pollJSON();
+  </script>
+
+  <!-- PANTALLA COMPLETA (tecla F) -->
+  <script>
+  (function(){
+    function enCampoTexto(e){const t=e.target.tagName;return t==='INPUT'||t==='TEXTAREA'||t==='SELECT'||e.target.isContentEditable;}
+    function actualizarHint(){
+      const hint=document.getElementById('fsHint');if(!hint)return;
+      hint.textContent=document.body.classList.contains('fs-activo')?'Presiona ESC para salir de pantalla completa':'Presiona F para pantalla completa';
+    }
+    function toggleFullscreen(){
+      const activo=document.body.classList.toggle('fs-activo');
+      if(activo){const el=document.documentElement;(el.requestFullscreen?el.requestFullscreen():Promise.resolve()).catch(()=>{});}
+      else{if(document.fullscreenElement)document.exitFullscreen&&document.exitFullscreen().catch(()=>{});}
+      actualizarHint();
+    }
+    document.addEventListener('keydown',function(e){
+      if(enCampoTexto(e))return;
+      if(e.key==='f'||e.key==='F'){e.preventDefault();toggleFullscreen();}
+    });
+    document.addEventListener('fullscreenchange',function(){
+      if(!document.fullscreenElement)document.body.classList.remove('fs-activo');
+      actualizarHint();
+    });
+  })();
   </script>
 </body>
 </html>
