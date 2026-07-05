@@ -324,6 +324,10 @@
 
     <div class="cat-tabs" id="cat-tabs"></div>
 
+    <div id="autoRotateBar" style="display:flex;justify-content:center;margin:-10px 0 18px;">
+      <button id="btnAutoRotate" onclick="toggleAutoRotate()" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;padding:6px 16px;border-radius:20px;border:1.5px solid #cbd5e1;background:#fff;color:#64748b;cursor:pointer;transition:all .2s;">🔄 Rotación automática (3 min): OFF</button>
+    </div>
+
     <select class="cat-select-mobile" id="cat-select-mobile" onchange="seleccionarManual(this.value)">
       <option value="">Selecciona una categoría...</option>
       <optgroup label="🏅 AMATEUR">
@@ -488,7 +492,7 @@
       else                                   renderizarTabla(ruta);
     }
 
-    function seleccionarManual(ruta) { seleccionarCategoria(ruta); }
+    function seleccionarManual(ruta) { seleccionarCategoria(ruta); if (typeof autoRotateOn !== 'undefined' && autoRotateOn) iniciarAutoRotate(); }
 
     function mostrarVacio() {
       document.getElementById('tv-tabla-wrap').innerHTML = `<div class="empty-state"><div class="empty-icon">🏁</div><div class="empty-text">ESPERANDO RESULTADOS...</div></div>`;
@@ -853,6 +857,61 @@
     setInterval(pollJSON, 60000);
 
     pollJSON();
+
+    // ── ROTACIÓN AUTOMÁTICA DE CATEGORÍAS (cada 3 min, solo frontend) ──
+    const AUTO_ROTATE_MS = 3 * 60 * 1000;
+    const AUTO_ROTATE_KEY = 'sucrebot_res_autorotate';
+    let autoRotateOn = false;
+    let autoRotateInterval = null;
+
+    function categoriasParaRotar() {
+      const lista = [...rutasConDatos];
+      if (categoriaTieneDatos('instituciones')) lista.push('instituciones');
+      return lista;
+    }
+    function rotarSiguienteCategoria() {
+      const lista = categoriasParaRotar();
+      if (lista.length === 0) return;
+      let idx = lista.indexOf(categoriaActiva);
+      idx = (idx + 1) % lista.length;
+      seleccionarCategoria(lista[idx]);
+    }
+    function actualizarBotonAutoRotate() {
+      const btn = document.getElementById('btnAutoRotate');
+      if (!btn) return;
+      if (autoRotateOn) {
+        btn.textContent = '🔄 Rotación automática (3 min): ON';
+        btn.style.background = '#1a5ca8';
+        btn.style.borderColor = '#1a5ca8';
+        btn.style.color = '#fff';
+      } else {
+        btn.textContent = '🔄 Rotación automática (3 min): OFF';
+        btn.style.background = '#fff';
+        btn.style.borderColor = '#cbd5e1';
+        btn.style.color = '#64748b';
+      }
+    }
+    function iniciarAutoRotate() {
+      if (autoRotateInterval) clearInterval(autoRotateInterval);
+      autoRotateInterval = setInterval(rotarSiguienteCategoria, AUTO_ROTATE_MS);
+    }
+    function detenerAutoRotate() {
+      if (autoRotateInterval) { clearInterval(autoRotateInterval); autoRotateInterval = null; }
+    }
+    function toggleAutoRotate() {
+      autoRotateOn = !autoRotateOn;
+      try { localStorage.setItem(AUTO_ROTATE_KEY, autoRotateOn ? '1' : '0'); } catch(e) {}
+      actualizarBotonAutoRotate();
+      if (autoRotateOn) { rotarSiguienteCategoria(); iniciarAutoRotate(); } else { detenerAutoRotate(); }
+    }
+    // Restaurar preferencia guardada (útil si la pantalla se recarga sola)
+    try {
+      if (localStorage.getItem(AUTO_ROTATE_KEY) === '1') {
+        autoRotateOn = true;
+        actualizarBotonAutoRotate();
+        iniciarAutoRotate();
+      }
+    } catch(e) {}
   </script>
 
   <!-- PANTALLA COMPLETA (tecla F) -->
