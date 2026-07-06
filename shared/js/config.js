@@ -23,6 +23,8 @@ const CONFIG = {
     'msarzosa@tecnologicosucre.edu.ec',
     'dj.rodriguezmorales1@gmail.com',
     'cortega@tecnologicosucre.edu.ec',
+    'rlema@tecnologicosucre.edu.ec',
+    'crivera@tecnologicosucre.edu.ec', 
     'lmolina@tecnologicosucre.edu.ec'
   ]
 
