@@ -260,6 +260,35 @@
       .form-cal-header { flex-direction: column; }
     }
 
+    /* ── FIX MÓVIL: PANEL DE CALIFICACIÓN (Bailarín / Impacto Tec. / Lego Kids) ── */
+    @media(max-width:800px) {
+      /* La lista de robots usaba sticky para la vista de 2 columnas de escritorio.
+         Al colapsar a 1 columna en móvil, el sticky flota y tapa el formulario
+         de calificación (inputs y botón Guardar quedan inalcanzables). */
+      .lista-robots { position: static; }
+      .robots-list { max-height: 40vh; }
+    }
+
+    @media(max-width:480px) {
+      /* Stepper de 6 pasos muy apretado en pantallas angostas */
+      .stepper-wrap { gap: 0; padding: 22px 6px 0; }
+      .step-dot { width: 28px; height: 28px; font-size: .6rem; }
+      .step-label { font-size: .5rem; letter-spacing: .5px; }
+      .step-item:not(:last-child)::after { top: 14px; }
+
+      /* Selector de juez (Bailarín/Dev: 2-3 jueces) — 1 por fila en vez de apretarlos */
+      #juezBar, #juezBarFinal, #juezSelectorBtns { flex-direction: column; align-items: stretch; }
+      #juezBar button, #juezBarFinal button, #juezSelectorBtns button { min-width: 0; width: 100%; padding: 12px 14px; }
+
+      /* Botones de acciones de ranking/presentes — más fáciles de tocar en fila completa */
+      .ranking-header > div:last-child { width: 100%; }
+      .ranking-header .btn { flex: 1 1 auto; }
+
+      /* Inputs de nota más grandes para dedos, menos ambigüedad al tocar */
+      .criterio-nota-input, .criterio-nota-input-final { width: 100%; font-size: 1.3rem; padding: 10px 6px; }
+      .criterio-row { padding: 12px 0; }
+    }
+
     /* ── PRESENTES ── */
     .presentes-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
     .presentes-counts { font-family: 'DM Mono'; font-size: .78rem; color: var(--text-dim); margin-top: 4px; }
