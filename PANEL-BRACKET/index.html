@@ -455,6 +455,8 @@
       <button class="btn-cron pausar" id="btnCronPausar" onclick="cronPausar()" disabled>⏸ Pausar</button>
       <button class="btn-cron gol-a" id="btnGolA" onclick="anotarGol('A')">⚽ Gol A</button>
       <button class="btn-cron gol-b" id="btnGolB" onclick="anotarGol('B')">⚽ Gol B</button>
+      <button class="btn-cron gol-a-quitar" id="btnQuitarGolA" onclick="quitarGol('A')" style="background:rgba(240,91,91,.15);color:var(--red,#f05b5b);border:1px solid var(--border2)">➖ -1 Gol A</button>
+      <button class="btn-cron gol-b-quitar" id="btnQuitarGolB" onclick="quitarGol('B')" style="background:rgba(240,91,91,.15);color:var(--red,#f05b5b);border:1px solid var(--border2)">➖ -1 Gol B</button>
       <button class="btn-cron terminar" onclick="terminarPartidoSoccer()">🏁 Terminar y guardar</button>
       <button class="btn-cron cerrar" onclick="cerrarCronometro()">✕ Cerrar sin guardar</button>
     </div>
@@ -1455,6 +1457,7 @@ function abrirCronometro(partido) {
   document.getElementById('cronTitulo').textContent=`${nombreA} vs ${nombreB}`;
   document.getElementById('cronNombreA').textContent=nombreA; document.getElementById('cronNombreB').textContent=nombreB;
   document.getElementById('btnGolA').textContent=`⚽ Gol ${nombreA}`; document.getElementById('btnGolB').textContent=`⚽ Gol ${nombreB}`;
+  document.getElementById('btnQuitarGolA').textContent=`➖ -1 Gol ${nombreA}`; document.getElementById('btnQuitarGolB').textContent=`➖ -1 Gol ${nombreB}`;
   document.getElementById('penNombreA').textContent=nombreA; document.getElementById('penNombreB').textContent=nombreB;
   document.getElementById('amonNombreA').textContent=nombreA; document.getElementById('amonNombreB').textContent=nombreB;
   document.getElementById('btnDescA').textContent=`🚫 Descalificar ${nombreA}`;
@@ -1523,6 +1526,14 @@ function anotarGol(equipo) {
   if(equipo==='A')cron.golesA++;else cron.golesB++;
   actualizarMarcadorCron();
   toast(`⚽ Gol de ${equipo==='A'?(cron.partido?.equipo_a_nombre||'A'):(cron.partido?.equipo_b_nombre||'B')}!`);
+}
+function quitarGol(equipo) {
+  if(cron.fase==='penales'||cron.fase==='fin')return;
+  const nombre=equipo==='A'?(cron.partido?.equipo_a_nombre||'A'):(cron.partido?.equipo_b_nombre||'B');
+  if(equipo==='A'){ if(cron.golesA<=0){toast(`${nombre} ya está en 0 goles`,'error');return;} cron.golesA--; }
+  else { if(cron.golesB<=0){toast(`${nombre} ya está en 0 goles`,'error');return;} cron.golesB--; }
+  actualizarMarcadorCron();
+  toast(`➖ Gol corregido — ${nombre}`);
 }
 function anotarPenal(equipo) {
   if(equipo==='A'){cron.penalesA++;cron.penIntentosA++;document.getElementById('penCountA').textContent=cron.penalesA;}
