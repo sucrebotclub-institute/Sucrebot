@@ -136,6 +136,10 @@
     .precio-item.activo .precio-desc { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.5); }
     .precio-item:not(.activo) .precio-desc { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12); }
     .precio-badge-activo { position: absolute; top: 9px; right: 9px; background: #fbbf24; color: #78350f; font-family: 'Orbitron', monospace; font-size: 7px; font-weight: 700; padding: 3px 7px; border-radius: 6px; letter-spacing: 0.5px; animation: pulse-badge 1.4s ease-in-out infinite; }
+    .precio-item.vencido { opacity: 0.42; filter: grayscale(0.7); }
+    .precio-item.vencido:hover { transform: none; }
+    .precio-item.vencido .precio-valor { text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.5); }
+    .precio-badge-vencido { position: absolute; top: 9px; right: 9px; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.65); font-family: 'Orbitron', monospace; font-size: 7px; font-weight: 700; padding: 3px 7px; border-radius: 6px; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.2); }
     @keyframes pulse-badge { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.08)} }
     .lego-agotado-card { background: linear-gradient(135deg, #3a1414 0%, #2a1010 100%); border: 1.5px solid rgba(224,85,85,0.4); border-radius: 14px; padding: 14px 12px; text-align: center; }
     .lego-agotado-icon { font-size: 18px; margin-bottom: 6px; }
@@ -186,6 +190,7 @@
       .precios-movil .precio-valor { font-size: 2rem; margin-bottom: 4px; }
       .precios-movil .precio-desc { font-size: 8px; padding: 3px 6px; }
       .precios-movil .precio-badge-activo { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
+      .precios-movil .precio-badge-vencido { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
       .form-card { margin-top: 0 !important; padding: 18px 14px; border-radius: 12px; width: 100%; box-sizing: border-box; }
       .form-grid, .grid-comprobante { grid-template-columns: 1fr !important; }
       .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
@@ -825,6 +830,11 @@
         p.ids.forEach(id => {
           const el = document.getElementById(id);
           if (el) { el.classList.add('activo'); el.innerHTML += '<div class="precio-badge-activo">ACTIVO</div>'; }
+        });
+      } else if (hoy > p.hasta) {
+        p.ids.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.classList.add('vencido'); el.innerHTML += '<div class="precio-badge-vencido">FINALIZADA</div>'; }
         });
       }
     });
