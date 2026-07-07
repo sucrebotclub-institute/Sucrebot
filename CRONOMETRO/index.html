@@ -8,7 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../shared/js/config.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="../shared/js/vendor/xlsx.full.min.js"></script>
+  <script src="../shared/js/offline-excel.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
@@ -254,6 +255,22 @@
 
   <!-- PASO 1 -->
   <div class="step-panel active" id="panel-1" style="max-width:1000px;margin:0 auto;">
+
+    <div class="pb-card" style="margin-bottom:16px;">
+      <div class="pb-card-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <span>📂 Modo Offline (sin internet)</span>
+        <span id="offlineEstadoBadge" style="font-family:'Orbitron';font-size:.65rem;padding:4px 10px;border-radius:10px;background:rgba(148,163,184,.15);border:1px solid var(--border2);">DESACTIVADO</span>
+      </div>
+      <div style="font-size:.8rem;color:rgba(232,234,242,.7);margin-bottom:10px;">
+        Úsalo si no hay internet. Los tiempos se guardan en un archivo Excel local en este dispositivo y se sincronizan con Google Sheets cuando vuelva la conexión.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-secundario" onclick="prepararArchivoOffline()" style="font-size:.75rem;padding:8px 14px;">🆕 Crear archivo offline (hacer HOY, con internet)</button>
+        <button class="btn-secundario" onclick="activarModoOffline()" style="font-size:.75rem;padding:8px 14px;">📂 Abrir archivo offline existente</button>
+        <button class="btn-secundario" id="btnSincronizarOffline" onclick="sincronizarPendientesOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔄 Sincronizar pendientes (<span id="offlinePendientesCount">0</span>)</button>
+      </div>
+    </div>
+
     <div class="pb-card">
       <div class="pb-card-title">Seleccionar Categoría</div>
       <div class="cat-grid">
@@ -396,20 +413,80 @@ function leerFasesConfig(){
 
 function setStep(n){[1,2,3].forEach(i=>{document.getElementById('step-dot-'+i).className='step-item'+(i<n?' done':i===n?' active':'');document.getElementById('panel-'+i).className='step-panel'+(i===n?' active':'');});window.scrollTo({top:0,behavior:'smooth'});}
 
+function actualizarBadgeOffline(){
+  const badge=document.getElementById('offlineEstadoBadge');
+  const btnSync=document.getElementById('btnSincronizarOffline');
+  const countEl=document.getElementById('offlinePendientesCount');
+  if(!badge)return;
+  if(window.OfflineExcel&&OfflineExcel.estaActivo()){
+    const n=OfflineExcel.contarPendientes();
+    badge.textContent='✅ ACTIVO'+(n>0?' · '+n+' pendiente(s)':'');
+    badge.style.background='rgba(34,197,94,.15)';badge.style.borderColor='rgba(34,197,94,.4)';badge.style.color='#22c55e';
+    if(btnSync){btnSync.style.display=n>0?'inline-block':'none';}
+    if(countEl)countEl.textContent=n;
+  }else{
+    badge.textContent='DESACTIVADO';
+    badge.style.background='rgba(148,163,184,.15)';badge.style.borderColor='var(--border2)';badge.style.color='';
+    if(btnSync)btnSync.style.display='none';
+  }
+}
+
+async function prepararArchivoOffline(){
+  if(!window.OfflineExcel||!OfflineExcel.soportado()){showToast('❌ Requiere Chrome o Edge',true);return;}
+  showToast('Elige dónde guardar el archivo...');
+  const creado=await OfflineExcel.crearNuevo('SucreBot_offline_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  if(!creado){showToast('❌ No se creó el archivo',true);return;}
+  showToast('Importando participantes...');
+  try{
+    const n=await OfflineExcel.importarParticipantesDesdeGAS(GAS_URL);
+    showToast('✓ Archivo listo con '+n+' participantes. Guárdalo en un lugar accesible.');
+  }catch(e){showToast('⚠️ Archivo creado pero no se pudo importar participantes (sin internet?)',true);}
+  actualizarBadgeOffline();
+}
+
+async function activarModoOffline(){
+  if(!window.OfflineExcel||!OfflineExcel.soportado()){showToast('❌ Requiere Chrome o Edge',true);return;}
+  showToast('Selecciona el archivo offline...');
+  const ok=await OfflineExcel.activar();
+  if(ok){showToast('✅ Modo offline activado');}else{showToast('❌ No se pudo abrir el archivo',true);}
+  actualizarBadgeOffline();
+}
+
+async function sincronizarPendientesOffline(){
+  if(!window.OfflineExcel||!OfflineExcel.estaActivo()){return;}
+  const n=OfflineExcel.contarPendientes();
+  if(n===0){showToast('No hay pendientes');return;}
+  showToast('Sincronizando '+n+' resultado(s)...');
+  const r=await OfflineExcel.sincronizar(GAS_URL,(i,total)=>{showToast('Sincronizando '+i+'/'+total+'...');});
+  showToast('✓ '+r.ok+' sincronizado(s)'+(r.fail>0?' · ⚠️ '+r.fail+' fallaron (¿sigue sin internet?)':''));
+  actualizarBadgeOffline();
+}
+
 async function elegirCategoria(cat,ev){
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
   ev.currentTarget.classList.add('selected');
-  const bloqueada=await verificarBloqueo(cat);
-  const userData=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');
-  if(bloqueada&&bloqueada.usuario!==userData.email){showToast('⚠️ Categoría en uso por '+bloqueada.usuario,true);ev.currentTarget.classList.remove('selected');return;}
-  showToast('Cargando participantes...');
+
+  const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
+
+  if(!modoOffline){
+    const bloqueada=await verificarBloqueo(cat);
+    const userData=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');
+    if(bloqueada&&bloqueada.usuario!==userData.email){showToast('⚠️ Categoría en uso por '+bloqueada.usuario,true);ev.currentTarget.classList.remove('selected');return;}
+  }
+
+  showToast(modoOffline?'Cargando participantes (offline)...':'Cargando participantes...');
   try{
-    const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}));
-    const todos=await r.json();
-    const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
-    presentes=lista.filter(p=>p.categoria===cat&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
+    let lista;
+    if(modoOffline){
+      lista=OfflineExcel.getParticipantes(cat);
+    }else{
+      const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}));
+      const todos=await r.json();
+      lista=(Array.isArray(todos)?todos:(todos.participantes||[])).filter(p=>p.categoria===cat&&p.aprobado==='APROBADO');
+    }
+    presentes=lista.map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
     seleccionados=new Set(presentes.map(p=>p.id));
-    document.getElementById('paso2Titulo').textContent='Presentes — '+cat;
+    document.getElementById('paso2Titulo').textContent='Presentes — '+cat+(modoOffline?' (📂 OFFLINE)':'');
     document.getElementById('selTotal').textContent=presentes.length;
     renderSeleccion();setStep(2);
   }catch(e){showToast('❌ Error cargando participantes',true);console.error(e);}
@@ -785,7 +862,23 @@ function cargarEstado(cat){
   }catch(e){console.error('Error cargar estado:',e);return false;}
 }
 
-async function guardarResultadoGAS(tiempo){if(!participanteActual||!categoriaActual)return;try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'pushResultado',participanteId:participanteActual.id,nombre:participanteActual.nombre||'',robot:participanteActual.robot||'',institucion:participanteActual.institucion||'',tiempo,ronda:rondaActual,intento:intentoActual,ruta:getRuta()||'general',fecha:new Date().toISOString()})});}catch(e){console.error('Error guardar resultado:',e);}}
+async function guardarResultadoGAS(tiempo){
+  if(!participanteActual||!categoriaActual)return;
+  const payload={participanteId:participanteActual.id,nombre:participanteActual.nombre||'',robot:participanteActual.robot||'',institucion:participanteActual.institucion||'',categoria:categoriaActual,tiempo,ronda:rondaActual,intento:intentoActual,ruta:getRuta()||'general',fecha:new Date().toISOString()};
+  const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
+  if(modoOffline){
+    const guardado=await OfflineExcel.guardarResultado(payload);
+    if(guardado){showToast('💾 Guardado en Excel local');}else{showToast('⚠️ No se pudo escribir el Excel local — revisa el archivo',true);}
+    actualizarBadgeOffline();
+    return;
+  }
+  try{
+    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:'pushResultado'},payload))});
+  }catch(e){
+    console.error('Error guardar resultado:',e);
+    showToast('⚠️ Sin conexión al guardar. Activa el modo offline si el internet no vuelve pronto.',true);
+  }
+}
 
 document.getElementById('cfg-rondas').addEventListener('input',function(){if(competenciaIniciada){showToast('⚠️ No se puede cambiar durante la competencia',true);this.value=maxRondas;return;}maxRondas=parseInt(this.value)||1;renderFasesConfig();guardarEstado();});
 
@@ -915,6 +1008,7 @@ async function guardarPodioCrono(){
 }
 
 document.addEventListener('componentsLoaded',async function(){
+  actualizarBadgeOffline();
   const savedUser=localStorage.getItem('sucrebot_user');if(!savedUser){window.location.href='../INICIO/';return;}
   const catGuardada=localStorage.getItem('cronometro_categoria_activa');
   if(catGuardada&&RUTAS[catGuardada]){
