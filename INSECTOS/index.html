@@ -7,6 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="../shared/js/config.js"></script>
+  <script src="../shared/js/vendor/xlsx.full.min.js"></script>
+  <script src="../shared/js/offline-excel.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
@@ -194,6 +196,21 @@
 
       <!-- STEP 1: PRESENTES -->
       <div class="step-panel active" id="panel0">
+        <div class="ins-card" style="margin-bottom:16px;">
+          <div class="ins-card-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <span>📂 Modo Offline (sin internet)</span>
+            <span id="offlineEstadoBadge" style="font-family:'Orbitron';font-size:.65rem;padding:4px 10px;border-radius:10px;background:rgba(148,163,184,.15);border:1px solid var(--border2, #444);">DESACTIVADO</span>
+          </div>
+          <div style="font-size:.8rem;color:rgba(232,234,242,.7);margin-bottom:10px;">
+            Úsalo si no hay internet. Los resultados y el podio se guardan en un Excel local y se sincronizan cuando vuelva la conexión.
+          </div>
+          <div class="btn-row" style="margin:0;flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="prepararArchivoOffline()" style="font-size:.75rem;">🆕 Crear archivo offline</button>
+            <button class="btn btn-outline" onclick="activarModoOffline()" style="font-size:.75rem;">📂 Abrir archivo offline</button>
+            <button class="btn btn-outline" id="btnSincronizarOffline" onclick="sincronizarPendientesOffline()" style="font-size:.75rem;display:none;">🔄 Sincronizar (<span id="offlinePendientesCount">0</span>)</button>
+            <button class="btn btn-outline" id="btnDesactivarOffline" onclick="desactivarModoOffline()" style="font-size:.75rem;display:none;">🔌 Modo normal</button>
+          </div>
+        </div>
         <div class="ins-card">
           <div class="ins-card-title">Seleccionar participantes presentes</div>
           <div class="sel-header">
@@ -424,11 +441,78 @@
   // ============================================================
   // PASO 1: CARGAR Y SELECCIONAR PRESENTES
   // ============================================================
+  function actualizarBadgeOffline(){
+    const badge=document.getElementById('offlineEstadoBadge');
+    const btnSync=document.getElementById('btnSincronizarOffline');
+    const btnDesactivar=document.getElementById('btnDesactivarOffline');
+    const countEl=document.getElementById('offlinePendientesCount');
+    if(!badge)return;
+    if(window.OfflineExcel&&OfflineExcel.estaActivo()){
+      const n=OfflineExcel.contarPendientes();
+      badge.textContent='✅ ACTIVO'+(n>0?' · '+n+' pendiente(s)':'');
+      badge.style.background='rgba(34,197,94,.15)';badge.style.borderColor='rgba(34,197,94,.4)';badge.style.color='#22c55e';
+      if(btnSync)btnSync.style.display=n>0?'inline-block':'none';
+      if(btnDesactivar)btnDesactivar.style.display='inline-block';
+      if(countEl)countEl.textContent=n;
+    }else{
+      badge.textContent='DESACTIVADO';
+      badge.style.background='rgba(148,163,184,.15)';badge.style.borderColor='';badge.style.color='';
+      if(btnSync)btnSync.style.display='none';
+      if(btnDesactivar)btnDesactivar.style.display='none';
+    }
+  }
+
+  async function prepararArchivoOffline(){
+    if(!window.OfflineExcel||!OfflineExcel.soportado()){alert('❌ Requiere Chrome o Edge');return;}
+    const creado=await OfflineExcel.crearNuevo('SucreBot_offline_insectos_'+new Date().toISOString().slice(0,10)+'.xlsx');
+    if(!creado){alert('❌ No se creó el archivo');return;}
+    try{
+      const n=await OfflineExcel.importarParticipantesDesdeGAS(CONFIG.GAS_URL());
+      alert('✓ Archivo listo con '+n+' participantes');
+    }catch(e){alert('⚠️ Archivo creado pero no se pudo importar participantes');}
+    actualizarBadgeOffline();
+  }
+
+  async function activarModoOffline(){
+    if(!window.OfflineExcel||!OfflineExcel.soportado()){alert('❌ Requiere Chrome o Edge');return;}
+    const ok=await OfflineExcel.activar();
+    if(ok){alert('✅ Modo offline activado');}else{alert('❌ No se pudo abrir el archivo');}
+    actualizarBadgeOffline();
+    if(ok)cargarParticipantes();
+  }
+
+  async function sincronizarPendientesOffline(){
+    if(!window.OfflineExcel||!OfflineExcel.estaActivo())return;
+    const n=OfflineExcel.contarPendientes();
+    if(n===0){alert('No hay pendientes');return;}
+    const r=await OfflineExcel.sincronizar(CONFIG.GAS_URL());
+    alert('✓ '+r.ok+' sincronizado(s)'+(r.fail>0?' · ⚠️ '+r.fail+' fallaron':''));
+    actualizarBadgeOffline();
+  }
+
+  function desactivarModoOffline(){
+    if(!window.OfflineExcel||!OfflineExcel.estaActivo())return;
+    const n=OfflineExcel.contarPendientes();
+    if(n>0){
+      if(!confirm('⚠️ Todavía hay '+n+' registro(s) sin sincronizar.\n\n¿Seguro que quieres desactivar el modo offline?'))return;
+    }
+    OfflineExcel.desactivar();
+    actualizarBadgeOffline();
+    alert('✅ Modo offline desactivado');
+  }
+
   async function cargarParticipantes() {
     try {
-      const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' })).then(r => r.json());
-      const todos = Array.isArray(res) ? res : (res.participantes || []);
-      participantes = todos.filter(p => p.categoria === 'Insectos' && p.aprobado === 'APROBADO');
+      const modoOffline = window.OfflineExcel && OfflineExcel.estaActivo();
+      let todos;
+      if (modoOffline) {
+        todos = OfflineExcel.getParticipantes('Insectos');
+        participantes = todos;
+      } else {
+        const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' })).then(r => r.json());
+        todos = Array.isArray(res) ? res : (res.participantes || []);
+        participantes = todos.filter(p => p.categoria === 'Insectos' && p.aprobado === 'APROBADO');
+      }
       renderLista();
     } catch (e) {
       document.getElementById('listaParticipantes').innerHTML = `<div class="empty-state" style="color:var(--red)">Error cargando participantes: ${e.message}</div>`;
@@ -1119,35 +1203,52 @@
       ...noFinal.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
     ];
 
+    const modoOffline = window.OfflineExcel && OfflineExcel.estaActivo();
     let ok = 0, errores = 0;
     for (const entry of todos) {
       const p = entry.p;
       try {
-        await gasPost({
-          action: 'guardarCertificado',
-          correo: p.correo || '',
-          nombre_completo: p.nombre || '',
-          categoria: 'Insectos',
-          institucion: p.institucion || '',
-          evento: 'SucreBot 2026',
-          fecha_evento: '16 de julio de 2026',
-          tipo_certificado: entry.tipo,
-        });
-        await gasPost({
-          action: 'pushResultado',
-          participanteId: p.id || '',
-          nombre: p.nombre || '',
-          robot: p.robot || '',
-          institucion: p.institucion || '',
-          tiempo: entry.tiempo,
-          ronda: 'FINAL',
-          intento: 1,
-          ruta: 'ins',
-          fecha: new Date().toISOString(),
-        });
+        if (modoOffline) {
+          await OfflineExcel.guardarPodio([{
+            id_participante: p.id || '', correo: p.correo || '',
+            categoria: 'Insectos', institucion: p.institucion || '',
+            tipo_certificado: entry.tipo, evento: 'SucreBot 2026',
+            nombre: p.nombre || '', nombre_completo: p.nombre || ''
+          }]);
+          await OfflineExcel.guardarResultado({
+            participanteId: p.id || '', nombre: p.nombre || '', robot: p.robot || '',
+            institucion: p.institucion || '', categoria: 'Insectos',
+            tiempo: entry.tiempo, ronda: 'FINAL', intento: 1, ruta: 'ins',
+            fecha: new Date().toISOString()
+          });
+        } else {
+          await gasPost({
+            action: 'guardarCertificado',
+            correo: p.correo || '',
+            nombre_completo: p.nombre || '',
+            categoria: 'Insectos',
+            institucion: p.institucion || '',
+            evento: 'SucreBot 2026',
+            fecha_evento: '16 de julio de 2026',
+            tipo_certificado: entry.tipo,
+          });
+          await gasPost({
+            action: 'pushResultado',
+            participanteId: p.id || '',
+            nombre: p.nombre || '',
+            robot: p.robot || '',
+            institucion: p.institucion || '',
+            tiempo: entry.tiempo,
+            ronda: 'FINAL',
+            intento: 1,
+            ruta: 'ins',
+            fecha: new Date().toISOString(),
+          });
+        }
         ok++;
       } catch(e) { errores++; console.error('Error guardando', p.nombre, e); }
     }
+    if (modoOffline && window.actualizarBadgeOffline) actualizarBadgeOffline();
 
     if (errores === 0) {
       btn.textContent = `✓ Guardado (${ok})`;
@@ -1348,6 +1449,7 @@
   // INIT
   // ============================================================
   document.addEventListener('componentsLoaded', () => {
+    actualizarBadgeOffline();
     cargarParticipantes();
   });
   </script>
