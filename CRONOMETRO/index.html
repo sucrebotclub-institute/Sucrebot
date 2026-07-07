@@ -994,10 +994,17 @@ async function guardarPodioCrono(){
   const preview=ranking.map((p,i)=>`${i+1}. ${p.robot} (${p.tiempo||'—'})`).join('\n');
   if(!confirm('¿Guardar podio de '+catNombre+' en certificados?\n'+ranking.length+' participantes:\n'+preview))return;
   const tipos=['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
+  const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
   async function gasCert(payload){try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});}catch(e){console.warn('[gasCert] fetch error (ignorado):',e.message,'— payload:',payload.nombre_completo);}}
   async function guardarCertParticipante(p,tipo){
     const correo=p.correo||'',inst=p.institucion||'',m2=p.miembro2||'',nombre=p.nombre||p.robot||'';
     const base={action:'guardarCertificado',id_participante:p.id,correo,categoria:catNombre,institucion:inst,tipo_certificado:tipo,evento:'SucreBot 2026'};
+    if(modoOffline){
+      const filas=[{...base,nombre,nombre_completo:nombre}];
+      if(m2)filas.push({...base,id_participante:p.id+'-m2',nombre:m2,nombre_completo:m2});
+      await OfflineExcel.guardarPodio(filas);
+      return;
+    }
     await gasCert({...base,nombre,nombre_completo:nombre});
     if(m2)await gasCert({...base,id_participante:p.id+'-m2',nombre:m2,nombre_completo:m2});
   }
@@ -1007,8 +1014,9 @@ async function guardarPodioCrono(){
     console.log('[Podio] '+(i+1)+'/'+ranking.length+' — '+p.robot+' — tipo: '+tipo+' — correo: '+(p.correo||'—')+' — m2: '+(p.miembro2||'—'));
     try{await guardarCertParticipante(p,tipo);guardados++;}catch(e){errores++;console.error('Error guardando '+p.robot+' ('+tipo+'):',e);}
   }
-  if(errores===0)showToast('🏆 Podio guardado — '+guardados+' participantes');
+  if(errores===0)showToast(modoOffline?'💾 Podio guardado en Excel local — '+guardados+' participantes':'🏆 Podio guardado — '+guardados+' participantes');
   else showToast('⚠️ '+guardados+' guardados, '+errores+' con error',true);
+  if(modoOffline)actualizarBadgeOffline();
 }
 
 document.addEventListener('componentsLoaded',async function(){
