@@ -518,7 +518,7 @@ async function confirmarIniciarCrono(){
   if(!cat){showToast('⚠️ Selecciona una categoría',true);return;}
   const catNombre=Object.keys(RUTAS).find(k=>cat.getAttribute('onclick')?.includes("'"+k+"'"))||'';
   if(!catNombre)return;
-  const ok=await bloquearCategoria(catNombre);
+  const ok=(window.OfflineExcel&&OfflineExcel.estaActivo())?true:await bloquearCategoria(catNombre);
   if(!ok){showToast('❌ No se pudo bloquear la categoría',true);return;}
   categoriaActual=catNombre;localStorage.setItem('cronometro_categoria_activa',catNombre);
   const selArr=presentes.filter(p=>seleccionados.has(p.id));
@@ -537,7 +537,7 @@ async function confirmarIniciarCrono(){
   const aviso=document.getElementById('aviso-sensor');
   if(CATS_SERIAL.includes(catNombre)){const info=AVISO_SENSOR[catNombre]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32 antes de iniciar.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}else{aviso.classList.remove('visible');}
   if(typeof mostrarBotonSerial==='function')setTimeout(()=>mostrarBotonSerial(CATS_SERIAL.includes(catNombre)),100);
-  actualizarBadges();renderRondas();actualizarContador();reiniciarCrono();limpiarParticipante();guardarEstado();iniciarPolling();setStep(3);
+  actualizarBadges();renderRondas();actualizarContador();reiniciarCrono();limpiarParticipante();guardarEstado();if(!(window.OfflineExcel&&OfflineExcel.estaActivo()))iniciarPolling();setStep(3);
   bloquearBtn();
   showToast('✅ '+selArr.length+' participantes cargados · '+catNombre);
 }
@@ -836,10 +836,14 @@ function confirmarCerrarRonda(){
 function pedirCerrarCategoria(){if(!categoriaActual)return;document.getElementById('modal-cat-nom').textContent=categoriaActual;document.getElementById('modal-cat').classList.add('show');}
 async function confirmarCerrarCategoria(){
   cerrarModal('modal-cat');if(!categoriaActual)return;
+  const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
   try{
-    await desbloquearCategoria(categoriaActual);localStorage.removeItem(getKey());localStorage.removeItem('cronometro_categoria_activa');
-    const ruta=getRuta()||'general';
-    await Promise.all([fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta})}),fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null})})]);
+    if(!modoOffline){
+      await desbloquearCategoria(categoriaActual);
+      const ruta=getRuta()||'general';
+      await Promise.all([fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta})}),fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null})})]);
+    }
+    localStorage.removeItem(getKey());localStorage.removeItem('cronometro_categoria_activa');
     if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
     categoriaActual=null;participanteActual=null;rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
     rondasData={};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
@@ -1012,16 +1016,21 @@ document.addEventListener('componentsLoaded',async function(){
   const savedUser=localStorage.getItem('sucrebot_user');if(!savedUser){window.location.href='../INICIO/';return;}
   const catGuardada=localStorage.getItem('cronometro_categoria_activa');
   if(catGuardada&&RUTAS[catGuardada]){
-    const bloqueada=await verificarBloqueo(catGuardada);const userData=JSON.parse(savedUser);let puedoRestaurar=false;
-    if(bloqueada&&bloqueada.usuario===userData.email){puedoRestaurar=true;}
-    else if(!bloqueada){const ok=await bloquearCategoria(catGuardada);if(ok)puedoRestaurar=true;else localStorage.removeItem('cronometro_categoria_activa');}
-    else{localStorage.removeItem('cronometro_categoria_activa');showToast('⚠️ Categoría tomada por '+bloqueada.usuario,true);}
+    const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
+    let bloqueada=null,puedoRestaurar=false;
+    if(modoOffline){puedoRestaurar=true;}
+    else{
+      bloqueada=await verificarBloqueo(catGuardada);const userData=JSON.parse(savedUser);
+      if(bloqueada&&bloqueada.usuario===userData.email){puedoRestaurar=true;}
+      else if(!bloqueada){const ok=await bloquearCategoria(catGuardada);if(ok)puedoRestaurar=true;else localStorage.removeItem('cronometro_categoria_activa');}
+      else{localStorage.removeItem('cronometro_categoria_activa');showToast('⚠️ Categoría tomada por '+bloqueada.usuario,true);}
+    }
     if(puedoRestaurar){
       categoriaActual=catGuardada;document.getElementById('cat-activa-label').textContent=catGuardada;document.getElementById('btn-cerrar-cat').style.display='block';
       const aviso=document.getElementById('aviso-sensor');
       if(CATS_SERIAL.includes(catGuardada)){const info=AVISO_SENSOR[catGuardada]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}
       if(typeof mostrarBotonSerial==='function')setTimeout(()=>window.mostrarBotonSerial(CATS_SERIAL.includes(catGuardada)),300);
-      cargarEstado(catGuardada);iniciarPolling();setStep(3);showToast('✅ Categoría "'+catGuardada+'" restaurada');
+      cargarEstado(catGuardada);if(!modoOffline)iniciarPolling();setStep(3);showToast('✅ Categoría "'+catGuardada+'" restaurada');
       try{
         const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}));const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
         presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
