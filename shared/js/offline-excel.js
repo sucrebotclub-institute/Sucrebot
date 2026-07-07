@@ -19,9 +19,11 @@ window.OfflineExcel = (function () {
   const SHEET_PART = 'Participantes';
   const SHEET_RES = 'Resultados_Offline';
   const SHEET_PODIO = 'Podio_Offline';
+  const SHEET_PUNT = 'Puntuaciones_Offline';
   const PART_COLS = ['id', 'nombre', 'robot', 'institucion', 'ciudad', 'categoria', 'correo', 'miembro2', 'aprobado'];
   const RES_COLS = ['participanteId', 'nombre', 'robot', 'institucion', 'categoria', 'tiempo', 'ronda', 'intento', 'ruta', 'fecha', 'sincronizado'];
   const PODIO_COLS = ['id_participante', 'correo', 'categoria', 'institucion', 'tipo_certificado', 'evento', 'nombre', 'nombre_completo', 'fecha', 'sincronizado'];
+  const PUNT_COLS = ['id_participante', 'nombre', 'robot', 'institucion', 'categoria', 'juez_email', 'juez_nombre', 'criterios', 'notas', 'total', 'timestamp', 'sincronizado'];
 
   let fileHandle = null;
   let workbook = null;
@@ -29,6 +31,10 @@ window.OfflineExcel = (function () {
 
   function soportado() {
     return typeof window.showOpenFilePicker === 'function' && typeof window.showSaveFilePicker === 'function';
+  }
+
+  function safeParse(str, fallback) {
+    try { return JSON.parse(str); } catch (e) { return fallback; }
   }
 
   function _tipoExcel() {
@@ -49,6 +55,13 @@ window.OfflineExcel = (function () {
     if (!workbook.Sheets[SHEET_PODIO]) {
       workbook.Sheets[SHEET_PODIO] = XLSX.utils.aoa_to_sheet([PODIO_COLS]);
       workbook.SheetNames.push(SHEET_PODIO);
+    }
+  }
+
+  function _asegurarHojaPuntuaciones() {
+    if (!workbook.Sheets[SHEET_PUNT]) {
+      workbook.Sheets[SHEET_PUNT] = XLSX.utils.aoa_to_sheet([PUNT_COLS]);
+      workbook.SheetNames.push(SHEET_PUNT);
     }
   }
 
@@ -78,6 +91,7 @@ window.OfflineExcel = (function () {
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([PART_COLS]), SHEET_PART);
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([RES_COLS]), SHEET_RES);
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([PODIO_COLS]), SHEET_PODIO);
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([PUNT_COLS]), SHEET_PUNT);
       activo = true;
       await _guardarDisco();
       return true;
@@ -102,6 +116,7 @@ window.OfflineExcel = (function () {
       }
       _asegurarHojaResultados();
       _asegurarHojaPodio();
+      _asegurarHojaPuntuaciones();
       activo = true;
       await _guardarDisco();
       return true;
@@ -184,6 +199,35 @@ window.OfflineExcel = (function () {
     return await _guardarDisco();
   }
 
+  // Guarda una puntuación de juez (PANEL-CALIFICACION)
+  async function guardarPuntuacion(data) {
+    if (!activo || !workbook) return false;
+    _asegurarHojaPuntuaciones();
+    const existing = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_PUNT], { defval: '' });
+    existing.push({
+      id_participante: data.id_participante || '',
+      nombre: data.nombre || '',
+      robot: data.robot || '',
+      institucion: data.institucion || '',
+      categoria: data.categoria || '',
+      juez_email: data.juez_email || '',
+      juez_nombre: data.juez_nombre || '',
+      criterios: JSON.stringify(data.criterios || {}),
+      notas: JSON.stringify(data.notas || {}),
+      total: data.total,
+      timestamp: data.timestamp || new Date().toISOString(),
+      sincronizado: 'FALSE'
+    });
+    workbook.Sheets[SHEET_PUNT] = XLSX.utils.json_to_sheet(existing, { header: PUNT_COLS });
+    return await _guardarDisco();
+  }
+
+  function contarPendientesPuntuaciones() {
+    if (!workbook || !workbook.Sheets[SHEET_PUNT]) return 0;
+    const data = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_PUNT], { defval: '' });
+    return data.filter(r => String(r.sincronizado).toUpperCase() !== 'TRUE').length;
+  }
+
   function contarPendientesPodio() {
     if (!workbook || !workbook.Sheets[SHEET_PODIO]) return 0;
     const data = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_PODIO], { defval: '' });
@@ -198,6 +242,7 @@ window.OfflineExcel = (function () {
       total += data.filter(r => String(r.sincronizado).toUpperCase() !== 'TRUE').length;
     }
     total += contarPendientesPodio();
+    total += contarPendientesPuntuaciones();
     return total;
   }
 
@@ -256,6 +301,34 @@ window.OfflineExcel = (function () {
       }
       workbook.Sheets[SHEET_PODIO] = XLSX.utils.json_to_sheet(dataP, { header: PODIO_COLS });
     }
+    // 3) Puntuaciones (calificación de jueces)
+    if (workbook && workbook.Sheets[SHEET_PUNT]) {
+      const dataQ = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_PUNT], { defval: '' });
+      for (let i = 0; i < dataQ.length; i++) {
+        const r = dataQ[i];
+        if (String(r.sincronizado).toUpperCase() === 'TRUE') continue;
+        try {
+          await fetch(gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'guardarPuntuacion',
+              id_participante: r.id_participante, nombre: r.nombre, robot: r.robot,
+              institucion: r.institucion, categoria: r.categoria,
+              juez_email: r.juez_email, juez_nombre: r.juez_nombre,
+              criterios: safeParse(r.criterios, {}), notas: safeParse(r.notas, {}),
+              total: r.total, timestamp: r.timestamp
+            })
+          });
+          r.sincronizado = 'TRUE';
+          ok++;
+        } catch (e) {
+          fail++;
+        }
+        if (onProgress) onProgress(i + 1, dataQ.length, 'puntuaciones');
+      }
+      workbook.Sheets[SHEET_PUNT] = XLSX.utils.json_to_sheet(dataQ, { header: PUNT_COLS });
+    }
     await _guardarDisco();
     return { ok, fail };
   }
@@ -270,6 +343,7 @@ window.OfflineExcel = (function () {
     soportado, crearNuevo, activar, importarParticipantesDesdeGAS,
     estaActivo, getParticipantes, guardarResultado, contarPendientes,
     guardarPodio, contarPendientesPodio,
+    guardarPuntuacion, contarPendientesPuntuaciones,
     sincronizar, desactivar
   };
 })();
