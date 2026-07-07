@@ -18,8 +18,10 @@
 window.OfflineExcel = (function () {
   const SHEET_PART = 'Participantes';
   const SHEET_RES = 'Resultados_Offline';
+  const SHEET_PODIO = 'Podio_Offline';
   const PART_COLS = ['id', 'nombre', 'robot', 'institucion', 'ciudad', 'categoria', 'correo', 'miembro2', 'aprobado'];
   const RES_COLS = ['participanteId', 'nombre', 'robot', 'institucion', 'categoria', 'tiempo', 'ronda', 'intento', 'ruta', 'fecha', 'sincronizado'];
+  const PODIO_COLS = ['id_participante', 'correo', 'categoria', 'institucion', 'tipo_certificado', 'evento', 'nombre', 'nombre_completo', 'fecha', 'sincronizado'];
 
   let fileHandle = null;
   let workbook = null;
@@ -40,6 +42,13 @@ window.OfflineExcel = (function () {
     if (!workbook.Sheets[SHEET_RES]) {
       workbook.Sheets[SHEET_RES] = XLSX.utils.aoa_to_sheet([RES_COLS]);
       workbook.SheetNames.push(SHEET_RES);
+    }
+  }
+
+  function _asegurarHojaPodio() {
+    if (!workbook.Sheets[SHEET_PODIO]) {
+      workbook.Sheets[SHEET_PODIO] = XLSX.utils.aoa_to_sheet([PODIO_COLS]);
+      workbook.SheetNames.push(SHEET_PODIO);
     }
   }
 
@@ -68,6 +77,7 @@ window.OfflineExcel = (function () {
       workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([PART_COLS]), SHEET_PART);
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([RES_COLS]), SHEET_RES);
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([PODIO_COLS]), SHEET_PODIO);
       activo = true;
       await _guardarDisco();
       return true;
@@ -91,6 +101,7 @@ window.OfflineExcel = (function () {
         workbook.SheetNames.push(SHEET_PART);
       }
       _asegurarHojaResultados();
+      _asegurarHojaPodio();
       activo = true;
       await _guardarDisco();
       return true;
@@ -150,39 +161,101 @@ window.OfflineExcel = (function () {
     return await _guardarDisco();
   }
 
-  function contarPendientes() {
-    if (!workbook || !workbook.Sheets[SHEET_RES]) return 0;
-    const data = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_RES], { defval: '' });
+  // Agrega N filas de podio (una por participante+tipo, incluye miembro2 si aplica)
+  // filas: [{id_participante, correo, categoria, institucion, tipo_certificado, evento, nombre, nombre_completo}, ...]
+  async function guardarPodio(filas) {
+    if (!activo || !workbook) return false;
+    _asegurarHojaPodio();
+    const existing = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_PODIO], { defval: '' });
+    const ahora = new Date().toISOString();
+    filas.forEach(f => existing.push({
+      id_participante: f.id_participante || '',
+      correo: f.correo || '',
+      categoria: f.categoria || '',
+      institucion: f.institucion || '',
+      tipo_certificado: f.tipo_certificado || '',
+      evento: f.evento || 'SucreBot 2026',
+      nombre: f.nombre || '',
+      nombre_completo: f.nombre_completo || '',
+      fecha: ahora,
+      sincronizado: 'FALSE'
+    }));
+    workbook.Sheets[SHEET_PODIO] = XLSX.utils.json_to_sheet(existing, { header: PODIO_COLS });
+    return await _guardarDisco();
+  }
+
+  function contarPendientesPodio() {
+    if (!workbook || !workbook.Sheets[SHEET_PODIO]) return 0;
+    const data = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_PODIO], { defval: '' });
     return data.filter(r => String(r.sincronizado).toUpperCase() !== 'TRUE').length;
   }
 
-  // Con internet de vuelta: sube todo lo pendiente a GAS, en orden
-  async function sincronizar(gasUrl, onProgress) {
-    if (!workbook || !workbook.Sheets[SHEET_RES]) return { ok: 0, fail: 0 };
-    const data = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_RES], { defval: '' });
-    let ok = 0, fail = 0;
-    for (let i = 0; i < data.length; i++) {
-      const r = data[i];
-      if (String(r.sincronizado).toUpperCase() === 'TRUE') continue;
-      try {
-        await fetch(gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'pushResultado',
-            participanteId: r.participanteId, nombre: r.nombre, robot: r.robot,
-            institucion: r.institucion, tiempo: r.tiempo, ronda: r.ronda,
-            intento: r.intento, ruta: r.ruta, fecha: r.fecha
-          })
-        });
-        r.sincronizado = 'TRUE';
-        ok++;
-      } catch (e) {
-        fail++;
-      }
-      if (onProgress) onProgress(i + 1, data.length);
+  function contarPendientes() {
+    if (!workbook) return 0;
+    let total = 0;
+    if (workbook.Sheets[SHEET_RES]) {
+      const data = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_RES], { defval: '' });
+      total += data.filter(r => String(r.sincronizado).toUpperCase() !== 'TRUE').length;
     }
-    workbook.Sheets[SHEET_RES] = XLSX.utils.json_to_sheet(data, { header: RES_COLS });
+    total += contarPendientesPodio();
+    return total;
+  }
+
+  // Con internet de vuelta: sube todo lo pendiente (resultados + podio) a GAS, en orden
+  async function sincronizar(gasUrl, onProgress) {
+    let ok = 0, fail = 0;
+    // 1) Resultados (tiempos)
+    if (workbook && workbook.Sheets[SHEET_RES]) {
+      const data = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_RES], { defval: '' });
+      for (let i = 0; i < data.length; i++) {
+        const r = data[i];
+        if (String(r.sincronizado).toUpperCase() === 'TRUE') continue;
+        try {
+          await fetch(gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'pushResultado',
+              participanteId: r.participanteId, nombre: r.nombre, robot: r.robot,
+              institucion: r.institucion, tiempo: r.tiempo, ronda: r.ronda,
+              intento: r.intento, ruta: r.ruta, fecha: r.fecha
+            })
+          });
+          r.sincronizado = 'TRUE';
+          ok++;
+        } catch (e) {
+          fail++;
+        }
+        if (onProgress) onProgress(i + 1, data.length, 'resultados');
+      }
+      workbook.Sheets[SHEET_RES] = XLSX.utils.json_to_sheet(data, { header: RES_COLS });
+    }
+    // 2) Podio / certificados
+    if (workbook && workbook.Sheets[SHEET_PODIO]) {
+      const dataP = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET_PODIO], { defval: '' });
+      for (let i = 0; i < dataP.length; i++) {
+        const r = dataP[i];
+        if (String(r.sincronizado).toUpperCase() === 'TRUE') continue;
+        try {
+          await fetch(gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'guardarCertificado',
+              id_participante: r.id_participante, correo: r.correo, categoria: r.categoria,
+              institucion: r.institucion, tipo_certificado: r.tipo_certificado,
+              evento: r.evento, nombre: r.nombre, nombre_completo: r.nombre_completo
+            })
+          });
+          r.sincronizado = 'TRUE';
+          ok++;
+        } catch (e) {
+          fail++;
+        }
+        if (onProgress) onProgress(i + 1, dataP.length, 'podio');
+      }
+      workbook.Sheets[SHEET_PODIO] = XLSX.utils.json_to_sheet(dataP, { header: PODIO_COLS });
+    }
     await _guardarDisco();
     return { ok, fail };
   }
@@ -196,6 +269,7 @@ window.OfflineExcel = (function () {
   return {
     soportado, crearNuevo, activar, importarParticipantesDesdeGAS,
     estaActivo, getParticipantes, guardarResultado, contarPendientes,
+    guardarPodio, contarPendientesPodio,
     sincronizar, desactivar
   };
 })();
