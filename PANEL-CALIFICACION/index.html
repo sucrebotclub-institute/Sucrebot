@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <script src="../shared/js/config.js"></script>
+  <script src="../shared/js/vendor/xlsx.full.min.js"></script>
+  <script src="../shared/js/offline-excel.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
@@ -362,6 +364,21 @@
 
   <!-- ══ PASO 1 ══ -->
   <div class="step-panel active" id="panel-1">
+    <div class="panel-card" style="margin-bottom:16px;">
+      <div class="panel-card-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <span>📂 Modo Offline (sin internet)</span>
+        <span id="offlineEstadoBadge" style="font-family:'Orbitron';font-size:.65rem;padding:4px 10px;border-radius:10px;background:rgba(148,163,184,.15);border:1px solid var(--border2);">DESACTIVADO</span>
+      </div>
+      <div style="font-size:.8rem;color:rgba(232,234,242,.7);margin-bottom:10px;">
+        Úsalo si no hay internet. Las calificaciones se guardan en un archivo Excel local y se sincronizan con Google Sheets cuando vuelva la conexión.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-secundario" onclick="prepararArchivoOffline()" style="font-size:.75rem;padding:8px 14px;">🆕 Crear archivo offline (hacer HOY, con internet)</button>
+        <button class="btn-secundario" onclick="activarModoOffline()" style="font-size:.75rem;padding:8px 14px;">📂 Abrir archivo offline existente</button>
+        <button class="btn-secundario" id="btnSincronizarOffline" onclick="sincronizarPendientesOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔄 Sincronizar pendientes (<span id="offlinePendientesCount">0</span>)</button>
+        <button class="btn-secundario" id="btnDesactivarOffline" onclick="desactivarModoOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔌 Volver a modo normal (online)</button>
+      </div>
+    </div>
     <div class="panel-card" style="margin-bottom:20px">
       <div class="panel-card-title">Seleccionar Categoría</div>
       <div class="cat-cards-grid">
@@ -1047,6 +1064,69 @@ function getCriteriosFase(cat, fase) {
 }
 
 // ── PASO 1 ────────────────────────────────────────────────────
+function actualizarBadgeOffline(){
+  const badge=document.getElementById('offlineEstadoBadge');
+  const btnSync=document.getElementById('btnSincronizarOffline');
+  const btnDesactivar=document.getElementById('btnDesactivarOffline');
+  const countEl=document.getElementById('offlinePendientesCount');
+  if(!badge)return;
+  if(window.OfflineExcel&&OfflineExcel.estaActivo()){
+    const n=OfflineExcel.contarPendientes();
+    badge.textContent='✅ ACTIVO'+(n>0?' · '+n+' pendiente(s)':'');
+    badge.style.background='rgba(34,197,94,.15)';badge.style.borderColor='rgba(34,197,94,.4)';badge.style.color='#22c55e';
+    if(btnSync){btnSync.style.display=n>0?'inline-block':'none';}
+    if(btnDesactivar){btnDesactivar.style.display='inline-block';}
+    if(countEl)countEl.textContent=n;
+  }else{
+    badge.textContent='DESACTIVADO';
+    badge.style.background='rgba(148,163,184,.15)';badge.style.borderColor='var(--border2)';badge.style.color='';
+    if(btnSync)btnSync.style.display='none';
+    if(btnDesactivar)btnDesactivar.style.display='none';
+  }
+}
+
+async function prepararArchivoOffline(){
+  if(!window.OfflineExcel||!OfflineExcel.soportado()){toast('❌ Requiere Chrome o Edge','error');return;}
+  toast('Elige dónde guardar el archivo...');
+  const creado=await OfflineExcel.crearNuevo('SucreBot_offline_calificacion_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  if(!creado){toast('❌ No se creó el archivo','error');return;}
+  toast('Importando participantes...');
+  try{
+    const n=await OfflineExcel.importarParticipantesDesdeGAS(GAS);
+    toast('✓ Archivo listo con '+n+' participantes','success');
+  }catch(e){toast('⚠️ Archivo creado pero no se pudo importar participantes','error');}
+  actualizarBadgeOffline();
+}
+
+async function activarModoOffline(){
+  if(!window.OfflineExcel||!OfflineExcel.soportado()){toast('❌ Requiere Chrome o Edge','error');return;}
+  toast('Selecciona el archivo offline...');
+  const ok=await OfflineExcel.activar();
+  if(ok){toast('✅ Modo offline activado','success');}else{toast('❌ No se pudo abrir el archivo','error');}
+  actualizarBadgeOffline();
+}
+
+async function sincronizarPendientesOffline(){
+  if(!window.OfflineExcel||!OfflineExcel.estaActivo())return;
+  const n=OfflineExcel.contarPendientes();
+  if(n===0){toast('No hay pendientes');return;}
+  toast('Sincronizando '+n+' registro(s)...');
+  const r=await OfflineExcel.sincronizar(GAS,(i,total,tipo)=>{toast('Sincronizando '+tipo+' '+i+'/'+total+'...');});
+  toast('✓ '+r.ok+' sincronizado(s)'+(r.fail>0?' · ⚠️ '+r.fail+' fallaron':''),r.fail>0?'error':'success');
+  actualizarBadgeOffline();
+}
+
+function desactivarModoOffline(){
+  if(!window.OfflineExcel||!OfflineExcel.estaActivo())return;
+  const n=OfflineExcel.contarPendientes();
+  if(n>0){
+    if(!confirm('⚠️ Todavía hay '+n+' registro(s) sin sincronizar.\n\nSi desactivas ahora, quedarán guardados en el Excel local pero el sistema dejará de mostrarlos como pendientes hasta que vuelvas a abrir ese archivo.\n\n¿Seguro que quieres desactivar el modo offline?'))return;
+  }
+  OfflineExcel.desactivar();
+  actualizarBadgeOffline();
+  toast('✅ Modo offline desactivado — usando conexión normal','success');
+}
+
 async function seleccionarCategoria(cat) {
   if (state.categoria && state.categoria !== cat) {
     gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] }).catch(() => {});
@@ -1079,18 +1159,29 @@ async function seleccionarCategoria(cat) {
   document.getElementById('avisoSinParticipantes').style.display = 'none';
 
   loading(true, 'CARGANDO...');
-  try {
-    const res = await gasGet({ action: 'getCriterios', categoria: cat });
-    const critConfig = cat === 'lk'
-      ? LK_CRITERIOS_F1
-      : ((res.ok && res.criterios?.length) ? res.criterios : DEFAULTS_CRITERIOS[cat]);
-    renderCriteriosConfig(critConfig);
-  } catch(e) { renderCriteriosConfig(cat === 'lk' ? LK_CRITERIOS_F1 : DEFAULTS_CRITERIOS[cat]); }
+  const modoOffline = window.OfflineExcel && OfflineExcel.estaActivo();
+
+  if (modoOffline) {
+    renderCriteriosConfig(cat === 'lk' ? LK_CRITERIOS_F1 : DEFAULTS_CRITERIOS[cat]);
+  } else {
+    try {
+      const res = await gasGet({ action: 'getCriterios', categoria: cat });
+      const critConfig = cat === 'lk'
+        ? LK_CRITERIOS_F1
+        : ((res.ok && res.criterios?.length) ? res.criterios : DEFAULTS_CRITERIOS[cat]);
+      renderCriteriosConfig(critConfig);
+    } catch(e) { renderCriteriosConfig(cat === 'lk' ? LK_CRITERIOS_F1 : DEFAULTS_CRITERIOS[cat]); }
+  }
 
   try {
-    const res2 = await gasGet({ action: 'getParticipantes' });
-    const todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
-    state.participantes = todos.filter(p => p.categoria === CAT_NOMBRES[cat] && p.aprobado === 'APROBADO');
+    let todos;
+    if (modoOffline) {
+      todos = OfflineExcel.getParticipantes(CAT_NOMBRES[cat]);
+    } else {
+      const res2 = await gasGet({ action: 'getParticipantes' });
+      todos = Array.isArray(res2) ? res2 : (res2.participantes || []);
+    }
+    state.participantes = modoOffline ? todos : todos.filter(p => p.categoria === CAT_NOMBRES[cat] && p.aprobado === 'APROBADO');
     document.getElementById('countAprobados').textContent = state.participantes.length;
     document.getElementById('countCalificados').textContent = 0;
     if (!state.participantes.length) {
@@ -1105,7 +1196,9 @@ async function seleccionarCategoria(cat) {
     }
   } catch(e) { toast('Error cargando participantes', 'error'); }
 
-  try { await gasPost({ action: 'bloquearCategoria', categoria: CAT_NOMBRES[cat], usuario: 'panel-calificacion' }); } catch(e) {}
+  if (!modoOffline) {
+    try { await gasPost({ action: 'bloquearCategoria', categoria: CAT_NOMBRES[cat], usuario: 'panel-calificacion' }); } catch(e) {}
+  }
 
   localStorage.setItem('panel_cal_sesion', JSON.stringify({ categoria: cat, criterios: null, paso: 1 }));
   loading(false);
@@ -1642,20 +1735,28 @@ async function guardarCalificacion() {
   const juezNombre = juezInfo ? juezInfo.nombre : 'Operador';
 
   loading(true, 'GUARDANDO...');
+  const modoOffline = window.OfflineExcel && OfflineExcel.estaActivo();
   try {
     const criteriosJson = {};
     state.criterios.forEach((c, i) => { criteriosJson[`c${i}`] = c.nombre; });
     if (esLk && faseActual === 2) criteriosJson['f2'] = LK_CRITERIO_F2.nombre;
 
-    const res = await gasPost({
-      action: 'guardarPuntuacion',
+    const payload = {
       id_participante: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
       institucion: p.institucion || '', categoria: cat,
       juez_email: juezEmail, juez_nombre: juezNombre,
       criterios: criteriosJson, notas: notasJson, total: totalFinal,
       timestamp: new Date().toISOString()
-    });
-    if (res.ok) {
+    };
+    let ok, errorMsg;
+    if (modoOffline) {
+      ok = await OfflineExcel.guardarPuntuacion(payload);
+      if (!ok) errorMsg = 'No se pudo escribir el Excel local';
+    } else {
+      const res = await gasPost({ action: 'guardarPuntuacion', ...payload });
+      ok = res.ok; errorMsg = res.error || 'desconocido';
+    }
+    if (ok) {
       // Para dev: acumular jueces sin sobreescribir calificaciones de otros jueces
       const calPrevState = state.calificaciones[id] || {};
       const juecesAcum = calPrevState.jueces ? [...calPrevState.jueces] : [];
@@ -1677,10 +1778,11 @@ async function guardarCalificacion() {
         state.calificacionesPorJuez[id][juezEmail] = { notas_json: JSON.stringify(notasJson), total: totalFinal };
       }
       state.rondaActual[id] = ronda + 1;
-      toast('✅ Calificación guardada', 'success');
+      toast(modoOffline ? '💾 Calificación guardada en Excel local' : '✅ Calificación guardada', 'success');
+      if (modoOffline) actualizarBadgeOffline();
       renderListaRobots();
       seleccionarRobot(id);
-    } else { toast('Error: ' + (res.error || 'desconocido'), 'error'); }
+    } else { toast('Error: ' + errorMsg, 'error'); }
   } catch(e) { toast('Error de red', 'error'); }
   loading(false);
 }
@@ -1988,6 +2090,10 @@ async function verRankingDesdePaso1() {
 }
 
 async function guardarPodio() {
+  if (window.OfflineExcel && OfflineExcel.estaActivo()) {
+    alert('⚠️ No se puede guardar el podio sin internet.\n\nEl ranking final de esta categoría necesita combinar las calificaciones de los '+(CATS_MULTI_JUEZ[state.categoria]?.length||3)+' jueces, que pueden estar en dispositivos distintos. Eso solo se puede calcular correctamente en el servidor.\n\nPrimero sincroniza este dispositivo (y todos los demás jueces) cuando vuelva el internet, y luego guarda el podio en modo normal.');
+    return;
+  }
   if (!state.rankingData.length) { toast('No hay datos para guardar', 'error'); return; }
   const total = state.rankingData.length;
   const catNombre = CAT_NOMBRES[state.categoria];
@@ -2273,16 +2379,24 @@ async function guardarCalificacionFinal() {
   if (!valido) { toast('Revisa los valores', 'error'); return; }
 
   loading(true, 'GUARDANDO...');
+  const modoOffline = window.OfflineExcel && OfflineExcel.estaActivo();
   try {
-    const res = await gasPost({
-      action: 'guardarPuntuacion',
+    const payload = {
       id_participante: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
       institucion: p.institucion || '', categoria: 'bai_final',
       juez_email: juezActivo.email, juez_nombre: juezActivo.nombre,
       criterios: {}, notas: notasJson, total: suma,
       timestamp: new Date().toISOString()
-    });
-    if (res.ok) {
+    };
+    let ok, errorMsg;
+    if (modoOffline) {
+      ok = await OfflineExcel.guardarPuntuacion(payload);
+      if (!ok) errorMsg = 'No se pudo escribir el Excel local';
+    } else {
+      const res = await gasPost({ action: 'guardarPuntuacion', ...payload });
+      ok = res.ok; errorMsg = res.error || 'desconocido';
+    }
+    if (ok) {
       if (!state.calificacionesFinal) state.calificacionesFinal = {};
       if (!state.calificacionesFinal[id]) state.calificacionesFinal[id] = { jueces: [] };
       const jIdx = state.calificacionesFinal[id].jueces.findIndex(j => j.email === juezActivo.email);
@@ -2292,11 +2406,12 @@ async function guardarCalificacionFinal() {
       if (!state.calificacionesFinalPorJuez) state.calificacionesFinalPorJuez = {};
       if (!state.calificacionesFinalPorJuez[id]) state.calificacionesFinalPorJuez[id] = {};
       state.calificacionesFinalPorJuez[id][juezActivo.email] = { notas_json: JSON.stringify(notasJson), total: suma };
-      toast('✅ Calificación final guardada', 'success');
+      toast(modoOffline ? '💾 Calificación final guardada en Excel local' : '✅ Calificación final guardada', 'success');
+      if (modoOffline) actualizarBadgeOffline();
       renderJuezBarFinal();
       renderListaFinal(state.participantes.filter(pp => state.baiFinalistas.includes(pp.id)));
       seleccionarRobotFinal(id);
-    } else { toast('Error: ' + (res.error || 'desconocido'), 'error'); }
+    } else { toast('Error: ' + errorMsg, 'error'); }
   } catch(e) { toast('Error de red', 'error'); }
   loading(false);
 }
@@ -2357,6 +2472,10 @@ async function cargarRankingFinal() {
 }
 
 async function guardarPodioFinal() {
+  if (window.OfflineExcel && OfflineExcel.estaActivo()) {
+    alert('⚠️ No se puede guardar el podio final sin internet.\n\nEl ranking de la ronda final de Bailarín necesita combinar las calificaciones de los 3 jueces, que están en dispositivos distintos. Eso solo se puede calcular correctamente en el servidor.\n\nPrimero sincroniza este dispositivo (y los otros 2 jueces) cuando vuelva el internet, y luego guarda el podio en modo normal.');
+    return;
+  }
   loading(true, 'CARGANDO RANKING FINAL...');
   try {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
@@ -2444,6 +2563,7 @@ async function exportarExcelFinal() {
 
 // ── INIT ──────────────────────────────────────────────────────
 document.addEventListener('componentsLoaded', () => {
+  actualizarBadgeOffline();
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
   loading(false);
