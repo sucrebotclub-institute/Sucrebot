@@ -268,6 +268,7 @@
         <button class="btn-secundario" onclick="prepararArchivoOffline()" style="font-size:.75rem;padding:8px 14px;">🆕 Crear archivo offline (hacer HOY, con internet)</button>
         <button class="btn-secundario" onclick="activarModoOffline()" style="font-size:.75rem;padding:8px 14px;">📂 Abrir archivo offline existente</button>
         <button class="btn-secundario" id="btnSincronizarOffline" onclick="sincronizarPendientesOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔄 Sincronizar pendientes (<span id="offlinePendientesCount">0</span>)</button>
+        <button class="btn-secundario" id="btnDesactivarOffline" onclick="desactivarModoOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔌 Volver a modo normal (online)</button>
       </div>
     </div>
 
@@ -416,6 +417,7 @@ function setStep(n){[1,2,3].forEach(i=>{document.getElementById('step-dot-'+i).c
 function actualizarBadgeOffline(){
   const badge=document.getElementById('offlineEstadoBadge');
   const btnSync=document.getElementById('btnSincronizarOffline');
+  const btnDesactivar=document.getElementById('btnDesactivarOffline');
   const countEl=document.getElementById('offlinePendientesCount');
   if(!badge)return;
   if(window.OfflineExcel&&OfflineExcel.estaActivo()){
@@ -423,12 +425,25 @@ function actualizarBadgeOffline(){
     badge.textContent='✅ ACTIVO'+(n>0?' · '+n+' pendiente(s)':'');
     badge.style.background='rgba(34,197,94,.15)';badge.style.borderColor='rgba(34,197,94,.4)';badge.style.color='#22c55e';
     if(btnSync){btnSync.style.display=n>0?'inline-block':'none';}
+    if(btnDesactivar){btnDesactivar.style.display='inline-block';}
     if(countEl)countEl.textContent=n;
   }else{
     badge.textContent='DESACTIVADO';
     badge.style.background='rgba(148,163,184,.15)';badge.style.borderColor='var(--border2)';badge.style.color='';
     if(btnSync)btnSync.style.display='none';
+    if(btnDesactivar)btnDesactivar.style.display='none';
   }
+}
+
+function desactivarModoOffline(){
+  if(!window.OfflineExcel||!OfflineExcel.estaActivo())return;
+  const n=OfflineExcel.contarPendientes();
+  if(n>0){
+    if(!confirm('⚠️ Todavía hay '+n+' resultado(s)/podio(s) sin sincronizar.\n\nSi desactivas ahora, quedarán guardados en el Excel local pero el sistema dejará de mostrarlos como pendientes hasta que vuelvas a abrir ese archivo.\n\n¿Seguro que quieres desactivar el modo offline?'))return;
+  }
+  OfflineExcel.desactivar();
+  actualizarBadgeOffline();
+  showToast('✅ Modo offline desactivado — usando conexión normal');
 }
 
 async function prepararArchivoOffline(){
