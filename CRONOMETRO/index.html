@@ -657,9 +657,10 @@ function detenerCrono(){
 // cronómetro y se guardó), Reiniciar primero pide confirmación y,
 // de aceptar, deshace ese intento (lo borra del log local, del
 // ranking visual y de la hoja "resultados" en GAS) para poder
-// repetirlo desde cero. Además, para Cubo Rubik (pulsadores),
-// reenvía 'R' al Arduino para sacarlo del estado EST_ESPERAR_R
-// en el que queda trabado tras cada STOP.
+// repetirlo desde cero. Además, para Cubo Rubik (pulsadores) y
+// Seguidor de línea (ESP32), reenvía 'R' para rearmar el sensor:
+// ambos quedan en un estado "no escucha" (EST_ESPERAR_R / listo=false)
+// tras cada STOP, y no vuelven a detectar nada hasta recibir 'R' de nuevo.
 async function reiniciarCrono(){
   const idxLog = intentosLog.findIndex(l => l.intento === intentoActual && l.ronda === rondaActual);
   if (idxLog >= 0 && participanteActual) {
@@ -688,7 +689,7 @@ async function reiniciarCrono(){
   if(cronoInterval)clearInterval(cronoInterval);cronoInterval=null;cronoInicio=null;
   document.getElementById('cronometro').textContent='00:00:00';document.getElementById('crono-display').className='crono-display';
   document.getElementById('crono-status').textContent=participanteActual?'LISTO · Intento '+intentoActual+' de '+maxIntentos:'LISTO';document.getElementById('btn-dnf').style.display='none';
-  if(CATS_PULSADOR.includes(categoriaActual))enviarSerial('R');
+  if(CATS_PULSADOR.includes(categoriaActual)||CATS_SEG.includes(categoriaActual))enviarSerial('R');
 }
 
 // Quita un tiempo específico del array `tiempos` de un participante en
