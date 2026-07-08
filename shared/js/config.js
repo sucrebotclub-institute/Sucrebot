@@ -27,7 +27,7 @@ const CONFIG = {
     'crivera@tecnologicosucre.edu.ec', 
     'aguano@tecnologicosucre.edu.ec', 
     'aperez@tecnologicosucre.edu.ec', 
-    'vquasquer@tecnologicosucre.edu.ec', 
+    'vcuasquer@tecnologicosucre.edu.ec', 
     'vduran@tecnologicosucre.edu.ec', 
     'dgodoy@tecnologicosucre.edu.ec',
     'isimbana@tecnologicosucre.edu.ec',
