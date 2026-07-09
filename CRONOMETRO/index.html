@@ -230,9 +230,19 @@
     body.fs-activo .sticky-header { display:none !important; }
     body.fs-activo main { padding-top:14px !important; }
     #fsHint { text-align:center; font-family:var(--font-mono); font-size:.65rem; color:#94a3b8; letter-spacing:.08em; margin:0 0 4px; }
+    .loading-overlay { display:none; position:fixed; inset:0; background:rgba(14,18,30,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; z-index:9000; flex-direction:column; gap:16px; }
+    .loading-overlay.show { display:flex; }
+    .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--cyan); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-txt { font-family:'Orbitron'; font-size:.7rem; color:var(--cyan); letter-spacing:2px; }
   </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-txt" id="loadingTxt">CARGANDO...</div>
+</div>
 
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
@@ -479,6 +489,8 @@ async function sincronizarPendientesOffline(){
   actualizarBadgeOffline();
 }
 
+function loading(show, txt='CARGANDO...') { document.getElementById('loadingOverlay').classList.toggle('show', show); document.getElementById('loadingTxt').textContent = txt; }
+
 let cargandoCategoria=false;
 async function elegirCategoria(cat,ev){
   if(cargandoCategoria)return; // evita que clics repetidos disparen varias cargas a la vez
@@ -491,7 +503,7 @@ async function elegirCategoria(cat,ev){
 
   const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
 
-  showToast('Verificando categoría...');
+  loading(true,'Verificando categoría...');
 
   try{
     if(!modoOffline){
@@ -500,7 +512,7 @@ async function elegirCategoria(cat,ev){
       if(bloqueada&&bloqueada.usuario!==userData.email){showToast('⚠️ Categoría en uso por '+bloqueada.usuario,true);ev.currentTarget.classList.remove('selected');return;}
     }
 
-    showToast(modoOffline?'Cargando participantes (offline)...':'Cargando participantes...');
+    loading(true,modoOffline?'Cargando participantes (offline)...':'Cargando participantes...');
     let lista;
     if(modoOffline){
       lista=OfflineExcel.getParticipantes(cat);
@@ -516,6 +528,7 @@ async function elegirCategoria(cat,ev){
     renderSeleccion();setStep(2);
   }catch(e){showToast('❌ Error cargando participantes',true);console.error(e);}
   finally{
+    loading(false);
     cargandoCategoria=false;
     if(grid)grid.classList.remove('cargando');
   }
