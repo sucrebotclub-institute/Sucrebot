@@ -41,6 +41,7 @@
     .pb-card-title{font-family:'Orbitron';font-size:.75rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
     .pb-card-title::before{content:'';width:3px;height:16px;background:var(--cyan);border-radius:2px}
     .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .cat-grid.cargando{pointer-events:none;opacity:.55}
     @media(max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:500px){.cat-grid{grid-template-columns:1fr}}
     .cat-btn{background:var(--panel2);border:2px solid var(--border2);border-radius:12px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;color:var(--text)}
@@ -773,7 +774,12 @@ document.getElementById('modalConfirmBtn').onclick=()=>{ const cb=_modalCb; cerr
 // ════════════════════════════════════════
 //  PASO 1 — SELECCIONAR CATEGORÍA
 // ════════════════════════════════════════
+let cargandoCategoria=false;
 async function seleccionarCategoria(cat) {
+  if(cargandoCategoria)return; // evita que clics repetidos disparen varias cargas a la vez
+  cargandoCategoria=true;
+  const grid=document.querySelector('.cat-grid');
+  if(grid)grid.classList.add('cargando');
   state.categoria=cat; state.tipo=CAT_INFO[cat].tipo;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
   event.currentTarget.classList.add('selected');
@@ -805,6 +811,8 @@ async function seleccionarCategoria(cat) {
     }
   } catch(e) { toast('Error cargando participantes','error'); console.error(e); }
   loading(false);
+  cargandoCategoria=false;
+  if(grid)grid.classList.remove('cargando');
 }
 
 // ── No-soccer: intentar cargar bracket existente ──
