@@ -263,6 +263,63 @@
   </style>
 </head>
 <body>
+  <style>
+    .resultados-gate-overlay {
+      position: fixed; inset: 0; z-index: 100000;
+      background: linear-gradient(135deg, #0e2a5a 0%, #1a5ca8 55%, #0e2a5a 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .resultados-gate-card {
+      max-width: 460px; text-align: center;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(91,200,240,0.25);
+      border-top: 3px solid #5bc8f0; border-radius: 16px; padding: 44px 34px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+    .resultados-gate-icon { font-size: 48px; margin-bottom: 18px; }
+    .resultados-gate-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 0.05em;
+      color: #fff; margin-bottom: 14px;
+    }
+    .resultados-gate-text {
+      font-family: 'Exo 2', sans-serif; font-size: 15px; line-height: 1.7;
+      color: rgba(255,255,255,0.85); margin-bottom: 10px;
+    }
+    .resultados-gate-tag {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
+      background: rgba(91,200,240,0.1); border: 1px solid rgba(91,200,240,0.3);
+      color: #5bc8f0; font-family: 'Orbitron', monospace; font-size: 9px;
+      font-weight: 700; letter-spacing: 2.5px; padding: 6px 16px; border-radius: 20px;
+      text-transform: uppercase;
+    }
+  </style>
+  <script>
+    // ── Control de acceso público a Resultados ──────────────────────────
+    // Cambiar a "true" el día antes del evento (o cuando Raku lo indique).
+    const RESULTADOS_ABIERTO_AL_PUBLICO = false;
+    const RESULTADOS_STAFF_TOKEN = 'SucreBot2026-CMI-Sucre-x7k9mQ';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const esStaff = localStorage.getItem('sucrebot_staff_token') === RESULTADOS_STAFF_TOKEN;
+      if (RESULTADOS_ABIERTO_AL_PUBLICO || esStaff) return;
+
+      const main = document.querySelector('main.screen');
+      if (main) main.style.display = 'none';
+
+      const overlay = document.createElement('div');
+      overlay.className = 'resultados-gate-overlay';
+      overlay.innerHTML =
+        '<div class="resultados-gate-card">' +
+          '<div class="resultados-gate-icon">🏆</div>' +
+          '<div class="resultados-gate-title">Resultados en Vivo</div>' +
+          '<p class="resultados-gate-text">Esta sección estará disponible próximamente, poco antes del evento.</p>' +
+          '<p class="resultados-gate-text">¡Vuelve pronto para seguir la competencia en tiempo real!</p>' +
+          '<div class="resultados-gate-tag">📅 SucreBot 2026 — 16 de julio</div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+    });
+  </script>
+
   <div class="ausp-splash-overlay" id="auspSplashOverlay">
     <div class="ausp-splash-tag">Presentado por</div>
     <div class="ausp-splash-logo-box" id="auspSplashLogoBox"></div>
