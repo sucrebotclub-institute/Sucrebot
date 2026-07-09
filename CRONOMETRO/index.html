@@ -57,6 +57,7 @@
     .pb-card-title { font-family:'Orbitron'; font-size:.75rem; letter-spacing:2px; color:var(--text); text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
     .pb-card-title::before { content:''; width:3px; height:16px; background:var(--cyan); border-radius:2px; }
     .cat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .cat-grid.cargando { pointer-events:none; opacity:.55; }
     @media(max-width:900px){ .cat-grid { grid-template-columns:repeat(2,1fr); } }
     @media(max-width:500px){ .cat-grid { grid-template-columns:1fr; } }
     .cat-btn { background:var(--panel2); border:2px solid var(--border2); border-radius:12px; padding:20px 14px; text-align:center; cursor:pointer; transition:all .2s; color:var(--text); }
@@ -275,7 +276,7 @@
 
     <div class="pb-card">
       <div class="pb-card-title">Seleccionar Categoría</div>
-      <div class="cat-grid">
+      <div class="cat-grid" id="catGrid">
         
         <div class="cat-btn" onclick="elegirCategoria('Trepador (Amateur)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Amateur</div><div class="cat-btn-desc">Sensor E18-D80NK</div><div class="cat-btn-tipo">🔌 SENSOR</div></div>
         <div class="cat-btn" onclick="elegirCategoria('Trepador (Pro)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Pro</div><div class="cat-btn-desc">Sensor E18-D80NK</div><div class="cat-btn-tipo">🔌 SENSOR</div></div>
@@ -478,7 +479,13 @@ async function sincronizarPendientesOffline(){
   actualizarBadgeOffline();
 }
 
+let cargandoCategoria=false;
 async function elegirCategoria(cat,ev){
+  if(cargandoCategoria)return; // evita que clics repetidos disparen varias cargas a la vez
+  cargandoCategoria=true;
+  const grid=document.getElementById('catGrid');
+  if(grid)grid.classList.add('cargando');
+
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
   ev.currentTarget.classList.add('selected');
 
@@ -486,14 +493,14 @@ async function elegirCategoria(cat,ev){
 
   showToast('Verificando categoría...');
 
-  if(!modoOffline){
-    const bloqueada=await verificarBloqueo(cat);
-    const userData=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');
-    if(bloqueada&&bloqueada.usuario!==userData.email){showToast('⚠️ Categoría en uso por '+bloqueada.usuario,true);ev.currentTarget.classList.remove('selected');return;}
-  }
-
-  showToast(modoOffline?'Cargando participantes (offline)...':'Cargando participantes...');
   try{
+    if(!modoOffline){
+      const bloqueada=await verificarBloqueo(cat);
+      const userData=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');
+      if(bloqueada&&bloqueada.usuario!==userData.email){showToast('⚠️ Categoría en uso por '+bloqueada.usuario,true);ev.currentTarget.classList.remove('selected');return;}
+    }
+
+    showToast(modoOffline?'Cargando participantes (offline)...':'Cargando participantes...');
     let lista;
     if(modoOffline){
       lista=OfflineExcel.getParticipantes(cat);
@@ -508,6 +515,10 @@ async function elegirCategoria(cat,ev){
     document.getElementById('selTotal').textContent=presentes.length;
     renderSeleccion();setStep(2);
   }catch(e){showToast('❌ Error cargando participantes',true);console.error(e);}
+  finally{
+    cargandoCategoria=false;
+    if(grid)grid.classList.remove('cargando');
+  }
 }
 
 function renderSeleccion(){
