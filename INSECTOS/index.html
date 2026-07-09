@@ -157,9 +157,19 @@
     body.fs-activo [data-include*="footer"]{display:none !important}
     body.fs-activo main{padding-top:14px !important}
     #fsHint{text-align:center;font-family:'Orbitron';font-size:.65rem;color:var(--muted);letter-spacing:.08em;margin:0 0 4px}
+    .loading-overlay{display:none;position:fixed;inset:0;background:rgba(14,18,30,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:9000;flex-direction:column;gap:16px}
+    .loading-overlay.show{display:flex}
+    .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-txt{font-family:'Orbitron';font-size:.7rem;color:var(--cyan);letter-spacing:2px}
   </style>
 </head>
 <body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-txt" id="loadingTxt">CARGANDO...</div>
+  </div>
+
   <div class="sticky-header">
     <div data-include="../shared/components/topbar.html"></div>
     <div data-include="../shared/components/header.html"></div>
@@ -502,7 +512,10 @@
     alert('✅ Modo offline desactivado');
   }
 
+  function loading(show, txt='CARGANDO...') { document.getElementById('loadingOverlay').classList.toggle('show', show); document.getElementById('loadingTxt').textContent = txt; }
+
   async function cargarParticipantes() {
+    loading(true, 'Cargando participantes...');
     try {
       const modoOffline = window.OfflineExcel && OfflineExcel.estaActivo();
       let todos;
@@ -517,6 +530,8 @@
       renderLista();
     } catch (e) {
       document.getElementById('listaParticipantes').innerHTML = `<div class="empty-state" style="color:var(--red)">Error cargando participantes: ${e.message}</div>`;
+    } finally {
+      loading(false);
     }
   }
 
