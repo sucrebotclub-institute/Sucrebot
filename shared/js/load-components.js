@@ -163,3 +163,98 @@ if (document.readyState === 'loading') {
 } else {
   loadComponents();
 }
+
+// ── FUNCIÓN: Banner flotante "Último día de inscripciones" ──────
+function mostrarBannerUltimoDia() {
+  var STORAGE_KEY = 'sucrebot_banner_cierre_cerrado';
+  var CIERRE = new Date(2026, 6, 10, 23, 59, 59); // 10 jul 2026, 23:59:59
+
+  if (new Date() > CIERRE) return; // ya pasó la fecha, no mostrar nunca más
+  if (sessionStorage.getItem(STORAGE_KEY) === '1') return; // cerrado en esta sesión
+
+  // Asegurar fuentes (por si la página no las cargó en <head>)
+  if (!document.querySelector('link[href*="Orbitron"]')) {
+    var fontLink = document.createElement('link');
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600;700&display=swap';
+    document.head.appendChild(fontLink);
+  }
+
+  var style = document.createElement('style');
+  style.textContent = `
+    #sbBannerCierre {
+      position: fixed; bottom: 20px; right: 20px; z-index: 99998;
+      width: 300px; max-width: calc(100vw - 24px);
+      background: linear-gradient(160deg, #14213f 0%, #0e2a5a 60%, #0c1a38 100%);
+      border: 1px solid rgba(251,191,36,0.35); border-top: 3px solid #fbbf24;
+      border-radius: 14px; padding: 16px 18px 16px 16px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      font-family: 'Exo 2', sans-serif;
+      animation: sbBannerIn .5s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes sbBannerIn { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    #sbBannerCierre .sb-close {
+      position: absolute; top: 8px; right: 10px; background: none; border: none;
+      color: rgba(255,255,255,0.55); font-size: 18px; line-height: 1; cursor: pointer; padding: 4px;
+    }
+    #sbBannerCierre .sb-close:hover { color: #fff; }
+    #sbBannerCierre .sb-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+    #sbBannerCierre .sb-icon {
+      flex-shrink: 0; width: 34px; height: 34px; border-radius: 8px;
+      background: rgba(251,191,36,0.15); display: flex; align-items: center; justify-content: center;
+    }
+    #sbBannerCierre .sb-icon svg { width: 18px; height: 18px; stroke: #fbbf24; }
+    #sbBannerCierre .sb-tag {
+      font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; letter-spacing: 2px;
+      color: #fbbf24; text-transform: uppercase; margin-bottom: 4px;
+    }
+    #sbBannerCierre .sb-title {
+      font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 900; color: #fff;
+      letter-spacing: 0.5px; line-height: 1.2;
+    }
+    #sbBannerCierre .sb-desc {
+      font-size: 12.5px; color: rgba(255,255,255,0.75); line-height: 1.5; margin-bottom: 14px;
+    }
+    #sbBannerCierre .sb-btn {
+      display: block; text-align: center; background: linear-gradient(135deg, #1a5ca8, #2a8ec8);
+      color: #fff; text-decoration: none; padding: 10px; border-radius: 6px;
+      font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; transition: box-shadow .2s, transform .15s;
+    }
+    #sbBannerCierre .sb-btn:hover { box-shadow: 0 6px 16px rgba(42,142,200,0.4); transform: translateY(-1px); }
+    @media (max-width: 480px) {
+      #sbBannerCierre { left: 12px; right: 12px; bottom: 12px; width: auto; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  var banner = document.createElement('div');
+  banner.id = 'sbBannerCierre';
+  banner.innerHTML = `
+    <button class="sb-close" aria-label="Cerrar aviso">✕</button>
+    <div class="sb-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div>
+        <div class="sb-tag">Último día</div>
+        <div class="sb-title">Inscripciones cierran mañana</div>
+      </div>
+    </div>
+    <div class="sb-desc">El 10 de julio es el último día para inscribirte en SucreBot 2026. Después de esa fecha no se aceptarán más registros.</div>
+    <a class="sb-btn" href="https://sucrebotclub-institute.github.io/Sucrebot/REGISTRO/">Inscribirme ahora →</a>
+  `;
+  document.body.appendChild(banner);
+
+  banner.querySelector('.sb-close').addEventListener('click', function() {
+    sessionStorage.setItem(STORAGE_KEY, '1');
+    banner.remove();
+  });
+}
+
+// ── INICIALIZACIÓN independiente (no espera Google SDK ni componentes) ──
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', mostrarBannerUltimoDia);
+} else {
+  mostrarBannerUltimoDia();
+}
