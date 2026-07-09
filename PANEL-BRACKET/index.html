@@ -99,6 +99,11 @@
     .btn-jugar-soccer:hover{background:#27ae60}
     /* ── Soccer: grupos ── */
     .soc-grupos-wrap{display:flex;flex-direction:column;gap:28px}
+    .soc-grupo-filtro{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:20px}
+    .soc-grupo-filtro-label{font-family:'Orbitron';font-size:.65rem;letter-spacing:1.5px;color:var(--muted);margin-right:4px}
+    .soc-filtro-btn{font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;padding:7px 14px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;transition:all .2s}
+    .soc-filtro-btn:hover{border-color:var(--cyan)}
+    .soc-filtro-btn.active{background:var(--cyan);border-color:var(--cyan);color:#04263f;font-weight:700}
     .soc-grupo{background:var(--panel2);border:1px solid var(--border2);border-radius:14px;padding:18px}
     .soc-grupo-titulo{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
     .soc-grupo-titulo::before{content:'';width:3px;height:14px;background:var(--cyan);border-radius:2px}
@@ -714,6 +719,13 @@
         </div>
         <!-- Soccer -->
         <div id="soccer-torneo-wrap" style="display:none;">
+          <div id="socGrupoFiltro" class="soc-grupo-filtro" style="display:none;">
+            <span class="soc-grupo-filtro-label">👁 Ver solo:</span>
+            <button class="soc-filtro-btn" data-g="TODOS" onclick="filtrarGrupoSoccer('TODOS')">Todos</button>
+            <button class="soc-filtro-btn" data-g="GRUPO_A" onclick="filtrarGrupoSoccer('GRUPO_A')">🔵 Grupo A</button>
+            <button class="soc-filtro-btn" data-g="GRUPO_B" onclick="filtrarGrupoSoccer('GRUPO_B')">🟢 Grupo B</button>
+            <button class="soc-filtro-btn" data-g="GRUPO_C" onclick="filtrarGrupoSoccer('GRUPO_C')">🟠 Grupo C</button>
+          </div>
           <div id="soccer-torneo-content"></div>
         </div>
         <div id="podio-display"></div>
@@ -1029,6 +1041,13 @@ function resetearBracket() {
 // ════════════════════════════════════════
 //  SOCCER — RENDERIZADO DE TORNEO
 // ════════════════════════════════════════
+const SOC_GRUPO_FILTRO_KEY='panel_bracket_soc_grupo_filtro';
+
+function filtrarGrupoSoccer(g){
+  localStorage.setItem(SOC_GRUPO_FILTRO_KEY, g);
+  renderTorneoSoccer();
+}
+
 function renderTorneoSoccer() {
   mostrarWrap(true);
   const torneo=state.torneoSoc;
@@ -1043,11 +1062,34 @@ function renderTorneoSoccer() {
   document.getElementById('btnPodio').style.display=podioDisponible?'inline-flex':'none';
   document.getElementById('btnVerPodio').style.display=podioDisponible?'inline-flex':'none';
 
+  // ── Filtro de grupo por dispositivo (para repartir juezes/pistas) ──
+  const gruposConEquipos=['GRUPO_A','GRUPO_B','GRUPO_C'].filter(g=>partidos.some(p=>p.grupo===g));
+  const filtroBar=document.getElementById('socGrupoFiltro');
+  if(gruposConEquipos.length>1){
+    filtroBar.style.display='flex';
+    filtroBar.querySelectorAll('.soc-filtro-btn').forEach(btn=>{
+      const g=btn.getAttribute('data-g');
+      btn.style.display=(g==='TODOS'||gruposConEquipos.includes(g))?'inline-block':'none';
+    });
+    let filtroActivo=localStorage.getItem(SOC_GRUPO_FILTRO_KEY)||'TODOS';
+    if(filtroActivo!=='TODOS'&&!gruposConEquipos.includes(filtroActivo))filtroActivo='TODOS';
+    filtroBar.querySelectorAll('.soc-filtro-btn').forEach(btn=>{
+      btn.classList.toggle('active', btn.getAttribute('data-g')===filtroActivo);
+    });
+    var socFiltroActivo=filtroActivo;
+  }else{
+    filtroBar.style.display='none';
+    var socFiltroActivo='TODOS';
+  }
+
   let html='<div class="soc-grupos-wrap">';
 
   // ── Grupos ──────────────────────────────────────────────────
   const gruposOrden=['FASE_UNICA','FASE_GRUPOS','GRUPO_A','GRUPO_B','GRUPO_C'];
-  const gruposPresentes=gruposOrden.filter(g=>partidos.some(p=>p.grupo===g));
+  let gruposPresentes=gruposOrden.filter(g=>partidos.some(p=>p.grupo===g));
+  if(socFiltroActivo!=='TODOS'){
+    gruposPresentes=gruposPresentes.filter(g=>g===socFiltroActivo||g==='FASE_UNICA'||g==='FASE_GRUPOS');
+  }
 
   gruposPresentes.forEach(g=>{
     const pGroup=partidos.filter(p=>p.grupo===g);
