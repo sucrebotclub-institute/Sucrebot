@@ -61,6 +61,7 @@
 
     /* ── CATEGORÍAS ── */
     .cat-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+    .cat-cards-grid.cargando { pointer-events: none; opacity: .55; }
     @media(max-width:900px){ .cat-cards-grid { grid-template-columns: repeat(2, 1fr); } }
     @media(max-width:500px){ .cat-cards-grid { grid-template-columns: 1fr; } }
     .cat-card { background: var(--panel-bg2); border: 2px solid var(--panel-border); border-radius: 14px; padding: 24px 16px; text-align: center; cursor: pointer; transition: all .25s; position: relative; overflow: hidden; }
@@ -1128,7 +1129,13 @@ function desactivarModoOffline(){
   toast('✅ Modo offline desactivado — usando conexión normal','success');
 }
 
+let cargandoCategoria=false;
 async function seleccionarCategoria(cat) {
+  if (cargandoCategoria) return; // evita que clics repetidos disparen varias cargas a la vez
+  cargandoCategoria = true;
+  const grid = document.querySelector('.cat-cards-grid');
+  if (grid) grid.classList.add('cargando');
+
   if (state.categoria && state.categoria !== cat) {
     gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] }).catch(() => {});
     detenerPollJueces(state.categoria, getJuezIdx(state.categoria));
@@ -1206,6 +1213,9 @@ async function seleccionarCategoria(cat) {
 
   document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
   document.getElementById('btnIniciarCal').disabled = false;
+
+  cargandoCategoria = false;
+  if (grid) grid.classList.remove('cargando');
 }
 
 function renderCriteriosConfig(criterios) {
