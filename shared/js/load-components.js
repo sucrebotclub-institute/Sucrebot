@@ -241,7 +241,7 @@ function mostrarBannerUltimoDia() {
         <div class="sb-title">Las inscripciones se cierran el día de mañana</div>
       </div>
     </div>
-    <div class="sb-desc">El viernes 10 de julio es el último día para inscribirte a la Cuarta Edición del Concurso Nacional de Robótica "SucreBot 2026". Después de esa fecha no se aceptarán más registros.</div>
+    <div class="sb-desc">El viernes 10 de julio es el último día para inscribirte a la Cuarta Edición del Concurso Nacional de Robótica "SucreBot 2026".</div>
     <a class="sb-btn" href="https://sucrebotclub-institute.github.io/Sucrebot/REGISTRO/">Inscribirme ahora →</a>
   `;
   document.body.appendChild(banner);
