@@ -269,6 +269,11 @@
           <div class="lego-agotado-title">Lego Kids</div>
           <div class="lego-agotado-text">Inscripciones agotadas</div>
         </div>
+        <div class="lego-agotado-card">
+          <div class="lego-agotado-icon">🔬</div>
+          <div class="lego-agotado-title">Impacto Tecnológico</div>
+          <div class="lego-agotado-text">Inscripciones agotadas</div>
+        </div>
       </div>
     </div>
 
@@ -415,7 +420,7 @@
             <optgroup label="🌟 OPEN">
               <option value="Cubo Rubik">Cubo Rubik</option>
               <option value="Lego Kids" disabled>Lego Kids (AGOTADAS)</option>
-              <option value="Impacto Tecnológico">Impacto Tecnológico</option>
+              <option value="Impacto Tecnológico" disabled>Impacto Tecnológico (AGOTADAS)</option>
             </optgroup>
           </select>
         </div>
@@ -425,7 +430,7 @@
         <div class="categoria-cerrada-aviso">
           <div class="categoria-cerrada-icon">⛔</div>
           <div class="categoria-cerrada-text">
-            <strong>Inscripciones agotadas.</strong> La categoría <strong>Lego Kids</strong> ya no acepta nuevos registros. Selecciona otra categoría o escríbenos a <span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span> si tienes dudas.
+            <strong>Inscripciones agotadas.</strong> La categoría <strong id="categoriaCerradaNombre">Lego Kids</strong> ya no acepta nuevos registros. Selecciona otra categoría o escríbenos a <span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span> si tienes dudas.
           </div>
         </div>
       </div>
@@ -493,6 +498,11 @@
       <div class="lego-agotado-card">
         <div class="lego-agotado-icon">🧱</div>
         <div class="lego-agotado-title">Lego Kids</div>
+        <div class="lego-agotado-text">Inscripciones agotadas</div>
+      </div>
+      <div class="lego-agotado-card">
+        <div class="lego-agotado-icon">🔬</div>
+        <div class="lego-agotado-title">Impacto Tecnológico</div>
         <div class="lego-agotado-text">Inscripciones agotadas</div>
       </div>
     </div>
@@ -629,7 +639,7 @@
     dropZone.classList.remove('has-logo'); logoUploader.classList.remove('has-logo');
   }
 
-  const CATEGORIAS_CERRADAS = ['Lego Kids'];
+  const CATEGORIAS_CERRADAS = ['Lego Kids', 'Impacto Tecnológico'];
 
   function onCategoriaChange() {
     const cat = document.getElementById('f-categoria').value;
@@ -639,6 +649,7 @@
 
     const cerradaWrap = document.getElementById('categoriaCerradaWrap');
     if (CATEGORIAS_CERRADAS.includes(cat)) {
+      document.getElementById('categoriaCerradaNombre').textContent = cat;
       cerradaWrap.classList.add('show');
       document.getElementById('f-categoria').value = '';
     } else {
@@ -704,7 +715,7 @@
     if (contacto.length < 7) { showToast('El número debe tener al menos 7 dígitos', true); return; }
     if (!correo)      { showToast('El correo electrónico es obligatorio', true); return; }
     if (!categoria)   { showToast('Selecciona una categoría', true); return; }
-    if (CATEGORIAS_CERRADAS.includes(categoria)) { showToast('La categoría Lego Kids tiene las inscripciones agotadas', true); return; }
+    if (CATEGORIAS_CERRADAS.includes(categoria)) { showToast('La categoría ' + categoria + ' tiene las inscripciones agotadas', true); return; }
     if (categoria === 'Robot soccer' && !equipo) { showToast('El nombre del equipo es obligatorio para Robot soccer', true); return; }
     if (!comprobante) { showToast('El número de comprobante es obligatorio', true); return; }
     if (!archivo)     { showToast('Debes adjuntar el comprobante de pago', true); return; }
