@@ -238,7 +238,7 @@ function mostrarBannerUltimoDia() {
       </div>
       <div>
         <div class="sb-tag">Último día</div>
-        <div class="sb-title">Las inscripciones se cierran el día de mañana</div>
+        <div class="sb-title">Las inscripciones se cierran el día de hoy</div>
       </div>
     </div>
     <div class="sb-desc">El viernes 10 de julio es el último día para inscribirte a la Cuarta Edición del Concurso Nacional de Robótica "SucreBot 2026".</div>
