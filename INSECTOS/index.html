@@ -163,6 +163,23 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .loading-logo{width:72px;height:auto;margin-bottom:2px;filter:drop-shadow(0 0 14px rgba(91,200,240,0.5))}
     .loading-txt{font-family:'Orbitron';font-size:.7rem;color:#ffffff;letter-spacing:2px}
+
+    /* MODAL — sensor no conectado */
+    .sb-modal-overlay{display:none;position:fixed;inset:0;background:rgba(8,12,24,0.75);backdrop-filter:blur(3px);align-items:center;justify-content:center;z-index:9500;padding:16px}
+    .sb-modal-overlay.show{display:flex}
+    .sb-modal-card{background:linear-gradient(160deg,#14213f 0%,#0e2a5a 60%,#0c1a38 100%);border:1px solid rgba(251,191,36,0.35);border-top:3px solid #fbbf24;border-radius:14px;padding:24px 22px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.55);font-family:'Exo 2',sans-serif;animation:sbModalIn .3s cubic-bezier(0.34,1.56,0.64,1)}
+    @keyframes sbModalIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+    .sb-modal-icon{width:40px;height:40px;border-radius:10px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+    .sb-modal-icon svg{width:22px;height:22px;stroke:#fbbf24}
+    .sb-modal-title{font-family:'Orbitron',monospace;font-size:15px;font-weight:900;color:#fff;letter-spacing:.5px;line-height:1.3;margin-bottom:10px}
+    .sb-modal-desc{font-size:13px;color:rgba(255,255,255,.78);line-height:1.5;margin-bottom:18px}
+    .sb-modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .sb-modal-btn{flex:1;min-width:130px;text-align:center;padding:10px 12px;border-radius:6px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,transform .15s}
+    .sb-modal-btn:hover{transform:translateY(-1px)}
+    .sb-modal-btn.primary{background:linear-gradient(135deg,#1a5ca8,#2a8ec8);color:#fff}
+    .sb-modal-btn.primary:hover{box-shadow:0 6px 16px rgba(42,142,200,0.4)}
+    .sb-modal-btn.ghost{background:rgba(255,255,255,0.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18)}
+    .sb-modal-btn.ghost:hover{background:rgba(255,255,255,0.14)}
   </style>
 </head>
 <body>
@@ -170,6 +187,20 @@
     <img src="../shared/images/sucrebot-sin%20fondo.png" alt="SucreBot" class="loading-logo">
     <div class="spinner"></div>
     <div class="loading-txt" id="loadingTxt">CARGANDO...</div>
+  </div>
+
+  <div class="sb-modal-overlay" id="modalSensorDesconectado">
+    <div class="sb-modal-card">
+      <div class="sb-modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      </div>
+      <div class="sb-modal-title">Sensor no conectado</div>
+      <div class="sb-modal-desc">No se detecta el Arduino (sensor IR) conectado por Web Serial. Puedes conectarlo ahora, o continuar e ingresar los tiempos manualmente.</div>
+      <div class="sb-modal-actions">
+        <button class="sb-modal-btn ghost" id="btnModalCancelar">Cancelar</button>
+        <button class="sb-modal-btn primary" id="btnModalContinuar">Continuar sin sensor</button>
+      </div>
+    </div>
   </div>
 
   <div class="sticky-header">
@@ -401,6 +432,24 @@
   // Web Serial
   let serialPort = null, serialReader = null, serialReading = false;
   let serialPortF = null, serialReaderF = null, serialReadingF = false;
+
+  // ============================================================
+  // MODAL — aviso sensor no conectado al presionar INICIAR
+  // ============================================================
+  let modalSensorEsFinal = false;
+  function mostrarModalSensor(esFinal) {
+    modalSensorEsFinal = esFinal;
+    document.getElementById('modalSensorDesconectado').classList.add('show');
+  }
+  function cerrarModalSensor() {
+    document.getElementById('modalSensorDesconectado').classList.remove('show');
+  }
+  document.getElementById('btnModalCancelar').addEventListener('click', cerrarModalSensor);
+  document.getElementById('btnModalContinuar').addEventListener('click', () => {
+    cerrarModalSensor();
+    if (modalSensorEsFinal) iniciarCronFReal();
+    else iniciarCronReal();
+  });
 
   // ============================================================
   // UTILS
@@ -740,7 +789,7 @@
     });
   }
 
-  document.getElementById('btnCronStart').addEventListener('click', () => {
+  function iniciarCronReal() {
     if (cronIniciado && !cronPausado) return;
     if (cronPausado) { cronPausado = false; cronLast = performance.now(); }
     else { cronIniciado = true; cronLast = performance.now(); }
@@ -748,6 +797,10 @@
     document.getElementById('btnCronPause').disabled = false;
     document.getElementById('btnCronStop').disabled = false;
     cronInterval = setInterval(tickCron, 50);
+  }
+  document.getElementById('btnCronStart').addEventListener('click', () => {
+    if (!serialReading) { mostrarModalSensor(false); return; }
+    iniciarCronReal();
   });
   document.getElementById('btnCronPause').addEventListener('click', () => {
     if (!cronIniciado || cronPausado) return;
@@ -1025,7 +1078,7 @@
     document.getElementById('btnCronStopF').disabled = true;
   }
 
-  document.getElementById('btnCronStartF').addEventListener('click', () => {
+  function iniciarCronFReal() {
     if (cronFIniciado && !cronFPausado) return;
     if (cronFPausado) { cronFPausado = false; cronFLast = performance.now(); }
     else { cronFIniciado = true; cronFLast = performance.now(); }
@@ -1033,6 +1086,10 @@
     document.getElementById('btnCronPauseF').disabled = false;
     document.getElementById('btnCronStopF').disabled = false;
     cronFInterval = setInterval(tickCronF, 50);
+  }
+  document.getElementById('btnCronStartF').addEventListener('click', () => {
+    if (!serialReadingF) { mostrarModalSensor(true); return; }
+    iniciarCronFReal();
   });
   document.getElementById('btnCronPauseF').addEventListener('click', () => {
     if (!cronFIniciado || cronFPausado) return;
