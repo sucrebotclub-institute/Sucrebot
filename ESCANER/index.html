@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <style>
+    .acceso-denegado { background: linear-gradient(135deg,#ff3b3b,#c41e3a); border-radius: 16px; padding: 60px 40px; text-align: center; max-width: 600px; margin: 60px auto; color: #fff; }
+    .acceso-denegado h3 { font-family: 'Orbitron'; font-size: 1.8rem; margin-bottom: 12px; }
     body { background: #ffffff !important; color: #1a1a2e !important; }
     main { min-height: calc(100vh - 174px); background: #ffffff; }
     .wrapper { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
@@ -131,6 +133,13 @@
   <div data-include="../shared/components/nav.html"></div>
 </div>
 <main>
+  <div id="acceso-denegado" style="display:none;">
+    <div class="acceso-denegado">
+      <h3>🔒 Acceso restringido</h3>
+      <p>Solo personal autorizado del staff puede ver esta página.</p>
+    </div>
+  </div>
+  <div id="contenido-staff" style="display:none;">
   <div class="wrapper">
     <div class="page-hero">
       <div class="page-hero-badge"><div class="page-hero-badge-dot"></div>SUCREBOT 2026 · MESA DE CONTROL</div>
@@ -177,6 +186,7 @@
       </div>
     </div>
   </div>
+  </div><!-- /contenido-staff -->
 </main>
 <div data-include="../shared/components/footer.html"></div>
 <div class="toast" id="toast"></div>
@@ -252,6 +262,12 @@
   let enPistaIds = new Set();
   let ultimoQrProcesado = null, tiempoUltimoQr = 0;
   let cacheParticipantes = [];
+
+  function show(id) { document.getElementById(id).style.display = 'block'; }
+  document.addEventListener('componentsLoaded', () => {
+    if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
+    show('contenido-staff');
+  });
 
   window.addEventListener('DOMContentLoaded', async () => {
     renderCatGrid();
