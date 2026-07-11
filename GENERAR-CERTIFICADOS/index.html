@@ -206,8 +206,7 @@ const TIPO_INTERNO = {
 function strVal(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
 
 document.addEventListener('componentsLoaded', () => {
-  const token = localStorage.getItem('sucrebot_staff_token');
-  if (token !== 'SucreBot2026-CMI-Sucre-x7k9mQ') { show('acceso-denegado'); return; }
+  if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
   show('contenido-staff');
   cargarDatos();
 });
