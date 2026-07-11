@@ -458,8 +458,7 @@
   function esStaff() { const s=localStorage.getItem('sucrebot_user');if(!s)return false;try{const u=JSON.parse(s);return window.STAFF_EMAILS&&window.STAFF_EMAILS.includes(u.email);}catch(e){return false;} }
 
   document.addEventListener('componentsLoaded', function() {
-    const savedUser = localStorage.getItem('sucrebot_user');
-    if (!savedUser) { window.location.href = '../INICIO/'; return; }
+    if (!esStaff()) { window.location.href = '../INICIO/'; return; }
     const ahora      = Date.now();
     const tsGuardado = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0');
     const cacheValido = (ahora - tsGuardado) < CACHE_TTL;
