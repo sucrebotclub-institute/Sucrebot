@@ -173,8 +173,7 @@
   function show(id) { document.getElementById(id).style.display = 'block'; }
 
   document.addEventListener('componentsLoaded', () => {
-    const token = localStorage.getItem('sucrebot_staff_token');
-    if (token !== STAFF_TOKEN) { show('acceso-denegado'); return; }
+    if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
     show('contenido-staff');
     cargarTodo();
   });
