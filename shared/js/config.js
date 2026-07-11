@@ -26,11 +26,8 @@ const CONFIG = {
     'rlema@tecnologicosucre.edu.ec',
     'crivera@tecnologicosucre.edu.ec', 
     'aguano@tecnologicosucre.edu.ec', 
-    'aperez@tecnologicosucre.edu.ec', 
     'vcuasquer@tecnologicosucre.edu.ec', 
     'vduran@tecnologicosucre.edu.ec', 
-    'dgodoy@tecnologicosucre.edu.ec',
-    'isimbana@tecnologicosucre.edu.ec',
     'lmolina@tecnologicosucre.edu.ec'
   ],
 
@@ -39,6 +36,10 @@ const CONFIG = {
   // pero NO ven ni pueden entrar a Organización (Escáner/Manillas/Certificados/
   // Participantes/Estadísticas). Agregar aquí los correos de los ayudantes.
   AYUDANTE_EMAILS: [
+    'isimbana@tecnologicosucre.edu.ec',
+    'dgodoy@tecnologicosucre.edu.ec',
+    'aperez@tecnologicosucre.edu.ec',
+    'rakusho9999@gmail.com'
   ]
 
 };
