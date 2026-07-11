@@ -32,6 +32,13 @@ const CONFIG = {
     'dgodoy@tecnologicosucre.edu.ec',
     'isimbana@tecnologicosucre.edu.ec',
     'lmolina@tecnologicosucre.edu.ec'
+  ],
+
+  // ── Ayudantes (ajenos a la carrera) ───────────────────────────
+  // Ven el menú Jueces (Cronómetro/Insectos/Panel-Bracket/Panel-Calificación)
+  // pero NO ven ni pueden entrar a Organización (Escáner/Manillas/Certificados/
+  // Participantes/Estadísticas). Agregar aquí los correos de los ayudantes.
+  AYUDANTE_EMAILS: [
   ]
 
 };
