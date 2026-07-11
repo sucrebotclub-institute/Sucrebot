@@ -6,6 +6,39 @@
 const STAFF_EMAILS = CONFIG.STAFF_EMAILS;
 window.STAFF_EMAILS = STAFF_EMAILS;
 
+// Ayudantes: ven Jueces pero NO Organización (ver config.js)
+const AYUDANTE_EMAILS = CONFIG.AYUDANTE_EMAILS || [];
+window.AYUDANTE_EMAILS = AYUDANTE_EMAILS;
+
+// ── Helper global: ¿el usuario logueado es staff completo? ──────
+// Usar esto (no el token) para gatear páginas de Organización, porque
+// el token se comparte también con los ayudantes para que les funcionen
+// las páginas de Jueces.
+window.esStaffCompleto = function() {
+  const s = localStorage.getItem('sucrebot_user');
+  if (!s) return false;
+  try {
+    const u = JSON.parse(s);
+    return STAFF_EMAILS.includes(u.email);
+  } catch (e) {
+    return false;
+  }
+};
+
+// ── Helper global: ¿el usuario logueado es ayudante (o staff)? ──
+// Staff completo también cuenta como "juez" para efectos de acceso a
+// Cronómetro/Insectos/Panel-Bracket/Panel-Calificación.
+window.esJuez = function() {
+  const s = localStorage.getItem('sucrebot_user');
+  if (!s) return false;
+  try {
+    const u = JSON.parse(s);
+    return STAFF_EMAILS.includes(u.email) || AYUDANTE_EMAILS.includes(u.email);
+  } catch (e) {
+    return false;
+  }
+};
+
 // Token compartido con GAS — debe coincidir exactamente con STAFF_TOKEN en Code.gs
 const STAFF_TOKEN_VALUE = 'SucreBot2026-CMI-Sucre-x7k9mQ';
 
@@ -45,10 +78,14 @@ function activarSesion(data) {
   if (userName)  userName.textContent = data.name || data.email;
   if (userAvatar && data.picture) userAvatar.src = data.picture;
   
-  const isStaff = STAFF_EMAILS.includes(data.email);
+  const isStaff    = STAFF_EMAILS.includes(data.email);
+  const isAyudante = AYUDANTE_EMAILS.includes(data.email);
+  const esJuezRol  = isStaff || isAyudante; // ambos ven/usan páginas de Jueces
 
   // ── Guardar/limpiar token staff según rol ──────────────────
-  if (isStaff) {
+  // El token se comparte con ayudantes: lo necesitan para que
+  // Cronómetro/Insectos/Panel-Bracket/Panel-Calificación funcionen.
+  if (esJuezRol) {
     localStorage.setItem('sucrebot_staff_token', STAFF_TOKEN_VALUE);
   } else {
     localStorage.removeItem('sucrebot_staff_token');
@@ -59,9 +96,10 @@ function activarSesion(data) {
   const navPartDropdown = document.getElementById('navPartDropdown');
   const navPartLink     = document.getElementById('navPartLink');
   
-  if (isStaff) {
+  if (esJuezRol) {
     if (navStaff)        navStaff.style.display        = 'block';
-    if (navOrganizacion) navOrganizacion.style.display = 'block';
+    // Organización: SOLO staff completo, nunca ayudantes
+    if (navOrganizacion) navOrganizacion.style.display = isStaff ? 'block' : 'none';
     if (navPartLink)     navPartLink.style.display     = 'none';
     if (navPartDropdown) navPartDropdown.style.display = 'none';
   } else {
