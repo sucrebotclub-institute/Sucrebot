@@ -1374,7 +1374,7 @@
 
   async function leerSerial() {
     const decoder = new TextDecoderStream();
-    serialPort.readable.pipeTo(decoder.writable);
+    serialPort.readable.pipeTo(decoder.writable).catch(()=>{});
     const reader = decoder.readable.getReader();
     serialReader = reader;
     let buf = '';
@@ -1386,7 +1386,17 @@
         const lines = buf.split('\n');
         buf = lines.pop();
         lines.forEach(l => procesarLineaSerial(l.trim(), false));
-      } catch { break; }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          serialReading = false;
+          serialPort = null; serialReader = null;
+          document.getElementById('serialDot').classList.remove('on');
+          document.getElementById('serialStatus').textContent = '⚠️ Arduino desconectado — reconecta';
+          document.getElementById('btnConectar').style.display = '';
+          document.getElementById('btnDesconectar').style.display = 'none';
+        }
+        break;
+      }
     }
   }
 
@@ -1434,7 +1444,7 @@
 
   async function leerSerialF() {
     const decoder = new TextDecoderStream();
-    serialPortF.readable.pipeTo(decoder.writable);
+    serialPortF.readable.pipeTo(decoder.writable).catch(()=>{});
     const reader = decoder.readable.getReader();
     serialReaderF = reader;
     let buf = '';
@@ -1446,7 +1456,17 @@
         const lines = buf.split('\n');
         buf = lines.pop();
         lines.forEach(l => procesarLineaSerial(l.trim(), true));
-      } catch { break; }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          serialReadingF = false;
+          serialPortF = null; serialReaderF = null;
+          document.getElementById('serialDotF').classList.remove('on');
+          document.getElementById('serialStatusF').textContent = '⚠️ Arduino desconectado — reconecta';
+          document.getElementById('btnConectarF').style.display = '';
+          document.getElementById('btnDesconectarF').style.display = 'none';
+        }
+        break;
+      }
     }
   }
 
