@@ -881,6 +881,9 @@
     const g = grupos[grupoActual];
     const p = g[ci];
     if (!p) return;
+    // no sobrescribir si este carril ya tiene tiempo/DNF registrado en este intento
+    const yaReg = (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
+    if (yaReg) return;
     const ms = msOverride !== undefined ? msOverride : tiempoTranscurrido();
     // guardar
     if (!intentos[p.id]) intentos[p.id] = [];
