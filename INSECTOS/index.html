@@ -884,7 +884,17 @@
     // no sobrescribir si este carril ya tiene tiempo/DNF registrado en este intento
     const yaReg = (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
     if (yaReg) return;
-    const ms = msOverride !== undefined ? msOverride : tiempoTranscurrido();
+    let ms;
+    if (msOverride !== undefined) {
+      ms = msOverride;
+    } else if (cronIniciado) {
+      ms = tiempoTranscurrido();
+    } else {
+      // El cronómetro de este grupo nunca se inició — registrar así daría 00:00:00,
+      // que al ser "el más rápido posible" clasificaría a este robot injustamente.
+      if (!confirm('⚠️ El cronómetro de este grupo no se ha iniciado — el tiempo quedaría en 00:00:00.\n\nSi el robot SÍ completó la pista, presiona "▶ Iniciar" primero.\nSi el robot NO terminó, usa el botón "DNF" en su lugar.\n\n¿Registrar de todas formas con 00:00:00?')) return;
+      ms = tiempoTranscurrido();
+    }
     // guardar
     if (!intentos[p.id]) intentos[p.id] = [];
     intentos[p.id].push({ turno: turnoActual, grupo: grupoActual, tiempo: ms, dnf: false });
@@ -1021,7 +1031,7 @@
         rk.map((r,i) => `<div class="rank-row">
           <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
           <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
-          <div class="rank-tiempo ${!r.tiempo?'rank-dnf':''}">${r.tiempo?fmtMs(r.tiempo):'DNF'}</div>
+          <div class="rank-tiempo ${r.tiempo===null?'rank-dnf':''}">${r.tiempo!==null?fmtMs(r.tiempo):'DNF'}</div>
         </div>`).join('') + '</div>';
     }
   }
