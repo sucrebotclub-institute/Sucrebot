@@ -39,7 +39,12 @@
     /* PANELS */
     .ins-wrap{width:100%;margin:0 auto;padding:0 20px 40px}
     .panel-3col{display:grid;grid-template-columns:240px 1fr 280px;gap:14px;align-items:start;width:100%}
-    @media(max-width:1100px){.panel-3col{grid-template-columns:1fr}}
+    .panel-3col>div:nth-child(2),.panel-3col>div:nth-child(3){position:sticky;top:180px;max-height:calc(100vh - 200px);overflow-y:auto}
+    body.fs-activo .panel-3col>div:nth-child(2),body.fs-activo .panel-3col>div:nth-child(3){top:10px;max-height:calc(100vh - 30px)}
+    @media(max-width:1100px){
+      .panel-3col{grid-template-columns:1fr}
+      .panel-3col>div:nth-child(2),.panel-3col>div:nth-child(3){position:static;max-height:none;overflow-y:visible}
+    }
     .panel-lateral{}
     .step-panel{display:none;animation:fadeUp .3s ease}
     .step-panel.active{display:block}
@@ -976,7 +981,8 @@
   function rankingClas() {
     return presentes.map(p => {
       const m = mejores[p.id];
-      return { p, tiempo: m ? m.tiempo : null };
+      const intentado = (intentos[p.id] || []).length > 0;
+      return { p, tiempo: m ? m.tiempo : null, intentado };
     }).sort((a, b) => {
       if (a.tiempo === null && b.tiempo === null) return 0;
       if (a.tiempo === null) return 1;
@@ -993,7 +999,7 @@
         <div class="rank-row">
           <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
           <div class="rank-robot">${r.p.robot}<span style="font-size:.7rem;color:var(--muted);margin-left:6px">${r.p.nombre}</span></div>
-          <div class="rank-tiempo ${r.tiempo===null?'rank-dnf':''}">${r.tiempo !== null ? fmtMs(r.tiempo) : 'DNF'}</div>
+          <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo !== null ? fmtMs(r.tiempo) : (r.intentado ? 'DNF' : '—')}</div>
         </div>`).join('')}
     </div>`;
   }
@@ -1031,7 +1037,7 @@
         rk.map((r,i) => `<div class="rank-row">
           <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
           <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
-          <div class="rank-tiempo ${r.tiempo===null?'rank-dnf':''}">${r.tiempo!==null?fmtMs(r.tiempo):'DNF'}</div>
+          <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo!==null?fmtMs(r.tiempo):(r.intentado?'DNF':'—')}</div>
         </div>`).join('') + '</div>';
     }
   }
