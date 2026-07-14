@@ -631,9 +631,11 @@ function iniciarPolling(){
       let nuevoP;try{nuevoP=JSON.parse(data.raw);}catch{return;}
       if(cronoInterval)return;
       if(ultimoIdLimpiado&&nuevoP.id===ultimoIdLimpiado&&Date.now()-ultimoIdLimpiadoTs<5000)return;
+      const mismoParticipante=participanteActual&&nuevoP.id===participanteActual.id;
+      if(mismoParticipante&&esperandoConfirmacionIntento)return; // esperando "Siguiente intento": no reprocesar al mismo participante aunque llegue una marca más nueva
       const marcaActual=participanteActual?(participanteActual.inicio||participanteActual.timestamp||0):0;
       const marcaNueva=nuevoP.inicio||nuevoP.timestamp||0;
-      if(!participanteActual||participanteActual.id!==nuevoP.id||marcaNueva>marcaActual)recibirParticipante(nuevoP);
+      if(!participanteActual||!mismoParticipante||marcaNueva>marcaActual)recibirParticipante(nuevoP);
     }catch(e){}
   },2000);
 }
