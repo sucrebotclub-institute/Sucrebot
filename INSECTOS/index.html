@@ -891,14 +891,6 @@
     if (yaReg) return;
     let ms;
     if (msOverride !== undefined) {
-      if (!cronIniciado) {
-        // Señal del sensor llegada antes de iniciar el cronómetro del grupo —
-        // casi seguro ruido/falso disparo (ningún robot puede legítimamente
-        // cruzar la meta antes de que arranque el cronómetro). Se ignora en
-        // silencio para no interrumpir con un diálogo por cada falso disparo.
-        console.warn('Señal de carril '+(ci+1)+' ignorada: el cronómetro del grupo no se ha iniciado.');
-        return;
-      }
       ms = msOverride;
     } else if (cronIniciado) {
       ms = tiempoTranscurrido();
@@ -1182,10 +1174,6 @@
     if (!p || tiemposFinal[p.id] !== undefined) return;
     let ms;
     if (msOverride !== undefined) {
-      if (!(cronFIniciado || cronFCorriendo)) {
-        console.warn('Señal de carril '+(ci+1)+' ignorada: el cronómetro de la final no se ha iniciado.');
-        return;
-      }
       ms = msOverride;
     } else if (cronFIniciado || cronFCorriendo) {
       ms = tiempoTranscurridoF();
