@@ -349,7 +349,7 @@
           </div>
         </div>
 
-        <div class="turno-badge" style="margin-bottom:12px">⭐ RONDA FINAL · 1 INTENTO</div>
+        <div class="turno-badge" style="margin-bottom:12px" id="finalTurnoBadge">⭐ RONDA FINAL · INTENTO 1 DE 2</div>
         <div class="final-info" id="finalInfo" style="margin-bottom:12px"></div>
 
         <div class="panel-3col">
@@ -362,14 +362,14 @@
           <div>
             <div class="carriles-grid" id="carrilesGridFinal" style="grid-template-columns:repeat(2,1fr);display:grid"></div>
             <div style="margin-top:10px;display:flex;justify-content:flex-end">
-              <button class="btn btn-cyan" id="btnVerPodio">VER PODIO →</button>
+              <button class="btn btn-cyan" id="btnVerPodio">Siguiente intento →</button>
             </div>
           </div>
 
           <!-- DERECHA: cronómetro -->
           <div class="panel-lateral">
             <div class="cron-central">
-              <div class="cron-label">FINAL · INTENTO ÚNICO</div>
+              <div class="cron-label" id="finalCronLabel">FINAL · INTENTO 1 DE 2</div>
               <div class="cron-num" id="cronNumF">02:00</div>
               <div class="cron-bar-wrap"><div class="cron-bar" id="cronFillF"></div></div>
               <div class="cron-btn-row">
@@ -418,7 +418,20 @@
   let mejores = {};        // id → { tiempo, turno, grupo }
   let intentos = {};       // id → [{turno,grupo,tiempo,dnf}]
   let clasificados = [];   // top 4 para la final
-  let tiemposFinal = {};   // id → { tiempo, dnf, cruzaMeta }
+  let tiemposFinal = {};   // id → { tiempo, dnf, cruzaMeta } (MEJOR de los intentos)
+  let intentosFinal = {};  // id → [{ turno, tiempo, dnf }, ...] (hasta 2 intentos)
+  let turnoFinalActual = 0; // 0 = intento 1, 1 = intento 2
+  const MAX_INTENTOS_FINAL = 2;
+  function mejorFinalDe(id) {
+    const list = intentosFinal[id] || [];
+    const validos = list.filter(x => !x.dnf);
+    if (validos.length) {
+      const m = validos.reduce((a, b) => b.tiempo < a.tiempo ? b : a);
+      return { tiempo: m.tiempo, dnf: false, cruzaMeta: true };
+    }
+    if (list.length >= MAX_INTENTOS_FINAL) return { tiempo: null, dnf: true, cruzaMeta: false };
+    return undefined; // aún no completa los 2 intentos y no tiene tiempo válido
+  }
 
   // Cronómetro clasificatoria
   let cronInterval = null;
@@ -858,13 +871,13 @@
     g.forEach((p, ci) => {
       if (!p) return;
       const registrado = esFinal
-        ? (tiemposFinal[p.id] !== undefined)
+        ? (intentosFinal[p.id] || []).some(x => x.turno === turnoFinalActual)
         : (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
       if (!registrado) {
         if (esFinal) {
-          tiemposFinal[p.id] = { tiempo: null, dnf: true, cruzaMeta: false };
-          const td = document.getElementById(`tdF-c${ci}`);
-          if (td) td.textContent = 'DNF';
+          if (!intentosFinal[p.id]) intentosFinal[p.id] = [];
+          intentosFinal[p.id].push({ turno: turnoFinalActual, tiempo: null, dnf: true });
+          tiemposFinal[p.id] = mejorFinalDe(p.id);
         } else {
           registrarDNFCarril(ci, true);
         }
@@ -1020,6 +1033,8 @@
     }
 
     tiemposFinal = {};
+    intentosFinal = {};
+    turnoFinalActual = 0;
     resetCronF();
 
     // info box
@@ -1029,6 +1044,7 @@
     // carriles final
     renderCarrilesFinal();
     renderRankingFinal();
+    actualizarLabelsFinal();
     // ranking clasificatoria en panel lateral izquierdo de final
     const rpf = document.getElementById('rankingParcialFinal');
     if (rpf && Object.keys(mejores).length > 0) {
@@ -1054,30 +1070,56 @@
         div.innerHTML = `<div class="carril-num">CARRIL ${ci+1}</div><div class="carril-vacante">— VACANTE —</div>`;
       } else {
         const mej = mejores[p.id];
+        const mejF = tiemposFinal[p.id];
+        const misIntentos = intentosFinal[p.id] || [];
+        const esteTurno = misIntentos.find(x => x.turno === turnoFinalActual);
+        const tdHtml = esteTurno
+          ? (esteTurno.dnf ? '<span style="color:var(--red)">DNF</span>' : `<span style="color:var(--green)">${fmtMs(esteTurno.tiempo)}</span>`)
+          : '–';
         div.innerHTML = `
           <div class="carril-num">CARRIL ${ci+1}</div>
           <div class="carril-robot">${p.robot}</div>
           <div class="carril-equipo">${p.nombre}</div>
-          <div class="carril-tiempo" id="tdF-c${ci}">–</div>
+          <div class="carril-tiempo" id="tdF-c${ci}">${tdHtml}</div>
           <div class="carril-mejor">${mej ? 'MEJOR CLAS: <span style="color:var(--yellow)">' + fmtMs(mej.tiempo) + '</span>' : ''}</div>
+          <div class="carril-mejor" id="mjF-c${ci}">${mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--yellow)">' + fmtMs(mejF.tiempo) + '</span>') : ''}</div>
           <div class="carril-btns">
-            <button class="btn-sm verde" id="cfbv${ci}" onclick="registrarTiempoFinalCarril(${ci})">✓ TIEMPO</button>
-            <button class="btn-sm rojo" id="cfbd${ci}" onclick="registrarDNFFinalCarril(${ci})">DNF</button>
+            <button class="btn-sm verde" id="cfbv${ci}" onclick="registrarTiempoFinalCarril(${ci})" ${esteTurno?'disabled':''}>✓ TIEMPO</button>
+            <button class="btn-sm rojo" id="cfbd${ci}" onclick="registrarDNFFinalCarril(${ci})" ${esteTurno?'disabled':''}>DNF</button>
           </div>`;
+        if (esteTurno) div.classList.add(esteTurno.dnf ? 'dnf' : 'registrado');
       }
       grid.appendChild(div);
     });
   }
 
+  function actualizarLabelsFinal() {
+    const n = turnoFinalActual + 1;
+    const badge = document.getElementById('finalTurnoBadge');
+    if (badge) badge.textContent = `⭐ RONDA FINAL · INTENTO ${n} DE ${MAX_INTENTOS_FINAL}`;
+    const label = document.getElementById('finalCronLabel');
+    if (label) label.textContent = `FINAL · INTENTO ${n} DE ${MAX_INTENTOS_FINAL}`;
+    const btn = document.getElementById('btnVerPodio');
+    if (btn) btn.textContent = turnoFinalActual < MAX_INTENTOS_FINAL - 1 ? 'Siguiente intento →' : 'VER PODIO →';
+  }
+
   function actualizarCarrilesFinal() {
     clasificados.forEach((p, ci) => {
       if (!p) return;
-      const tf = tiemposFinal[p.id];
-      if (!tf) return;
+      const misIntentos = intentosFinal[p.id] || [];
+      const esteTurno = misIntentos.find(x => x.turno === turnoFinalActual);
+      if (!esteTurno) return;
       const td = document.getElementById(`tdF-c${ci}`);
       const card = document.getElementById(`carF${ci}`);
-      if (td) td.innerHTML = tf.dnf ? '<span style="color:var(--red)">DNF</span>' : `<span style="color:var(--green)">${fmtMs(tf.tiempo)}</span>`;
-      if (card) card.classList.add(tf.dnf ? 'dnf' : 'registrado');
+      if (td) td.innerHTML = esteTurno.dnf ? '<span style="color:var(--red)">DNF</span>' : `<span style="color:var(--green)">${fmtMs(esteTurno.tiempo)}</span>`;
+      if (card) card.classList.add(esteTurno.dnf ? 'dnf' : 'registrado');
+      const bv = document.getElementById(`cfbv${ci}`);
+      const bd = document.getElementById(`cfbd${ci}`);
+      if (bv) bv.disabled = true;
+      if (bd) bd.disabled = true;
+      const mejF = tiemposFinal[p.id];
+      const mejorEl = document.getElementById(`mjF-c${ci}`);
+      if (mejorEl) mejorEl.innerHTML = mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--yellow)">' + fmtMs(mejF.tiempo) + '</span>') : '';
     });
   }
 
@@ -1171,7 +1213,9 @@
 
   function registrarTiempoFinalCarril(ci, msOverride) {
     const p = clasificados[ci];
-    if (!p || tiemposFinal[p.id] !== undefined) return;
+    if (!p) return;
+    const yaTurno = (intentosFinal[p.id] || []).some(x => x.turno === turnoFinalActual);
+    if (yaTurno) return;
     let ms;
     if (msOverride !== undefined) {
       ms = msOverride;
@@ -1186,7 +1230,9 @@
       else if (parts.length === 3) ms = (parts[0]*60 + parts[1]) * 1000 + parts[2]*10;
       else { alert('Formato inválido. Usa MM:SS o MM:SS:CC'); return; }
     }
-    tiemposFinal[p.id] = { tiempo: ms, dnf: false, cruzaMeta: true };
+    if (!intentosFinal[p.id]) intentosFinal[p.id] = [];
+    intentosFinal[p.id].push({ turno: turnoFinalActual, tiempo: ms, dnf: false });
+    tiemposFinal[p.id] = mejorFinalDe(p.id);
     const td = document.getElementById(`tdF-c${ci}`);
     if (td) td.innerHTML = `<span style="color:var(--green)">${fmtMs(ms)}</span>`;
     const card = document.getElementById(`carF${ci}`);
@@ -1195,13 +1241,20 @@
     const bd = document.getElementById(`cfbd${ci}`);
     if (bv) bv.disabled = true;
     if (bd) bd.disabled = true;
+    const mejF = tiemposFinal[p.id];
+    const mejorEl = document.getElementById(`mjF-c${ci}`);
+    if (mejorEl) mejorEl.innerHTML = mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--yellow)">' + fmtMs(mejF.tiempo) + '</span>') : '';
     renderRankingFinal();
   }
 
   function registrarDNFFinalCarril(ci) {
     const p = clasificados[ci];
-    if (!p || tiemposFinal[p.id] !== undefined) return;
-    tiemposFinal[p.id] = { tiempo: null, dnf: true, cruzaMeta: false };
+    if (!p) return;
+    const yaTurno = (intentosFinal[p.id] || []).some(x => x.turno === turnoFinalActual);
+    if (yaTurno) return;
+    if (!intentosFinal[p.id]) intentosFinal[p.id] = [];
+    intentosFinal[p.id].push({ turno: turnoFinalActual, tiempo: null, dnf: true });
+    tiemposFinal[p.id] = mejorFinalDe(p.id);
     const td = document.getElementById(`tdF-c${ci}`);
     if (td) td.innerHTML = `<span style="color:var(--red)">DNF</span>`;
     const card = document.getElementById(`carF${ci}`);
@@ -1210,14 +1263,26 @@
     const bd = document.getElementById(`cfbd${ci}`);
     if (bv) bv.disabled = true;
     if (bd) bd.disabled = true;
+    const mejF = tiemposFinal[p.id];
+    const mejorEl = document.getElementById(`mjF-c${ci}`);
+    if (mejorEl) mejorEl.innerHTML = mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--yellow)">' + fmtMs(mejF.tiempo) + '</span>') : '';
     renderRankingFinal();
   }
 
   document.getElementById('btnVerPodio').addEventListener('click', () => {
-    const todosTienen = clasificados.every(p => tiemposFinal[p.id] !== undefined);
-    if (!todosTienen && !confirm('Aún hay robots sin tiempo/DNF. ¿Continuar con el podio?')) return;
-    construirPodio();
-    stepActivar(3);
+    const turnoCompleto = clasificados.every(p => (intentosFinal[p.id] || []).some(x => x.turno === turnoFinalActual));
+    if (turnoFinalActual < MAX_INTENTOS_FINAL - 1) {
+      if (!turnoCompleto && !confirm(`Aún hay robots sin tiempo/DNF en el intento ${turnoFinalActual + 1}. ¿Pasar al intento ${turnoFinalActual + 2} de todas formas?`)) return;
+      turnoFinalActual++;
+      resetCronF();
+      renderCarrilesFinal();
+      actualizarLabelsFinal();
+      renderRankingFinal();
+    } else {
+      if (!turnoCompleto && !confirm('Aún hay robots sin tiempo/DNF en el último intento. ¿Continuar con el podio?')) return;
+      construirPodio();
+      stepActivar(3);
+    }
   });
 
   // ============================================================
@@ -1356,7 +1421,7 @@
   document.getElementById('btnReiniciar').addEventListener('click', () => {
     if (!confirm('¿Reiniciar la competencia de Insectos? Se perderán todos los datos del torneo actual.')) return;
     presentes = []; grupos = []; mejores = {}; intentos = {};
-    clasificados = []; tiemposFinal = {};
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0;
     turnoActual = 0; grupoActual = 0;
     clearInterval(cronInterval); clearInterval(cronFInterval);
     stepActivar(0);
@@ -1494,7 +1559,7 @@
   document.getElementById('btnVolverPresentes2').addEventListener('click', () => {
     if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
     clearInterval(cronFInterval);
-    clasificados = []; tiemposFinal = {};
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0;
     grupos = []; mejores = {}; intentos = {};
     turnoActual = 0; grupoActual = 0;
     stepActivar(0);
@@ -1513,7 +1578,7 @@
   document.getElementById('btnCerrarCat').addEventListener('click', () => {
     if (!confirm('¿Cerrar la categoría Insectos? Esto reiniciará la competencia.')) return;
     presentes = []; grupos = []; mejores = {}; intentos = {};
-    clasificados = []; tiemposFinal = {};
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0;
     turnoActual = 0; grupoActual = 0;
     clearInterval(cronInterval); clearInterval(cronFInterval);
     stepActivar(0);
