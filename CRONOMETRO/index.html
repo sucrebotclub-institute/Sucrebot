@@ -91,9 +91,10 @@
     .btn-green-pb:disabled { background:#2a2e42; color:rgba(232,234,242,.4); cursor:not-allowed; }
     .btn-sm { padding:7px 14px; font-size:.62rem; }
     .crono-wrapper { max-width: 1400px; margin: 0 auto; padding: 8px 16px 24px; position: relative; z-index: 1; display: flex; flex-direction: column; }
-    .crono-layout { display: grid; grid-template-columns: 260px 1fr 320px; gap: 16px; flex: 1; }
+    .crono-layout { display: grid; grid-template-columns: 260px 1fr 320px; gap: 16px; flex: 1; align-items: start; }
     .col-config { display: flex; flex-direction: column; gap: 10px; }
-    .col-crono  { display: flex; flex-direction: column; gap: 12px; }
+    .col-crono  { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 174px; max-height: calc(100vh - 190px); overflow-y: auto; }
+    body.fs-activo .col-crono { top: 10px; max-height: calc(100vh - 26px); }
     .col-ranking { display: flex; flex-direction: column; }
     .card-dark { background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); border: 2px solid var(--border); border-radius: 10px; padding: 12px 14px; }
     .card-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--text); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
@@ -159,7 +160,8 @@
     .btn-cerrar-ronda { background:linear-gradient(135deg,var(--accent2) 0%,#e05a2f 100%); border:2px solid #e05a2f; color:var(--text); box-shadow:0 4px 12px rgba(255,107,53,.3); width:100%; font-family:var(--font-body); font-weight:700; padding:10px; border-radius:8px; cursor:pointer; transition:all .2s; text-transform:uppercase; font-size:.8rem; }
     .btn-cerrar-ronda:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,107,53,.5); }
     .btn-cerrar-ronda:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-    .ranking-card { background:linear-gradient(135deg,var(--surface-light) 0%,#f8fafc 100%); border:2px solid #e2e8f0; border-radius:12px; padding:12px; display:flex; flex-direction:column; height:100%; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.08); }
+    .ranking-card { background:linear-gradient(135deg,var(--surface-light) 0%,#f8fafc 100%); border:2px solid #e2e8f0; border-radius:12px; padding:12px; display:flex; flex-direction:column; height:calc(100vh - 210px); position:sticky; top:174px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.08); }
+    body.fs-activo .ranking-card { height:calc(100vh - 40px); top:10px; }
     .ranking-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid #e2e8f0; flex-shrink:0; }
     .ranking-title { font-family:var(--font-mono); font-size:.72rem; letter-spacing:.15em; color:var(--surface); font-weight:700; }
     .ranking-count { font-family:var(--font-mono); font-size:.72rem; background:var(--cyan); color:var(--text); padding:4px 12px; border-radius:20px; font-weight:700; }
@@ -222,7 +224,7 @@
       .crono-layout { grid-template-columns:1fr; gap:20px; }
       .col-config,.col-crono { max-width:700px; margin:0 auto; width:100%; }
       .col-ranking { max-width:700px; margin:0 auto; width:100%; }
-      .ranking-card { height:auto; }
+      .ranking-card { height:auto; position:static; top:auto; }
       #rondas-container { overflow-y:visible; }
       #cronometro { font-size:4rem; }
       .btn-row-crono { grid-template-columns:1fr; gap:8px; }
@@ -238,6 +240,7 @@
         box-shadow: 0 18px 26px -16px rgba(13,40,71,.35);
       }
       body.fs-activo .col-crono { top: 10px; max-height: calc(100vh - 26px); }
+      body.fs-activo .ranking-card { height:auto; }
     }
     body.fs-activo .sticky-header { display:none !important; }
     body.fs-activo main { padding-top:14px !important; }
