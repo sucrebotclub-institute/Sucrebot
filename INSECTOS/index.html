@@ -904,14 +904,17 @@
     if (yaReg) return;
     let ms;
     if (msOverride !== undefined) {
+      if (!cronIniciado) {
+        // Señal del sensor llegada antes de iniciar el cronómetro del grupo — se ignora.
+        console.warn('Señal de carril '+(ci+1)+' ignorada: el cronómetro del grupo no se ha iniciado.');
+        return;
+      }
       ms = msOverride;
     } else if (cronIniciado) {
       ms = tiempoTranscurrido();
     } else {
-      // El cronómetro de este grupo nunca se inició — registrar así daría 00:00:00,
-      // que al ser "el más rápido posible" clasificaría a este robot injustamente.
-      if (!confirm('⚠️ El cronómetro de este grupo no se ha iniciado — el tiempo quedaría en 00:00:00.\n\nSi el robot SÍ completó la pista, presiona "▶ Iniciar" primero.\nSi el robot NO terminó, usa el botón "DNF" en su lugar.\n\n¿Registrar de todas formas con 00:00:00?')) return;
-      ms = tiempoTranscurrido();
+      alert('⚠️ El cronómetro de este grupo no se ha iniciado.\n\nPresiona "▶ Iniciar" antes de registrar un tiempo.');
+      return;
     }
     // guardar
     if (!intentos[p.id]) intentos[p.id] = [];
@@ -939,6 +942,10 @@
     // no registrar DNF si ya tiene tiempo en este intento
     const yaReg = (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
     if (yaReg) return;
+    if (!auto && !cronIniciado) {
+      alert('⚠️ El cronómetro de este grupo no se ha iniciado.\n\nPresiona "▶ Iniciar" antes de marcar DNF (o usa "DNF TODOS" si quieres saltar el grupo completo).');
+      return;
+    }
     if (!intentos[p.id]) intentos[p.id] = [];
     intentos[p.id].push({ turno: turnoActual, grupo: grupoActual, tiempo: null, dnf: true });
     const card = document.getElementById(`car${ci}`);
