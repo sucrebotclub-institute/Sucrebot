@@ -839,8 +839,24 @@
     document.getElementById('btnCronStop').disabled = true;
   });
   document.getElementById('btnCronReset').addEventListener('click', () => {
-    if (!confirm('¿Reiniciar el cronómetro de este grupo a 02:00?\n\nLos tiempos/DNF ya registrados de este grupo NO se borran.')) return;
-    resetCron();
+    if (!confirm('¿Reiniciar este grupo?\n\nSe borrarán los tiempos/DNF ya registrados de este grupo en este intento, y el cronómetro volverá a 02:00.')) return;
+    const g = grupos[grupoActual];
+    g.forEach(p => {
+      if (!p) return;
+      if (intentos[p.id]) {
+        intentos[p.id] = intentos[p.id].filter(x => !(x.turno === turnoActual && x.grupo === grupoActual));
+      }
+      // recomputar el mejor tiempo tras el borrado
+      const validos = (intentos[p.id] || []).filter(x => !x.dnf);
+      if (validos.length) {
+        const m = validos.reduce((a, b) => b.tiempo < a.tiempo ? b : a);
+        mejores[p.id] = { tiempo: m.tiempo, turno: m.turno, grupo: m.grupo };
+      } else {
+        delete mejores[p.id];
+      }
+    });
+    renderGrupoActual();
+    renderRankingParcial();
   });
 
   function tickCron() {
