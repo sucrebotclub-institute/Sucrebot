@@ -50,6 +50,7 @@ const CERTIFICADO_TEMPLATE = `
         <p class="cert-titulo">Certificado a:</p>
         <p class="cert-nombre">{{NOMBRE_PARTICIPANTE}}</p>
         <div class="cert-divider-thin"></div>
+        <p class="cert-logro-chica">{{TEXTO_LOGRO_CHICA}}</p>
         <p class="cert-logro-grande">{{TEXTO_LOGRO_GRANDE}}</p>
         <p class="cert-logro">{{TEXTO_LOGRO_RESTO}}</p>
       </div>
@@ -159,9 +160,9 @@ const CERTIFICADO_CSS = `
   display: flex; align-items: center; justify-content: center;
   padding: 18px 90px 0; flex-shrink: 0;
 }
-.cert-logo-club  { height: 62px; }
-.cert-logos-sep  { width: 1px; height: 46px; background: linear-gradient(180deg,transparent,#1a5ca8,transparent); margin: 0 20px; }
-.cert-logo-sucre2 { height: 70px; }
+.cert-logo-club  { height: 82px; }
+.cert-logos-sep  { width: 1px; height: 60px; background: linear-gradient(180deg,transparent,#1a5ca8,transparent); margin: 0 20px; }
+.cert-logo-sucre2 { height: 92px; }
 .cert-divider {
   width: 440px; height: 1px;
   background: linear-gradient(90deg, transparent, #1a5ca8 30%, #1a5ca8 70%, transparent);
@@ -183,7 +184,8 @@ const CERTIFICADO_CSS = `
 .cert-confiere { font-family: 'EB Garamond', Georgia, serif; font-size: 18px; font-style: italic; color: #4a5568; margin: 0 0 3px; }
 .cert-titulo    { font-family: 'EB Garamond', Georgia, serif; font-size: 38px; font-weight: 700; color: #0a2a5e; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 7px; }
 .cert-nombre    { font-family: 'EB Garamond', Georgia, serif; font-size: 48px; font-weight: 600; color: #0a2a5e; line-height: 1.1; max-width: 800px; text-align: center; margin: 0 0 7px; }
-.cert-logro-grande { font-family: 'EB Garamond', Georgia, serif; font-size: 28px; font-weight: 700; color: #0a2a5e; text-transform: uppercase; letter-spacing: 0.5px; max-width: 700px; text-align: center; margin: 0 0 12px; }
+.cert-logro-chica { font-family: 'EB Garamond', Georgia, serif; font-size: 16px; font-style: italic; color: #4a5568; margin: 0 0 2px; }
+.cert-logro-grande { font-family: 'EB Garamond', Georgia, serif; font-size: 28px; font-weight: 700; color: #b8860a; text-transform: uppercase; letter-spacing: 0.5px; max-width: 700px; text-align: center; margin: 0 0 12px; }
 .cert-logro-grande strong { color: #b8860a; }
 .cert-logro     { font-family: 'EB Garamond', Georgia, serif; font-size: 16.5px; color: #4a5568; line-height: 1.8; max-width: 680px; text-align: center; margin: 0; }
 .cert-logro strong { color: #0a2a5e; font-weight: 700; }
@@ -235,10 +237,10 @@ function obtenerTextoLogro(tipo, categoria) {
   };
   const t = norm[tipo] || 'participacion';
   const textos = {
-    '1er':          { grande: 'Por haber obtenido el <strong>PRIMER LUGAR</strong>',        resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.` },
-    '2do':          { grande: 'Por haber obtenido el <strong>SEGUNDO LUGAR</strong>',        resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.` },
-    '3er':          { grande: 'Por haber obtenido el <strong>TERCER LUGAR</strong>',         resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.` },
-    'participacion':{ grande: 'Por su <strong>DESTACADA PARTICIPACIÓN</strong>',              resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.` }
+    '1er':          { chica: 'Por haber obtenido',  grande: 'EL PRIMER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.` },
+    '2do':          { chica: 'Por haber obtenido',  grande: 'EL SEGUNDO LUGAR',           resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.` },
+    '3er':          { chica: 'Por haber obtenido',  grande: 'EL TERCER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.` },
+    'participacion':{ chica: 'Por su',               grande: 'DESTACADA PARTICIPACIÓN',    resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.` }
   };
   return textos[t];
 }
@@ -352,6 +354,7 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
   const sello      = obtenerSelloSVG(tipo);
   return CERTIFICADO_TEMPLATE
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
+    .replace(/\{\{TEXTO_LOGRO_CHICA\}\}/g,   textoLogro.chica)
     .replace(/\{\{TEXTO_LOGRO_GRANDE\}\}/g,  textoLogro.grande)
     .replace(/\{\{TEXTO_LOGRO_RESTO\}\}/g,   textoLogro.resto)
     .replace(/\{\{FECHA_EVENTO\}\}/g,         fechaEvento)
