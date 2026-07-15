@@ -160,9 +160,9 @@ const CERTIFICADO_CSS = `
   display: flex; align-items: center; justify-content: center;
   padding: 18px 90px 0; flex-shrink: 0;
 }
-.cert-logo-club  { height: 82px; }
-.cert-logos-sep  { width: 1px; height: 60px; background: linear-gradient(180deg,transparent,#1a5ca8,transparent); margin: 0 20px; }
-.cert-logo-sucre2 { height: 92px; }
+.cert-logo-club  { height: 108px; }
+.cert-logos-sep  { width: 1px; height: 78px; background: linear-gradient(180deg,transparent,#1a5ca8,transparent); margin: 0 20px; }
+.cert-logo-sucre2 { height: 122px; }
 .cert-divider {
   width: 440px; height: 1px;
   background: linear-gradient(90deg, transparent, #1a5ca8 30%, #1a5ca8 70%, transparent);
@@ -237,9 +237,9 @@ function obtenerTextoLogro(tipo, categoria) {
   };
   const t = norm[tipo] || 'participacion';
   const textos = {
-    '1er':          { chica: 'Por haber obtenido',  grande: 'EL PRIMER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.` },
-    '2do':          { chica: 'Por haber obtenido',  grande: 'EL SEGUNDO LUGAR',           resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.` },
-    '3er':          { chica: 'Por haber obtenido',  grande: 'EL TERCER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.` },
+    '1er':          { chica: 'Por haber obtenido',  grande: 'PRIMER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.` },
+    '2do':          { chica: 'Por haber obtenido',  grande: 'SEGUNDO LUGAR',           resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.` },
+    '3er':          { chica: 'Por haber obtenido',  grande: 'TERCER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.` },
     'participacion':{ chica: 'Por su',               grande: 'DESTACADA PARTICIPACIÓN',    resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.` }
   };
   return textos[t];
