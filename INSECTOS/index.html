@@ -1180,7 +1180,7 @@
     cronFInterval = setInterval(tickCronF, 50);
   }
   document.getElementById('btnCronStartF').addEventListener('click', () => {
-    if (!serialReadingF) { mostrarModalSensor(true); return; }
+    if (!serialReading) { mostrarModalSensor(true); return; }
     iniciarCronFReal();
   });
   document.getElementById('btnCronPauseF').addEventListener('click', () => {
@@ -1462,14 +1462,30 @@
   // ============================================================
   // WEB SERIAL — CLASIFICATORIA
   // ============================================================
+  function actualizarSerialUIAmbos(conectado, mensaje) {
+    ['serialDot', 'serialDotF'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('on', conectado);
+    });
+    ['serialStatus', 'serialStatusF'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = mensaje;
+    });
+    ['btnConectar', 'btnConectarF'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = conectado ? 'none' : '';
+    });
+    ['btnDesconectar', 'btnDesconectarF'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = conectado ? '' : 'none';
+    });
+  }
+
   async function conectarSerial() {
     try {
       serialPort = await navigator.serial.requestPort();
       await serialPort.open({ baudRate: 9600 });
-      document.getElementById('serialDot').classList.add('on');
-      document.getElementById('serialStatus').textContent = 'Arduino conectado';
-      document.getElementById('btnConectar').style.display = 'none';
-      document.getElementById('btnDesconectar').style.display = '';
+      actualizarSerialUIAmbos(true, 'Arduino conectado');
       serialReading = true;
       leerSerial();
     } catch (e) {
@@ -1481,11 +1497,11 @@
     serialReading = false;
     try { if (serialReader) { await serialReader.cancel(); serialReader = null; } } catch {}
     try { if (serialPort) { await serialPort.close(); serialPort = null; } } catch {}
-    document.getElementById('serialDot').classList.remove('on');
-    document.getElementById('serialStatus').textContent = 'Web Serial desconectado';
-    document.getElementById('btnConectar').style.display = '';
-    document.getElementById('btnDesconectar').style.display = 'none';
+    actualizarSerialUIAmbos(false, 'Web Serial desconectado');
   });
+  // El panel FINAL reutiliza la MISMA conexión que clasificatoria — no hace falta reconectar el Arduino
+  document.getElementById('btnConectarF').addEventListener('click', conectarSerial);
+  document.getElementById('btnDesconectarF').addEventListener('click', () => document.getElementById('btnDesconectar').click());
 
   async function leerSerial() {
     const decoder = new TextDecoderStream();
@@ -1500,15 +1516,14 @@
         buf += value.replace(/\r/g, '');
         const lines = buf.split('\n');
         buf = lines.pop();
-        lines.forEach(l => procesarLineaSerial(l.trim(), false));
+        const panelFinal = document.getElementById('panel2');
+        const esFinalActivo = !!(panelFinal && panelFinal.classList.contains('active'));
+        lines.forEach(l => procesarLineaSerial(l.trim(), esFinalActivo));
       } catch (e) {
         if (e.name !== 'AbortError') {
           serialReading = false;
           serialPort = null; serialReader = null;
-          document.getElementById('serialDot').classList.remove('on');
-          document.getElementById('serialStatus').textContent = '⚠️ Arduino desconectado — reconecta';
-          document.getElementById('btnConectar').style.display = '';
-          document.getElementById('btnDesconectar').style.display = 'none';
+          actualizarSerialUIAmbos(false, '⚠️ Arduino desconectado — reconecta');
         }
         break;
       }
@@ -1531,59 +1546,10 @@
 
   // ============================================================
   // WEB SERIAL — FINAL
+  // (el panel FINAL ahora comparte la misma conexión que clasificatoria;
+  // los listeners de btnConectarF/btnDesconectarF quedaron enganchados
+  // más arriba, junto a conectarSerial())
   // ============================================================
-  async function conectarSerialF() {
-    try {
-      serialPortF = await navigator.serial.requestPort();
-      await serialPortF.open({ baudRate: 9600 });
-      document.getElementById('serialDotF').classList.add('on');
-      document.getElementById('serialStatusF').textContent = 'Arduino conectado';
-      document.getElementById('btnConectarF').style.display = 'none';
-      document.getElementById('btnDesconectarF').style.display = '';
-      serialReadingF = true;
-      leerSerialF();
-    } catch (e) {
-      console.warn('Serial F:', e.message);
-    }
-  }
-  document.getElementById('btnConectarF').addEventListener('click', conectarSerialF);
-  document.getElementById('btnDesconectarF').addEventListener('click', async () => {
-    serialReadingF = false;
-    try { if (serialReaderF) { await serialReaderF.cancel(); serialReaderF = null; } } catch {}
-    try { if (serialPortF) { await serialPortF.close(); serialPortF = null; } } catch {}
-    document.getElementById('serialDotF').classList.remove('on');
-    document.getElementById('serialStatusF').textContent = 'Web Serial desconectado';
-    document.getElementById('btnConectarF').style.display = '';
-    document.getElementById('btnDesconectarF').style.display = 'none';
-  });
-
-  async function leerSerialF() {
-    const decoder = new TextDecoderStream();
-    serialPortF.readable.pipeTo(decoder.writable).catch(()=>{});
-    const reader = decoder.readable.getReader();
-    serialReaderF = reader;
-    let buf = '';
-    while (serialReadingF) {
-      try {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buf += value.replace(/\r/g, '');
-        const lines = buf.split('\n');
-        buf = lines.pop();
-        lines.forEach(l => procesarLineaSerial(l.trim(), true));
-      } catch (e) {
-        if (e.name !== 'AbortError') {
-          serialReadingF = false;
-          serialPortF = null; serialReaderF = null;
-          document.getElementById('serialDotF').classList.remove('on');
-          document.getElementById('serialStatusF').textContent = '⚠️ Arduino desconectado — reconecta';
-          document.getElementById('btnConectarF').style.display = '';
-          document.getElementById('btnDesconectarF').style.display = 'none';
-        }
-        break;
-      }
-    }
-  }
 
   // ============================================================
   // VOLVER A PRESENTES (desde final)
