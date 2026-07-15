@@ -330,6 +330,7 @@
                 <button class="btn btn-orange" id="btnCronPause" disabled>⏸ PAUSAR</button>
                 <button class="btn btn-red" id="btnCronStop" disabled>⏹ DETENER</button>
               </div>
+              <button class="btn btn-outline" id="btnCronReset" style="width:100%;margin-top:8px">↻ Reiniciar tiempo</button>
               <button class="btn btn-outline" id="btnDNFAll" style="width:100%;margin-top:8px">DNF TODOS</button>
             </div>
           </div>
@@ -798,12 +799,15 @@
     document.getElementById('btnCronStart').disabled = false;
     document.getElementById('btnCronPause').disabled = true;
     document.getElementById('btnCronStop').disabled = true;
-    // habilitar btns carril
+    // habilitar btns carril (solo los que no tengan ya un resultado registrado en este turno/grupo)
+    const g = grupos[grupoActual];
     [0,1,2,3].forEach(ci => {
+      const p = g[ci];
+      const yaReg = p && (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
       const bv = document.getElementById(`cbv${ci}`);
       const bd = document.getElementById(`cbd${ci}`);
-      if (bv) bv.disabled = false;
-      if (bd) bd.disabled = false;
+      if (bv) bv.disabled = !!yaReg;
+      if (bd) bd.disabled = !!yaReg;
     });
   }
 
@@ -833,6 +837,10 @@
     document.getElementById('btnCronStart').disabled = false;
     document.getElementById('btnCronPause').disabled = true;
     document.getElementById('btnCronStop').disabled = true;
+  });
+  document.getElementById('btnCronReset').addEventListener('click', () => {
+    if (!confirm('¿Reiniciar el cronómetro de este grupo a 02:00?\n\nLos tiempos/DNF ya registrados de este grupo NO se borran.')) return;
+    resetCron();
   });
 
   function tickCron() {
