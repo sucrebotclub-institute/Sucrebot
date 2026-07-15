@@ -237,9 +237,9 @@ function obtenerTextoLogro(tipo, categoria) {
   };
   const t = norm[tipo] || 'participacion';
   const textos = {
-    '1er':          { chica: 'Por haber obtenido',  grande: 'PRIMER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.` },
-    '2do':          { chica: 'Por haber obtenido',  grande: 'SEGUNDO LUGAR',           resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.` },
-    '3er':          { chica: 'Por haber obtenido',  grande: 'TERCER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.` },
+    '1er':          { chica: 'Por haber obtenido el',  grande: 'PRIMER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.` },
+    '2do':          { chica: 'Por haber obtenido el',  grande: 'SEGUNDO LUGAR',           resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.` },
+    '3er':          { chica: 'Por haber obtenido el',  grande: 'TERCER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.` },
     'participacion':{ chica: 'Por su',               grande: 'DESTACADA PARTICIPACIÓN',    resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.` }
   };
   return textos[t];
