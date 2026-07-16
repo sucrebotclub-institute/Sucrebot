@@ -297,8 +297,9 @@
           <div class="participantes-list" id="listaParticipantes">
             <div class="empty-state">Cargando participantes…</div>
           </div>
-          <div style="margin-top:24px;display:flex;justify-content:flex-end;align-items:center;gap:12px">
+          <div style="margin-top:24px;display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap">
             <div id="reglamentoNote" style="font-family:'Orbitron';font-size:.6rem;color:var(--muted);display:none"></div>
+            <button class="btn btn-outline" id="btnPodioManualDirecto">🏆 Podio Manual (sin cronometrar)</button>
             <button class="btn btn-cyan" id="btnIniciarClas">INICIAR →</button>
           </div>
         </div>
@@ -1429,6 +1430,11 @@
     document.getElementById('modalPodioManual').classList.add('show');
   }
 
+  document.getElementById('btnPodioManualDirecto').addEventListener('click', () => {
+    if (presentes.length < 1) { alert('Selecciona al menos 1 participante presente.'); return; }
+    abrirModalPodioManual();
+  });
+
   document.getElementById('btnAjustarPodio').addEventListener('click', abrirModalPodioManual);
   document.getElementById('btnPodioManualCancelar').addEventListener('click', () => {
     document.getElementById('modalPodioManual').classList.remove('show');
@@ -1442,6 +1448,7 @@
     }
     podioManualOverride = ids.map(id => id || null);
     document.getElementById('modalPodioManual').classList.remove('show');
+    stepActivar(3);
     construirPodio();
 
     const pool = poolPodioManual();
@@ -1487,11 +1494,12 @@
       sinMeta = clasificados
         .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
     }
-    // No clasificados (si vinieron de clasificatoria y no llegaron a final)
-    const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id));
+    // No clasificados (si vinieron de clasificatoria y no llegaron a final, o si se saltó la carrera)
+    const idsEnConMeta = conMeta.map(p => p.id);
+    const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id) && !idsEnConMeta.includes(p.id));
 
     const todos = [
-      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: (tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta) ? fmtMsGAS(tiemposFinal[p.id].tiempo) : 'DNF' })),
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: (tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta) ? fmtMsGAS(tiemposFinal[p.id].tiempo) : (tiemposFinal[p.id] ? 'DNF' : '—') })),
       ...sinMeta.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
       ...noFinal.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
     ];
