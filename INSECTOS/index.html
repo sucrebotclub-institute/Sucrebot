@@ -1499,7 +1499,12 @@
     const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id) && !idsEnConMeta.includes(p.id));
 
     const todos = [
-      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: (tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta) ? fmtMsGAS(tiemposFinal[p.id].tiempo) : (tiemposFinal[p.id] ? 'DNF' : '—') })),
+      // Nota: si el podio se ajustó manualmente sin cronometrar (tiemposFinal[p.id] no existe),
+      // RESULTADOS solo puede armar podio con tiempos con formato válido HH:MM:SS — "—"/vacío
+      // se trata igual que "sin dato" y no se distingue ni como DNF. Por eso, para esos puestos
+      // sin tiempo real se guarda un tiempo sintético ascendente (00:00:01, 00:00:02, 00:00:03)
+      // que ordena correctamente 1º/2º/3º sin tocar la lógica de RESULTADOS.
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: (tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta) ? fmtMsGAS(tiemposFinal[p.id].tiempo) : (tiemposFinal[p.id] ? 'DNF' : fmtMsGAS((i+1)*1000)) })),
       ...sinMeta.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
       ...noFinal.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
     ];
