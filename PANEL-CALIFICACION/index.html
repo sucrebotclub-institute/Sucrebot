@@ -336,6 +336,33 @@
   </div>
 </div>
 
+<!-- Modal ajuste podio manual -->
+<div class="modal-overlay" id="modalPodioManualCal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-icon">✏️</div>
+    <div class="modal-title">AJUSTAR PODIO MANUALMENTE</div>
+    <div class="modal-msg" style="text-align:left">Elige el orden real si el ranking calculado por jueces no corresponde. Esto reemplaza el 1°-2°-3° al guardar los competidores/certificados.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;text-align:left">
+      <div>
+        <label style="font-size:.7rem;color:var(--text-dim);font-weight:700;letter-spacing:1px">🥇 1er lugar</label>
+        <select id="selPodioCal1" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+      </div>
+      <div>
+        <label style="font-size:.7rem;color:var(--text-dim);font-weight:700;letter-spacing:1px">🥈 2do lugar</label>
+        <select id="selPodioCal2" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+      </div>
+      <div>
+        <label style="font-size:.7rem;color:var(--text-dim);font-weight:700;letter-spacing:1px">🥉 3er lugar</label>
+        <select id="selPodioCal3" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-outline btn-sm" onclick="cerrarModalPodioManualCal()">Cancelar</button>
+      <button class="btn btn-green btn-sm" onclick="confirmarPodioManualCal()">Aplicar</button>
+    </div>
+  </div>
+</div>
+
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
   <div data-include="../shared/components/header.html"></div>
@@ -693,6 +720,8 @@
           <button class="btn btn-outline btn-sm" onclick="irACalificar()">← Volver a Calificar</button>
           <button class="btn btn-primary btn-sm" onclick="exportarExcel()">📊 Exportar CSV</button>
           <button class="btn btn-green btn-sm" id="btnTop3Ranking" style="display:none" onclick="abrirSelectorFinalistas()">🏆 Seleccionar TOP 3 Finalistas →</button>
+          <button class="btn btn-outline btn-sm" onclick="abrirModalPodioManualCal()">✏️ Ajustar Podio</button>
+          <button class="btn btn-outline btn-sm" id="btnQuitarPodioManualCal" style="display:none" onclick="quitarPodioManualCal()">↩️ Quitar ajuste manual</button>
           <button class="btn btn-green btn-sm" onclick="guardarPodio()">🏆 Guardar Podio</button>
           <button class="btn btn-terminar btn-sm" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
         </div>
@@ -821,6 +850,7 @@ let state = {
   calificacionesFinal: {},       // calificaciones ronda final bai
   calificacionesFinalPorJuez: {}, // notas final por juez bai
   selectedFinalId: null,
+  podioManualOverride: null, // [id1,id2,id3]|null — ajuste manual del podio (panel-4, RANKING)
 };
 
 // ── CRONÓMETRO LK ─────────────────────────────────────────────
@@ -1153,6 +1183,7 @@ async function seleccionarCategoria(cat) {
     state.calificacionesFinal = {};
     state.calificacionesFinalPorJuez = {};
     state.selectedFinalId = null;
+    state.podioManualOverride = null;
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
@@ -1999,7 +2030,7 @@ function terminarCategoria() {
   );
 }
 
-async function cargarRanking() {
+async function cargarRanking(soloRerenderizar) {
   loading(true, 'CALCULANDO RANKING...');
   const cat  = state.categoria;
   const esLk  = cat === 'lk';
@@ -2014,18 +2045,24 @@ async function cargarRanking() {
   else if (esMultiRank) document.getElementById('thF2Col').textContent = 'J1 / J2 / J3';
 
   try {
-    const res = await gasGet({ action: 'getRankingCalificacion', categoria: cat });
-    state.rankingData = res.ranking || [];
+    if (!soloRerenderizar) {
+      const res = await gasGet({ action: 'getRankingCalificacion', categoria: cat });
+      state.rankingData = res.ranking || [];
+    }
   } catch(e) {
-    state.rankingData = state.participantes.map(p => {
-      const cal = state.calificaciones[p.id];
-      return { id: p.id, nombre: p.nombre, robot: p.robot||p.nombre, institucion: p.institucion, total: cal?.total||0, rondas: cal?1:0 };
-    }).sort((a,b) => b.total - a.total);
+    if (!soloRerenderizar) {
+      state.rankingData = state.participantes.map(p => {
+        const cal = state.calificaciones[p.id];
+        return { id: p.id, nombre: p.nombre, robot: p.robot||p.nombre, institucion: p.institucion, total: cal?.total||0, rondas: cal?1:0 };
+      }).sort((a,b) => b.total - a.total);
+    }
   }
+  aplicarOrdenPodioManual();
+  document.getElementById('btnQuitarPodioManualCal').style.display = state.podioManualOverride ? 'inline-flex' : 'none';
 
   const maxScore = state.rankingData[0]?.total || 1;
   document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[cat]}`;
-  document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados`;
+  document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados` + (state.podioManualOverride ? ' · ✏️ Podio ajustado manualmente' : '');
   // Mostrar botón TOP 3 solo para bai y solo si aún no se han elegido finalistas
   const btnTop3 = document.getElementById('btnTop3Ranking');
   if (btnTop3) btnTop3.style.display = (cat === 'bai') ? 'inline-flex' : 'none';
@@ -2100,6 +2137,66 @@ async function verRankingDesdePaso1() {
   }
   await cargarRanking();
   setStep(4);
+}
+
+// ── AJUSTE MANUAL DE PODIO (panel-4 RANKING) ───────────────────
+function aplicarOrdenPodioManual() {
+  if (!state.podioManualOverride || !state.rankingData.length) return;
+  const ov = state.podioManualOverride.filter(Boolean);
+  const primero = ov.map(id => state.rankingData.find(r => r.id === id)).filter(Boolean);
+  const idsEnPrimero = primero.map(r => r.id);
+  const resto = state.rankingData.filter(r => !idsEnPrimero.includes(r.id));
+  state.rankingData = [...primero, ...resto];
+}
+
+function abrirModalPodioManualCal() {
+  if (!state.rankingData.length) { toast('No hay ranking cargado todavía', 'error'); return; }
+  const pool = state.rankingData;
+  const selects = ['selPodioCal1','selPodioCal2','selPodioCal3'].map(id => document.getElementById(id));
+  selects.forEach((sel, i) => {
+    sel.innerHTML = '<option value="">— (vacío) —</option>' +
+      pool.map(r => `<option value="${r.id}">${r.robot || r.nombre} — ${r.nombre}</option>`).join('');
+    const preset = state.podioManualOverride ? (state.podioManualOverride[i] || '') : (pool[i] ? pool[i].id : '');
+    sel.value = preset;
+  });
+  document.getElementById('modalPodioManualCal').classList.add('show');
+}
+
+function cerrarModalPodioManualCal() {
+  document.getElementById('modalPodioManualCal').classList.remove('show');
+}
+
+async function confirmarPodioManualCal() {
+  const ids = ['selPodioCal1','selPodioCal2','selPodioCal3'].map(id => document.getElementById(id).value);
+  const llenos = ids.filter(Boolean);
+  if (new Set(llenos).size !== llenos.length) {
+    alert('No puedes repetir el mismo equipo en más de una posición.');
+    return;
+  }
+  state.podioManualOverride = ids.map(id => id || null);
+  cerrarModalPodioManualCal();
+  aplicarOrdenPodioManual();
+  await cargarRanking(true); // re-renderiza tabla ya con el orden ajustado
+  document.getElementById('btnQuitarPodioManualCal').style.display = 'inline-flex';
+  toast('✏️ Podio ajustado manualmente', 'success');
+
+  const posiciones = state.podioManualOverride.map((id, i) => {
+    if (!id) return null;
+    const r = state.rankingData.find(x => x.id === id);
+    if (!r) return null;
+    return { posicion: i + 1, equipo_id: r.id, equipo_nombre: r.robot || r.nombre, total: parseFloat(r.total) || 0 };
+  }).filter(Boolean);
+  try { await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones }); }
+  catch(e) { console.error('No se pudo guardar podio manual en backend', e); }
+}
+
+async function quitarPodioManualCal() {
+  if (!confirm('¿Quitar el ajuste manual y volver al ranking calculado por jueces?')) return;
+  state.podioManualOverride = null;
+  document.getElementById('btnQuitarPodioManualCal').style.display = 'none';
+  await cargarRanking(true);
+  try { await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones: [] }); }
+  catch(e) { console.error('No se pudo limpiar podio manual en backend', e); }
 }
 
 async function guardarPodio() {
