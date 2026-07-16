@@ -208,6 +208,31 @@
     </div>
   </div>
 
+  <div class="sb-modal-overlay" id="modalPodioManual">
+    <div class="sb-modal-card" style="max-width:460px">
+      <div class="sb-modal-title">✏️ Ajustar podio manualmente</div>
+      <div class="sb-modal-desc">Elige el orden real si el cálculo automático por tiempo no corresponde (ej. tiempo mal registrado, descalificación tras la carrera). Esto reemplaza el orden 1°-2°-3° al guardar certificados.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+        <div>
+          <label style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:1px">🥇 1er lugar</label>
+          <select id="selPodio1" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:1px">🥈 2do lugar</label>
+          <select id="selPodio2" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:1px">🥉 3er lugar</label>
+          <select id="selPodio3" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+        </div>
+      </div>
+      <div class="sb-modal-actions">
+        <button class="sb-modal-btn ghost" id="btnPodioManualCancelar">Cancelar</button>
+        <button class="sb-modal-btn primary" id="btnPodioManualConfirmar">Aplicar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="sticky-header">
     <div data-include="../shared/components/topbar.html"></div>
     <div data-include="../shared/components/header.html"></div>
@@ -392,6 +417,8 @@
           <div id="podioNota"></div>
           <div style="margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
             <button class="btn btn-anterior" id="btnVolverFinal">← Volver a Final</button>
+            <button class="btn btn-outline" id="btnAjustarPodio">✏️ Ajustar Podio</button>
+            <button class="btn btn-outline" id="btnQuitarAjustePodio" style="display:none">↩️ Quitar ajuste manual</button>
             <button class="btn btn-cyan" id="btnGuardarPodio">💾 Guardar en certificados</button>
             <button class="btn btn-green" id="btnExportarExcel">📊 Exportar Excel</button>
             <button class="btn btn-outline" id="btnReiniciar">↺ Nueva competencia</button>
@@ -420,6 +447,9 @@
   let intentos = {};       // id → [{turno,grupo,tiempo,dnf}]
   let clasificados = [];   // top 4 para la final
   let tiemposFinal = {};   // id → { tiempo, dnf, cruzaMeta } (MEJOR de los intentos)
+  let podioManualOverride = null; // [id1,id2,id3]|null — ajuste manual del podio (reemplaza el orden automático por tiempo)
+
+  function poolPodioManual() { return clasificados.length ? clasificados : presentes; }
   let intentosFinal = {};  // id → [{ turno, tiempo, dnf }, ...] (hasta 2 intentos)
   let turnoFinalActual = 0; // 0 = intento 1, 1 = intento 2
   const MAX_INTENTOS_FINAL = 2;
@@ -1320,25 +1350,36 @@
   // PODIO
   // ============================================================
   function construirPodio() {
+    if (podioManualOverride) {
+      const pool = poolPodioManual();
+      const conMeta = podioManualOverride.map(id => id ? pool.find(p => p.id === id) : null).filter(Boolean);
+      const idsEnPodio = conMeta.map(p => p.id);
+      const sinMeta = clasificados.filter(p => !idsEnPodio.includes(p.id));
+      renderPodio(conMeta, sinMeta, true);
+      return;
+    }
     const conMeta = clasificados
       .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
       .sort((a, b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
     const sinMeta = clasificados
       .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
 
-    renderPodio(conMeta, sinMeta);
+    renderPodio(conMeta, sinMeta, false);
   }
 
   function construirPodioDirecto() {
+    if (podioManualOverride) { construirPodio(); return; }
     // <2 robots con tiempo en clas → usar ranking parcial
     const ranked = rankingClas().filter(r => r.tiempo !== null).map(r => r.p);
     const sinMeta = presentes.filter(p => !ranked.includes(p));
-    renderPodio(ranked, sinMeta);
+    renderPodio(ranked, sinMeta, false);
   }
 
-  function renderPodio(conMeta, sinMeta) {
+  function renderPodio(conMeta, sinMeta, manual) {
     const wrap = document.getElementById('podioWrap');
     const nota = document.getElementById('podioNota');
+    const btnQuitar = document.getElementById('btnQuitarAjustePodio');
+    if (btnQuitar) btnQuitar.style.display = manual ? 'inline-flex' : 'none';
 
     const pos = [
       { pos: 1, label: '🥇', cls: 'p1', order: 1 },
@@ -1352,22 +1393,75 @@
       const { pos: n, label, cls } = pos[oi];
       const p = conMeta[n - 1];
       const tf = p ? tiemposFinal[p.id] : null;
+      const tiempoTxt = !p ? '' : (tf && tf.cruzaMeta ? fmtMs(tf.tiempo) : 'DNF');
       return `<div class="podio-col">
         <div class="podio-robot">${p ? p.robot : '—'}</div>
-        <div class="podio-tiempo">${p && tf ? fmtMs(tf.tiempo) : ''}</div>
+        <div class="podio-tiempo">${tiempoTxt}</div>
         <div class="podio-plat ${cls} ${p ? '' : 'vacio'}">${label}</div>
       </div>`;
     }).join('');
 
     let notaHtml = '';
+    if (manual) {
+      notaHtml += `<div class="info-box">✏️ <b>Podio ajustado manualmente</b> por el staff — no refleja necesariamente el orden automático por tiempo.</div>`;
+    }
     if (sinMeta.length) {
       notaHtml += `<div class="alert-box"><b>Reglamento 4.6:</b> Los siguientes robots no cruzaron la meta y no califican para 2do/3er lugar: ${sinMeta.map(p=>`<b>${p.robot}</b>`).join(', ')}</div>`;
     }
-    if (conMeta.length < 2) {
+    if (conMeta.length < 2 && !manual) {
       notaHtml += `<div class="info-box">⚠️ Solo ${conMeta.length} robot${conMeta.length!==1?'s':''} cruzó la meta. Posiciones 2do/3er lugar quedan vacantes.</div>`;
     }
     nota.innerHTML = notaHtml;
   }
+
+  function abrirModalPodioManual() {
+    const pool = poolPodioManual();
+    const auto = clasificados
+      .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
+      .sort((a, b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
+    const selects = ['selPodio1','selPodio2','selPodio3'].map(id => document.getElementById(id));
+    selects.forEach((sel, i) => {
+      sel.innerHTML = '<option value="">— (vacío) —</option>' +
+        pool.map(p => `<option value="${p.id}">${p.robot} — ${p.nombre}</option>`).join('');
+      const preset = podioManualOverride ? (podioManualOverride[i] || '') : (auto[i] ? auto[i].id : '');
+      sel.value = preset;
+    });
+    document.getElementById('modalPodioManual').classList.add('show');
+  }
+
+  document.getElementById('btnAjustarPodio').addEventListener('click', abrirModalPodioManual);
+  document.getElementById('btnPodioManualCancelar').addEventListener('click', () => {
+    document.getElementById('modalPodioManual').classList.remove('show');
+  });
+  document.getElementById('btnPodioManualConfirmar').addEventListener('click', async () => {
+    const ids = ['selPodio1','selPodio2','selPodio3'].map(id => document.getElementById(id).value);
+    const llenos = ids.filter(Boolean);
+    if (new Set(llenos).size !== llenos.length) {
+      alert('No puedes repetir el mismo robot en más de una posición.');
+      return;
+    }
+    podioManualOverride = ids.map(id => id || null);
+    document.getElementById('modalPodioManual').classList.remove('show');
+    construirPodio();
+
+    const pool = poolPodioManual();
+    const posiciones = podioManualOverride.map((id, i) => {
+      if (!id) return null;
+      const p = pool.find(x => x.id === id);
+      if (!p) return null;
+      const tf = tiemposFinal[id];
+      return { posicion: i + 1, equipo_id: p.id, equipo_nombre: p.robot, total: (tf && tf.cruzaMeta) ? tf.tiempo : 0 };
+    }).filter(Boolean);
+    try { await gasPost({ action: 'guardarPodioManual', categoria: 'ins', posiciones }); }
+    catch(e) { console.error('No se pudo guardar podio manual en backend', e); }
+  });
+  document.getElementById('btnQuitarAjustePodio').addEventListener('click', async () => {
+    if (!confirm('¿Quitar el ajuste manual y volver al orden automático por tiempo?')) return;
+    podioManualOverride = null;
+    construirPodio();
+    try { await gasPost({ action: 'guardarPodioManual', categoria: 'ins', posiciones: [] }); }
+    catch(e) { console.error('No se pudo limpiar podio manual en backend', e); }
+  });
 
   // ============================================================
   // GUARDAR PODIO
@@ -1377,18 +1471,27 @@
     btn.disabled = true;
     btn.textContent = 'Guardando…';
 
-    // Construir lista ordenada desde tiemposFinal (datos reales de la final)
+    // Construir lista ordenada desde tiemposFinal (datos reales de la final),
+    // o desde el ajuste manual si el staff lo aplicó (podioManualOverride)
     const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
-    const conMeta = clasificados
-      .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
-      .sort((a,b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
-    const sinMeta = clasificados
-      .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
+    let conMeta, sinMeta;
+    if (podioManualOverride) {
+      const pool = poolPodioManual();
+      conMeta = podioManualOverride.map(id => id ? pool.find(p => p.id === id) : null).filter(Boolean);
+      const idsEnPodio = conMeta.map(p => p.id);
+      sinMeta = clasificados.filter(p => !idsEnPodio.includes(p.id));
+    } else {
+      conMeta = clasificados
+        .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
+        .sort((a,b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
+      sinMeta = clasificados
+        .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
+    }
     // No clasificados (si vinieron de clasificatoria y no llegaron a final)
     const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id));
 
     const todos = [
-      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: fmtMsGAS(tiemposFinal[p.id].tiempo) })),
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: (tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta) ? fmtMsGAS(tiemposFinal[p.id].tiempo) : 'DNF' })),
       ...sinMeta.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
       ...noFinal.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
     ];
@@ -1452,7 +1555,7 @@
   document.getElementById('btnReiniciar').addEventListener('click', () => {
     if (!confirm('¿Reiniciar la competencia de Insectos? Se perderán todos los datos del torneo actual.')) return;
     presentes = []; grupos = []; mejores = {}; intentos = {};
-    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0;
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
     turnoActual = 0; grupoActual = 0;
     clearInterval(cronInterval); clearInterval(cronFInterval);
     stepActivar(0);
@@ -1556,7 +1659,7 @@
   document.getElementById('btnVolverPresentes2').addEventListener('click', () => {
     if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
     clearInterval(cronFInterval);
-    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0;
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
     grupos = []; mejores = {}; intentos = {};
     turnoActual = 0; grupoActual = 0;
     stepActivar(0);
@@ -1575,7 +1678,7 @@
   document.getElementById('btnCerrarCat').addEventListener('click', () => {
     if (!confirm('¿Cerrar la categoría Insectos? Esto reiniciará la competencia.')) return;
     presentes = []; grupos = []; mejores = {}; intentos = {};
-    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0;
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
     turnoActual = 0; grupoActual = 0;
     clearInterval(cronInterval); clearInterval(cronFInterval);
     stepActivar(0);
