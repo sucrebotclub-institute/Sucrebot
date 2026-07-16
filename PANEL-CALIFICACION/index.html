@@ -513,6 +513,7 @@
       </div>
       <div class="presentes-grid" id="presentesGrid"></div>
       <div class="btn-row" style="justify-content:flex-end">
+        <button class="btn btn-outline btn-sm" onclick="abrirModalPodioManualCal()">🏆 Podio Manual (sin calificar)</button>
         <button class="btn btn-green" id="btnIniciarCalPresentes" disabled onclick="iniciarCalificacionConPresentes()">Iniciar Calificación →</button>
       </div>
     </div>
@@ -2139,7 +2140,7 @@ async function verRankingDesdePaso1() {
   setStep(4);
 }
 
-// ── AJUSTE MANUAL DE PODIO (panel-4 RANKING) ───────────────────
+// ── AJUSTE MANUAL DE PODIO (panel-4 RANKING, o directo desde PRESENTES) ─
 function aplicarOrdenPodioManual() {
   if (!state.podioManualOverride || !state.rankingData.length) return;
   const ov = state.podioManualOverride.filter(Boolean);
@@ -2149,9 +2150,19 @@ function aplicarOrdenPodioManual() {
   state.rankingData = [...primero, ...resto];
 }
 
+function poolPresentesCal() {
+  return (state.participantes || [])
+    .filter(p => state.presentes.has(p.id))
+    .map(p => ({ id: p.id, nombre: p.nombre, robot: p.robot || p.nombre, institucion: p.institucion || '', total: 0 }));
+}
+
+function poolPodioManualCal() {
+  return state.rankingData.length ? state.rankingData : poolPresentesCal();
+}
+
 function abrirModalPodioManualCal() {
-  if (!state.rankingData.length) { toast('No hay ranking cargado todavía', 'error'); return; }
-  const pool = state.rankingData;
+  const pool = poolPodioManualCal();
+  if (!pool.length) { toast('No hay participantes presentes seleccionados', 'error'); return; }
   const selects = ['selPodioCal1','selPodioCal2','selPodioCal3'].map(id => document.getElementById(id));
   selects.forEach((sel, i) => {
     sel.innerHTML = '<option value="">— (vacío) —</option>' +
@@ -2173,10 +2184,12 @@ async function confirmarPodioManualCal() {
     alert('No puedes repetir el mismo equipo en más de una posición.');
     return;
   }
+  if (!state.rankingData.length) state.rankingData = poolPresentesCal();
   state.podioManualOverride = ids.map(id => id || null);
   cerrarModalPodioManualCal();
   aplicarOrdenPodioManual();
-  await cargarRanking(true); // re-renderiza tabla ya con el orden ajustado
+  setStep(4);
+  await cargarRanking(true); // re-renderiza tabla ya con el orden ajustado (sin volver a pedir al GAS)
   document.getElementById('btnQuitarPodioManualCal').style.display = 'inline-flex';
   toast('✏️ Podio ajustado manualmente', 'success');
 
