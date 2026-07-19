@@ -1,14 +1,9 @@
 ---
 name: sucrebot-development
-description: "Use this skill when working on SucreBot, the robotics competition management platform for Instituto Superior Universitario Sucre. Triggers include requests to modify SucreBot pages (INICIO, REGISTRO, REGISTRO-DEV, MI-REGISTRO, PARTICIPANTES_REGISTRADOS, ESC-NER, CRONOMETRO, INSECTOS, PANEL-CALIFICACION, PANEL-BRACKET, PANTALLA, RESULTADOS, CERTIFICADOS, GENERAR-CERTIFICADOS, MANILLAS, FAQ, REGLAMENTO, INSTITUCION), fix bugs in registration/scanner/timing/results/certificate/scoring/bracket/manillas/insectos systems, update Google Apps Script backend, adjust UI styling (institutional blue"
----
-
----
-name: sucrebot-development
 description: Use this skill when working on SucreBot, the robotics competition management platform for Instituto Superior Universitario Sucre. Triggers include requests to modify SucreBot pages (INICIO, REGISTRO, REGISTRO-DEV, MI-REGISTRO, PARTICIPANTES_REGISTRADOS, ESC-NER, CRONOMETRO, INSECTOS, PANEL-CALIFICACION, PANEL-BRACKET, PANTALLA, RESULTADOS, CERTIFICADOS, GENERAR-CERTIFICADOS, MANILLAS, FAQ, REGLAMENTO, INSTITUCION), fix bugs in registration/scanner/timing/results/certificate/scoring/bracket/manillas/insectos systems, update Google Apps Script backend, adjust UI styling (institutional blue #1a5ca8, Bebas Neue/Exo 2/Orbitron/DM Mono fonts), integrate with Google Sheets/Google Drive APIs, work with the staff-token auth system, troubleshoot QR scanning/category locking/Web Serial/bracket issues, or write console test/cleanup scripts.
 ---
 
-# SucreBot Development Skill (actualizado 16-jul-2026)
+# SucreBot Development Skill (actualizado 19-jul-2026)
 
 ## Project Overview
 
@@ -970,7 +965,19 @@ Patrón recurrente esta sesión: el primer intento de `POST /pages/builds` frecu
 - ✅ Bracket de Soccer: documento Word actualizado (intercambio de grupos Dio Sabra ↔ ATOM X)
 - ✅ Bracket en papel de Minisumo RC: generado para 21 participantes, eliminación simple ("Black Noir"/"Blanck Noir" tratado como el mismo participante con typo)
 
+### Bugs corregidos — sprint 19 jul 2026 (post-evento, migración a Claude Code)
+
+**Contexto**: primera sesión trabajando el proyecto directamente con Claude Code en el repo local (`C:\Users\raku\Sucrebot`), migrando desde un Proyecto de claude.ai. Se armó `CLAUDE.md` + este `SKILL.md` en el repo, se resolvió la fricción de autenticación de git, y se investigó/corrigió el bug real de MANILLAS reportado del día del evento.
+
+- ✅ **Git**: configurado Git Credential Manager (`git config --global credential.helper manager`) — el PAT de GitHub queda guardado cifrado en el Administrador de Credenciales de Windows, ya no hace falta pegarlo en cada sesión. Si vence o se revoca, git lo vuelve a pedir en el próximo push.
+- ✅ **Migración de contexto**: `CLAUDE.md` y `SKILL.md` migrados desde el Proyecto de claude.ai al repo (`.claude/skills/sucrebot-development/`), firmware (`trepador_sensor.ino`, `codigo_pista_seguidor_1.ino`) versionado en `Sucrebot/firmware/`, `Code.gs` reubicado fuera de cualquier repo (`C:\Users\raku\sucrebot-gas-local\`, con su propio `CLAUDE.md` aclaratorio de que no se commitea), skill del bot de WhatsApp copiado a su repo separado (`sucrebot-whatsapp/.claude/skills/bot-whatsapp/`).
+- ✅ **INICIO/header compartido**: quitado el countdown regresivo (apuntaba al 16 jul 2026, quedaba congelado en `00:00:00:00` desde que pasó el evento) — vivía en `shared/components/header.html`, usado por las 21 páginas del sitio. CSS muerto asociado también limpiado de `mobile-fix.css`.
+- ✅ **MANILLAS — bug real, página muerta desde el día del evento**: dos participantes tienen el robot nombrado literalmente `"7"` y `"8"` — Google Sheets autodetectó esas celdas como número, no texto. `renderLista()` llamaba `.localeCompare()`/`.toLowerCase()`/`.slice()` directo sobre `p.robot` sin convertir a string primero; con un `robot` numérico esos métodos no existen → `TypeError` → el `sort()` completo explota. Como el crash ocurre **después** de guardar el cache nuevo en localStorage pero **antes** de pintar stats/lista, se propaga al bloque de fallback (que usa un timestamp capturado *antes* del fetch, de ahí un indicador de caché mostrando millones de minutos — timestamp 0 desde época) y explota otra vez ahí, esta vez silenciada en un `catch(e2){}` vacío — dejando la página muerta en **cada** carga futura, no solo la del día del evento, porque el dato problemático seguía viniendo del Sheet. Fix: forzar `String(...)` antes de esos métodos en el sort, la búsqueda y el cálculo de iniciales del avatar. Mismo hueco encontrado y corregido en la búsqueda de `PARTICIPANTES_REGISTRADOS` (hubiera roto esa página también al escribir texto en el buscador).
+- ✅ **`SKILL.md`**: corregido un frontmatter YAML duplicado/roto al inicio del archivo (una copia truncaba la `description` a mitad de frase) que hacía que el listado de skills disponibles se mostrara cortado.
+
+**Principio nuevo**: cualquier campo que venga de una hoja de Google Sheets y se use con métodos de string (`.localeCompare`, `.toLowerCase`, `.slice`, `.startsWith`, etc.) debe envolverse en `String(...)` antes — Sheets puede autodetectar y guardar como número cualquier celda cuyo contenido "parezca" numérico, incluso en campos de texto libre como el nombre de un robot. Ya se conocía este riesgo para *escrituras* (`setNumberFormat('@')` antes de `setValue()`, documentado desde el bug del marcador de Soccer); ahora también aplica para *lecturas* en el frontend — no asumir que un campo de Sheets siempre llega como string solo porque lógicamente "debería" serlo.
+
 ---
 
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 15 julio 2026**
+**SKILL.md actualizado por última vez: 19 julio 2026**
