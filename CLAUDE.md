@@ -171,6 +171,17 @@ const CATEGORIA_MAP = {
 
 ---
 
+## Sprint 15 jul 2026 (recta final pre-evento) y día del evento (16 jul)
+
+- **CRONOMETRO**: layout sticky corregido; corregida race condition donde el polling de 2s reprocesaba a un participante inmediatamente después de que el sensor se detenía (bloqueado con el flag `esperandoConfirmacionIntento`); ronda final de INSECTOS pasada a mejor-de-2.
+- **INSECTOS**: layout sticky de 3 columnas; distinción "—" vs DNF en los rankings; bloqueado el registro de tiempo/DNF antes de la cuenta regresiva; "Reiniciar tiempo" limpia los tiempos de todo el grupo; conexión Web Serial unificada entre clasificación→final sin tener que reconectar; corregidas calificaciones falsas en 00:00:00 antes del start; fixes de hardware (capacitor defectuoso causando falsos triggers, sensores quemados por sobrevoltaje de 10V en A2, falsos triggers de pull-up I2C en A5).
+- **REGISTRO**: se abrió y cerró varias veces el día del evento vía la variable de timestamp `CIERRE_REGISTRO`.
+- **Certificados**: 26 PDFs generados (13 categorías × 1er y 2do lugar) con renderizado headless de Playwright; tamaños de logo ajustados (club 108px, Sucre 122px); texto de logro dividido en 3 líneas; logo del club cambiado a la versión con fondo transparente (`club-robotica-transparente.png`).
+- **Bracket de Soccer**: documento Word actualizado (intercambio de grupos Dio Sabra ↔ ATOM X).
+- **Bracket en papel de Minisumo RC**: generado para 21 participantes, eliminación simple ("Black Noir"/"Blanck Noir" tratado como el mismo participante con typo → 21 participantes en total).
+
+---
+
 ## Estado actual (post-evento, julio 2026)
 
 El evento SucreBot 2026 se realizó el 16 de julio de 2026 y ya concluyó. El trabajo actual es de mantenimiento y mejoras pendientes, no de sprint pre-evento. Pendientes conocidos:
