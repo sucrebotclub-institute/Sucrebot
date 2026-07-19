@@ -76,8 +76,8 @@ const AUSPICIANTES = [
   {
     nombre: 'daly bella',
     logo: 'dalybella.png',
-    url: 'https://www.instagram.com/dalybellacare/',
-    tooltip: '@dalybellacare',
+    url: 'https://www.tiktok.com/@daly_bella0?_r=1&_t=ZS-9868v9WdHG8',
+    tooltip: '@daly_bella0',
     cartaImg: 'cartas/dalybella-carta.jpg'
   },
   {
