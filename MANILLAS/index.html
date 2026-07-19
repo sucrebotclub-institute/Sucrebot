@@ -328,7 +328,7 @@
 
     if (busqueda) {
       listaFiltrada = listaFiltrada.filter(p =>
-        (p.robot||'').toLowerCase().includes(busqueda) ||
+        String(p.robot||'').toLowerCase().includes(busqueda) ||
         (p.nombre||'').toLowerCase().includes(busqueda) ||
         (p.institucion||'').toLowerCase().includes(busqueda) ||
         (p.miembro2 != null ? String(p.miembro2) : '').toLowerCase().includes(busqueda)
@@ -339,7 +339,7 @@
     listaFiltrada.sort((a, b) => {
       const aE = a.manilla === 'ENTREGADA' ? 1 : 0;
       const bE = b.manilla === 'ENTREGADA' ? 1 : 0;
-      return aE - bE || (a.categoria||'').localeCompare(b.categoria||'') || (a.robot||'').localeCompare(b.robot||'');
+      return aE - bE || String(a.categoria||'').localeCompare(String(b.categoria||'')) || String(a.robot||'').localeCompare(String(b.robot||''));
     });
 
     // stats
@@ -370,7 +370,7 @@
     container.innerHTML = pagina.map(p => {
       const entregada = p.manilla === 'ENTREGADA';
       const nivel     = NIVEL[p.categoria] || 'pro';
-      const iniciales = (p.robot || p.nombre || '?').slice(0, 2).toUpperCase();
+      const iniciales = String(p.robot || p.nombre || '?').slice(0, 2).toUpperCase();
       const m2        = (p.miembro2 && String(p.miembro2).trim() && String(p.miembro2).trim() !== '0')
                         ? String(p.miembro2).trim() : null;
       const cardColor = CAT_COLOR[p.categoria] || '#1a5ca8';
