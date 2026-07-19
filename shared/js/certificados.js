@@ -421,7 +421,16 @@ function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fech
   }
 
   modal.classList.add('show');
+  // La escala se calcula midiendo el tamaño real del certificado, pero si la
+  // fuente EB Garamond todavía no cargó, mide con la fuente de reemplazo y
+  // calcula mal — el texto no coincide después cuando la fuente real entra.
+  // Se espera a document.fonts.ready antes de medir, y se recalcula una vez
+  // más como red de seguridad por si la fuente carga después de ese punto.
   requestAnimationFrame(function() { requestAnimationFrame(ajustarCertificadoAPantalla); });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(ajustarCertificadoAPantalla);
+  }
+  setTimeout(ajustarCertificadoAPantalla, 500);
 }
 
 function cerrarModalCertificado() {
@@ -436,7 +445,12 @@ function ajustarCertificadoAPantalla() {
   const content    = document.querySelector('.cert-modal-content');
   if (!container || !certOuter || !content) return;
 
-  // Medir tamaño natural (sin escalar) del certificado
+  // Medir tamaño natural (sin escalar) del certificado. Se resetea la altura
+  // del contenedor ANTES de medir — como esta función ahora puede correr más
+  // de una vez (fonts.ready, setTimeout de respaldo), si no se resetea, una
+  // corrida anterior deja fijada una altura que después se mide a sí misma
+  // (retroalimentación: cada corrida mide más chico que la real).
+  container.style.height = 'auto';
   certOuter.style.transform = 'none';
   const naturalWidth  = certOuter.offsetWidth;
   const naturalHeight = certOuter.offsetHeight;
