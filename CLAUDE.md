@@ -167,7 +167,7 @@ const CATEGORIA_MAP = {
 - Confirma el alcance/intención antes de ver código; corrige decisiones estructurales a mitad de la implementación sin fricción.
 - Espera que se valide sintaxis y encoding antes de cada push, y que se confirme el deploy antes de cerrar la sesión.
 - Prefiere ritmo secuencial, una tarea a la vez.
-- El PAT de GitHub no persiste entre sesiones — se debe volver a proveer cada vez (dentro de una sesión, se mantiene en memoria en vez de borrarlo tras cada push).
+- Autenticación de git resuelta con Git Credential Manager (`git config --global credential.helper manager`), que guarda el PAT cifrado en el Administrador de Credenciales de Windows — ya no hace falta proveerlo en cada sesión. Si el token vence o se revoca, git lo va a pedir de nuevo en el próximo push.
 
 ---
 
