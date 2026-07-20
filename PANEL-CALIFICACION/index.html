@@ -2241,9 +2241,12 @@ async function guardarPodio() {
         total: parseFloat(r.total) || 0,
         posicion: i + 1
       }));
+      let podioPublicadoOk = false;
       try {
-        await gasPost({ action: 'publicarPodioCalificacion', categoria: state.categoria, ranking: rankingPublicar });
-      } catch(e) { console.warn('publicarPodioCalificacion error:', e); }
+        const rPub = await gasPost({ action: 'publicarPodioCalificacion', categoria: state.categoria, ranking: rankingPublicar });
+        podioPublicadoOk = !!rPub.ok;
+        if (!rPub.ok) console.warn('publicarPodioCalificacion respondió error:', rPub.error);
+      } catch(e) { console.warn('publicarPodioCalificacion error de red:', e); }
 
       for (let i = 0; i < state.rankingData.length; i++) {
         const r = state.rankingData[i];
@@ -2264,7 +2267,11 @@ async function guardarPodio() {
         }
       }
       loading(false);
-      toast(`✅ ${totalDiplomas} diplomas guardados`, 'success');
+      if (podioPublicadoOk) {
+        toast(`✅ ${totalDiplomas} diplomas guardados`, 'success');
+      } else {
+        toast(`⚠️ ${totalDiplomas} diplomas guardados, pero el podio NO quedó publicado como definitivo (reintentá "Guardar Podio")`, 'error');
+      }
     }
   );
 }
@@ -2621,7 +2628,12 @@ async function guardarPodioFinal() {
           ...rankingFinal.map((r, i) => ({ id: r.id, nombre: r.nombre, robot: r.robot || r.nombre, institucion: r.institucion || '', total: parseFloat(r.total) || 0, posicion: i + 1 })),
           ...participacionElim.map((p, i) => ({ id: p.id, nombre: p.nombre, robot: p.robot || p.nombre, institucion: p.institucion || '', total: 0, posicion: rankingFinal.length + i + 1 }))
         ];
-        try { await gasPost({ action: 'publicarPodioCalificacion', categoria: 'bai', ranking: rankingCompletoFinal }); } catch(e) { console.warn('publicarPodioCalificacion bai error:', e); }
+        let podioPublicadoOk = false;
+        try {
+          const rPub = await gasPost({ action: 'publicarPodioCalificacion', categoria: 'bai', ranking: rankingCompletoFinal });
+          podioPublicadoOk = !!rPub.ok;
+          if (!rPub.ok) console.warn('publicarPodioCalificacion bai respondió error:', rPub.error);
+        } catch(e) { console.warn('publicarPodioCalificacion bai error de red:', e); }
 
         // Guardar finalistas con su posición
         for (let i = 0; i < rankingFinal.length; i++) {
@@ -2655,7 +2667,11 @@ async function guardarPodioFinal() {
         }
 
         loading(false);
-        toast('✅ Podio final guardado', 'success');
+        if (podioPublicadoOk) {
+          toast('✅ Podio final guardado', 'success');
+        } else {
+          toast('⚠️ Diplomas guardados, pero el podio NO quedó publicado como definitivo (reintentá "Guardar Podio Final")', 'error');
+        }
       }
     );
   } catch(e) { toast('Error', 'error'); loading(false); }
