@@ -99,26 +99,29 @@ const CATEGORIA_MAP = {
 
 ## BRACKET GENERAL (ms_a, ms_rc, bat) — Lógica de fases progresivas
 
-Fases generadas progresivamente en GAS — solo genera la primera ronda; cada siguiente se genera cuando la anterior termina.
+**Actualizado 19-jul-2026**: eliminación directa 1vs1 siempre, sin importar cuántos equipos arranquen. Fases generadas progresivamente en GAS — solo genera la primera ronda; cada siguiente se genera cuando la anterior termina.
 
 | n | Formato |
 |---|---|
 | 2 | FINAL directa |
-| 3 | TODOS CONTRA TODOS (podio por puntos) |
-| 4 | RONDA 1 → FINAL |
-| 5 | RONDA 1 (+ BYE) → TODOS CONTRA TODOS (3 clasificados) |
-| 6 | RONDA 1 (3 partidos) → TODOS CONTRA TODOS (3 ganadores) |
-| 7+ | Rondas sucesivas con sorteo aleatorio hasta quedar 2 → FINAL |
+| 3 | 1 BYE + 1 combate → 2 → FINAL |
+| 4 | RONDA 1 (2 combates) → FINAL |
+| 5 | RONDA 1 (1 BYE + 2 combates) → 3 sobrevivientes → siguiente RONDA (1 BYE + 1 combate) → FINAL |
+| 6 | RONDA 1 (3 combates) → 3 sobrevivientes → siguiente RONDA (1 BYE + 1 combate) → FINAL |
+| 7+ | Rondas sucesivas con sorteo aleatorio (BYE si es impar, nunca el mismo equipo dos rondas seguidas) hasta quedar 2 → FINAL |
+
+**"TODOS CONTRA TODOS" fue el formato anterior y quedó descartado** (confirmado con Raku 19-jul-2026: nunca debía desviarse a tabla de puntos, ni siquiera cuando la cantidad de sobrevivientes caía en 3) — ya no se genera para torneos nuevos. El código que lee/calcula podio de ese formato se mantiene solo por brackets viejos que ya lo jugaron con resultados reales (ej. Minisumo Autónomo, torneo de Axebot/Kitsune/Kachetes 2.0, jugado antes del fix — no se reinterpreta ni se deshace).
 
 **Estados en bracket_general**: `PENDIENTE`, `FINALIZADO`, `BYE_PENDIENTE`
 - `BYE_PENDIENTE` → frontend lo normaliza a `FINALIZADO` tipo `BYE`
-- `TODOS CONTRA TODOS` terminado → **no genera fase siguiente** (podio por tabla de puntos)
+- `TODOS CONTRA TODOS` terminado (solo brackets viejos) → **no genera fase siguiente** (podio por tabla de puntos)
 - `FINAL` terminado → **no genera fase siguiente**
 - `guardarPodioManual` con `posiciones: []` → **no llama publicarJSON** (para no borrar bracket del JSON)
+- Fases "RONDA N" se detectan dinámicamente al armar la respuesta para el frontend (`parsearBracketGeneral`) — no asumir una lista fija de nombres, cualquier bracket con suficientes equipos puede necesitar más de 2 rondas
 
 **3er lugar en brackets sin partido de 3er lugar:** botón "🥉 3er lugar" aparece cuando FINAL está finalizada y hay SEMIFINAL. Muestra todos los participantes excepto finalistas para elegir manualmente. Se guarda en `podio_manual` con 1ro+2do+3ro. RESULTADOS lee `podio_manual` del JSON como fallback para el 3ro.
 
-**RESULTADOS — podio TODOS CONTRA TODOS:** se calcula localmente desde los partidos del TCV (puntos: victoria=3, derrota=0), sin necesidad de `podio_manual`.
+**RESULTADOS — podio TODOS CONTRA TODOS (solo brackets viejos):** se calcula localmente desde los partidos del TCV (puntos: victoria=3, derrota=0), sin necesidad de `podio_manual`.
 
 ---
 
