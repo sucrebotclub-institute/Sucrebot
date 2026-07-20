@@ -1248,7 +1248,7 @@ async function obtenerPodioCalculado() {
         primero:{id:porPos[1]?.equipo_id,nombre:porPos[1]?.equipo_nombre},
         segundo:{id:porPos[2]?.equipo_id,nombre:porPos[2]?.equipo_nombre},
         tercero:porPos[3]?{id:porPos[3].equipo_id,nombre:porPos[3].equipo_nombre}:null,
-        cuarto:null };
+        cuarto:porPos[4]?{id:porPos[4].equipo_id,nombre:porPos[4].equipo_nombre}:null };
     }
   }catch(e){}
 
@@ -1454,6 +1454,21 @@ async function guardarTercerLugar() {
   const primeroNom = pf.ganador_id === pf.equipo_a_id ? pf.equipo_a_nombre : pf.equipo_b_nombre;
   const segundoId  = pf.ganador_id === pf.equipo_a_id ? pf.equipo_b_id : pf.equipo_a_id;
   const segundoNom = pf.ganador_id === pf.equipo_a_id ? pf.equipo_b_nombre : pf.equipo_a_nombre;
+
+  // Si además del elegido para 3ro queda un único candidato restante (típico de
+  // un bracket de 4 equipos: los 2 perdedores de la ronda previa a la FINAL),
+  // se asigna automáticamente como 4to — así "Guardar Podio" también le genera
+  // su certificado de Participación. Con más de un candidato restante queda
+  // ambiguo quién sería el 4to y no se fuerza ninguno.
+  const finalistas = new Set([pf.equipo_a_id, pf.equipo_b_id]);
+  const mapaResto = {};
+  fases.forEach(fase => fase.partidos.forEach(p => {
+    if (p.equipo_a_id && !finalistas.has(p.equipo_a_id)) mapaResto[p.equipo_a_id] = p.equipo_a_nombre;
+    if (p.equipo_b_id && !finalistas.has(p.equipo_b_id)) mapaResto[p.equipo_b_id] = p.equipo_b_nombre;
+  }));
+  delete mapaResto[terceroId];
+  const restantes = Object.entries(mapaResto);
+
   cerrarTercerLugar();
   loading(true, 'GUARDANDO 3ER LUGAR...');
   try {
@@ -1462,6 +1477,9 @@ async function guardarTercerLugar() {
       { posicion: 2, equipo_id: segundoId,  equipo_nombre: segundoNom },
       { posicion: 3, equipo_id: terceroId,  equipo_nombre: terceroNom }
     ];
+    if (restantes.length === 1) {
+      posiciones.push({ posicion: 4, equipo_id: restantes[0][0], equipo_nombre: restantes[0][1] });
+    }
     const r = await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones });
     if (!r.ok) throw new Error(r.error || 'Error');
     // Actualizar podio en state para que guardarPodio lo use
