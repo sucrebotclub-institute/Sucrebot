@@ -960,8 +960,11 @@ function renderBracket() {
   }
   document.getElementById('btnPodio').style.display=finalizado?'inline-flex':'none';
   document.getElementById('btnVerPodio').style.display=finalizado?'inline-flex':'none';
-  // Mostrar botón 3er lugar si hay SEMIFINAL y la FINAL está finalizada (sin fase 3ER LUGAR)
-  const hayBtnTercero = finalizado && fases.some(f=>f.nombre==='SEMIFINAL') && !fases.some(f=>f.nombre==='3ER LUGAR');
+  // Mostrar botón 3er lugar si la FINAL está finalizada, hubo alguna ronda previa
+  // (RONDA 1, RONDA 2, ... — el generador actual nunca usa el nombre 'SEMIFINAL',
+  // así que buscar ese nombre literal dejaba el botón oculto siempre) y no hay
+  // ya una fase 3ER LUGAR ni es un bracket todos-contra-todos (que ya arma podio propio).
+  const hayBtnTercero = finalizado && !esRR && fases.length > 1 && !fases.some(f=>f.nombre==='3ER LUGAR');
   const btnTercero = document.getElementById('btnTercerLugar');
   if (btnTercero) btnTercero.style.display = hayBtnTercero ? 'inline-flex' : 'none';
   container.innerHTML=fases.map(fase=>`<div class="bracket-fase"><div class="fase-label">${fase.nombre}</div><div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`).join('');
