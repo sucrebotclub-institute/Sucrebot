@@ -248,17 +248,56 @@
         REGISTRO DE PARTICIPANTE
       </div>
 
+      <div class="form-section-title">🏷️ Categoría</div>
+      <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:4px;">
+        <div class="field">
+          <label>Categoría de Competencia</label>
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          <select id="f-categoria" onchange="onCategoriaChange()" tabindex="1">
+            <option value="">— Selecciona —</option>
+            <optgroup label="🏅 AMATEUR">
+              <option value="Insectos">Insectos</option>
+              <option value="Trepador (Amateur)">Trepador (Amateur)</option>
+              <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
+            </optgroup>
+            <optgroup label="🏆 PRO">
+              <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
+              <option value="Minisumo Autónomo">Minisumo Autónomo</option>
+              <option value="Minisumo RC">Minisumo RC</option>
+              <option value="Bailarín">Bailarín</option>
+              <option value="Batalla">Batalla</option>
+              <option value="Trepador (Pro)">Trepador (Pro)</option>
+              <option value="Robot soccer">Robot soccer</option>
+            </optgroup>
+            <optgroup label="🌟 OPEN">
+              <option value="Cubo Rubik">Cubo Rubik</option>
+              <option value="Lego Kids">Lego Kids</option>
+              <option value="Impacto Tecnológico">Impacto Tecnológico</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <div class="categoria-cerrada-wrap" id="categoriaCerradaWrap">
+        <div class="categoria-cerrada-aviso">
+          <div class="categoria-cerrada-icon">⛔</div>
+          <div class="categoria-cerrada-text">
+            <strong>Inscripciones agotadas.</strong> La categoría <strong id="categoriaCerradaNombre">Lego Kids</strong> ya no acepta nuevos registros. Selecciona otra categoría o escríbenos a <span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span> si tienes dudas.
+          </div>
+        </div>
+      </div>
+
       <div class="form-section-title">👤 Datos Personales</div>
       <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:4px;">
         <div class="field">
           <label>Nombre Completo <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(capitán)</span></label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-nombre" placeholder="Juan Pérez" tabindex="1">
+          <input type="text" id="f-nombre" placeholder="Juan Pérez" tabindex="2">
         </div>
         <div class="field">
           <label>Nombre Completo <span style="color:rgba(255,255,255,0.45);font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(subcapitán)</span></label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="f-miembro2" placeholder="Nombre completo" tabindex="2">
+          <input type="text" id="f-miembro2" placeholder="Nombre completo" tabindex="3">
         </div>
       </div>
 
@@ -275,12 +314,12 @@
           <label>Institución / Club</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <div class="inst-combo">
-            <select id="f-institucion-select" onchange="onInstitucionChange()" tabindex="3">
+            <select id="f-institucion-select" onchange="onInstitucionChange()" tabindex="4">
               <option value="">— Cargando instituciones... —</option>
             </select>
             <div class="inst-nueva-wrap" id="inst-nueva-wrap">
               <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--r-cyan);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              <input type="text" id="f-institucion-nueva" placeholder="Nombre completo de tu institución o club" tabindex="4">
+              <input type="text" id="f-institucion-nueva" placeholder="Nombre completo de tu institución o club" tabindex="5">
             </div>
           </div>
         </div>
@@ -289,7 +328,7 @@
       <div style="margin-bottom:14px;">
         <div class="logo-uploader" id="logo-uploader">
           <label class="logo-label">Logo <span style="color:#e74c3c;font-family:'Exo 2',sans-serif;font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;">(obligatorio)</span></label>
-          <div class="logo-drop-zone" id="logo-drop-zone" tabindex="5" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();logoInput.click()}" title="Clic para subir logo del club o institución">
+          <div class="logo-drop-zone" id="logo-drop-zone" tabindex="6" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();logoInput.click()}" title="Clic para subir logo del club o institución">
             <div class="logo-placeholder">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               <span>Subir logo (PNG / JPG)</span>
@@ -306,7 +345,7 @@
           <label>Provincia / País</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <div class="prov-combo">
-            <select id="f-ciudad" onchange="onProvinciaChange()" tabindex="6">
+            <select id="f-ciudad" onchange="onProvinciaChange()" tabindex="7">
               <option value="">— Selecciona —</option>
               <option value="Azuay">Azuay</option>
               <option value="Bolívar">Bolívar</option>
@@ -337,14 +376,14 @@
             </select>
             <div class="prov-otra-wrap" id="prov-otra-wrap">
               <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--r-cyan);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <input type="text" id="f-ciudad-otra" placeholder="Ej: Bogotá, Colombia" tabindex="7">
+              <input type="text" id="f-ciudad-otra" placeholder="Ej: Bogotá, Colombia" tabindex="8">
             </div>
           </div>
         </div>
         <div class="field">
           <label>Contacto / WhatsApp</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.4A2 2 0 0 1 3.55 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l1.3-1.3a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <input type="tel" id="f-contacto" placeholder="0991234567" tabindex="8">
+          <input type="tel" id="f-contacto" placeholder="0991234567" tabindex="9">
         </div>
       </div>
 
@@ -352,50 +391,17 @@
         <div class="field">
           <label>Correo Electrónico</label>
           <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
-          <input type="email" id="f-correo" placeholder="juan@gmail.com" tabindex="9">
+          <input type="email" id="f-correo" placeholder="juan@gmail.com" tabindex="10">
         </div>
       </div>
 
-      <div class="form-section-title">🤖 Datos del Robot</div>
-      <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:4px;">
-        <div class="field">
-          <label>Nombre del Robot</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
-          <input type="text" id="f-robot" placeholder="RoboX-1" tabindex="10">
-        </div>
-        <div class="field">
-          <label>Categoría de Competencia</label>
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-          <select id="f-categoria" onchange="onCategoriaChange()" tabindex="11">
-            <option value="">— Selecciona —</option>
-            <optgroup label="🏅 AMATEUR">
-              <option value="Insectos">Insectos</option>
-              <option value="Trepador (Amateur)">Trepador (Amateur)</option>
-              <option value="Seguidor de línea ST (Amateur)">Seguidor de línea ST (Amateur)</option>
-            </optgroup>
-            <optgroup label="🏆 PRO">
-              <option value="Seguidor de línea ST (Pro)">Seguidor de línea ST (Pro)</option>
-              <option value="Minisumo Autónomo">Minisumo Autónomo</option>
-              <option value="Minisumo RC">Minisumo RC</option>
-              <option value="Bailarín">Bailarín</option>
-              <option value="Batalla">Batalla</option>
-              <option value="Trepador (Pro)">Trepador (Pro)</option>
-              <option value="Robot soccer">Robot soccer</option>
-            </optgroup>
-            <optgroup label="🌟 OPEN">
-              <option value="Cubo Rubik">Cubo Rubik</option>
-              <option value="Lego Kids">Lego Kids</option>
-              <option value="Impacto Tecnológico">Impacto Tecnológico</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-
-      <div class="categoria-cerrada-wrap" id="categoriaCerradaWrap">
-        <div class="categoria-cerrada-aviso">
-          <div class="categoria-cerrada-icon">⛔</div>
-          <div class="categoria-cerrada-text">
-            <strong>Inscripciones agotadas.</strong> La categoría <strong id="categoriaCerradaNombre">Lego Kids</strong> ya no acepta nuevos registros. Selecciona otra categoría o escríbenos a <span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span> si tienes dudas.
+      <div id="robotSectionWrap">
+        <div class="form-section-title">🤖 Datos del Robot</div>
+        <div class="form-grid" style="grid-template-columns:1fr; margin-bottom:4px;">
+          <div class="field">
+            <label>Nombre del Robot</label>
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+            <input type="text" id="f-robot" placeholder="RoboX-1" tabindex="11">
           </div>
         </div>
       </div>
@@ -576,12 +582,21 @@
   }
 
   const CATEGORIAS_CERRADAS = [];
+  const CATEGORIAS_SIN_ROBOT = ['Robot soccer', 'Cubo Rubik', 'Lego Kids', 'Impacto Tecnológico'];
 
   function onCategoriaChange() {
     const cat = document.getElementById('f-categoria').value;
     const wrap = document.getElementById('soccerEquipoWrap');
     if (cat === 'Robot soccer') wrap.classList.add('show');
     else { wrap.classList.remove('show'); document.getElementById('f-equipo').value = ''; }
+
+    const robotWrap = document.getElementById('robotSectionWrap');
+    if (CATEGORIAS_SIN_ROBOT.includes(cat)) {
+      robotWrap.style.display = 'none';
+      document.getElementById('f-robot').value = '';
+    } else {
+      robotWrap.style.display = '';
+    }
 
     const cerradaWrap = document.getElementById('categoriaCerradaWrap');
     if (CATEGORIAS_CERRADAS.includes(cat)) {
@@ -646,7 +661,7 @@
     if (!nombre)      { showToast('El nombre completo es obligatorio', true); return; }
     if (!institucion) { showToast('La institución es obligatoria', true); return; }
     if (!ciudad)      { showToast('Selecciona una provincia o escribe tu país', true); return; }
-    if (!robot)       { showToast('El nombre del robot es obligatorio', true); return; }
+    if (!robot && !CATEGORIAS_SIN_ROBOT.includes(categoria)) { showToast('El nombre del robot es obligatorio', true); return; }
     if (!contacto)    { showToast('El número de contacto es obligatorio', true); return; }
     if (contacto.length < 7) { showToast('El número debe tener al menos 7 dígitos', true); return; }
     if (!correo)      { showToast('El correo electrónico es obligatorio', true); return; }
