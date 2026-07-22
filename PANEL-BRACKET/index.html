@@ -1059,6 +1059,22 @@ function asignarEquipoLlaveSoccer(equipoId, llaveNum) {
   renderConfigurarRondaSoccer();
 }
 
+// ── Sorteo aleatorio: reparte el pool entre las llaves actuales al
+//    azar y lo más parejo posible (round-robin tras barajar). Es solo
+//    una sugerencia — el juez puede reasignar cualquier equipo a mano
+//    con los selects antes de generar la ronda. ──────────────────────
+function sortearLlavesSoccer() {
+  const c=state.socConfigRonda; if(!c) return;
+  const shuffled=[...c.pool];
+  for(let i=shuffled.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+  }
+  c.asignacion={};
+  shuffled.forEach((eq,i)=>{ c.asignacion[eq.id]=(i%c.numLlaves)+1; });
+  renderConfigurarRondaSoccer();
+}
+
 function renderConfigurarRondaSoccer() {
   mostrarWrap(true);
   document.getElementById('socGrupoFiltro').style.display='none';
@@ -1082,6 +1098,7 @@ function renderConfigurarRondaSoccer() {
       <button class="btn btn-outline btn-sm" onclick="cambiarNumLlavesSoccer(-1)">−</button>
       <span style="font-family:Orbitron;font-size:1.1rem;min-width:20px;text-align:center;">${c.numLlaves}</span>
       <button class="btn btn-outline btn-sm" onclick="cambiarNumLlavesSoccer(1)">+</button>
+      <button class="btn btn-outline btn-sm" onclick="sortearLlavesSoccer()" style="margin-left:auto;">🎲 Sorteo aleatorio</button>
     </div>
     <div class="soc-partidos-lista">`;
   c.pool.forEach(eq=>{
