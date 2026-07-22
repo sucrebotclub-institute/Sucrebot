@@ -1075,6 +1075,39 @@ function sortearLlavesSoccer() {
   renderConfigurarRondaSoccer();
 }
 
+// ── Imagen de las llaves ya armadas (para anunciar/compartir el
+//    sorteo antes de generar la ronda). Reusa el mismo patrón de carga
+//    dinámica de html2canvas que ya usa certificados.js. ──────────────
+let _html2canvasLoadingSoc=null;
+function cargarHtml2CanvasSoc() {
+  if(typeof html2canvas!=='undefined') return Promise.resolve();
+  if(_html2canvasLoadingSoc) return _html2canvasLoadingSoc;
+  _html2canvasLoadingSoc=new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload=resolve; s.onerror=reject;
+    document.head.appendChild(s);
+  });
+  return _html2canvasLoadingSoc;
+}
+
+async function descargarImagenLlavesSoccer() {
+  const el=document.getElementById('socLlavesPreview');
+  if(!el){ toast('Asigná todos los equipos a una llave primero','error'); return; }
+  loading(true,'GENERANDO IMAGEN...');
+  try{
+    await cargarHtml2CanvasSoc();
+    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#0d1420',logging:false});
+    const fecha=new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
+    const link=document.createElement('a');
+    link.download='SucreBot2026_Soccer_Ronda'+(state.socConfigRonda?.ronda||'')+'_Llaves_'+fecha+'.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    toast('📸 Imagen descargada','success');
+  }catch(e){ toast('Error generando imagen: '+e.message,'error'); console.error(e); }
+  loading(false);
+}
+
 function renderConfigurarRondaSoccer() {
   mostrarWrap(true);
   document.getElementById('socGrupoFiltro').style.display='none';
@@ -1114,6 +1147,22 @@ function renderConfigurarRondaSoccer() {
     else if(faltantes<0) msg=`Hay ${-faltantes} equipo(s) asignados de más — revisá duplicados.`;
     else if(llavesChicas.length) msg=`La Llave ${llavesChicas.join(', ')} necesita al menos 2 equipos (no se permiten byes).`;
     html+=`<div class="aviso-empty" style="margin-top:10px;">⚠️ ${msg}</div>`;
+  } else {
+    // ── Vista previa de las llaves ya armadas, lista para anunciar/compartir ──
+    html+=`<div id="socLlavesPreview" style="margin-top:16px;padding:16px;background:#0d1420;border:1px solid var(--border);border-radius:10px;">
+      <div style="font-family:Orbitron;font-size:.85rem;color:var(--cyan);text-align:center;margin-bottom:14px;letter-spacing:1px;">⚽ SORTEO — RONDA ${c.ronda}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">`;
+    for(let i=1;i<=c.numLlaves;i++){
+      const equiposLlave=c.pool.filter(eq=>c.asignacion[eq.id]===i);
+      html+=`<div style="background:var(--bg2,#1a1f30);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-family:Orbitron;font-size:.7rem;color:var(--orange,#e67e22);margin-bottom:8px;">🔹 LLAVE ${i}</div>
+        ${equiposLlave.map(eq=>`<div style="font-size:.8rem;color:#fff;padding:4px 0;border-top:1px solid rgba(255,255,255,.08);">${eq.nombre}</div>`).join('')}
+      </div>`;
+    }
+    html+=`</div></div>
+    <div style="display:flex;justify-content:center;margin-top:10px;">
+      <button class="btn btn-outline btn-sm" onclick="descargarImagenLlavesSoccer()">📸 Descargar imagen de las llaves</button>
+    </div>`;
   }
   html+=`<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
     <button class="btn btn-green btn-sm" ${cuadra?'':'disabled'} onclick="confirmarRondaSoccer()">✅ Generar Ronda ${c.ronda}</button>
