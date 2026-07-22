@@ -832,10 +832,15 @@ Patrón recurrente esta sesión: el primer intento de `POST /pages/builds` frecu
 - [ ] **Backend no valida el staff token en ninguna acción** — hallazgo del 19 jul, incluye acciones destructivas como `eliminarParticipante`. La constante `STAFF_TOKEN_VALUE` recién se agregó (solo la usa la acción nueva `republicarJSON`); falta aplicarla al resto de acciones no públicas
 
 ### Pendientes post-evento — sprint 19 jul 2026
-- [ ] Confirmar con Raku si corresponde corregir los certificados de RAMBOT (GANADOR) y Yarbot (SUBCAMPEÓN) en Seguidor Pro — no tienen corrida de ronda final registrada, todo indica que Shippu/Rb26/XLRbot son el podio real
-- [ ] PeakRunner (Trepador Amateur, 3er lugar real) — falta su tiempo de ronda final en la hoja `resultados`, mismo caso que tenía RAMBOT
-- [ ] Revisar si el "todos contra todos" ya jugado de Minisumo Autónomo (Axebot/Kitsune/Kachetes 2.0) tiene el resultado Axebot-vs-Kitsune cargado al revés (Axebot aparece ganador de los dos combates, pero Raku indicó que Kitsune debería haber ganado el general)
-- [ ] Confirmar si hace falta limpiar manualmente las filas duplicadas viejas en la hoja `certificados` (la dedup de `calcularRankingInstituciones` ya neutraliza el efecto en el ranking, pero las filas siguen ahí)
+- [x] **Certificados de RAMBOT/Yarbot en Seguidor Pro corregidos** — confirmado con Raku 21-jul, podio real Shippu/Rb26/XLRbot ya reflejado en `certificados`
+- [ ] PeakRunner (Trepador Amateur, 3er lugar real) — falta su tiempo de ronda final en la hoja `resultados`, mismo caso que tenía RAMBOT (su certificado de participación ya se completó el 21-jul, pero el tiempo real en `resultados` sigue sin corregir)
+- [x] **Axebot vs Kitsune (Minisumo Autónomo) corregido** — podio real (Kitsune 1°/Axebot 2°/Kachetes 2.0 3°) ya en `podio_manual` y con certificados generados el 21-jul
+- [ ] Limpiar manualmente las filas duplicadas/basura viejas en la hoja `certificados` — sigue pendiente, y creció: al 21-jul la hoja tiene cientos de filas de formato heredado vacío más allá de los datos reales (no solo duplicados de certificados regenerados)
+
+### Pendientes nuevos — sprint 21 jul 2026
+- [ ] **Robot Soccer no se muestra en RESULTADOS público** — el podio (DarkCode/Los Guilcapis/Niupi FC) está guardado en `podio_manual`, pero la pantalla de Soccer solo lee de `soccer_torneo` (vacío desde que se perdió el torneo). Si se quiere ver en la página pública, hay que agregar un fallback a `podio_manual` en el frontend + `Code.gs`, igual al que ya tienen ms_a/ms_rc/bat.
+- [ ] Investigar cuándo/cómo se perdió el torneo real de Robot Soccer (`soccer_torneo`, formato GRUPOS_14) — confirmado con datos reales el 19-jul, vacío desde algún momento después sin rastro en ninguna sesión de Claude Code. Revisar el log de Ejecuciones de Apps Script si sigue disponible (7 días de retención).
+- [ ] Considerar agregar una acción `eliminarCertificado` a `Code.gs` (mismo patrón que `eliminarPartidoGeneral`) — hoy no existe forma segura de borrar una fila de certificado por API, hubo que pedirle a Raku que lo hiciera a mano en Sheets varias veces esta sesión.
 
 ### Code.gs — pendientes de pegar en script.google.com
 - [x] **CATEGORIAS_CERRADAS (Lego Kids + Impacto Tecnológico)**: confirmado por Raku — pegado en script.google.com, nueva versión implementada, Deployment ID `AKfycbzxYGbW35VJGr9TtCfTTIxsSouKl87xivATUQUNYYjExKP7TcubUsYr8a7V08Dey8ndBw` actualizado en `config.js` y deploy de Pages verificado — 10 jul 2026
@@ -1006,5 +1011,47 @@ Patrón recurrente esta sesión: el primer intento de `POST /pages/builds` frecu
 
 ---
 
+### Sprint 21 jul 2026 — auditoría completa de podios/certificados + fix de guardarCertificado
+
+**Contexto**: sesión larga enfocada en cerrar el podio real de las 13 categorías en el sistema (hoja `certificados` + `podio_manual`), disparada por pedidos puntuales de Raku (Excel de podios → Seguidor Pro mal → Soccer/Lego Kids sin datos → auditoría de PARTICIPACIÓN faltante en el resto). Se hizo casi todo por API con el staff token del proyecto, con un giro importante a mitad de sesión hacia "pegar bloques directo en el Sheet" cuando la API demostró ser poco confiable para escrituras.
+
+**Investigación de datos faltantes (Soccer y Lego Kids)**:
+- Se revisó el historial de sesiones previas (`mcp__ccd_session_mgmt`) para rastrear cuándo se perdieron los datos. Confirmado: el 19-jul el torneo de Soccer (`GRUPOS_14`) tenía datos reales verificados por API — la pérdida ocurrió después, sin rastro en ninguna sesión de Claude Code registrada (probablemente una acción manual fuera de estas sesiones, ej. reset desde PANEL-BRACKET o el editor de Apps Script directo).
+- Lego Kids: causa raíz ya estaba documentada en la sesión del 20-jul — dos bugs reales (`doPost` con catch-all de éxito falso + `publicarPodioCalificacion` sin handler) hicieron que **nunca** se guardara nada en `puntuaciones` el día del evento para Bailarín/Dev/Lego Kids. No fue un borrado posterior, nunca llegó a guardarse.
+- Ninguno de los dos tenía respaldo recuperable por API — Soccer se reconstruyó con el podio que Raku pasó de memoria/papel; Lego Kids se recuperó de una **hoja de calificación en papel** (foto), con las posiciones 1°/2°/3° marcadas a mano.
+
+**Correcciones de podio reales aplicadas**:
+- ✅ **Seguidor de línea ST (Pro)**: certificados corregidos de RAMBOT/Yarbot/Shippu (mal) a **Shippu/Rb26/XLRbot** (real, confirmado con tabla de tiempos de Ronda 2 que Raku pasó + Excel oficial `SucreBot_Seguidor_de_línea_ST_(Pro)_2026-07-16.xlsx`).
+- ✅ **Robot Soccer**: podio (DarkCode 1°/ADAN-"Los Guilcapis" 2°/Niupi FC 3°) guardado en `podio_manual` + certificados para las 30 personas inscritas (6 podio + 24 participación). **No se muestra en la página pública de RESULTADOS** — Soccer arma su pantalla exclusivamente desde `soccer_torneo` (vacío), no tiene fallback a `podio_manual` como sí tienen ms_a/ms_rc/bat. Decisión de Raku: dejarlo así por ahora (no se implementó el fallback).
+- ✅ **Lego Kids**: podio real 1° Derek Sanchez / 2° Daniel Chavez / 3° Nelson Bolagay (del papel). **Regla nueva confirmada con Raku para esta categoría**: el certificado de podio/participación es **solo para "Participante 1"** de cada fila de la hoja de papel — el "Participante 2" no se certifica en Lego Kids (a diferencia de todas las demás categorías, donde van los 2 integrantes del equipo).
+- ✅ **Minisumo Autónomo y Minisumo RC**: tenían podio correcto en `podio_manual` desde antes (fix del "todos contra todos" de sesiones previas) pero **nunca se habían generado los certificados reales** — se generaron ahora (6 c/u).
+- ✅ **Auditoría de PARTICIPACIÓN faltante en las 13 categorías**: comparando `participantes` vs `certificados` por nombre, se encontraron y completaron ~93 personas faltantes en Insectos, Trepador (Amateur), Seguidor ST (Amateur), Seguidor ST (Pro), Trepador (Pro) y Cubo Rubik. Bailarín/Batalla/Impacto Tecnológico ya estaban completos.
+- ⚠️ **Equipo descalificado excluido a propósito**: "Black Noir" (Damián Rosas + Alejandro Montenegro) — confirmado por Raku que no califica ni en Minisumo RC ni en Minisumo Autónomo, no tiene certificado en ninguna de las dos. El equipo "Blanck Noir" (mismo Alejandro Montenegro, con Ian Rosas) sí es válido y sí tiene certificado — son dos entradas reales distintas, no el mismo typo que se había asumido en el sprint del 15-jul.
+
+**Bug real encontrado y arreglado: `guardarCertificado()` con éxito falso silencioso**
+- **Síntoma**: la acción devolvía `{ok:true, codigo:"CERT-2026-XXX"}` sin haber escrito ninguna fila — descubierto porque el código devuelto coincidía con uno ya existente (no había avanzado `getLastRow()`).
+- **Causa más probable**: sin `LockService`, dos llamadas casi simultáneas (típicamente un `guardarPodioManual` seguido de inmediato por un `guardarCertificado`, que fue el patrón exacto las dos veces que falló) pueden solaparse y pisarse.
+- **Fix**: `LockService.getScriptLock()` al entrar a la función + `SpreadsheetApp.flush()` después de escribir + verificación real de que `getLastRow()` subió en 1 antes de devolver éxito (si no, tira un error explícito en vez de mentir).
+- **Bug secundario destapado por el fix**: el código (`CERT-2026-NNN`) se calculaba con `getLastRow()-1` (posición de fila), que choca cuando se pegan filas a mano con códigos pre-asignados que no coinciden con la posición real (huecos en la hoja por filas sin código, formato heredado, etc.). Cambiado a calcular el **máximo número de código ya usado** (escaneando la columna, no la posición) — inmune a huecos.
+- **Verificado en vivo**: se reprodujo el patrón de carrera con datos `[DEV]` antes y después del fix (falló antes, funcionó bien después con código único), luego se limpiaron las filas de prueba.
+- Deployment IDs de esta sesión: `AKfycbxR8_lzj...` (fix 1) → `AKfycbz796NY...` (fix 2, código robusto) — el segundo es el vigente.
+
+**Hallazgos de datos menores (no bloquean nada, quedan anotados)**:
+- Un nombre en `participantes` (Insectos) tenía un **tabulador literal** metido en el campo (`"VILLAMARIN MAZA\tLUIS ANDRES"`) — típeo de carga, normalizado a espacio al generar su certificado.
+- Varios nombres tienen **espacios dobles** en el registro original (ej. `"Danny  Santiago  Pulupa Lluglla"`) — no rompe nada, pero cualquier comparación exacta de string (`===`) contra ese campo debe normalizar espacios (`.replace(/\s+/g,' ').trim()`) o va a dar falsos negativos de "no encontrado".
+- La hoja `certificados` tiene muchísimas filas de padding vacío con formato heredado más allá de los datos reales (Excel las cuenta como "used range" aunque no tengan contenido) — no confundir con datos reales al hacer conteos rápidos vía exportación.
+
+**Respaldos guardados** (fuera de cualquier repo git, por tener datos personales de participantes y no ser código):
+- `C:\Users\raku\sucrebot-backups\Sucrebot_backup_2026-07-21_antes-fix-certificados.xlsx` — foto completa de la hoja `certificados` antes de todos los cambios de hoy.
+- `C:\Users\raku\sucrebot-backups\SucreBot_Seguidor_Pro_Ronda2_2026-07-16.xlsx` — resultado oficial en papel de Seguidor Pro, usado para confirmar el podio real.
+
+**Principios nuevos**:
+- Cuando la API de GAS falla de forma intermitente/silenciosa para escrituras, el camino confiable es **generar el bloque de filas exacto (con código de certificado ya calculado) y pedirle a Raku que lo pegue directo en el Sheet** — mucho más rápido que seguir reintentando por API, y permite verificar después con una simple lectura. Este patrón se usó para completar ~160 filas en esta sesión sin más fallos.
+- Antes de escribir un bloque grande a pegar, **verificar el máximo código ya usado en vivo** (no asumir que sigue después del último que uno mismo generó) — la numeración se puede desincronizar si hay pegados manuales de por medio.
+- Al auditar "quién falta un certificado" comparando dos fuentes por nombre, normalizar espacios y **no comparar contra reglas genéricas sin revisar excepciones por categoría** (Lego Kids certifica distinto que el resto).
+- Un hallazgo de "faltan certificados" no siempre es una tarea de completar — a veces la respuesta correcta es investigar primero si esa persona/equipo debía estar ahí (ver caso "Black Noir").
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 19 julio 2026**
+**SKILL.md actualizado por última vez: 21 julio 2026**
