@@ -354,15 +354,28 @@ async function generarTodos(catKey) {
   if (btnTodos) btnTodos.disabled = true;
   mostrarProgreso(true);
 
+  let ok = 0;
+  const fallos = [];
   for (let i = 0; i < pendientes.length; i++) {
     actualizarProgreso(`${pendientes[i].nombre}`, i, pendientes.length);
-    try { await procesarItem(pendientes[i], cat); } catch(e) { console.error(e); }
+    try {
+      await procesarItem(pendientes[i], cat);
+      ok++;
+    } catch(e) {
+      console.error(e);
+      fallos.push(pendientes[i].nombre + ': ' + e.message);
+    }
   }
 
   actualizarProgreso('¡Completado!', pendientes.length, pendientes.length);
   actualizarStats();
   renderTodo();
-  showToast(`✅ ${pendientes.length} diplomas generados`, 'ok');
+  if (fallos.length) {
+    console.error('Diplomas que fallaron:\n' + fallos.join('\n'));
+    showToast(`⚠️ ${ok} generados, ${fallos.length} fallaron (ver consola)`, 'err');
+  } else {
+    showToast(`✅ ${ok} diplomas generados`, 'ok');
+  }
   setTimeout(() => mostrarProgreso(false), 3000);
 }
 
