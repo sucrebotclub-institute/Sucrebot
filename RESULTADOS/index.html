@@ -434,23 +434,6 @@
     const CAT_ICON    = { bai: '🕺', dev: '💡', lk: '🧱' };
     const CAT_MAX_SCORE = { bai: 100, dev: 100, lk: 100 };
 
-    const SOC_FORMATO_LABEL = {
-      IDA_VUELTA:    'Final única — Ida y vuelta',
-      TCV_IDA_VUELTA:'Todos contra todos (ida y vuelta)',
-      TCV_SIMPLE:    'Todos contra todos',
-      GRUPOS_5:      'Grupo A (2) + Grupo B (3)',
-      GRUPOS_6:      '2 Grupos de 3',
-      GRUPOS_7:      'Grupo A (3) + Grupo B (4)',
-      GRUPOS_8:      '2 Grupos de 4',
-      GRUPOS_9:      '3 Grupos de 3',
-      GRUPOS_10:     'Grupo A (3) + Grupo B (3) + Grupo C (4)',
-      GRUPOS_11:     'Grupo A (4) + Grupo B (4) + Grupo C (3)',
-      GRUPOS_12:     '3 Grupos de 4',
-      GRUPOS_13:     'Grupo A (4) + Grupo B (4) + Grupo C (5)',
-      GRUPOS_14:     '2 Grupos de 7',
-      GRUPOS_15:     '3 Grupos de 5'
-    };
-
     const GRUPOS = [
       { label: '🏅 AMATEUR', clase: 'amateur', rutas: [
           { ruta: 'ins',   nombre: 'Insectos' },
@@ -666,103 +649,78 @@
       wrap.innerHTML = `<div class="bracket-wrap"><div class="bracket-title">${icono} ${nombreCat} — Bracket</div><div class="bracket-fases">${fasesHTML}</div>${podioHTML}</div>`;
     }
 
-    // ── SOCCER ────────────────────────────────────────────────────
+    // ── SOCCER — llaves flexibles por ronda ─────────────────────────
     function renderizarSoccer() {
       document.getElementById('tv-ronda').textContent = 'SOCCER';
       document.getElementById('tv-cat').textContent   = 'Robot Soccer';
       const wrap = document.getElementById('tv-tabla-wrap');
 
       if (!soccerTorneo) {
-        wrap.innerHTML = `<div class="soc-wrap"><div class="soc-header"><span class="soc-header-icon">⚽</span><div><div class="soc-header-title">ROBOT SOCCER</div><div class="soc-header-sub">TORNEO POR GRUPOS Y FASES</div></div></div><div class="empty-state"><div class="empty-icon">⚽</div><div class="empty-text">TORNEO AÚN NO GENERADO</div></div></div>`;
+        wrap.innerHTML = `<div class="soc-wrap"><div class="soc-header"><span class="soc-header-icon">⚽</span><div><div class="soc-header-title">ROBOT SOCCER</div><div class="soc-header-sub">TORNEO DE LLAVES</div></div></div><div class="empty-state"><div class="empty-icon">⚽</div><div class="empty-text">TORNEO AÚN NO GENERADO</div></div></div>`;
         return;
       }
 
-      const partidos = soccerTorneo.partidos || [];
-      const tabla    = soccerTorneo.tabla    || {};
-      const formato  = soccerTorneo.formato  || '';
-      const fmtLabel = SOC_FORMATO_LABEL[formato] || formato;
+      const partidos     = soccerTorneo.partidos || [];
+      const tabla        = soccerTorneo.tabla    || {};
+      const rondas       = [...new Set(partidos.map(p => Number(p.ronda)))].sort((a, b) => a - b);
+      const rondaActual  = soccerTorneo.ronda_actual || rondas[rondas.length - 1];
 
-      // Grupos de fase regular
-      const gruposOrden = ['FASE_UNICA','FASE_GRUPOS','GRUPO_A','GRUPO_B','GRUPO_C'];
-      const gruposLabel = { FASE_UNICA:'Final Única — Ida y Vuelta', FASE_GRUPOS:'Fase de Grupos', GRUPO_A:'Grupo A', GRUPO_B:'Grupo B', GRUPO_C:'Grupo C' };
-      const gruposPresentes = gruposOrden.filter(g => partidos.some(p => p.grupo === g));
-
-      let html = `<div class="soc-wrap"><div class="soc-header"><span class="soc-header-icon">⚽</span><div><div class="soc-header-title">ROBOT SOCCER</div><div class="soc-header-sub">${fmtLabel.toUpperCase()}</div></div><span class="soc-formato-badge">${partidos.filter(p=>p.estado==='FINALIZADO').length}/${partidos.filter(p=>p.equipo_a_id&&p.equipo_b_id&&p.grupo!=='3ER_AUTO').length} partidos</span></div><div class="soc-grupos-grid">`;
-
-      // Renderizar grupos
-      gruposPresentes.forEach(g => {
-        const pGroup = partidos.filter(p => p.grupo === g);
-        const tablaG = tabla[g] || [];
-        const label  = gruposLabel[g] || g;
-
-        html += `<div class="soc-grupo-card"><div class="soc-grupo-titulo">${label}</div><div class="soc-partidos-lista">`;
-        pGroup.forEach(p => {
-          const esFin     = p.estado === 'FINALIZADO';
-          const sinEquip  = !p.equipo_a_id || !p.equipo_b_id;
-          const clA = esFin ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
-          const clB = esFin ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
-          let marcadorStr = '';
-          if (esFin && p.marcador) marcadorStr = p.marcador;
-          const badgeHtml = esFin
-            ? `<span class="soc-partido-estado soc-estado-fin">✓ FIN</span>`
-            : sinEquip
-            ? `<span class="soc-partido-estado soc-estado-esp">EN ESPERA</span>`
-            : `<span class="soc-partido-estado soc-estado-pend">PENDIENTE</span>`;
-          html += `<div class="soc-partido-row ${esFin ? 'finalizado' : sinEquip ? 'en-espera' : ''}">
-            <span class="soc-partido-eq ${clA}">${p.equipo_a_nombre || '— Por definir —'}</span>
-            <span class="soc-partido-vs">VS</span>
-            <span class="soc-partido-marcador ${esFin ? 'fin' : ''}">${marcadorStr || '—'}</span>
-            <span class="soc-partido-vs">VS</span>
-            <span class="soc-partido-eq ${clB}" style="text-align:right">${p.equipo_b_nombre || '— Por definir —'}</span>
-            ${badgeHtml}
-          </div>`;
-        });
-        html += `</div>`;
-
-        // Tabla de posiciones del grupo
-        if (tablaG.length > 1) {
-          html += `<table class="soc-tabla"><thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>G</th><th>P</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead><tbody>`;
-          tablaG.forEach((t, i) => {
-            const cl = i === 0 ? 'soc-tpos' : '';
-            html += `<tr><td class="soc-tpos">${i+1}º</td><td class="soc-tnombre">${t.nombre}${i===0?' ✓':''}</td><td>${t.jugados}</td><td>${t.victorias}</td><td>${t.derrotas}</td><td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia > 0 ? '+' : ''}${t.diferencia}</td><td class="soc-tpts">${t.puntos}</td></tr>`;
-          });
-          html += `</tbody></table>`;
-        }
-        html += `</div>`;
-      });
-
-      // Fase final
-      const gruposFinales = ['FINAL_TCV','DESEMPATE','FINAL','3ER_LUGAR','3ER_AUTO'];
-      const partidosFinales = partidos.filter(p => gruposFinales.includes(p.grupo));
-      if (partidosFinales.length) {
-        html += `<div class="soc-fase-final"><div class="soc-fase-final-titulo">🏆 Fase Final</div>`;
-        const ordenFin = ['FINAL_TCV','DESEMPATE','FINAL','3ER_LUGAR','3ER_AUTO'];
-        ordenFin.forEach(g => {
-          partidos.filter(p => p.grupo === g).forEach(p => {
-            const esFin = p.estado === 'FINALIZADO';
-            const es3Auto = g === '3ER_AUTO' && esFin && p.marcador === 'AUTO';
-            const sinEquip = !p.equipo_a_id || !p.equipo_b_id;
-            const label = g === 'FINAL' ? '🏆 FINAL' : g === 'FINAL_TCV' ? '🏆 FINAL TCV' : g === '3ER_LUGAR' ? '🥉 3er Lugar' : g === '3ER_AUTO' ? '🥉 3er Lugar (estadísticas)' : g === 'DESEMPATE' ? '⚖️ Desempate aggregate' : '';
-            const clA = esFin ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
-            const clB = esFin ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
-            const marcadorStr = (esFin && p.marcador && p.marcador !== 'AUTO') ? p.marcador : '';
-            if (es3Auto) {
-              html += `<div class="soc-partido-final finalizado"><div class="soc-partido-final-label">${label}</div><div class="soc-partido-final-equipos"><span class="soc-partido-final-eq ganador">🥉 ${p.equipo_a_nombre || '—'}</span><span class="soc-partido-final-vs">—</span><span class="soc-partido-final-score fin">POR ESTADÍSTICAS</span></div></div>`;
-            } else if (sinEquip && !esFin) {
-              html += `<div class="soc-partido-final"><div class="soc-partido-final-label">${label}</div><div class="soc-por-def">Esperando clasificados…</div></div>`;
-            } else {
-              html += `<div class="soc-partido-final ${esFin ? 'finalizado' : ''}"><div class="soc-partido-final-label">${label}</div><div class="soc-partido-final-equipos"><span class="soc-partido-final-eq ${clA}">${p.equipo_a_nombre || '—'}</span><span class="soc-partido-final-vs">VS</span><span class="soc-partido-final-score ${esFin?'fin':''}">${marcadorStr || '—'}</span><span class="soc-partido-final-vs">VS</span><span class="soc-partido-final-eq ${clB}" style="text-align:right">${p.equipo_b_nombre || '—'}</span></div></div>`;
-            }
-          });
-        });
-        html += `</div>`;
+      function renderPartidoFila(p) {
+        const esFin    = p.estado === 'FINALIZADO';
+        const sinEquip = !p.equipo_a_id || !p.equipo_b_id;
+        const clA = esFin ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
+        const clB = esFin ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
+        const marcadorStr = esFin && p.marcador ? p.marcador : '';
+        const badgeHtml = esFin
+          ? `<span class="soc-partido-estado soc-estado-fin">✓ FIN</span>`
+          : sinEquip
+          ? `<span class="soc-partido-estado soc-estado-esp">EN ESPERA</span>`
+          : `<span class="soc-partido-estado soc-estado-pend">PENDIENTE</span>`;
+        return `<div class="soc-partido-row ${esFin ? 'finalizado' : sinEquip ? 'en-espera' : ''}">
+          <span class="soc-partido-eq ${clA}">${p.equipo_a_nombre || '— Por definir —'}</span>
+          <span class="soc-partido-vs">VS</span>
+          <span class="soc-partido-marcador ${esFin ? 'fin' : ''}">${marcadorStr || '—'}</span>
+          <span class="soc-partido-vs">VS</span>
+          <span class="soc-partido-eq ${clB}" style="text-align:right">${p.equipo_b_nombre || '— Por definir —'}</span>
+          ${badgeHtml}
+        </div>`;
       }
 
-      // Podio soccer
-      const podio = (datosJSON && datosJSON.resultados && datosJSON.resultados.soc) || [];
+      function renderLlaveCard(ll, pLlave) {
+        const tablaG = tabla[ll] || [];
+        let h = `<div class="soc-grupo-card"><div class="soc-grupo-titulo">🔹 ${ll}</div><div class="soc-partidos-lista">`;
+        pLlave.forEach(p => { h += renderPartidoFila(p); });
+        h += `</div>`;
+        if (tablaG.length > 1) {
+          h += `<table class="soc-tabla"><thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>G</th><th>P</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead><tbody>`;
+          tablaG.forEach((t, i) => {
+            h += `<tr><td class="soc-tpos">${i+1}º</td><td class="soc-tnombre">${t.nombre}${i===0?' ✓':''}</td><td>${t.jugados}</td><td>${t.victorias}</td><td>${t.derrotas}</td><td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia > 0 ? '+' : ''}${t.diferencia}</td><td class="soc-tpts">${t.puntos}</td></tr>`;
+          });
+          h += `</tbody></table>`;
+        }
+        h += `</div>`;
+        return h;
+      }
+
+      let html = `<div class="soc-wrap"><div class="soc-header"><span class="soc-header-icon">⚽</span><div><div class="soc-header-title">ROBOT SOCCER</div><div class="soc-header-sub">RONDA ${rondaActual} — LLAVES</div></div><span class="soc-formato-badge">${partidos.filter(p=>p.estado==='FINALIZADO').length}/${partidos.length} partidos</span></div>`;
+
+      rondas.slice().reverse().forEach(r => {
+        const pRonda       = partidos.filter(p => Number(p.ronda) === r);
+        const llavesRonda  = [...new Set(pRonda.map(p => p.llave))];
+        const contenido    = `<div class="soc-grupos-grid">${llavesRonda.map(ll => renderLlaveCard(ll, pRonda.filter(p => p.llave === ll))).join('')}</div>`;
+        if (r === rondaActual) {
+          html += `<div class="soc-fase-final"><div class="soc-fase-final-titulo">🔴 RONDA ${r} (actual)</div>${contenido}</div>`;
+        } else {
+          html += `<details style="margin:10px 0;"><summary style="cursor:pointer;font-family:Orbitron;font-size:.7rem;color:#8a90a8;padding:6px 0;">Ronda ${r} (ver)</summary>${contenido}</details>`;
+        }
+      });
+
+      // Podio — el juez lo cierra manualmente al llegar a 2-3 equipos
+      // (guardarPodioManual, categoría 'soc'), igual que ms_a/ms_rc/bat.
+      const podio = (datosJSON && datosJSON.podio_manual && datosJSON.podio_manual.soc) || [];
       if (podio.length >= 2) {
         const pHTML = podio.map(p => {
-          const cl = p.posicion === 1 ? 'oro' : p.posicion === 2 ? 'plata' : 'bronce';
+          const cl  = p.posicion === 1 ? 'oro' : p.posicion === 2 ? 'plata' : 'bronce';
           const ico = p.posicion === 1 ? '🥇' : p.posicion === 2 ? '🥈' : '🥉';
           const lbl = p.posicion === 1 ? 'GANADOR' : p.posicion === 2 ? 'SUBCAMPEÓN' : 'TERCER LUGAR';
           return `<div class="podio-card ${cl}"><div class="podio-card-icon">${ico}</div><div class="podio-card-nombre">${p.equipo_nombre}</div><div class="podio-card-label">${lbl}</div></div>`;
@@ -770,7 +728,7 @@
         html += `<div class="podio-inline"><div class="podio-inline-title">🏆 PODIO — ROBOT SOCCER</div>${pHTML}</div>`;
       }
 
-      html += `</div></div>`;
+      html += `</div>`;
       wrap.innerHTML = html;
     }
 

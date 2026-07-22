@@ -719,13 +719,7 @@
         </div>
         <!-- Soccer -->
         <div id="soccer-torneo-wrap" style="display:none;">
-          <div id="socGrupoFiltro" class="soc-grupo-filtro" style="display:none;">
-            <span class="soc-grupo-filtro-label">👁 Ver solo:</span>
-            <button class="soc-filtro-btn" data-g="TODOS" onclick="filtrarGrupoSoccer('TODOS')">Todos</button>
-            <button class="soc-filtro-btn" data-g="GRUPO_A" onclick="filtrarGrupoSoccer('GRUPO_A')">🔵 Grupo A</button>
-            <button class="soc-filtro-btn" data-g="GRUPO_B" onclick="filtrarGrupoSoccer('GRUPO_B')">🟢 Grupo B</button>
-            <button class="soc-filtro-btn" data-g="GRUPO_C" onclick="filtrarGrupoSoccer('GRUPO_C')">🟠 Grupo C</button>
-          </div>
+          <div id="socGrupoFiltro" class="soc-grupo-filtro" style="display:none;"></div>
           <div id="soccer-torneo-content"></div>
         </div>
         <div id="podio-display"></div>
@@ -750,7 +744,8 @@ const CAT_INFO = {
 let state = {
   categoria:'', tipo:'', participantes:[], seleccionados:new Set(),
   bracket:null, bracketBloqueado:false, podio:[], tablaPosiciones:null, podioManual:null,
-  torneoSoc:null  // solo para soccer
+  torneoSoc:null,      // solo para soccer
+  socConfigRonda:null  // pantalla "Configurar Ronda" en curso (solo soccer)
 };
 let cron = {
   partido:null, duracion:2, segundos:0, fase:'idle', corriendo:false, interval:null,
@@ -816,7 +811,7 @@ async function seleccionarCategoria(cat) {
         correo:p.correo, miembro2:p.miembro2||''
       }));
     }
-    state.seleccionados=new Set(); state.bracket=null; state.bracketBloqueado=false; state.torneoSoc=null;
+    state.seleccionados=new Set(); state.bracket=null; state.bracketBloqueado=false; state.torneoSoc=null; state.socConfigRonda=null;
     if (cat==='soc') {
       await intentarCargarTorneoSoccer();
     } else {
@@ -877,6 +872,7 @@ function deseleccionarTodos() { state.seleccionados.clear(); renderSeleccion(); 
 function volverPaso1() {
   state.categoria=''; state.tipo=''; state.participantes=[]; state.seleccionados=new Set();
   state.bracket=null; state.bracketBloqueado=false; state.tablaPosiciones=null; state.torneoSoc=null;
+  state.socConfigRonda=null;
   document.getElementById('podio-display').innerHTML='';
   document.getElementById('tabla-posiciones-display').innerHTML='';
   document.getElementById('soccer-torneo-content').innerHTML='';
@@ -894,19 +890,8 @@ async function generarBracket() {
   const n=presentes.length;
 
   if(state.tipo==='soccer'){
-    const desc=describFormato(n);
-    confirmar('⚽','GENERAR TORNEO SOCCER',`${n} equipos → ${desc}. Los emparejamientos serán aleatorios. ¿Generar?`,'Generar','success',
-      async()=>{
-        loading(true,'GENERANDO TORNEO...');
-        try{
-          const res=await gasPost({action:'generarTorneoSoccer',equipos:presentes.map(p=>({id:p.id,nombre:p.nombre}))});
-          if(!res.ok)throw new Error(res.error||'Error');
-          state.torneoSoc=res.torneo; state.bracketBloqueado=true;
-          toast('✅ Torneo generado','success'); renderTorneoSoccer(); setStep(3);
-        }catch(e){toast('Error: '+e.message,'error');console.error(e);}
-        loading(false);
-      }
-    );
+    abrirConfigurarRondaSoccer(presentes.map(p=>({id:p.id,nombre:p.nombre})), 1);
+    setStep(3);
     return;
   }
 
@@ -927,14 +912,6 @@ async function generarBracket() {
       loading(false);
     }
   );
-}
-
-function describFormato(n){
-  const m={2:'Final única ida y vuelta',3:'Todos contra todos ida y vuelta → Final',4:'Todos contra todos → Final + 3ro auto',
-    5:'Grupo A (2) + Grupo B (3) → Final + 3er lugar',6:'2 grupos de 3 → Final + 3ro por estadísticas',
-    7:'Grupo A (3) + Grupo B (4) → Final + 3er lugar',8:'2 grupos de 4 → Final + 3ro por estadísticas',
-    9:'3 grupos de 3 → Todos contra todos final'};
-  return m[n]||`Formato personalizado (${n} equipos)`;
 }
 
 // ════════════════════════════════════════
@@ -1030,7 +1007,7 @@ function resetearBracket() {
         else { res=await gasPost({action:'resetearBracketGeneral',categoria:state.categoria}); }
         if(!res.ok)throw new Error(res.error||'Error');
         state.bracket=null; state.bracketBloqueado=false; state.seleccionados=new Set();
-        state.tablaPosiciones=null; state.torneoSoc=null;
+        state.tablaPosiciones=null; state.torneoSoc=null; state.socConfigRonda=null;
         document.getElementById('podio-display').innerHTML='';
         document.getElementById('tabla-posiciones-display').innerHTML='';
         document.getElementById('soccer-torneo-content').innerHTML='';
@@ -1044,145 +1021,202 @@ function resetearBracket() {
 // ════════════════════════════════════════
 //  SOCCER — RENDERIZADO DE TORNEO
 // ════════════════════════════════════════
-const SOC_GRUPO_FILTRO_KEY='panel_bracket_soc_grupo_filtro';
+const SOC_LLAVE_FILTRO_KEY='panel_bracket_soc_llave_filtro';
 
 function filtrarGrupoSoccer(g){
-  localStorage.setItem(SOC_GRUPO_FILTRO_KEY, g);
+  localStorage.setItem(SOC_LLAVE_FILTRO_KEY, g);
   renderTorneoSoccer();
 }
 
-function renderTorneoSoccer() {
+// ════════════════════════════════════════
+//  SOCCER — CONFIGURAR RONDA (llaves flexibles)
+//  El juez arma en vivo cuántas llaves hay y qué equipos entran en
+//  cada una. El sistema solo valida que la suma cuadre — no decide
+//  el formato.
+// ════════════════════════════════════════
+function abrirConfigurarRondaSoccer(pool, ronda) {
+  state.socConfigRonda={ronda, pool, numLlaves:pool.length===2?1:Math.max(1,Math.min(3,Math.round(pool.length/4))), asignacion:{}};
+  if(pool.length===2){ state.socConfigRonda.asignacion[pool[0].id]=1; state.socConfigRonda.asignacion[pool[1].id]=1; }
+  renderConfigurarRondaSoccer();
+}
+
+function cancelarConfigurarRondaSoccer() {
+  state.socConfigRonda=null;
+  if(state.torneoSoc) renderTorneoSoccer();
+  else { renderSeleccion(); setStep(2); }
+}
+
+function cambiarNumLlavesSoccer(delta) {
+  const c=state.socConfigRonda; if(!c) return;
+  c.numLlaves=Math.max(1,c.numLlaves+delta);
+  Object.keys(c.asignacion).forEach(id=>{ if(c.asignacion[id]>c.numLlaves) delete c.asignacion[id]; });
+  renderConfigurarRondaSoccer();
+}
+
+function asignarEquipoLlaveSoccer(equipoId, llaveNum) {
+  const c=state.socConfigRonda; if(!c) return;
+  if(llaveNum) c.asignacion[equipoId]=Number(llaveNum); else delete c.asignacion[equipoId];
+  renderConfigurarRondaSoccer();
+}
+
+function renderConfigurarRondaSoccer() {
   mostrarWrap(true);
-  const torneo=state.torneoSoc;
-  if(!torneo){ document.getElementById('soccer-torneo-content').innerHTML='<div class="empty-state"><div class="empty-state-icon">⚽</div><p>No hay torneo disponible.</p></div>'; return; }
+  document.getElementById('socGrupoFiltro').style.display='none';
+  document.getElementById('btnPodio').style.display='none';
+  document.getElementById('btnVerPodio').style.display='none';
+  const c=state.socConfigRonda;
+  if(!c) return;
 
-  const partidos=torneo.partidos;
-  const tabla=torneo.tabla||{};
-  const formato=torneo.formato;
+  const conteos={};
+  for(let i=1;i<=c.numLlaves;i++) conteos[i]=0;
+  Object.values(c.asignacion).forEach(n=>{ conteos[n]=(conteos[n]||0)+1; });
+  const totalAsignado=Object.keys(c.asignacion).length;
+  const faltantes=c.pool.length-totalAsignado;
+  const llavesChicas=Object.entries(conteos).filter(([,v])=>v>0&&v<2).map(([k])=>k);
+  const cuadra=faltantes===0&&llavesChicas.length===0;
 
-  // Detectar si hay podio disponible
-  const podioDisponible=torneoSoccerTerminado(partidos, formato);
-  document.getElementById('btnPodio').style.display=podioDisponible?'inline-flex':'none';
-  document.getElementById('btnVerPodio').style.display=podioDisponible?'inline-flex':'none';
-
-  // ── Filtro de grupo por dispositivo (para repartir juezes/pistas) ──
-  const gruposConEquipos=['GRUPO_A','GRUPO_B','GRUPO_C'].filter(g=>partidos.some(p=>p.grupo===g));
-  const filtroBar=document.getElementById('socGrupoFiltro');
-  if(gruposConEquipos.length>1){
-    filtroBar.style.display='flex';
-    filtroBar.querySelectorAll('.soc-filtro-btn').forEach(btn=>{
-      const g=btn.getAttribute('data-g');
-      btn.style.display=(g==='TODOS'||gruposConEquipos.includes(g))?'inline-block':'none';
-    });
-    let filtroActivo=localStorage.getItem(SOC_GRUPO_FILTRO_KEY)||'TODOS';
-    if(filtroActivo!=='TODOS'&&!gruposConEquipos.includes(filtroActivo))filtroActivo='TODOS';
-    filtroBar.querySelectorAll('.soc-filtro-btn').forEach(btn=>{
-      btn.classList.toggle('active', btn.getAttribute('data-g')===filtroActivo);
-    });
-    var socFiltroActivo=filtroActivo;
-  }else{
-    filtroBar.style.display='none';
-    var socFiltroActivo='TODOS';
-  }
-
-  let html='<div class="soc-grupos-wrap">';
-
-  // ── Grupos ──────────────────────────────────────────────────
-  const gruposOrden=['FASE_UNICA','FASE_GRUPOS','GRUPO_A','GRUPO_B','GRUPO_C'];
-  let gruposPresentes=gruposOrden.filter(g=>partidos.some(p=>p.grupo===g));
-  if(socFiltroActivo!=='TODOS'){
-    gruposPresentes=gruposPresentes.filter(g=>g===socFiltroActivo||g==='FASE_UNICA'||g==='FASE_GRUPOS');
-  }
-
-  gruposPresentes.forEach(g=>{
-    const pGroup=partidos.filter(p=>p.grupo===g);
-    const tablaG=tabla[g]||[];
-    const label=g==='FASE_UNICA'?'🏆 Final Única (Ida y Vuelta)':g==='FASE_GRUPOS'?'📊 Fase de grupos':
-      g==='GRUPO_A'?'🔵 Grupo A':g==='GRUPO_B'?'🟢 Grupo B':'🟠 Grupo C';
-    html+=`<div class="soc-grupo"><div class="soc-grupo-titulo">${label}</div>`;
-    html+=`<div class="soc-partidos-lista">`;
-    pGroup.forEach(p=>{
-      html+=renderSocPartido(p, formato, g);
-    });
-    html+=`</div>`;
-    // Tabla de posiciones del grupo (si aplica)
-    if(tablaG.length>1 && g!=='FASE_UNICA'){
-      html+=`<table class="soc-tabla"><thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>G</th><th>P</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead><tbody>`;
-      tablaG.forEach((t,i)=>{
-        const clasificado=i===0;
-        html+=`<tr ${clasificado?'style="background:rgba(46,204,113,.06)"':''}><td class="soc-tpos">${i+1}º${clasificado?' ✓':''}</td><td class="soc-tnombre">${t.nombre}</td><td>${t.jugados}</td><td>${t.victorias}</td><td>${t.derrotas}</td><td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia>0?'+':''}${t.diferencia}</td><td class="soc-tpts">${t.puntos}</td></tr>`;
-      });
-      html+=`</tbody></table>`;
-    }
-    html+=`</div>`;
+  let html=`<div class="pb-card" style="margin-bottom:14px;">
+    <div class="soc-grupo-titulo">⚙️ Configurar Ronda ${c.ronda}${c.ronda>1?` — avanzaron ${c.pool.length} equipos`:''}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin:12px 0;">
+      <span style="font-size:.75rem;color:var(--muted);">¿Cuántas llaves?</span>
+      <button class="btn btn-outline btn-sm" onclick="cambiarNumLlavesSoccer(-1)">−</button>
+      <span style="font-family:Orbitron;font-size:1.1rem;min-width:20px;text-align:center;">${c.numLlaves}</span>
+      <button class="btn btn-outline btn-sm" onclick="cambiarNumLlavesSoccer(1)">+</button>
+    </div>
+    <div class="soc-partidos-lista">`;
+  c.pool.forEach(eq=>{
+    const sel=c.asignacion[eq.id]||'';
+    let opciones=`<option value="">Sin asignar</option>`;
+    for(let i=1;i<=c.numLlaves;i++) opciones+=`<option value="${i}" ${sel==i?'selected':''}>Llave ${i}</option>`;
+    html+=`<div class="soc-partido"><div class="soc-partido-equipos"><span class="soc-eq">${eq.nombre}</span></div><select onchange="asignarEquipoLlaveSoccer('${eq.id}',this.value)" style="background:var(--bg2,#1a1f30);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:.75rem;">${opciones}</select></div>`;
   });
-
-  // ── Fases finales ────────────────────────────────────────────
-  const gruposFinales=['FINAL','FINAL_TCV','3ER_LUGAR','3ER_AUTO','DESEMPATE'];
-  const partidosFinales=partidos.filter(p=>gruposFinales.includes(p.grupo));
-
-  if(partidosFinales.length){
-    html+=`<div class="soc-fase-final"><div class="soc-fase-titulo">🏆 Fase Final</div><div class="soc-partidos-lista">`;
-    // Orden: primero FINAL_TCV o DESEMPATE o FINAL, luego 3ER_LUGAR/3ER_AUTO
-    const ordenFin=['FINAL_TCV','DESEMPATE','FINAL','3ER_LUGAR','3ER_AUTO'];
-    ordenFin.forEach(g=>{
-      partidos.filter(p=>p.grupo===g).forEach(p=>{
-        html+=renderSocPartido(p, formato, g);
-      });
-    });
-    html+=`</div></div>`;
-  }
-
   html+=`</div>`;
+  if(!cuadra){
+    let msg='';
+    if(faltantes>0) msg=`Faltan ${faltantes} equipo(s) por asignar a una llave.`;
+    else if(faltantes<0) msg=`Hay ${-faltantes} equipo(s) asignados de más — revisá duplicados.`;
+    else if(llavesChicas.length) msg=`La Llave ${llavesChicas.join(', ')} necesita al menos 2 equipos (no se permiten byes).`;
+    html+=`<div class="aviso-empty" style="margin-top:10px;">⚠️ ${msg}</div>`;
+  }
+  html+=`<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+    <button class="btn btn-green btn-sm" ${cuadra?'':'disabled'} onclick="confirmarRondaSoccer()">✅ Generar Ronda ${c.ronda}</button>
+    <button class="btn btn-outline btn-sm" onclick="cancelarConfigurarRondaSoccer()">← Cancelar</button>
+  </div></div>`;
   document.getElementById('soccer-torneo-content').innerHTML=html;
 }
 
-function renderSocPartido(p, formato, grupo) {
-  // Partidos vacíos (aún sin equipos definidos excepto en algunos grupos)
+async function confirmarRondaSoccer() {
+  const c=state.socConfigRonda; if(!c) return;
+  const llaves=[];
+  for(let i=1;i<=c.numLlaves;i++){
+    const equipos=c.pool.filter(eq=>c.asignacion[eq.id]===i).map(eq=>({id:eq.id,nombre:eq.nombre}));
+    if(equipos.length) llaves.push({llave_id:'L'+i,equipos});
+  }
+  loading(true, c.ronda===1?'GENERANDO RONDA 1...':'GENERANDO SIGUIENTE RONDA...');
+  try{
+    const res=await gasPost({action:'generarRondaSoccer',torneo_id:state.torneoSoc?.torneo_id||'',ronda:c.ronda,llaves,equipos_pool:c.pool.map(eq=>({id:eq.id,nombre:eq.nombre}))});
+    if(!res.ok)throw new Error(res.error||'Error');
+    state.torneoSoc=res.torneo; state.bracketBloqueado=true; state.socConfigRonda=null;
+    toast('✅ Ronda '+c.ronda+' generada','success');
+    renderTorneoSoccer(); setStep(3);
+  }catch(e){toast('Error: '+e.message,'error');console.error(e);}
+  loading(false);
+}
+
+// ════════════════════════════════════════
+//  SOCCER — RENDERIZADO DE TORNEO (rondas/llaves)
+// ════════════════════════════════════════
+function renderTorneoSoccer() {
+  mostrarWrap(true);
+  if(state.socConfigRonda){ renderConfigurarRondaSoccer(); return; }
+  const torneo=state.torneoSoc;
+  if(!torneo){
+    document.getElementById('soccer-torneo-content').innerHTML='<div class="empty-state"><div class="empty-state-icon">⚽</div><p>No hay torneo disponible.</p></div>';
+    document.getElementById('socGrupoFiltro').style.display='none';
+    document.getElementById('btnPodio').style.display='none';
+    document.getElementById('btnVerPodio').style.display='none';
+    return;
+  }
+
+  const partidos=torneo.partidos;
+  const tabla=torneo.tabla||{};
+  document.getElementById('btnPodio').style.display='inline-flex';
+  document.getElementById('btnVerPodio').style.display='inline-flex';
+
+  const rondas=[...new Set(partidos.map(p=>Number(p.ronda)))].sort((a,b)=>a-b);
+  const rondaActual=torneo.ronda_actual||rondas[rondas.length-1];
+
+  // ── Filtro de llave por dispositivo (para repartir juezes/pistas), solo sobre la ronda activa ──
+  const llavesRondaActual=[...new Set(partidos.filter(p=>Number(p.ronda)===rondaActual).map(p=>p.llave))];
+  const filtroBar=document.getElementById('socGrupoFiltro');
+  let filtroActivo='TODOS';
+  if(llavesRondaActual.length>1){
+    filtroActivo=localStorage.getItem(SOC_LLAVE_FILTRO_KEY)||'TODOS';
+    if(filtroActivo!=='TODOS'&&!llavesRondaActual.includes(filtroActivo))filtroActivo='TODOS';
+    filtroBar.style.display='flex';
+    filtroBar.innerHTML=`<span class="soc-grupo-filtro-label">👁 Ver solo:</span>`+
+      ['TODOS',...llavesRondaActual].map(g=>`<button class="soc-filtro-btn ${g===filtroActivo?'active':''}" onclick="filtrarGrupoSoccer('${g}')">${g==='TODOS'?'Todos':'🔹 '+g}</button>`).join('');
+  } else {
+    filtroBar.style.display='none';
+  }
+
+  let html='<div class="soc-grupos-wrap">';
+  rondas.slice().reverse().forEach(r=>{
+    const esActual=r===rondaActual;
+    const pRonda=partidos.filter(p=>Number(p.ronda)===r);
+    const llavesRonda=[...new Set(pRonda.map(p=>p.llave))];
+    let contenido='';
+    llavesRonda.forEach(ll=>{
+      if(esActual&&filtroActivo!=='TODOS'&&ll!==filtroActivo) return;
+      const pLlave=pRonda.filter(p=>p.llave===ll);
+      const tablaLl=tabla[ll]||[];
+      contenido+=`<div class="soc-grupo"><div class="soc-grupo-titulo">🔹 ${ll}</div><div class="soc-partidos-lista">`;
+      pLlave.forEach(p=>{ contenido+=renderSocPartido(p); });
+      contenido+=`</div>`;
+      if(tablaLl.length>1) contenido+=renderTablaSoc(tablaLl);
+      if(esActual&&pLlave.length&&pLlave.every(p=>p.estado==='FINALIZADO')) contenido+=renderAvanceLlaveSoccer(torneo,r,ll,tablaLl);
+      contenido+=`</div>`;
+    });
+    if(esActual){
+      html+=`<div class="soc-fase-final"><div class="soc-fase-titulo">🔴 RONDA ${r} (actual)</div>${contenido}</div>`;
+    } else {
+      html+=`<details style="margin-bottom:10px;"><summary style="cursor:pointer;font-family:Orbitron;font-size:.7rem;color:var(--muted);padding:6px 0;">Ronda ${r} (ver)</summary>${contenido}</details>`;
+    }
+  });
+  html+=renderResumenAvanceSoccer(torneo, rondaActual);
+  html+='</div>';
+  document.getElementById('soccer-torneo-content').innerHTML=html;
+}
+
+function renderTablaSoc(tablaG) {
+  let html=`<table class="soc-tabla"><thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>G</th><th>P</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead><tbody>`;
+  tablaG.forEach((t,i)=>{
+    html+=`<tr ${i===0?'style="background:rgba(46,204,113,.06)"':''}><td class="soc-tpos">${i+1}º${i===0?' ✓':''}</td><td class="soc-tnombre">${t.nombre}</td><td>${t.jugados}</td><td>${t.victorias}</td><td>${t.derrotas}</td><td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia>0?'+':''}${t.diferencia}</td><td class="soc-tpts">${t.puntos}</td></tr>`;
+  });
+  html+=`</tbody></table>`;
+  return html;
+}
+
+function renderSocPartido(p) {
   const sinEquipos=!p.equipo_a_id||!p.equipo_b_id;
   const esFin=p.estado==='FINALIZADO';
-  const es3Auto=grupo==='3ER_AUTO'&&esFin&&p.marcador==='AUTO';
-  const esDesemp=grupo==='DESEMPATE';
-
-  // Etiqueta del partido
-  let label='';
-  if(grupo==='FINAL') label='🏆 FINAL';
-  else if(grupo==='FINAL_TCV') label='🏆 FINAL TCV';
-  else if(grupo==='3ER_LUGAR') label='🥉 3er Lugar';
-  else if(grupo==='3ER_AUTO') label='🥉 3er Lugar (Estadísticas)';
-  else if(grupo==='DESEMPATE') label='⚖️ Desempate aggregate';
-
   const nombreA=p.equipo_a_nombre||'— Por definir —';
   const nombreB=p.equipo_b_nombre||'— Por definir —';
   const clA=esFin?(p.ganador_id===p.equipo_a_id?'ganador':'perdedor'):'';
   const clB=esFin?(p.ganador_id===p.equipo_b_id?'ganador':'perdedor'):'';
-
-  let marcadorStr='';
-  if(esFin&&p.marcador&&p.marcador!=='AUTO') marcadorStr=p.marcador;
+  const marcadorStr=esFin&&p.marcador?p.marcador:'';
 
   let badgeHtml='';
   if(esFin) badgeHtml=`<span class="soc-estado-badge soc-badge-fin">FINALIZADO</span>`;
   else if(sinEquipos) badgeHtml=`<span class="soc-estado-badge soc-badge-bloq">EN ESPERA</span>`;
-  else if(esDesemp) badgeHtml=`<span class="soc-estado-badge soc-badge-desemp">DESEMPATE</span>`;
   else badgeHtml=`<span class="soc-estado-badge soc-badge-pend">PENDIENTE</span>`;
 
   let botonHtml='';
   if(!esFin&&!sinEquipos){
-    const pJson=JSON.stringify(p).replace(/'/g,"\\'");
     botonHtml=`<button class="btn-jugar-soc-sm" onclick='abrirCronometroSoccer(${JSON.stringify(p)})'>▶ Jugar</button>`;
   }
 
-  // 3er auto: no tiene botón, mostrar solo resultado
-  if(es3Auto){
-    return`<div class="soc-partido finalizado">
-      ${label?`<span class="soc-estado-badge soc-badge-fin" style="margin-right:6px">${label}</span>`:''}
-      <div class="soc-partido-equipos"><span class="soc-eq ganador">🥉 ${nombreA}</span><span class="soc-vs">—</span><span class="soc-marcador">POR ESTADÍSTICAS</span></div>
-      ${badgeHtml}
-    </div>`;
-  }
-
-  return`<div class="soc-partido ${esFin?'finalizado':esDesemp&&!sinEquipos?'desempate-pendiente':''}">
-    ${label?`<span style="font-family:Orbitron;font-size:.55rem;letter-spacing:1px;color:var(--muted);white-space:nowrap;margin-right:4px;">${label}</span>`:''}
+  return`<div class="soc-partido ${esFin?'finalizado':''}">
     <div class="soc-partido-equipos">
       <span class="soc-eq ${clA}">${nombreA}</span>
       <span class="soc-vs">VS</span>
@@ -1194,11 +1228,62 @@ function renderSocPartido(p, formato, grupo) {
   </div>`;
 }
 
-function torneoSoccerTerminado(partidos, formato) {
-  if(formato==='IDA_VUELTA'){
-    return partidos.some(p=>p.grupo==='DESEMPATE'&&p.estado==='FINALIZADO');
+// ── Avance manual de una llave (checkboxes + quién confirma) ──
+function renderAvanceLlaveSoccer(torneo, ronda, llave, tablaLl) {
+  const avanceExistente=(torneo.avances||[]).filter(a=>String(a.ronda)===String(ronda)&&a.llave===llave);
+  const yaConfirmado=avanceExistente.length>0;
+  const idsAvanzan=new Set(avanceExistente.map(a=>a.equipo_id));
+  const filas=tablaLl.map((t,i)=>{
+    const checked=yaConfirmado?idsAvanzan.has(t.id):i<2;
+    return `<label style="display:flex;align-items:center;gap:6px;font-size:.75rem;padding:3px 0;"><input type="checkbox" data-avance-check="${llave}|${ronda}" value="${t.id}" data-nombre="${t.nombre.replace(/"/g,'&quot;')}" ${checked?'checked':''}> ${i+1}º ${t.nombre} (${t.puntos} pts)</label>`;
+  }).join('');
+  return `<div class="soc-avance-box" style="margin-top:8px;padding:10px;border:1px dashed var(--border);border-radius:8px;">
+    <div style="font-size:.68rem;color:var(--muted);margin-bottom:6px;">${yaConfirmado?'✓ Avance confirmado de esta llave — podés corregirlo mientras no generes la siguiente ronda:':'¿Quiénes avanzan de esta llave?'}</div>
+    ${filas}
+    <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+      <input type="text" id="soc_usuario_${ronda}_${llave}" placeholder="¿Quién confirma?" style="flex:1;min-width:120px;background:var(--bg2,#1a1f30);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:.72rem;">
+      <button class="btn btn-outline btn-sm" onclick="marcarAvanceLlaveUI('${ronda}','${llave}')">${yaConfirmado?'✏️ Corregir avance':'✅ Confirmar avance'}</button>
+    </div>
+  </div>`;
+}
+
+async function marcarAvanceLlaveUI(ronda, llave) {
+  const checks=[...document.querySelectorAll(`input[data-avance-check="${llave}|${ronda}"]:checked`)];
+  if(!checks.length){ toast('Selecciona al menos un equipo que avance','error'); return; }
+  const equipos=checks.map(c=>({id:c.value,nombre:c.dataset.nombre}));
+  const usuario=document.getElementById(`soc_usuario_${ronda}_${llave}`)?.value||'';
+  loading(true,'GUARDANDO AVANCE...');
+  try{
+    const res=await gasPost({action:'marcarAvanceLlave',torneo_id:state.torneoSoc.torneo_id,ronda,llave,equipos,usuario});
+    if(!res.ok)throw new Error(res.error||'Error');
+    state.torneoSoc=res.torneo;
+    toast('✅ Avance de '+llave+' confirmado','success');
+    renderTorneoSoccer();
+  }catch(e){toast('Error: '+e.message,'error');}
+  loading(false);
+}
+
+// ── Resumen: cuántos avanzan y siguiente paso (ronda N+1 o cierre) ──
+function renderResumenAvanceSoccer(torneo, rondaActual) {
+  const partidosRonda=torneo.partidos.filter(p=>Number(p.ronda)===rondaActual);
+  if(!partidosRonda.length||!partidosRonda.every(p=>p.estado==='FINALIZADO')) return '';
+  const llavesRonda=[...new Set(partidosRonda.map(p=>p.llave))];
+  const avancesRonda=(torneo.avances||[]).filter(a=>String(a.ronda)===String(rondaActual));
+  const llavesConAvance=new Set(avancesRonda.map(a=>a.llave));
+  const faltanLlaves=llavesRonda.filter(ll=>!llavesConAvance.has(ll));
+  if(faltanLlaves.length){
+    return `<div class="aviso-empty" style="margin-top:10px;">⚠️ Confirmá el avance de: ${faltanLlaves.join(', ')} antes de continuar a la siguiente ronda.</div>`;
   }
-  return partidos.some(p=>p.grupo==='FINAL'&&p.estado==='FINALIZADO');
+  const poolMap={};
+  avancesRonda.forEach(a=>{ poolMap[a.equipo_id]={id:a.equipo_id,nombre:a.equipo_nombre}; });
+  const pool=Object.values(poolMap);
+  let html=`<div class="soc-fase-final" style="margin-top:6px;"><div class="soc-fase-titulo">➡️ Avanzan ${pool.length} equipo(s)</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">`;
+  html+=`<button class="btn btn-green btn-sm" onclick='abrirConfigurarRondaSoccer(${JSON.stringify(pool)}, ${rondaActual+1})'>➡️ Configurar Ronda ${rondaActual+1}</button>`;
+  if(pool.length<=3){
+    html+=`<button class="btn btn-outline btn-sm" onclick="abrirPodioManual()">🏆 Cerrar torneo — definir podio</button>`;
+  }
+  html+=`</div></div>`;
+  return html;
 }
 
 // ════════════════════════════════════════
@@ -1290,20 +1375,10 @@ function exportarExcelSoccer() {
   const torneo=state.torneoSoc;
   if(!torneo||!torneo.partidos||!torneo.partidos.length){ toast('No hay torneo de soccer generado','error'); return; }
   const partidos=torneo.partidos;
-  const labelGrupo=(g)=>{
-    if(g==='FINAL') return 'Final';
-    if(g==='FINAL_TCV') return 'Final TCV';
-    if(g==='3ER_LUGAR') return '3er Lugar';
-    if(g==='3ER_AUTO') return '3er Lugar (auto)';
-    if(g==='DESEMPATE') return 'Desempate';
-    if(g==='FASE_UNICA') return 'Fase única';
-    if(g==='FASE_GRUPOS') return 'Fase de grupos';
-    if(g&&g.startsWith('GRUPO_')) return 'Grupo ' + g.split('_')[1];
-    return g||'';
-  };
   const filas=partidos.map((p,i)=>({
     '#':            i+1,
-    'Fase':         labelGrupo(p.grupo),
+    'Ronda':        p.ronda,
+    'Llave':        p.llave,
     'Equipo A':     p.equipo_a_nombre || '— Por definir —',
     'Equipo B':     p.equipo_b_nombre || '— Por definir —',
     'Marcador':     p.marcador || '',
@@ -1311,13 +1386,13 @@ function exportarExcelSoccer() {
     'Estado':       p.estado || ''
   }));
   const ws=XLSX.utils.json_to_sheet(filas);
-  ws['!cols']=[{wch:4},{wch:18},{wch:26},{wch:26},{wch:22},{wch:24},{wch:14}];
+  ws['!cols']=[{wch:4},{wch:8},{wch:10},{wch:26},{wch:26},{wch:22},{wch:24},{wch:14}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Partidos Soccer');
-  // Hoja adicional con tablas de grupos si existen
+  // Hoja adicional con tabla de posiciones de cada llave, si existen
   if(torneo.tabla){
-    Object.keys(torneo.tabla).forEach(g=>{
-      const tabla=torneo.tabla[g];
+    Object.keys(torneo.tabla).forEach(ll=>{
+      const tabla=torneo.tabla[ll];
       if(!tabla||!tabla.length) return;
       const filasTabla=tabla.map((t,i)=>({
         '#': i+1, 'Equipo': t.nombre, 'PJ': t.jugados, 'G': t.victorias, 'P': t.derrotas,
@@ -1325,7 +1400,7 @@ function exportarExcelSoccer() {
       }));
       const wsTabla=XLSX.utils.json_to_sheet(filasTabla);
       wsTabla['!cols']=[{wch:4},{wch:26},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6}];
-      XLSX.utils.book_append_sheet(wb,wsTabla,labelGrupo(g).substring(0,28));
+      XLSX.utils.book_append_sheet(wb,wsTabla,String(ll).substring(0,28));
     });
   }
   const fecha=new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
