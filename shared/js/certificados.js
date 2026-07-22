@@ -51,9 +51,9 @@ const CERTIFICADO_TEMPLATE = `
 
       <!-- Logos arriba -->
       <div class="cert-logos-top">
-        <img src="${LOGO_CLUB}"  alt="Club Robótica Sucre" class="cert-logo-club"/>
+        <img src="{{LOGO_CLUB_SRC}}"  alt="Club Robótica Sucre" class="cert-logo-club"/>
         <div class="cert-logos-sep"></div>
-        <img src="${LOGO_SUCRE}" alt="Instituto Superior Universitario Sucre" class="cert-logo-sucre2"/>
+        <img src="{{LOGO_SUCRE_SRC}}" alt="Instituto Superior Universitario Sucre" class="cert-logo-sucre2"/>
       </div>
       <div class="cert-divider"></div>
 
@@ -339,7 +339,7 @@ function certSponsorPill(nombre, vertical) {
   const a = AUSPICIANTES.find(function(x) { return x.nombre === nombre; });
   if (!a) return '';
   const cls = vertical ? 'cert-sp-pill-v' : 'cert-sp-pill';
-  return `<div class="${cls}"><img src="${ausLogoUrl(a)}" alt="${a.nombre}"/></div>`;
+  return `<div class="${cls}"><img src="${logoSrc(ausLogoUrl(a))}" alt="${a.nombre}"/></div>`;
 }
 
 function renderCertSponsors(root) {
@@ -348,14 +348,75 @@ function renderCertSponsors(root) {
   if (right) right.innerHTML = CERT_SPONSORS_RIGHT.map(function(n) { return certSponsorPill(n, true); }).join('');
 }
 
-// Espera a que todas las <img> de un contenedor terminen de cargar (o fallen)
+// ── PRECARGA DE LOGOS A DATA-URI ────────────────────────────────────────────
+// Generar certificados en lote (GENERAR-CERTIFICADOS → "Generar todos") arma
+// un diploma tras otro, y cada uno volvía a pedir los 17 logos (club + sucre +
+// 15 auspiciantes) desde cero a raw.githubusercontent.com. Bajo una ráfaga de
+// muchos diplomas seguidos, alguna de esas peticiones sueltas fallaba/llegaba
+// lenta -> esa <img> quedaba rota (0x0) -> html2canvas reventaba con
+// "createPattern: canvas element with a width or height of 0", una vez por
+// cada alumno que tuvo la mala suerte de pisar esa petición fallida. Mismo
+// síntoma que ya se había resuelto para el SVG de fondo (ver nota arriba de
+// FONDO_DECORATIVO_SVG), ahora en los logos raster. Precargar una sola vez
+// por sesión de página y reutilizar el data-URI en cada diploma elimina la
+// causa: a partir del primer diploma ya no hay red de por medio.
+const _logoDataUriCache = {};
+
+async function urlToDataURI(url) {
+  if (_logoDataUriCache[url]) return _logoDataUriCache[url];
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' al descargar ' + url);
+  const blob = await resp.blob();
+  const dataUri = await new Promise(function(resolve, reject) {
+    const reader = new FileReader();
+    reader.onload = function() { resolve(reader.result); };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+  _logoDataUriCache[url] = dataUri;
+  return dataUri;
+}
+
+// Data-URI ya cacheado si se precargó con éxito; si no, la URL original tal
+// cual (esperarImagenes sigue esperando su carga normal por red como respaldo).
+function logoSrc(url) {
+  return _logoDataUriCache[url] || url;
+}
+
+// Precarga club, sucre y los 15 auspiciantes una sola vez. Se cachea la
+// promesa (no solo el resultado) para que llamadas concurrentes/repetidas
+// no disparen la misma descarga dos veces. Promise.allSettled: si un logo
+// puntual falla de verdad, no bloquea a los demás — ese caerá de vuelta a
+// pedirse por red como antes, el resto ya queda servido desde el cache.
+let _logosPrecargados = null;
+function precargarLogosCertificado() {
+  if (_logosPrecargados) return _logosPrecargados;
+  const urls = [LOGO_CLUB, LOGO_SUCRE].concat(
+    CERT_SPONSORS_RIGHT
+      .map(function(n) { return (typeof AUSPICIANTES !== 'undefined') ? AUSPICIANTES.find(function(a) { return a.nombre === n; }) : null; })
+      .filter(Boolean)
+      .map(ausLogoUrl)
+  );
+  _logosPrecargados = Promise.allSettled(urls.map(urlToDataURI));
+  return _logosPrecargados;
+}
+
+// Espera a que todas las <img> de un contenedor terminen de cargar. A
+// diferencia de antes, una imagen que falla/queda en 0x0 ahora SÍ rechaza la
+// promesa (en vez de resolverse igual) — así ese diploma puntual falla con un
+// mensaje claro y catcheable ("Imagen no cargó: ...") en vez de dejar pasar
+// una <img> rota hasta html2canvas y reventar con el error de createPattern.
 function esperarImagenes(container) {
   const imgs = Array.from(container.querySelectorAll('img'));
   return Promise.all(imgs.map(function(img) {
-    if (img.complete) return Promise.resolve();
-    return new Promise(function(resolve) {
-      img.addEventListener('load', resolve, { once: true });
-      img.addEventListener('error', resolve, { once: true });
+    if (img.complete) {
+      return img.naturalWidth > 0
+        ? Promise.resolve()
+        : Promise.reject(new Error('Imagen no cargó: ' + img.src.slice(0, 90)));
+    }
+    return new Promise(function(resolve, reject) {
+      img.addEventListener('load', function() { resolve(); }, { once: true });
+      img.addEventListener('error', function() { reject(new Error('Imagen no cargó: ' + img.src.slice(0, 90))); }, { once: true });
     });
   }));
 }
@@ -375,12 +436,15 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
     .replace(/\{\{FECHA_EVENTO\}\}/g,         fechaEvento)
     .replace(/\{\{CODIGO_VERIFICACION\}\}/g,  codigo)
     .replace(/\{\{SELLO\}\}/g,                selloImg)
-    .replace(/\{\{FONDO_SVG\}\}/g,            fondoImg);
+    .replace(/\{\{FONDO_SVG\}\}/g,            fondoImg)
+    .replace(/\{\{LOGO_CLUB_SRC\}\}/g,        logoSrc(LOGO_CLUB))
+    .replace(/\{\{LOGO_SUCRE_SRC\}\}/g,       logoSrc(LOGO_SUCRE));
 }
 
 // ── MODAL DE PREVIEW ───────────────────────────────────────────────────────────
 
 function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fechaEvento) {
+  precargarLogosCertificado(); // dispara la precarga en segundo plano (no bloquea la preview)
   const p        = pObj || (typeof participantesAprobados !== 'undefined' && participante !== null ? participantesAprobados[participante] : {});
   const nombre   = (nombreFinal && String(nombreFinal).trim()) || (p && p.nombre) || '—';
   const categoria = (p && p.categoria) || '';
@@ -544,6 +608,7 @@ async function generarYSubirPDF(pObj, tipo, fechaEvento, codigoCert, nombreFinal
   if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
     await cargarLibreriasPDF();
   }
+  await precargarLogosCertificado();
   const nombre    = (nombreFinal && String(nombreFinal).trim()) || (pObj && pObj.nombre) || '—';
   const categoria = (pObj && pObj.categoria) || '';
   const htmlCert  = buildCertHTML(nombre, tipo, categoria, fechaEvento, codigoCert);
