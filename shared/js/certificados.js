@@ -7,6 +7,35 @@
 const LOGO_SUCRE = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/logosucre.png';
 const LOGO_CLUB  = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/club-robotica-transparente.png';
 
+// Fondo decorativo (triángulos). Se serializa a <img> data-URI en vez de dejarlo
+// como <svg> inline: html2canvas convierte internamente los <svg> inline a imagen
+// para poder dibujarlos, y esa conversión no siempre termina antes de que intente
+// usarla (carrera de temporización, más probable cuanto más pesada esté la página) —
+// producía "createPattern: canvas element with a width or height of 0" de forma
+// intermitente. Como <img>, esperarImagenes() ya lo espera correctamente igual que
+// al resto de logos, y la carrera desaparece.
+const FONDO_DECORATIVO_SVG = `<svg viewBox="0 0 978 720" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eef3fa"/><stop offset="100%" stop-color="#dde8f4" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8f0f8" stop-opacity="0.8"/><stop offset="100%" stop-color="#cfe0f0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <polygon points="0,0 460,0 0,460" fill="url(#cg1)"/>
+  <polygon points="0,0 290,0 0,290" fill="url(#cg2)" opacity="0.7"/>
+  <polygon points="0,180 260,0 0,550" fill="#e4eef8" opacity="0.4"/>
+  <polygon points="0,370 350,720 0,720" fill="#dce8f5" opacity="0.5"/>
+  <polygon points="110,720 440,280 520,720" fill="#e8f0f8" opacity="0.35"/>
+</svg>`;
+
+// Convierte markup SVG en un <img> con data-URI (ver nota arriba de FONDO_DECORATIVO_SVG)
+function svgToImgTag(svgMarkup, className) {
+  const encoded = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgMarkup)));
+  return `<img src="${encoded}" class="${className || ''}"/>`;
+}
+
 const CERTIFICADO_TEMPLATE = `
 <div class="cert-outer" id="certificado-preview">
 
@@ -16,23 +45,7 @@ const CERTIFICADO_TEMPLATE = `
 
     <!-- Certificado central -->
     <div class="cert">
-      <div class="cert-bg">
-        <svg viewBox="0 0 978 720" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#eef3fa"/><stop offset="100%" stop-color="#dde8f4" stop-opacity="0"/>
-            </linearGradient>
-            <linearGradient id="cg2" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#e8f0f8" stop-opacity="0.8"/><stop offset="100%" stop-color="#cfe0f0" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <polygon points="0,0 460,0 0,460" fill="url(#cg1)"/>
-          <polygon points="0,0 290,0 0,290" fill="url(#cg2)" opacity="0.7"/>
-          <polygon points="0,180 260,0 0,550" fill="#e4eef8" opacity="0.4"/>
-          <polygon points="0,370 350,720 0,720" fill="#dce8f5" opacity="0.5"/>
-          <polygon points="110,720 440,280 520,720" fill="#e8f0f8" opacity="0.35"/>
-        </svg>
-      </div>
+      <div class="cert-bg">{{FONDO_SVG}}</div>
       <div class="cert-line-l"></div>
       <div class="cert-line-r"></div>
 
@@ -145,7 +158,7 @@ const CERTIFICADO_CSS = `
 }
 
 .cert-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
-.cert-bg svg { width: 100%; height: 100%; }
+.cert-bg svg, .cert-bg img { width: 100%; height: 100%; }
 
 .cert-line-l, .cert-line-r {
   position: absolute; top: 0; bottom: 0; width: 3px; z-index: 2;
@@ -192,7 +205,7 @@ const CERTIFICADO_CSS = `
 
 /* Sello */
 .cert-sello { position: absolute; bottom: 48px; right: 54px; z-index: 4; }
-.cert-sello svg { width: 100px; height: 132px; }
+.cert-sello svg, .cert-sello img { width: 100px; height: 132px; }
 
 /* Firmas */
 .cert-firmas {
@@ -352,6 +365,8 @@ function esperarImagenes(container) {
 function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
   const textoLogro = obtenerTextoLogro(tipo, categoria);
   const sello      = obtenerSelloSVG(tipo);
+  const selloImg   = svgToImgTag(sello);
+  const fondoImg   = svgToImgTag(FONDO_DECORATIVO_SVG);
   return CERTIFICADO_TEMPLATE
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
     .replace(/\{\{TEXTO_LOGRO_CHICA\}\}/g,   textoLogro.chica)
@@ -359,7 +374,8 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
     .replace(/\{\{TEXTO_LOGRO_RESTO\}\}/g,   textoLogro.resto)
     .replace(/\{\{FECHA_EVENTO\}\}/g,         fechaEvento)
     .replace(/\{\{CODIGO_VERIFICACION\}\}/g,  codigo)
-    .replace(/\{\{SELLO\}\}/g,                sello);
+    .replace(/\{\{SELLO\}\}/g,                selloImg)
+    .replace(/\{\{FONDO_SVG\}\}/g,            fondoImg);
 }
 
 // ── MODAL DE PREVIEW ───────────────────────────────────────────────────────────
