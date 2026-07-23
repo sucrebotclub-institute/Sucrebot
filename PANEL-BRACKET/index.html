@@ -101,6 +101,8 @@
     .btn-ganador:hover{background:#1e6bc4}
     .btn-jugar-soccer{width:100%;font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;padding:8px;border-radius:7px;border:none;cursor:pointer;background:var(--green);color:#fff;transition:all .2s}
     .btn-jugar-soccer:hover{background:#27ae60}
+    .btn-editar-resultado{width:100%;font-family:'Orbitron';font-size:.55rem;letter-spacing:.5px;padding:7px;border-radius:7px;border:1px solid rgba(243,156,18,.4);cursor:pointer;background:rgba(243,156,18,.1);color:var(--orange);transition:all .2s}
+    .btn-editar-resultado:hover{background:rgba(243,156,18,.2)}
     /* ── Soccer: grupos ── */
     .soc-grupos-wrap{display:flex;flex-direction:column;gap:28px}
     .soc-grupo-filtro{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:20px}
@@ -962,11 +964,15 @@ function renderBracket() {
     && ultimaReal.partidos.every(p => p.estado === 'FINALIZADO');
   const nombreASortear = puedeSortear ? fasesPlaceholder[0].nombre : null;
 
+  // Un partido finalizado se puede corregir solo mientras siga siendo el
+  // de la última ronda REAL (todavía no se sorteó la siguiente) — evita
+  // dejar la siguiente ronda con datos desincronizados del cambio.
   container.innerHTML=fasesParaDibujar.map(fase=>{
     const label = (fase.nombre===nombreASortear)
       ? `<div class="fase-label">${fase.nombre}</div><button class="btn-sortear-ronda" onclick="sortearSiguienteRonda('${ultimaReal.nombre}')">🎲 Sortear</button>`
       : `<div class="fase-label">${fase.nombre}</div>`;
-    return `<div class="bracket-fase">${label}<div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`;
+    const esFaseEditable = !esRR && ultimaReal && fase.nombre===ultimaReal.nombre;
+    return `<div class="bracket-fase">${label}<div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p,esFaseEditable)).join('')}</div></div>`;
   }).join('');
   if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>dibujarConectores(fasesParaDibujar)); }
 }
@@ -1001,7 +1007,7 @@ function renderTablaPosiciones() {
     </tbody></table><div class="tp-nota">Empates → usa "🏆 Podio Manual" para definir el orden</div></div>`;
 }
 
-function renderPartido(p) {
+function renderPartido(p,editable) {
   if(p.tipo==='BYE') return`<div class="partido-card bye" data-pid="${p.partido_id}"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · ${p.equipo_a_nombre||p.equipoNombre?'Pasa directo':'Pendiente'}</div></div>`;
   const esFin=p.estado==='FINALIZADO', puedeJugar=p.estado==='PENDIENTE'&&p.equipo_a_id&&p.equipo_b_id, bloq=!p.equipo_a_id||!p.equipo_b_id;
   const claseCard=esFin?'finalizado':bloq?'pendiente-bloqueado':'';
@@ -1015,10 +1021,29 @@ function renderPartido(p) {
     if(state.tipo==='soccer') btns=`<button class="btn-jugar-soccer" onclick='abrirCronometro(${JSON.stringify(p)})'>▶ Jugar partido</button>`;
     else if(state.tipo==='batalla') btns=`<button class="btn-jugar-soccer" onclick='abrirCombateBatalla(${JSON.stringify(p)})'>🥊 Iniciar combate</button>`;
     else btns=`<button class="btn-jugar-soccer" onclick='abrirMinisumo(${JSON.stringify(p)})'>🤖 Iniciar combate</button>`;
+  } else if(esFin&&editable&&p.equipo_a_id&&p.equipo_b_id){
+    btns=`<button class="btn-editar-resultado" onclick='editarResultadoPartido(${JSON.stringify(p)})'>✏️ Editar resultado</button>`;
   }
   const estLabel=esFin?'FINALIZADO':bloq?'EN ESPERA':'PENDIENTE';
   const estCl=esFin?'estado-finalizado':bloq?'estado-bloqueado':'estado-pendiente';
   return`<div class="partido-card ${claseCard}" data-pid="${p.partido_id}"><div class="partido-estado ${estCl}">${estLabel}</div><div class="partido-equipos"><div class="partido-eq ${clA}"><span class="partido-eq-nombre">${nombreA}</span>${sA?`<span class="partido-eq-score">${sA}</span>`:''}</div><div class="partido-eq ${clB}"><span class="partido-eq-nombre">${nombreB}</span>${sB?`<span class="partido-eq-score">${sB}</span>`:''}</div></div>${btns}</div>`;
+}
+
+async function editarResultadoPartido(p) {
+  const nombreA=p.equipo_a_nombre||'A', nombreB=p.equipo_b_nombre||'B';
+  const eligioA=confirm('Corregir resultado — ¿quién ganó en realidad?\nOK = '+nombreA+'\nCancelar = '+nombreB);
+  const ganadorId=eligioA?p.equipo_a_id:p.equipo_b_id;
+  const ganadorNombre=eligioA?nombreA:nombreB;
+  if(ganadorId===p.ganador_id){ toast('El ganador ya era '+ganadorNombre+' — sin cambios','error'); return; }
+  loading(true,'CORRIGIENDO...');
+  try{
+    const res=await gasPost({action:'registrarResultadoGeneral',partido_id:p.partido_id,ganador_id:ganadorId,marcador:p.marcador||'—',categoria:state.categoria});
+    if(!res.ok)throw new Error(res.error||'Error');
+    state.bracket=res.bracket;
+    toast('✏️ Resultado corregido — ganó '+ganadorNombre,'success');
+    renderBracket();
+  }catch(e){toast('Error: '+e.message,'error');}
+  loading(false);
 }
 
 // ── Ordena las rondas 2+ para que cada partido quede visualmente cerca
@@ -1711,57 +1736,34 @@ async function guardarPodio() {
         if(podio.tercero) await guardarCertEquipo(podio.tercero.id,podio.tercero.nombre,'TERCER LUGAR');
         if(podio.cuarto)  await guardarCertEquipo(podio.cuarto.id,podio.cuarto.nombre,'PARTICIPACIÓN');
         toast('🏆 Podio guardado en certificados','success'); verPodioEnBracket();
-        if(!podio.soccer) exportarExcelBracketGeneral(podio);
+        if(!podio.soccer) descargarImagenBracketGeneral();
       }catch(e){toast('Error: '+e.message,'error');}
       loading(false);
     }
   );
 }
 
-// ── Excel con todos los resultados del bracket (ms_a, ms_rc, bat) —
-// se descarga automáticamente al guardar el podio. Soccer no entra acá,
-// ya tiene su propio botón "📊 Excel" (exportarExcelSoccer).
-function exportarExcelBracketGeneral(podio) {
-  const fases=state.bracket?.fases;
-  if(!fases||!fases.length) return;
-  const filas=[];
-  fases.forEach(fase=>{
-    fase.partidos.forEach(p=>{
-      if(p.tipo==='BYE'){
-        filas.push({'Ronda':fase.nombre,'Equipo A':p.equipo_a_nombre||p.equipoNombre||'','Equipo B':'(BYE)','Marcador':'','Ganador':p.equipo_a_nombre||p.equipoNombre||'','Estado':'BYE'});
-      } else {
-        filas.push({
-          'Ronda':fase.nombre,
-          'Equipo A':p.equipo_a_nombre||'— Por definir —',
-          'Equipo B':p.equipo_b_nombre||'— Por definir —',
-          'Marcador':p.marcador||'',
-          'Ganador':p.ganador_id===p.equipo_a_id?(p.equipo_a_nombre||''):(p.ganador_id===p.equipo_b_id?(p.equipo_b_nombre||''):''),
-          'Estado':p.estado||''
-        });
-      }
-    });
-  });
-  const ws=XLSX.utils.json_to_sheet(filas);
-  ws['!cols']=[{wch:12},{wch:26},{wch:26},{wch:14},{wch:26},{wch:14}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Resultados');
-
-  if(podio){
-    const filasPodio=[
-      {'Lugar':'🥇 Ganador','Equipo':podio.primero?.nombre||'—'},
-      {'Lugar':'🥈 Subcampeón','Equipo':podio.segundo?.nombre||'—'}
-    ];
-    if(podio.tercero) filasPodio.push({'Lugar':'🥉 Tercer lugar','Equipo':podio.tercero.nombre||'—'});
-    if(podio.cuarto)  filasPodio.push({'Lugar':'4️⃣ Cuarto lugar','Equipo':podio.cuarto.nombre||'—'});
-    const wsPodio=XLSX.utils.json_to_sheet(filasPodio);
-    wsPodio['!cols']=[{wch:16},{wch:28}];
-    XLSX.utils.book_append_sheet(wb,wsPodio,'Podio');
-  }
-
-  const fecha=new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
-  const nombreCat=(CAT_INFO[state.categoria]?.nombre||state.categoria)
-    .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w]+/g,'_');
-  XLSX.writeFile(wb,'SucreBot2026_'+nombreCat+'_'+fecha+'.xlsx');
+// ── Imagen con el bracket completo (ronda 1 hasta la final) — se
+// descarga automáticamente al guardar el podio (ms_a/ms_rc/bat). Reusa
+// el mismo html2canvas que ya usa Soccer para la imagen de llaves.
+// Soccer no entra acá, tiene su propio flujo de imagen/Excel.
+async function descargarImagenBracketGeneral() {
+  const el=document.getElementById('bracketFases');
+  if(!el){ toast('No hay bracket para exportar como imagen','error'); return; }
+  loading(true,'GENERANDO IMAGEN...');
+  try{
+    await cargarHtml2CanvasSoc();
+    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#0d1420',logging:false});
+    const fecha=new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
+    const nombreCat=(CAT_INFO[state.categoria]?.nombre||state.categoria)
+      .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w]+/g,'_');
+    const link=document.createElement('a');
+    link.download='SucreBot2026_'+nombreCat+'_Bracket_'+fecha+'.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    toast('📸 Imagen del bracket descargada','success');
+  }catch(e){ toast('Error al generar la imagen: '+e.message,'error'); }
+  loading(false);
 }
 
 // ── PODIO MANUAL ──
@@ -2395,20 +2397,30 @@ function msAsaltoGanadoInstantaneo(equipoGanador, motivoTexto) {
   toast('Asalto ' + (ms.asaltoActual + 1) + ' · ' + MS_POSICIONES[ms.asaltoActual]);
 }
 
+// ── Antes de cada botón de puntuación: si el combate ya terminó, avisar
+// que hay que guardar el resultado en vez de repetir el mensaje genérico
+// de "primero inicia el combate" (que confundía cuando ya se había
+// jugado y ganado, pero se apretaba otro botón por error). ──────────────
+function msCombateEnCurso() {
+  if (ms.fase === 'fin') { toast('🏆 El combate ya terminó — presioná "Guardar resultado del combate"', 'error'); return false; }
+  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el combate', 'error'); return false; }
+  return true;
+}
+
 function msExpulsion(equipoExpulsor) {
-  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el combate', 'error'); return; }
+  if (!msCombateEnCurso()) return;
   msAsaltoGanadoInstantaneo(equipoExpulsor, '🏟 Expulsión');
 }
 
 function msAbandono(equipoQueAbandona) {
-  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el combate', 'error'); return; }
+  if (!msCombateEnCurso()) return;
   const ganador = equipoQueAbandona === 'A' ? 'B' : 'A';
   const nomAband = equipoQueAbandona === 'A' ? msNomA() : msNomB();
   msAsaltoGanadoInstantaneo(ganador, '🚩 ' + nomAband + ' abandonó');
 }
 
 function msAmonestar(equipoAmonestado) {
-  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el combate', 'error'); return; }
+  if (!msCombateEnCurso()) return;
   const ganador = equipoAmonestado === 'A' ? 'B' : 'A';
   const nomAmon = equipoAmonestado === 'A' ? msNomA() : msNomB();
   msAsaltoGanadoInstantaneo(ganador, '🟨 ' + nomAmon + ' amonestado');
