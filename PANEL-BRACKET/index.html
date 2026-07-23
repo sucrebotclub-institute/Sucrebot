@@ -973,7 +973,70 @@ function renderBracket() {
     const esFaseEditable = !esRR && ultimaReal && fase.nombre===ultimaReal.nombre;
     return `<div class="bracket-fase">${label}<div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p,esFaseEditable)).join('')}</div></div>`;
   }).join('');
-  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>dibujarConectores(fasesParaDibujar)); }
+  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>{ centrarFasesBracket(fasesParaDibujar); dibujarConectores(fasesParaDibujar); }); }
+}
+
+// ── Centra verticalmente cada tarjeta REAL (ya sorteada) entre las dos
+// tarjetas de la ronda anterior que la alimentan, para que el conector
+// quede una "H" derecha sin cruzarse con el de al lado. Las rondas
+// fantasma (todavía no sorteadas, _sourceIdx) se dejan tal cual en su
+// flujo normal — no tiene sentido centrarlas (su posición es solo
+// informativa) y tocarlas fue lo que rompió el layout la vez anterior.
+function centrarFasesBracket(fases) {
+  const wrap = document.getElementById('bracketFases');
+  if (!wrap || fases.length < 2) return;
+  const cols = wrap.querySelectorAll('.bracket-fase');
+  const wrapRect = wrap.getBoundingClientRect();
+
+  for (let i = 1; i < fases.length; i++) {
+    // Ronda fantasma: se deja en flujo normal, sin centrar.
+    if (fases[i].partidos.some(p => p._sourceIdx)) continue;
+    const prevFase = fases[i-1];
+    const prevById = {};
+    prevFase.partidos.forEach(p => { if (p.ganador_id) prevById[p.ganador_id] = p; });
+    const col = cols[i];
+    const contenedor = col?.querySelector('.fase-partidos');
+    if (!contenedor) continue;
+    const contTop = contenedor.getBoundingClientRect().top - wrapRect.top;
+    contenedor.style.position = 'relative';
+
+    // Todas las tarjetas de esta columna pasan a position:absolute — nunca
+    // se mezcla flujo normal con absoluto en el mismo contenedor (eso deja
+    // huecos impredecibles). Las que no tienen ningún origen identificable
+    // todavía usan un cursor de respaldo (apilado normal con el mismo gap
+    // que el CSS) en vez de centrado.
+    const GAP = 28;
+    let cursorY = 0, maxBottom = 0;
+    fases[i].partidos.forEach(p => {
+      const el = contenedor.querySelector(`[data-pid="${CSS.escape(String(p.partido_id))}"]`);
+      if (!el) return;
+      const elHeight = el.getBoundingClientRect().height;
+      const sources = [];
+      [p.equipo_a_id, p.equipo_b_id].forEach(eqId => {
+        const o = eqId && prevById[eqId];
+        if (o) sources.push(o);
+      });
+      const centros = sources.map(s => {
+        const elS = wrap.querySelector(`[data-pid="${CSS.escape(String(s.partido_id))}"]`);
+        if (!elS) return null;
+        const r = elS.getBoundingClientRect();
+        return (r.top - wrapRect.top) + r.height / 2;
+      }).filter(v => v !== null);
+
+      let top;
+      if (centros.length) {
+        const targetCenterY = centros.reduce((a,b)=>a+b, 0) / centros.length;
+        top = Math.max(cursorY, targetCenterY - elHeight/2 - contTop);
+      } else {
+        top = cursorY;
+      }
+      el.style.position = 'absolute';
+      el.style.left = '0'; el.style.right = '0'; el.style.top = top + 'px';
+      cursorY = top + elHeight + GAP;
+      maxBottom = Math.max(maxBottom, top + elHeight);
+    });
+    if (maxBottom > 0) contenedor.style.height = maxBottom + 'px';
+  }
 }
 
 async function sortearSiguienteRonda(faseActual) {
