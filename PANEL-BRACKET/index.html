@@ -1697,10 +1697,57 @@ async function guardarPodio() {
         if(podio.tercero) await guardarCertEquipo(podio.tercero.id,podio.tercero.nombre,'TERCER LUGAR');
         if(podio.cuarto)  await guardarCertEquipo(podio.cuarto.id,podio.cuarto.nombre,'PARTICIPACIÓN');
         toast('🏆 Podio guardado en certificados','success'); verPodioEnBracket();
+        if(!podio.soccer) exportarExcelBracketGeneral(podio);
       }catch(e){toast('Error: '+e.message,'error');}
       loading(false);
     }
   );
+}
+
+// ── Excel con todos los resultados del bracket (ms_a, ms_rc, bat) —
+// se descarga automáticamente al guardar el podio. Soccer no entra acá,
+// ya tiene su propio botón "📊 Excel" (exportarExcelSoccer).
+function exportarExcelBracketGeneral(podio) {
+  const fases=state.bracket?.fases;
+  if(!fases||!fases.length) return;
+  const filas=[];
+  fases.forEach(fase=>{
+    fase.partidos.forEach(p=>{
+      if(p.tipo==='BYE'){
+        filas.push({'Ronda':fase.nombre,'Equipo A':p.equipo_a_nombre||p.equipoNombre||'','Equipo B':'(BYE)','Marcador':'','Ganador':p.equipo_a_nombre||p.equipoNombre||'','Estado':'BYE'});
+      } else {
+        filas.push({
+          'Ronda':fase.nombre,
+          'Equipo A':p.equipo_a_nombre||'— Por definir —',
+          'Equipo B':p.equipo_b_nombre||'— Por definir —',
+          'Marcador':p.marcador||'',
+          'Ganador':p.ganador_id===p.equipo_a_id?(p.equipo_a_nombre||''):(p.ganador_id===p.equipo_b_id?(p.equipo_b_nombre||''):''),
+          'Estado':p.estado||''
+        });
+      }
+    });
+  });
+  const ws=XLSX.utils.json_to_sheet(filas);
+  ws['!cols']=[{wch:12},{wch:26},{wch:26},{wch:14},{wch:26},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Resultados');
+
+  if(podio){
+    const filasPodio=[
+      {'Lugar':'🥇 Ganador','Equipo':podio.primero?.nombre||'—'},
+      {'Lugar':'🥈 Subcampeón','Equipo':podio.segundo?.nombre||'—'}
+    ];
+    if(podio.tercero) filasPodio.push({'Lugar':'🥉 Tercer lugar','Equipo':podio.tercero.nombre||'—'});
+    if(podio.cuarto)  filasPodio.push({'Lugar':'4️⃣ Cuarto lugar','Equipo':podio.cuarto.nombre||'—'});
+    const wsPodio=XLSX.utils.json_to_sheet(filasPodio);
+    wsPodio['!cols']=[{wch:16},{wch:28}];
+    XLSX.utils.book_append_sheet(wb,wsPodio,'Podio');
+  }
+
+  const fecha=new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
+  const nombreCat=(CAT_INFO[state.categoria]?.nombre||state.categoria)
+    .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w]+/g,'_');
+  XLSX.writeFile(wb,'SucreBot2026_'+nombreCat+'_'+fecha+'.xlsx');
 }
 
 // ── PODIO MANUAL ──
