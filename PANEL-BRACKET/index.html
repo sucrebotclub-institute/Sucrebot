@@ -1045,24 +1045,43 @@ async function editarResultadoPartido(p) {
   loading(false);
 }
 
-// ── Ordena las rondas 2+ para que cada partido quede visualmente cerca
-// de los partidos de la ronda anterior que le dieron sus dos equipos —
-// el sorteo de cada ronda sigue siendo aleatorio (no se toca la lógica
-// de generación), esto solo reordena las tarjetas para minimizar cruces
-// al dibujar las líneas conectoras.
+// ── Reordena TODAS las rondas, de la última hacia la primera, para que
+// cada partido quede exactamente adyacente a sus dos orígenes — así
+// ninguna línea conectora se puede cruzar con otra, sin importar qué tan
+// entreverado haya sido el sorteo aleatorio de cada ronda (el sorteo en
+// sí no se toca, esto solo reordena las tarjetas para dibujarlas).
+// Ejemplo real que motivó este algoritmo: un BYE de Ronda 2 puede salir
+// de un partido de Ronda 1 que queda "en el medio" de los dos orígenes
+// de otro partido de Ronda 2 — centrar por posición promedio (como hacía
+// la versión anterior) no evita ese cruce; solo reordenar por adyacencia
+// real, ronda por ronda de atrás para adelante, lo garantiza.
 function ordenarFasesPorLinaje(fases) {
   const nuevasFases = fases.map(f => ({ nombre: f.nombre, partidos: f.partidos.slice() }));
-  for (let i = 1; i < nuevasFases.length; i++) {
-    const prev = nuevasFases[i-1].partidos;
-    const posPorId = {};
-    prev.forEach((p, idx) => { if (p.ganador_id) posPorId[p.ganador_id] = idx; });
-    const posDe = (equipoId) => equipoId in posPorId ? posPorId[equipoId] : null;
-    nuevasFases[i].partidos.forEach((p, idx) => {
-      const pa = posDe(p.equipo_a_id), pb = posDe(p.equipo_b_id);
-      const vals = [pa, pb].filter(v => v !== null);
-      p._ordenLinaje = vals.length ? (vals.reduce((a,b)=>a+b,0) / vals.length) : (prev.length + idx);
+  for (let i = nuevasFases.length - 2; i >= 0; i--) {
+    const curFase = nuevasFases[i];
+    const nextFase = nuevasFases[i+1];
+    const byGanador = {};
+    curFase.partidos.forEach(p => { if (p.ganador_id) byGanador[p.ganador_id] = p; });
+    const nuevoOrden = [];
+    const usados = new Set();
+    nextFase.partidos.forEach(np => {
+      let fuentes = [];
+      if (np._sourceIdx) {
+        fuentes = np._sourceIdx.map(idx => curFase.partidos[idx]).filter(Boolean);
+      } else {
+        [np.equipo_a_id, np.equipo_b_id].forEach(eqId => {
+          const o = eqId && byGanador[eqId];
+          if (o) fuentes.push(o);
+        });
+      }
+      fuentes.forEach(f => {
+        if (!usados.has(f.partido_id)) { usados.add(f.partido_id); nuevoOrden.push(f); }
+      });
     });
-    nuevasFases[i].partidos.sort((a,b) => a._ordenLinaje - b._ordenLinaje);
+    // Partidos sin destino conocido todavía (ninguno de sus equipos ganó
+    // nada aún) quedan al final, en su orden original.
+    curFase.partidos.forEach(p => { if (!usados.has(p.partido_id)) { usados.add(p.partido_id); nuevoOrden.push(p); } });
+    curFase.partidos = nuevoOrden;
   }
   return nuevasFases;
 }
