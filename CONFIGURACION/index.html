@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SucreBot — Configuración</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="../shared/js/config.js"></script>
+  <link rel="stylesheet" href="../shared/css/styles.css">
+  <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <style>
+    body { background: #07111e !important; font-family: 'Exo 2', sans-serif; color: #c8d8f0; padding-top: 0 !important; }
+    main { padding-top: 120px; min-height: 100vh; background: #07111e; }
+    .wrapper { max-width: 780px; margin: 0 auto; padding: 0 32px 80px; }
+
+    .page-hero { padding: 28px 0 20px; }
+    .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #fff; font-family: 'Orbitron'; font-size: 11px; font-weight: 700; letter-spacing: 3px; padding: 7px 18px; border-radius: 20px; margin-bottom: 14px; }
+    .page-hero-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: #5bc8f0; animation: blink 1.6s infinite; }
+    @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+    .page-hero h2 { font-family: 'Bebas Neue'; font-size: 3rem; letter-spacing: 4px; color: #e0eaff; line-height: 1; position: relative; margin-bottom: 8px; }
+    .page-hero h2 span { color: #5bc8f0; }
+    .page-hero h2::after { content:''; position:absolute; bottom:-8px; left:0; width:100%; height:3px; background:linear-gradient(90deg,transparent,#5bc8f0,transparent); }
+
+    .acceso-denegado { background: linear-gradient(135deg,#ff3b3b,#c41e3a); border-radius: 16px; padding: 60px 40px; text-align: center; max-width: 600px; margin: 60px auto; color: #fff; }
+    .acceso-denegado h3 { font-family: 'Orbitron'; font-size: 1.8rem; margin-bottom: 12px; }
+
+    .config-card { background: #0f2035; border-radius: 16px; padding: 32px; border: 1px solid #1a3a5a; box-shadow: 0 2px 16px rgba(0,0,0,0.5); margin-bottom: 24px; }
+    .config-card-title { font-family: 'Orbitron'; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #5bc8f0; text-transform: uppercase; margin-bottom: 6px; }
+    .config-card-desc { font-family: 'Exo 2'; font-size: 13px; color: #6a8aaa; margin-bottom: 24px; line-height: 1.6; }
+
+    .estado-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; background: #0d1f33; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; border: 1px solid #1a3a5a; }
+    .estado-label { font-family: 'Exo 2'; font-size: 13px; color: #6a8aaa; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+    .estado-valor { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
+    .estado-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .estado-dot.abierto { background: #22c55e; box-shadow: 0 0 10px #22c55e88; }
+    .estado-dot.cerrado { background: #f87171; box-shadow: 0 0 10px #f8717188; }
+    .estado-valor.abierto { color: #4ade80; }
+    .estado-valor.cerrado { color: #f87171; }
+
+    .btn-toggle { display: inline-flex; align-items: center; gap: 8px; font-family: 'Orbitron'; font-size: 12px; font-weight: 700; letter-spacing: 2px; padding: 16px 28px; border-radius: 10px; border: none; cursor: pointer; transition: filter .15s, transform .1s; width: 100%; justify-content: center; }
+    .btn-toggle:active { transform: scale(0.98); }
+    .btn-toggle:disabled { opacity: .5; pointer-events: none; }
+    .btn-toggle.abrir  { background: linear-gradient(135deg,#16a34a,#22c55e); color: #fff; }
+    .btn-toggle.cerrar { background: linear-gradient(135deg,#c41e3a,#e05555); color: #fff; }
+    .btn-toggle:hover { filter: brightness(1.1); }
+
+    .loading-msg { text-align: center; padding: 40px; font-family: 'DM Mono'; font-size: 13px; color: #4a7a9a; }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #1a3a5a; border-top-color: #5bc8f0; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div data-include="../shared/components/topbar.html"></div>
+  <div data-include="../shared/components/header.html"></div>
+  <div data-include="../shared/components/nav.html"></div>
+
+  <main>
+    <div class="wrapper">
+
+      <div id="acceso-denegado" style="display:none;">
+        <div class="acceso-denegado">
+          <h3>🔒 Acceso restringido</h3>
+          <p>Solo personal autorizado del staff puede ver esta página.</p>
+        </div>
+      </div>
+
+      <div id="contenido-staff" style="display:none;">
+
+        <div class="page-hero">
+          <div class="page-hero-badge">
+            <span class="page-hero-badge-dot"></span>
+            STAFF ONLY
+          </div>
+          <h2>CONFIGURACIÓN <span>SUCREBOT</span></h2>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card-title">📋 Registro de participantes</div>
+          <div class="config-card-desc">
+            Controla si REGISTRO acepta nuevas inscripciones. Cuando está cerrado, quien
+            entre a la página de registro ve un mensaje de "inscripciones cerradas" en
+            lugar del formulario.
+          </div>
+
+          <div id="config-loading" class="loading-msg"><span class="spinner"></span> Cargando estado...</div>
+
+          <div id="config-contenido" style="display:none;">
+            <div class="estado-row">
+              <div>
+                <div class="estado-label">Estado actual</div>
+                <div class="estado-valor" id="estado-valor">
+                  <span class="estado-dot" id="estado-dot"></span>
+                  <span id="estado-texto">—</span>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn-toggle" id="btn-toggle" onclick="toggleRegistro()"></button>
+          </div>
+        </div>
+
+      </div><!-- /contenido-staff -->
+    </div>
+  </main>
+
+  <div data-include="../shared/components/footer.html"></div>
+  <script src="../shared/js/load-components.js"></script>
+  <script src="../shared/js/auth.js"></script>
+
+  <script>
+  const GAS_URL = CONFIG.GAS_URL();
+  let _abiertoActual = null;
+
+  function gasGet(params) {
+    const qs = new URLSearchParams(params).toString();
+    return fetch(GAS_URL + '?' + qs).then(r => r.json());
+  }
+
+  function show(id) { document.getElementById(id).style.display = 'block'; }
+
+  document.addEventListener('componentsLoaded', () => {
+    if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
+    show('contenido-staff');
+    cargarEstado();
+  });
+
+  function renderEstado(abierto) {
+    _abiertoActual = abierto;
+    const dot   = document.getElementById('estado-dot');
+    const texto = document.getElementById('estado-texto');
+    const valor = document.getElementById('estado-valor');
+    const btn   = document.getElementById('btn-toggle');
+
+    dot.className = 'estado-dot ' + (abierto ? 'abierto' : 'cerrado');
+    valor.className = 'estado-valor ' + (abierto ? 'abierto' : 'cerrado');
+    texto.textContent = abierto ? 'ABIERTO' : 'CERRADO';
+
+    if (abierto) {
+      btn.className = 'btn-toggle cerrar';
+      btn.textContent = '🔒 CERRAR INSCRIPCIONES';
+    } else {
+      btn.className = 'btn-toggle abrir';
+      btn.textContent = '🔓 ABRIR INSCRIPCIONES';
+    }
+
+    document.getElementById('config-loading').style.display = 'none';
+    document.getElementById('config-contenido').style.display = 'block';
+  }
+
+  async function cargarEstado() {
+    try {
+      const cfg = await gasGet({ action: 'getConfigRegistro' });
+      renderEstado(cfg && cfg.abierto !== false);
+    } catch(e) {
+      document.getElementById('config-loading').innerHTML = '⚠️ Error al cargar el estado: ' + e.message;
+    }
+  }
+
+  async function toggleRegistro() {
+    const btn = document.getElementById('btn-toggle');
+    const nuevoEstado = !_abiertoActual;
+    btn.disabled = true;
+    try {
+      const cfg = await gasGet({ action: 'setConfigRegistro', abierto: String(nuevoEstado) });
+      renderEstado(cfg && cfg.abierto !== false ? cfg.abierto : nuevoEstado);
+    } catch(e) {
+      alert('Error al cambiar el estado: ' + e.message);
+    }
+    btn.disabled = false;
+  }
+  </script>
+</body>
+</html>

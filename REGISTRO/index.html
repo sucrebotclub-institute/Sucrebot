@@ -533,7 +533,30 @@
     return sel.value;
   }
 
-  cargarInstituciones();
+  function mostrarRegistroCerrado() {
+    document.querySelector('.wrapper').innerHTML = `
+      <div class="page-hero">
+        <div class="page-hero-badge"><div class="page-hero-badge-dot"></div>SUCREBOT 2026 · REGISTRO</div>
+        <h2>INSCRIPCIONES <span>CERRADAS</span></h2>
+      </div>
+      <div class="form-card" style="max-width:640px;margin:0 auto 60px;text-align:center;">
+        <div style="font-size:44px;margin-bottom:14px;">🔒</div>
+        <p style="font-family:'Exo 2',sans-serif;font-size:15px;color:#c8d8f0;line-height:1.8;margin:0;">
+          Las inscripciones para <strong style="color:#5bc8f0;">SucreBot 2026</strong> están cerradas por el momento.<br><br>
+          Escríbenos a <span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span> o síguenos en nuestras redes para enterarte de la próxima apertura.
+        </p>
+      </div>
+    `;
+  }
+
+  async function initRegistro() {
+    try {
+      const cfg = await fetch(GAS_URL + '?action=getConfigRegistro').then(r => r.json());
+      if (cfg && cfg.abierto === false) { mostrarRegistroCerrado(); return; }
+    } catch(e) { /* si falla la consulta, no bloquear el registro */ }
+    cargarInstituciones();
+  }
+  initRegistro();
 
   function onProvinciaChange() {
     const sel = document.getElementById('f-ciudad');
