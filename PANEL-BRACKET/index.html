@@ -1401,7 +1401,7 @@ function renderTorneoSoccer() {
     llavesRonda.forEach(ll=>{
       if(esActual&&filtroActivo!=='TODOS'&&ll!==filtroActivo) return;
       const pLlave=pRonda.filter(p=>p.llave===ll);
-      const tablaLl=tabla[ll]||[];
+      const tablaLl=tabla[r+'|'+ll]||[];
       contenido+=`<div class="soc-grupo"><div class="soc-grupo-titulo">🔹 ${ll}</div><div class="soc-partidos-lista">`;
       pLlave.forEach(p=>{ contenido+=renderSocPartido(p); });
       contenido+=`</div>`;
@@ -1621,18 +1621,21 @@ function exportarExcelSoccer() {
   ws['!cols']=[{wch:4},{wch:8},{wch:10},{wch:26},{wch:26},{wch:22},{wch:24},{wch:14}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Partidos Soccer');
-  // Hoja adicional con tabla de posiciones de cada llave, si existen
+  // Hoja adicional con tabla de posiciones de cada llave, si existen.
+  // Las claves de torneo.tabla son "ronda|llave" (para no mezclar llaves
+  // con el mismo nombre de rondas distintas — ver claveTablaSoccer en Code.gs).
   if(torneo.tabla){
-    Object.keys(torneo.tabla).forEach(ll=>{
-      const tabla=torneo.tabla[ll];
+    Object.keys(torneo.tabla).forEach(clave=>{
+      const tabla=torneo.tabla[clave];
       if(!tabla||!tabla.length) return;
+      const [ronda,ll]=clave.split('|');
       const filasTabla=tabla.map((t,i)=>({
         '#': i+1, 'Equipo': t.nombre, 'PJ': t.jugados, 'G': t.victorias, 'P': t.derrotas,
         'GF': t.favor, 'GC': t.contra, 'DIF': t.diferencia, 'PTS': t.puntos
       }));
       const wsTabla=XLSX.utils.json_to_sheet(filasTabla);
       wsTabla['!cols']=[{wch:4},{wch:26},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6}];
-      XLSX.utils.book_append_sheet(wb,wsTabla,String(ll).substring(0,28));
+      XLSX.utils.book_append_sheet(wb,wsTabla,('R'+ronda+'-'+ll).substring(0,28));
     });
   }
   const fecha=new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
