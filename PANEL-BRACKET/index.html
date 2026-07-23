@@ -75,7 +75,8 @@
     .bracket-conectores{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
     .bracket-fase{display:flex;flex-direction:column;min-width:260px;position:relative;z-index:1}
     .fase-label{font-family:'Orbitron';font-size:.65rem;letter-spacing:2px;color:var(--cyan);text-align:center;margin-bottom:16px;text-transform:uppercase}
-    .btn-sortear-ronda{display:block;margin:-10px auto 16px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;padding:8px 16px;border-radius:20px;border:none;cursor:pointer;background:var(--green);color:#fff;transition:all .2s;animation:pulso-sortear 1.8s infinite}
+    .fase-label-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+    .btn-sortear-ronda{font-family:'Orbitron';font-size:.55rem;letter-spacing:1px;padding:4px 10px;border-radius:14px;border:none;cursor:pointer;background:var(--green);color:#fff;transition:all .2s;animation:pulso-sortear 1.8s infinite}
     .btn-sortear-ronda:hover{background:#27ae60;animation:none}
     @keyframes pulso-sortear{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.5)}50%{box-shadow:0 0 0 8px rgba(46,204,113,0)}}
     .fase-partidos{display:flex;flex-direction:column;gap:28px}
@@ -968,12 +969,77 @@ function renderBracket() {
   // dejar la siguiente ronda con datos desincronizados del cambio.
   container.innerHTML=fasesParaDibujar.map(fase=>{
     const label = (fase.nombre===nombreASortear)
-      ? `<div class="fase-label">${fase.nombre}</div><button class="btn-sortear-ronda" onclick="sortearSiguienteRonda('${ultimaReal.nombre}')">🎲 Sortear</button>`
+      ? `<div class="fase-label-row"><div class="fase-label" style="margin-bottom:0;">${fase.nombre}</div><button class="btn-sortear-ronda" onclick="sortearSiguienteRonda('${ultimaReal.nombre}')">Sortear</button></div>`
       : `<div class="fase-label">${fase.nombre}</div>`;
     const esFaseEditable = !esRR && ultimaReal && fase.nombre===ultimaReal.nombre;
     return `<div class="bracket-fase">${label}<div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p,esFaseEditable)).join('')}</div></div>`;
   }).join('');
-  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>dibujarConectores(fasesParaDibujar)); }
+  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>{ centrarFasesBracket(fasesParaDibujar); dibujarConectores(fasesParaDibujar); }); }
+}
+
+// ── Centra verticalmente cada tarjeta entre sus dos tarjetas de origen —
+// ahora que ordenarFasesPorLinaje garantiza que los orígenes de cada
+// partido están siempre adyacentes (nunca entreverados con los de otro
+// partido), centrar ya no puede generar los solapamientos/huecos que
+// rompían el layout antes de ese arreglo. Usa position:absolute con la
+// altura real ya medida en el flujo normal, ronda por ronda de izquierda
+// a derecha (cada ronda depende de las posiciones ya calculadas de la
+// anterior), con un cursor de respaldo (mismo GAP del CSS) para tarjetas
+// sin origen conocido todavía, y nunca deja que una tarjeta se solape
+// con la anterior de su misma columna.
+function centrarFasesBracket(fases) {
+  const wrap = document.getElementById('bracketFases');
+  if (!wrap || fases.length < 2) return;
+  const cols = wrap.querySelectorAll('.bracket-fase');
+  const wrapRect = wrap.getBoundingClientRect();
+
+  for (let i = 1; i < fases.length; i++) {
+    const prevFase = fases[i-1];
+    const prevById = {};
+    prevFase.partidos.forEach(p => { if (p.ganador_id) prevById[p.ganador_id] = p; });
+    const col = cols[i];
+    const contenedor = col?.querySelector('.fase-partidos');
+    if (!contenedor) continue;
+    const contTop = contenedor.getBoundingClientRect().top - wrapRect.top;
+    contenedor.style.position = 'relative';
+
+    const GAP = 28;
+    let cursorY = 0, maxBottom = 0;
+    fases[i].partidos.forEach(p => {
+      const el = contenedor.querySelector(`[data-pid="${CSS.escape(String(p.partido_id))}"]`);
+      if (!el) return;
+      const elHeight = el.getBoundingClientRect().height;
+
+      let sources = [];
+      if (p._sourceIdx) {
+        sources = p._sourceIdx.map(idx => prevFase.partidos[idx]).filter(Boolean);
+      } else {
+        [p.equipo_a_id, p.equipo_b_id].forEach(eqId => {
+          const o = eqId && prevById[eqId];
+          if (o) sources.push(o);
+        });
+      }
+      const centros = sources.map(s => {
+        const elS = wrap.querySelector(`[data-pid="${CSS.escape(String(s.partido_id))}"]`);
+        if (!elS) return null;
+        const r = elS.getBoundingClientRect();
+        return (r.top - wrapRect.top) + r.height / 2;
+      }).filter(v => v !== null);
+
+      let top;
+      if (centros.length) {
+        const targetCenterY = centros.reduce((a,b)=>a+b, 0) / centros.length;
+        top = Math.max(cursorY, targetCenterY - elHeight/2 - contTop);
+      } else {
+        top = cursorY;
+      }
+      el.style.position = 'absolute';
+      el.style.left = '0'; el.style.right = '0'; el.style.top = top + 'px';
+      cursorY = top + elHeight + GAP;
+      maxBottom = Math.max(maxBottom, top + elHeight);
+    });
+    if (maxBottom > 0) contenedor.style.height = maxBottom + 'px';
+  }
 }
 
 async function sortearSiguienteRonda(faseActual) {
