@@ -714,7 +714,6 @@
             <button class="btn btn-outline btn-sm" id="btnTercerLugar" style="display:none;" onclick="abrirTercerLugar()">🥉 3er lugar</button>
             <button class="btn btn-outline btn-sm" id="btnVerPodio" style="display:none;" onclick="verPodioEnBracket()">🏆 Ver podio</button>
             <button class="btn btn-outline btn-sm" id="btnPodioManual" onclick="abrirPodioManual()">🏆 Podio Manual</button>
-            <button class="btn btn-outline btn-sm" id="btnExcelSoccer" style="display:none;" onclick="exportarExcelSoccer()">📊 Excel</button>
             <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
           </div>
         </div>
@@ -854,7 +853,6 @@ function actualizarTitulos() {
   const nombre=CAT_INFO[state.categoria]?.nombre||'';
   document.getElementById('paso2Titulo').textContent=state.tipo==='soccer'?`Equipos Presentes — ${nombre}`:`Robots Presentes — ${nombre}`;
   document.getElementById('paso3Titulo').textContent=state.tipo==='soccer'?`TORNEO SOCCER — ${nombre}`:`BRACKET — ${nombre}`;
-  document.getElementById('btnExcelSoccer').style.display=state.tipo==='soccer'?'inline-block':'none';
 }
 function renderSeleccion() {
   const lista=document.getElementById('participantesList'); const total=state.participantes.length;
@@ -1228,9 +1226,23 @@ function filtrarGrupoSoccer(g){
 //  cada una. El sistema solo valida que la suma cuadre — no decide
 //  el formato.
 // ════════════════════════════════════════
-function abrirConfigurarRondaSoccer(pool, ronda) {
-  state.socConfigRonda={ronda, pool, numLlaves:pool.length===2?1:Math.max(1,Math.min(3,Math.round(pool.length/4))), asignacion:{}};
-  if(pool.length===2){ state.socConfigRonda.asignacion[pool[0].id]=1; state.socConfigRonda.asignacion[pool[1].id]=1; }
+async function abrirConfigurarRondaSoccer(pool, ronda) {
+  // Con exactamente 2 equipos no hace falta armar llaves ni sortear —
+  // siempre es la final directa entre esos dos, así que se genera sola.
+  if(pool.length===2){
+    loading(true,'GENERANDO LA FINAL...');
+    try{
+      const llaves=[{llave_id:'FINAL',equipos:pool}];
+      const res=await gasPost({action:'generarRondaSoccer',torneo_id:state.torneoSoc?.torneo_id||'',ronda,llaves,equipos_pool:pool});
+      if(!res.ok)throw new Error(res.error||'Error');
+      state.torneoSoc=res.torneo; state.bracketBloqueado=true; state.socConfigRonda=null;
+      toast('🏆 Final generada','success');
+      renderTorneoSoccer(); setStep(3);
+    }catch(e){toast('Error: '+e.message,'error');}
+    loading(false);
+    return;
+  }
+  state.socConfigRonda={ronda, pool, numLlaves:Math.max(1,Math.min(3,Math.round(pool.length/4))), asignacion:{}};
   renderConfigurarRondaSoccer();
 }
 
@@ -1438,8 +1450,10 @@ function renderTorneoSoccer() {
       contenido+=`<div class="soc-grupo${esLlaveFinal?' final':''}"><div class="soc-grupo-titulo${esLlaveFinal?' final':''}">${esLlaveFinal?'🏆 GRAN FINAL':'🔹 '+ll}</div><div class="soc-partidos-lista">`;
       pLlave.forEach(p=>{ contenido+=renderSocPartido(p); });
       contenido+=`</div>`;
-      if(tablaLl.length>1) contenido+=renderTablaSoc(tablaLl);
-      if(esActual&&pLlave.length&&pLlave.every(p=>p.estado==='FINALIZADO')) contenido+=renderAvanceLlaveSoccer(torneo,r,ll,tablaLl);
+      // La final es un partido único 1v1 — no tiene sentido mostrarle una
+      // tabla de posiciones ni pedir "¿quiénes avanzan?" (nadie avanza).
+      if(tablaLl.length>1&&!esLlaveFinal) contenido+=renderTablaSoc(tablaLl);
+      if(esActual&&pLlave.length&&pLlave.every(p=>p.estado==='FINALIZADO')&&!esLlaveFinal) contenido+=renderAvanceLlaveSoccer(torneo,r,ll,tablaLl);
       contenido+=`</div>`;
     });
     const esRondaFinal=llavesRonda.length===1&&llavesRonda[0]==='FINAL';
@@ -1536,6 +1550,15 @@ function renderResumenAvanceSoccer(torneo, rondaActual) {
   const partidosRonda=torneo.partidos.filter(p=>Number(p.ronda)===rondaActual);
   if(!partidosRonda.length||!partidosRonda.every(p=>p.estado==='FINALIZADO')) return '';
   const llavesRonda=[...new Set(partidosRonda.map(p=>p.llave))];
+
+  // La final ya no ofrece "avanzar" ni configurar otra ronda — se eligió
+  // campeón y se acabó el torneo. Solo queda guardar el podio (arriba).
+  if(llavesRonda.length===1&&llavesRonda[0]==='FINAL'){
+    const p=partidosRonda[0];
+    const nomGan=p.ganador_id===p.equipo_a_id?p.equipo_a_nombre:p.equipo_b_nombre;
+    return `<div class="soc-fase-final" style="margin-top:6px;border-color:#fbbf24;"><div class="soc-fase-titulo" style="color:#fbbf24;">🏆 Campeón: ${nomGan}</div><div style="font-size:.75rem;color:var(--muted);margin-top:6px;">El torneo terminó — presioná "💾 Guardar podio" arriba para cerrar y descargar el Excel.</div></div>`;
+  }
+
   const avancesRonda=(torneo.avances||[]).filter(a=>String(a.ronda)===String(rondaActual));
   const llavesConAvance=new Set(avancesRonda.map(a=>a.llave));
   const faltanLlaves=llavesRonda.filter(ll=>!llavesConAvance.has(ll));
@@ -1737,6 +1760,7 @@ async function guardarPodio() {
         if(podio.cuarto)  await guardarCertEquipo(podio.cuarto.id,podio.cuarto.nombre,'PARTICIPACIÓN');
         toast('🏆 Podio guardado en certificados','success'); verPodioEnBracket();
         if(!podio.soccer) descargarImagenBracketGeneral();
+        else exportarExcelSoccer();
       }catch(e){toast('Error: '+e.message,'error');}
       loading(false);
     }
