@@ -71,10 +71,11 @@
     .aviso-empty{background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.35);border-radius:8px;padding:12px 16px;font-size:.85rem;color:var(--orange);text-align:center;grid-column:1/-1}
     /* ── Bracket normal ── */
     .bracket-wrap{overflow-x:auto}
-    .bracket-fases{display:flex;gap:40px;min-width:max-content;padding:8px 0 16px}
-    .bracket-fase{display:flex;flex-direction:column;min-width:260px}
+    .bracket-fases{display:flex;align-items:flex-start;gap:56px;min-width:max-content;padding:8px 12px 16px;position:relative}
+    .bracket-conectores{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
+    .bracket-fase{display:flex;flex-direction:column;min-width:260px;position:relative;z-index:1}
     .fase-label{font-family:'Orbitron';font-size:.65rem;letter-spacing:2px;color:var(--cyan);text-align:center;margin-bottom:16px;text-transform:uppercase}
-    .fase-partidos{display:flex;flex-direction:column;gap:12px;justify-content:space-around;flex:1}
+    .fase-partidos{display:flex;flex-direction:column;gap:28px}
     .partido-card{background:var(--panel2);border:1.5px solid var(--border);border-radius:10px;padding:14px;transition:all .2s}
     .partido-card:hover{border-color:var(--border2)}
     .partido-card.finalizado{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.05)}
@@ -944,8 +945,9 @@ function renderBracket() {
   const hayBtnTercero = finalizado && !esRR && fases.length > 1 && !fases.some(f=>f.nombre==='3ER LUGAR');
   const btnTercero = document.getElementById('btnTercerLugar');
   if (btnTercero) btnTercero.style.display = hayBtnTercero ? 'inline-flex' : 'none';
-  container.innerHTML=fases.map(fase=>`<div class="bracket-fase"><div class="fase-label">${fase.nombre}</div><div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`).join('');
-  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; }
+  const fasesOrdenadas = esRR ? fases : ordenarFasesPorLinaje(fases);
+  container.innerHTML=fasesOrdenadas.map(fase=>`<div class="bracket-fase"><div class="fase-label">${fase.nombre}</div><div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`).join('');
+  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>dibujarConectores(fasesOrdenadas)); }
 }
 
 async function cargarTablaPosiciones() {
@@ -963,7 +965,7 @@ function renderTablaPosiciones() {
 }
 
 function renderPartido(p) {
-  if(p.tipo==='BYE') return`<div class="partido-card bye"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · Pasa directo</div></div>`;
+  if(p.tipo==='BYE') return`<div class="partido-card bye" data-pid="${p.partido_id}"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · Pasa directo</div></div>`;
   const esFin=p.estado==='FINALIZADO', puedeJugar=p.estado==='PENDIENTE'&&p.equipo_a_id&&p.equipo_b_id, bloq=!p.equipo_a_id||!p.equipo_b_id;
   const claseCard=esFin?'finalizado':bloq?'pendiente-bloqueado':'';
   const nombreA=p.equipo_a_nombre||p.equipoA_nombre||'— Por definir —', nombreB=p.equipo_b_nombre||p.equipoB_nombre||'— Por definir —';
@@ -979,7 +981,76 @@ function renderPartido(p) {
   }
   const estLabel=esFin?'FINALIZADO':bloq?'EN ESPERA':'PENDIENTE';
   const estCl=esFin?'estado-finalizado':bloq?'estado-bloqueado':'estado-pendiente';
-  return`<div class="partido-card ${claseCard}"><div class="partido-estado ${estCl}">${estLabel}</div><div class="partido-equipos"><div class="partido-eq ${clA}"><span class="partido-eq-nombre">${nombreA}</span>${sA?`<span class="partido-eq-score">${sA}</span>`:''}</div><div class="partido-eq ${clB}"><span class="partido-eq-nombre">${nombreB}</span>${sB?`<span class="partido-eq-score">${sB}</span>`:''}</div></div>${btns}</div>`;
+  return`<div class="partido-card ${claseCard}" data-pid="${p.partido_id}"><div class="partido-estado ${estCl}">${estLabel}</div><div class="partido-equipos"><div class="partido-eq ${clA}"><span class="partido-eq-nombre">${nombreA}</span>${sA?`<span class="partido-eq-score">${sA}</span>`:''}</div><div class="partido-eq ${clB}"><span class="partido-eq-nombre">${nombreB}</span>${sB?`<span class="partido-eq-score">${sB}</span>`:''}</div></div>${btns}</div>`;
+}
+
+// ── Ordena las rondas 2+ para que cada partido quede visualmente cerca
+// de los partidos de la ronda anterior que le dieron sus dos equipos —
+// el sorteo de cada ronda sigue siendo aleatorio (no se toca la lógica
+// de generación), esto solo reordena las tarjetas para minimizar cruces
+// al dibujar las líneas conectoras.
+function ordenarFasesPorLinaje(fases) {
+  const nuevasFases = fases.map(f => ({ nombre: f.nombre, partidos: f.partidos.slice() }));
+  for (let i = 1; i < nuevasFases.length; i++) {
+    const prev = nuevasFases[i-1].partidos;
+    const posPorId = {};
+    prev.forEach((p, idx) => { if (p.ganador_id) posPorId[p.ganador_id] = idx; });
+    const posDe = (equipoId) => equipoId in posPorId ? posPorId[equipoId] : null;
+    nuevasFases[i].partidos.forEach((p, idx) => {
+      const pa = posDe(p.equipo_a_id), pb = posDe(p.equipo_b_id);
+      const vals = [pa, pb].filter(v => v !== null);
+      p._ordenLinaje = vals.length ? (vals.reduce((a,b)=>a+b,0) / vals.length) : (prev.length + idx);
+    });
+    nuevasFases[i].partidos.sort((a,b) => a._ordenLinaje - b._ordenLinaje);
+  }
+  return nuevasFases;
+}
+
+// ── Dibuja las líneas conectoras entre cada partido y los dos partidos
+// de la ronda anterior que produjeron a sus dos equipos (buscando por
+// ganador_id, funciona igual para partidos normales y BYE).
+function dibujarConectores(fases) {
+  const wrap = document.getElementById('bracketFases');
+  let svg = document.getElementById('bracketConectores');
+  if (svg) svg.remove();
+  if (!wrap || fases.length < 2) return;
+
+  const wrapRect = wrap.getBoundingClientRect();
+  const w = wrap.scrollWidth, h = wrap.scrollHeight;
+
+  svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('id', 'bracketConectores');
+  svg.setAttribute('class', 'bracket-conectores');
+  svg.setAttribute('width', w);
+  svg.setAttribute('height', h);
+
+  const rectOf = (pid) => {
+    const el = wrap.querySelector(`[data-pid="${CSS.escape(String(pid))}"]`);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { left: r.left - wrapRect.left, top: r.top - wrapRect.top, right: r.right - wrapRect.left, bottom: r.bottom - wrapRect.top, midY: r.top - wrapRect.top + r.height/2 };
+  };
+
+  let paths = '';
+  for (let i = 1; i < fases.length; i++) {
+    const prevById = {};
+    fases[i-1].partidos.forEach(p => { if (p.ganador_id) prevById[p.ganador_id] = p; });
+    fases[i].partidos.forEach(p => {
+      [p.equipo_a_id, p.equipo_b_id].forEach(eqId => {
+        const origen = eqId && prevById[eqId];
+        if (!origen) return;
+        const rOrigen = rectOf(origen.partido_id);
+        const rDest = rectOf(p.partido_id);
+        if (!rOrigen || !rDest) return;
+        const x1 = rOrigen.right, y1 = rOrigen.midY;
+        const x2 = rDest.left, y2 = rDest.midY;
+        const midX = (x1 + x2) / 2;
+        paths += `<path d="M${x1},${y1} H${midX} V${y2} H${x2}" fill="none" stroke="var(--cyan)" stroke-opacity="0.55" stroke-width="2" />`;
+      });
+    });
+  }
+  svg.innerHTML = paths;
+  wrap.appendChild(svg);
 }
 
 async function registrarGanadorMinisumo(partidoId,ganadorId,ganadorNombre) {
