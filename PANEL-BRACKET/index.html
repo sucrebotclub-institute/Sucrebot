@@ -400,7 +400,7 @@
     </div>
     <div class="modal-btns" style="margin-top:20px;">
       <button class="btn btn-outline btn-sm" onclick="cerrarTercerLugar()">Cancelar</button>
-      <button class="btn btn-green btn-sm" onclick="guardarTercerLugar()">Confirmar</button>
+      <button class="btn btn-green btn-sm" onclick="state.tipo==='soccer'?guardarTercerLugarSoccer():guardarTercerLugar()">Confirmar</button>
     </div>
   </div>
 </div>
@@ -712,6 +712,7 @@
             <button class="btn btn-outline btn-sm" onclick="volverPaso1()">← Inicio</button>
             <button class="btn btn-outline btn-sm" id="btnPodio" style="display:none;" onclick="guardarPodio()">💾 Guardar podio</button>
             <button class="btn btn-outline btn-sm" id="btnTercerLugar" style="display:none;" onclick="abrirTercerLugar()">🥉 3er lugar</button>
+            <button class="btn btn-outline btn-sm" id="btnTercerLugarSoccer" style="display:none;" onclick="abrirTercerLugarSoccer()">🥉 3er lugar</button>
             <button class="btn btn-outline btn-sm" id="btnVerPodio" style="display:none;" onclick="verPodioEnBracket()">🏆 Ver podio</button>
             <button class="btn btn-outline btn-sm" id="btnPodioManual" onclick="abrirPodioManual()">🏆 Podio Manual</button>
             <button class="btn btn-danger btn-sm" onclick="resetearBracket()">🗑 Resetear</button>
@@ -1411,6 +1412,7 @@ function renderTorneoSoccer() {
     document.getElementById('socGrupoFiltro').style.display='none';
     document.getElementById('btnPodio').style.display='none';
     document.getElementById('btnVerPodio').style.display='none';
+    document.getElementById('btnTercerLugarSoccer').style.display='none';
     return;
   }
 
@@ -1418,6 +1420,11 @@ function renderTorneoSoccer() {
   const tabla=torneo.tabla||{};
   document.getElementById('btnPodio').style.display='inline-flex';
   document.getElementById('btnVerPodio').style.display='inline-flex';
+  // El 3er lugar en Soccer no sale de un partido dedicado (no existe en el
+  // sistema de llaves) — el juez lo elige a criterio propio revisando las
+  // tablas, una vez que la Gran Final ya tiene ganador.
+  const partidoFinalSoc=partidos.find(p=>p.llave==='FINAL'&&p.estado==='FINALIZADO'&&p.ganador_id);
+  document.getElementById('btnTercerLugarSoccer').style.display=partidoFinalSoc?'inline-flex':'none';
 
   const rondas=[...new Set(partidos.map(p=>Number(p.ronda)))].sort((a,b)=>a-b);
   const rondaActual=torneo.ronda_actual||rondas[rondas.length-1];
@@ -1883,6 +1890,71 @@ async function guardarTercerLugar() {
   } catch(e) { toast('Error: ' + e.message, 'error'); }
   loading(false);
 }
+
+// ── TERCER LUGAR — SOCCER (sistema de llaves, sin partido dedicado) ──
+// El juez elige libremente revisando las tablas de las llaves anteriores;
+// se muestra la última tabla en la que jugó cada candidato como referencia.
+function abrirTercerLugarSoccer() {
+  const torneo = state.torneoSoc;
+  const pf = torneo?.partidos?.find(p => p.llave === 'FINAL' && p.estado === 'FINALIZADO' && p.ganador_id);
+  if (!pf) { toast('La final aún no ha terminado', 'error'); return; }
+  const finalistas = new Set([pf.equipo_a_id, pf.equipo_b_id]);
+  const mapa = {};
+  torneo.partidos.forEach(p => {
+    if (p.equipo_a_id && !finalistas.has(p.equipo_a_id)) mapa[p.equipo_a_id] = p.equipo_a_nombre;
+    if (p.equipo_b_id && !finalistas.has(p.equipo_b_id)) mapa[p.equipo_b_id] = p.equipo_b_nombre;
+  });
+  const tabla = torneo.tabla || {};
+  function ultimaStat(id) {
+    let mejor = null;
+    Object.keys(tabla).forEach(clave => {
+      const fila = (tabla[clave] || []).find(t => t.id === id);
+      if (!fila) return;
+      const ronda = Number(clave.split('|')[0]);
+      if (!mejor || ronda > mejor.ronda) mejor = { ronda, clave, fila };
+    });
+    return mejor;
+  }
+  const candidatos = Object.entries(mapa).map(([id, nombre]) => {
+    const st = ultimaStat(id);
+    const etiqueta = st ? ` — ${st.clave.replace('|', '·')}: ${st.fila.puntos}pts DIF ${st.fila.diferencia > 0 ? '+' : ''}${st.fila.diferencia}` : '';
+    return { id, nombre, label: nombre + etiqueta, ronda: st ? st.ronda : -1, puntos: st ? st.fila.puntos : -1 };
+  }).sort((a, b) => b.ronda - a.ronda || b.puntos - a.puntos);
+  if (!candidatos.length) { toast('No hay candidatos para el 3er lugar', 'error'); return; }
+  const sel = document.getElementById('tercerLugarSelect');
+  sel.innerHTML = candidatos.map(c => `<option value="${c.id}" data-nombre="${c.nombre.replace(/"/g, '&quot;')}">${c.label}</option>`).join('');
+  document.getElementById('tercerLugarModal').classList.add('show');
+}
+
+async function guardarTercerLugarSoccer() {
+  const sel = document.getElementById('tercerLugarSelect');
+  const terceroId = sel.value;
+  const terceroNom = sel.options[sel.selectedIndex]?.dataset.nombre || '';
+  if (!terceroId) { toast('Selecciona un equipo', 'error'); return; }
+  const torneo = state.torneoSoc;
+  const pf = torneo?.partidos?.find(p => p.llave === 'FINAL' && p.estado === 'FINALIZADO' && p.ganador_id);
+  if (!pf) { toast('La final no está finalizada', 'error'); return; }
+  const primeroId = pf.ganador_id;
+  const primeroNom = pf.ganador_id === pf.equipo_a_id ? pf.equipo_a_nombre : pf.equipo_b_nombre;
+  const segundoId = pf.ganador_id === pf.equipo_a_id ? pf.equipo_b_id : pf.equipo_a_id;
+  const segundoNom = pf.ganador_id === pf.equipo_a_id ? pf.equipo_b_nombre : pf.equipo_a_nombre;
+
+  cerrarTercerLugar();
+  loading(true, 'GUARDANDO 3ER LUGAR...');
+  try {
+    const posiciones = [
+      { posicion: 1, equipo_id: primeroId, equipo_nombre: primeroNom },
+      { posicion: 2, equipo_id: segundoId, equipo_nombre: segundoNom },
+      { posicion: 3, equipo_id: terceroId, equipo_nombre: terceroNom }
+    ];
+    const r = await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones });
+    if (!r.ok) throw new Error(r.error || 'Error');
+    toast('🥉 3er lugar guardado — ahora usa "Guardar podio" para los certificados', 'success');
+    verPodioEnBracket();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  loading(false);
+}
+
 async function guardarPodioManualUI() {
   let equipos;
   if(state.tipo==='soccer'){
