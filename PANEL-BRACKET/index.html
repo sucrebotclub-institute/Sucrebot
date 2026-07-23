@@ -75,6 +75,9 @@
     .bracket-conectores{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
     .bracket-fase{display:flex;flex-direction:column;min-width:260px;position:relative;z-index:1}
     .fase-label{font-family:'Orbitron';font-size:.65rem;letter-spacing:2px;color:var(--cyan);text-align:center;margin-bottom:16px;text-transform:uppercase}
+    .btn-sortear-ronda{display:block;margin:-10px auto 16px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1px;padding:8px 16px;border-radius:20px;border:none;cursor:pointer;background:var(--green);color:#fff;transition:all .2s;animation:pulso-sortear 1.8s infinite}
+    .btn-sortear-ronda:hover{background:#27ae60;animation:none}
+    @keyframes pulso-sortear{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.5)}50%{box-shadow:0 0 0 8px rgba(46,204,113,0)}}
     .fase-partidos{display:flex;flex-direction:column;gap:28px}
     .partido-card{background:var(--panel2);border:1.5px solid var(--border);border-radius:10px;padding:14px;transition:all .2s}
     .partido-card:hover{border-color:var(--border2)}
@@ -946,9 +949,42 @@ function renderBracket() {
   const btnTercero = document.getElementById('btnTercerLugar');
   if (btnTercero) btnTercero.style.display = hayBtnTercero ? 'inline-flex' : 'none';
   const fasesOrdenadas = esRR ? fases : ordenarFasesPorLinaje(fases);
-  const fasesParaDibujar = esRR ? fasesOrdenadas : fasesOrdenadas.concat(generarFasesPlaceholder(fasesOrdenadas));
-  container.innerHTML=fasesParaDibujar.map(fase=>`<div class="bracket-fase"><div class="fase-label">${fase.nombre}</div><div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`).join('');
+  const fasesPlaceholder = esRR ? [] : generarFasesPlaceholder(fasesOrdenadas);
+  const fasesParaDibujar = fasesOrdenadas.concat(fasesPlaceholder);
+
+  // El sorteo de cada ronda 2+ ahora es manual: si la última ronda real ya
+  // terminó (todos sus partidos FINALIZADO) y todavía faltan rondas por
+  // sortear, se muestra el botón "🎲 Sortear" en el encabezado de la
+  // primera ronda fantasma (la siguiente que corresponde sortear).
+  const ultimaReal = fasesOrdenadas[fasesOrdenadas.length - 1];
+  const puedeSortear = !esRR && fasesPlaceholder.length > 0 && ultimaReal
+    && ultimaReal.nombre !== 'FINAL' && ultimaReal.partidos.length > 0
+    && ultimaReal.partidos.every(p => p.estado === 'FINALIZADO');
+  const nombreASortear = puedeSortear ? fasesPlaceholder[0].nombre : null;
+
+  container.innerHTML=fasesParaDibujar.map(fase=>{
+    const label = (fase.nombre===nombreASortear)
+      ? `<div class="fase-label">${fase.nombre}</div><button class="btn-sortear-ronda" onclick="sortearSiguienteRonda('${ultimaReal.nombre}')">🎲 Sortear</button>`
+      : `<div class="fase-label">${fase.nombre}</div>`;
+    return `<div class="bracket-fase">${label}<div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`;
+  }).join('');
   if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>dibujarConectores(fasesParaDibujar)); }
+}
+
+async function sortearSiguienteRonda(faseActual) {
+  confirmar('🎲','SORTEAR RONDA','¿Sortear los emparejamientos de la siguiente ronda? Serán aleatorios e inmutables.','Sortear','success',
+    async()=>{
+      loading(true,'SORTEANDO...');
+      try{
+        const res=await gasPost({action:'sortearSiguienteRonda',categoria:state.categoria,faseActual});
+        if(!res.ok)throw new Error(res.error||'Error');
+        state.bracket=res.bracket;
+        toast('🎲 Ronda sorteada','success');
+        renderBracket();
+      }catch(e){toast('Error: '+e.message,'error');}
+      loading(false);
+    }
+  );
 }
 
 async function cargarTablaPosiciones() {
