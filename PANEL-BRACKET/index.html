@@ -535,15 +535,15 @@
     <div class="ms-puntuacion">
       <div class="ms-col">
         <div class="ms-col-titulo" id="msColA">EQUIPO A</div>
-        <button class="btn-ms expulsion" onclick="msExpulsion('A')">🏟 Expulsión de A → +1 a A</button>
-        <button class="btn-ms abandono" onclick="msAbandono('A')">🚩 A abandona → +1 a B</button>
+        <button class="btn-ms expulsion" onclick="msExpulsion('A')">🏟 Expulsión de A → gana asalto A</button>
+        <button class="btn-ms abandono" onclick="msAbandono('A')">🚩 A abandona → gana asalto B</button>
         <button class="btn-ms amon"     onclick="msAmonestar('A')">🟨 Amonestar A → −1 a A</button>
         <button class="btn-ms" style="background:rgba(139,139,139,.15);color:var(--muted);border:1px solid rgba(139,139,139,.3)" onclick="msRetiro('A')">🔧 A no funciona</button>
       </div>
       <div class="ms-col">
         <div class="ms-col-titulo" id="msColB">EQUIPO B</div>
-        <button class="btn-ms expulsion" onclick="msExpulsion('B')">🏟 Expulsión de B → +1 a B</button>
-        <button class="btn-ms abandono" onclick="msAbandono('B')">🚩 B abandona → +1 a A</button>
+        <button class="btn-ms expulsion" onclick="msExpulsion('B')">🏟 Expulsión de B → gana asalto B</button>
+        <button class="btn-ms abandono" onclick="msAbandono('B')">🚩 B abandona → gana asalto A</button>
         <button class="btn-ms amon"     onclick="msAmonestar('B')">🟨 Amonestar B → −1 a B</button>
         <button class="btn-ms" style="background:rgba(139,139,139,.15);color:var(--muted);border:1px solid rgba(139,139,139,.3)" onclick="msRetiro('B')">🔧 B no funciona</button>
       </div>
@@ -551,7 +551,7 @@
 
     <!-- Decisión empate -->
     <div class="ms-empate" id="msEmpate">
-      <div class="ms-empate-title">⚖️ EMPATE EN PUNTOS TOTALES — El juez decide</div>
+      <div class="ms-empate-title">⚖️ EMPATE EN ASALTOS — El juez decide</div>
       <div class="ms-empate-btns">
         <button class="btn-comb nocaut" onclick="msDecisionJuez('A')" id="msEmpBtnA">🏆 Gana A</button>
         <button class="btn-comb nocaut" onclick="msDecisionJuez('B')" id="msEmpBtnB">🏆 Gana B</button>
@@ -2186,7 +2186,7 @@ function msIniciarAsalto() {
     if (ms.segundos === 0) {
       msPausarAsalto();
       document.getElementById('msCronoLabel').textContent = 'TIEMPO AGOTADO';
-      toast('⏱ Tiempo terminado — termina el asalto');
+      msResolverPorTiempo();
     }
   }, 500); // tick cada 500ms para mayor precisión
 }
@@ -2205,35 +2205,46 @@ function msPausarAsalto() {
 
 function msRepetirAsalto() {
   if (!confirm('¿Repetir este asalto? Se borran los puntos del asalto actual.')) return;
-  msPausarAsalto();
   ms.asalto = { ptsA: 0, ptsB: 0 };
-  ms.segundos = 180;
-  ms.fase = 'idle';
-  document.getElementById('btnMsIniciar').textContent = '▶ Iniciar';
-  document.getElementById('msCronoLabel').textContent = 'LISTO · presiona Iniciar';
+  // El cronómetro es único para todo el combate — repetir un asalto NO lo reinicia.
   msActualizarUI();
-  toast('🔄 Asalto reiniciado');
+  toast('🔄 Asalto reiniciado (el tiempo del combate sigue corriendo)');
 }
 
-// ── Eventos de puntuación (no terminan el asalto) ──────────────
-function msExpulsion(equipoExpulsor) {
-  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el asalto', 'error'); return; }
-  const nom = equipoExpulsor === 'A' ? msNomA() : msNomB();
-  if (equipoExpulsor === 'A') ms.asalto.ptsA++;
-  else ms.asalto.ptsB++;
-  toast('🏟 Expulsión — ' + nom + ' +1 punto en este asalto', 'success');
+// ── Expulsión/Abandono ganan el asalto al instante — el cronómetro
+// del combate es único para los 3 asaltos y nunca se pausa ni se
+// reinicia entre asaltos, solo se detiene cuando termina el combate. ──
+function msAsaltoGanadoInstantaneo(equipoGanador, motivoTexto) {
+  ms.asaltos[ms.asaltoActual] = equipoGanador;
+  const nomGana = equipoGanador === 'A' ? msNomA() : msNomB();
+  toast('🏆 ' + motivoTexto + ' — ' + nomGana + ' gana el asalto', 'success');
+
+  const gA = msAsaltosGanados('A'), gB = msAsaltosGanados('B');
+  if (gA >= 2 || gB >= 2 || ms.asaltoActual === 2) {
+    msPausarAsalto();
+    ms.fase = 'fin';
+    msActualizarUI();
+    document.getElementById('btnMsTerminarAsalto').style.display = 'none';
+    msMostrarResultadoFinal();
+    return;
+  }
+
+  ms.asaltoActual++;
+  ms.asalto = { ptsA: 0, ptsB: 0 };
   msActualizarUI();
+  toast('Asalto ' + (ms.asaltoActual + 1) + ' · ' + MS_POSICIONES[ms.asaltoActual]);
+}
+
+function msExpulsion(equipoExpulsor) {
+  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el combate', 'error'); return; }
+  msAsaltoGanadoInstantaneo(equipoExpulsor, '🏟 Expulsión');
 }
 
 function msAbandono(equipoQueAbandona) {
-  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el asalto', 'error'); return; }
+  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el combate', 'error'); return; }
   const ganador = equipoQueAbandona === 'A' ? 'B' : 'A';
   const nomAband = equipoQueAbandona === 'A' ? msNomA() : msNomB();
-  const nomGana  = ganador === 'A' ? msNomA() : msNomB();
-  if (ganador === 'A') ms.asalto.ptsA++;
-  else ms.asalto.ptsB++;
-  toast('🚩 ' + nomAband + ' abandonó — +1 a ' + nomGana, 'success');
-  msActualizarUI();
+  msAsaltoGanadoInstantaneo(ganador, '🚩 ' + nomAband + ' abandonó');
 }
 
 function msAmonestar(equipo) {
@@ -2264,10 +2275,10 @@ function msRetiro(equipoQueSeRetira) {
   toast('🏆 ' + nomGana + ' gana por retiro', 'success');
 }
 
-// ── Terminar asalto: determina ganador por puntos ──────────────
+// ── Terminar asalto manualmente (sin expulsión/abandono): decide por
+// puntos acumulados en el asalto, o el juez decide si hay empate. No
+// pausa ni reinicia el cronómetro del combate. ──────────────────────
 function msTerminarAsalto() {
-  msPausarAsalto();
-  ms.fase = 'fin_asalto';
   const pA = ms.asalto.ptsA, pB = ms.asalto.ptsB;
   let ganadorAsalto;
 
@@ -2276,35 +2287,33 @@ function msTerminarAsalto() {
   } else if (pB > pA) {
     ganadorAsalto = 'B';
   } else {
-    // Empate en asalto → juez decide
+    // Empate en puntos del asalto → juez decide
     toast('⚖️ Empate en asalto (' + pA + '-' + pB + ') — el juez decide', 'error');
     const eligioA = confirm('¿Quién ganó este asalto?\nOK = ' + msNomA() + '\nCancelar = ' + msNomB());
     ganadorAsalto = eligioA ? 'A' : 'B';
   }
 
-  ms.asaltos[ms.asaltoActual] = ganadorAsalto;
-  const nomGanAsalto = ganadorAsalto === 'A' ? msNomA() : msNomB();
-  toast('🏆 Asalto ' + (ms.asaltoActual + 1) + ' — ganó ' + nomGanAsalto, 'success');
+  msAsaltoGanadoInstantaneo(ganadorAsalto, '🏁 Fin de asalto manual');
+}
 
-  // ¿Ya hay ganador por 2 de 3?
+// ── Se agotó el tiempo total del combate (3 min) sin que nadie haya
+// ganado 2 asaltos todavía: gana quien va arriba en asaltos ganados;
+// si está empatado (incluye 0-0), el juez decide. ───────────────────
+function msResolverPorTiempo() {
   const gA = msAsaltosGanados('A'), gB = msAsaltosGanados('B');
-  if (gA >= 2 || gB >= 2 || ms.asaltoActual === 2) {
+  if (gA !== gB) {
+    const ganador = gA > gB ? 'A' : 'B';
+    for (let i = 0; i < 3; i++) { if (!ms.asaltos[i]) ms.asaltos[i] = ganador; }
     ms.fase = 'fin';
     msActualizarUI();
     document.getElementById('btnMsTerminarAsalto').style.display = 'none';
-    msMostrarResultadoFinal();
-    return;
+    document.getElementById('btnMsFinalizar').style.display = 'block';
+    toast('⏱ Tiempo agotado — gana ' + (ganador === 'A' ? msNomA() : msNomB()) + ' (' + Math.max(gA,gB) + '-' + Math.min(gA,gB) + ' en asaltos)', 'success');
+  } else {
+    document.getElementById('btnMsTerminarAsalto').style.display = 'none';
+    toast('⏱ Tiempo agotado — empate en asaltos (' + gA + '-' + gB + ') — el juez decide', 'error');
+    document.getElementById('msEmpate').classList.add('show');
   }
-
-  // Pasar al siguiente asalto
-  ms.asaltoActual++;
-  ms.asalto = { ptsA: 0, ptsB: 0 };
-  ms.segundos = 180;
-  ms.fase = 'idle';
-  document.getElementById('btnMsIniciar').textContent = '▶ Iniciar';
-  document.getElementById('msCronoLabel').textContent = 'LISTO · presiona Iniciar';
-  msActualizarUI();
-  toast('Asalto ' + (ms.asaltoActual + 1) + ' · ' + MS_POSICIONES[ms.asaltoActual]);
 }
 
 function msMostrarResultadoFinal() {
