@@ -81,6 +81,9 @@
     .partido-card.finalizado{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.05)}
     .partido-card.pendiente-bloqueado{opacity:.55}
     .partido-card.bye{border:1.5px dashed var(--orange);background:rgba(243,156,18,.06);text-align:center;padding:12px}
+    .partido-card.placeholder{border:1.5px dashed var(--border);background:rgba(255,255,255,.015);opacity:.6}
+    .partido-card.placeholder.bye{border-color:rgba(243,156,18,.4)}
+    .placeholder-eq{opacity:.6;font-style:italic}
     .bye-nombre{font-family:'Bebas Neue';font-size:1.1rem;color:var(--text)}
     .bye-tag{font-family:'Orbitron';font-size:.55rem;color:var(--orange);letter-spacing:1px;margin-top:4px}
     .partido-equipos{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
@@ -946,8 +949,9 @@ function renderBracket() {
   const btnTercero = document.getElementById('btnTercerLugar');
   if (btnTercero) btnTercero.style.display = hayBtnTercero ? 'inline-flex' : 'none';
   const fasesOrdenadas = esRR ? fases : ordenarFasesPorLinaje(fases);
-  container.innerHTML=fasesOrdenadas.map(fase=>`<div class="bracket-fase"><div class="fase-label">${fase.nombre}</div><div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`).join('');
-  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>dibujarConectores(fasesOrdenadas)); }
+  const fasesParaDibujar = esRR ? fasesOrdenadas : fasesOrdenadas.concat(generarFasesPlaceholder(fasesOrdenadas));
+  container.innerHTML=fasesParaDibujar.map(fase=>`<div class="bracket-fase"><div class="fase-label">${fase.nombre}</div><div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p)).join('')}</div></div>`).join('');
+  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>dibujarConectores(fasesParaDibujar)); }
 }
 
 async function cargarTablaPosiciones() {
@@ -965,6 +969,8 @@ function renderTablaPosiciones() {
 }
 
 function renderPartido(p) {
+  if(p.tipo==='PLACEHOLDER') return`<div class="partido-card placeholder" data-pid="${p.partido_id}"><div class="partido-equipos"><div class="partido-eq placeholder-eq"><span class="partido-eq-nombre">— Por definir —</span></div><div class="partido-eq placeholder-eq"><span class="partido-eq-nombre">— Por definir —</span></div></div></div>`;
+  if(p.tipo==='PLACEHOLDER_BYE') return`<div class="partido-card placeholder bye" data-pid="${p.partido_id}"><div class="bye-nombre">— Por definir —</div><div class="bye-tag">BYE · Pendiente</div></div>`;
   if(p.tipo==='BYE') return`<div class="partido-card bye" data-pid="${p.partido_id}"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · Pasa directo</div></div>`;
   const esFin=p.estado==='FINALIZADO', puedeJugar=p.estado==='PENDIENTE'&&p.equipo_a_id&&p.equipo_b_id, bloq=!p.equipo_a_id||!p.equipo_b_id;
   const claseCard=esFin?'finalizado':bloq?'pendiente-bloqueado':'';
@@ -1006,9 +1012,53 @@ function ordenarFasesPorLinaje(fases) {
   return nuevasFases;
 }
 
+// ── Genera fases "fantasma" (vacías, sin equipos) para las rondas que
+// todavía no existen — se sabe cuántos partidos/BYEs va a tener cada
+// ronda futura solo con la cantidad de ganadores que salen de la última
+// ronda real (misma aritmética que _generarRonda en Code.gs: par → n/2
+// partidos, impar → 1 BYE + (n-1)/2 partidos, n=2 → FINAL directa).
+// Cada partido fantasma guarda _sourceIdx con la posición (índices) de
+// la ronda anterior que lo alimentan, para poder dibujar su conector
+// aunque no haya ganador_id real todavía.
+function generarFasesPlaceholder(fasesReales) {
+  if (!fasesReales.length) return [];
+  const ultima = fasesReales[fasesReales.length - 1];
+  if (ultima.nombre === 'FINAL' || ultima.nombre === 'TODOS CONTRA TODOS') return [];
+  if (fasesReales.some(f => f.nombre === 'FINAL')) return [];
+
+  let prevCount = ultima.partidos.length;
+  let numRondaActual = 0;
+  const m = ultima.nombre.match(/RONDA\s+(\d+)/i);
+  if (m) numRondaActual = parseInt(m[1]);
+
+  const placeholders = [];
+  let contador = 0;
+  while (prevCount > 1) {
+    if (prevCount === 2) {
+      placeholders.push({ nombre: 'FINAL', partidos: [{ tipo: 'PLACEHOLDER', partido_id: 'ph-' + (contador++), _sourceIdx: [0, 1] }] });
+      break;
+    }
+    const partidos = [];
+    let idx = 0;
+    if (prevCount % 2 !== 0) {
+      partidos.push({ tipo: 'PLACEHOLDER_BYE', partido_id: 'ph-' + (contador++), _sourceIdx: [0] });
+      idx = 1;
+    }
+    while (idx < prevCount) {
+      partidos.push({ tipo: 'PLACEHOLDER', partido_id: 'ph-' + (contador++), _sourceIdx: [idx, idx + 1] });
+      idx += 2;
+    }
+    numRondaActual++;
+    placeholders.push({ nombre: 'RONDA ' + numRondaActual, partidos });
+    prevCount = partidos.length;
+  }
+  return placeholders;
+}
+
 // ── Dibuja las líneas conectoras entre cada partido y los dos partidos
 // de la ronda anterior que produjeron a sus dos equipos (buscando por
-// ganador_id, funciona igual para partidos normales y BYE).
+// ganador_id, funciona igual para partidos normales y BYE). Para fases
+// fantasma (sin ganador_id todavía) usa _sourceIdx en su lugar.
 function dibujarConectores(fases) {
   const wrap = document.getElementById('bracketFases');
   let svg = document.getElementById('bracketConectores');
@@ -1031,21 +1081,35 @@ function dibujarConectores(fases) {
     return { left: r.left - wrapRect.left, top: r.top - wrapRect.top, right: r.right - wrapRect.left, bottom: r.bottom - wrapRect.top, midY: r.top - wrapRect.top + r.height/2 };
   };
 
+  const trazarLinea = (origenPid, destPid, fantasma) => {
+    const rOrigen = rectOf(origenPid);
+    const rDest = rectOf(destPid);
+    if (!rOrigen || !rDest) return '';
+    const x1 = rOrigen.right, y1 = rOrigen.midY;
+    const x2 = rDest.left, y2 = rDest.midY;
+    const midX = (x1 + x2) / 2;
+    const estilo = fantasma ? 'stroke="var(--border2)" stroke-opacity="0.4" stroke-dasharray="4,4" stroke-width="1.5"' : 'stroke="var(--cyan)" stroke-opacity="0.55" stroke-width="2"';
+    return `<path d="M${x1},${y1} H${midX} V${y2} H${x2}" fill="none" ${estilo} />`;
+  };
+
   let paths = '';
   for (let i = 1; i < fases.length; i++) {
+    const prevFase = fases[i-1];
     const prevById = {};
-    fases[i-1].partidos.forEach(p => { if (p.ganador_id) prevById[p.ganador_id] = p; });
+    prevFase.partidos.forEach(p => { if (p.ganador_id) prevById[p.ganador_id] = p; });
     fases[i].partidos.forEach(p => {
+      if (p._sourceIdx) {
+        // Fase fantasma: no hay ganador_id todavía, conectar por posición.
+        p._sourceIdx.forEach(idx => {
+          const origen = prevFase.partidos[idx];
+          if (origen) paths += trazarLinea(origen.partido_id, p.partido_id, true);
+        });
+        return;
+      }
       [p.equipo_a_id, p.equipo_b_id].forEach(eqId => {
         const origen = eqId && prevById[eqId];
         if (!origen) return;
-        const rOrigen = rectOf(origen.partido_id);
-        const rDest = rectOf(p.partido_id);
-        if (!rOrigen || !rDest) return;
-        const x1 = rOrigen.right, y1 = rOrigen.midY;
-        const x2 = rDest.left, y2 = rDest.midY;
-        const midX = (x1 + x2) / 2;
-        paths += `<path d="M${x1},${y1} H${midX} V${y2} H${x2}" fill="none" stroke="var(--cyan)" stroke-opacity="0.55" stroke-width="2" />`;
+        paths += trazarLinea(origen.partido_id, p.partido_id, false);
       });
     });
   }
