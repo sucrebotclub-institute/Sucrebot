@@ -111,6 +111,9 @@
     .soc-grupo{background:var(--panel2);border:1px solid var(--border2);border-radius:14px;padding:18px}
     .soc-grupo-titulo{font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
     .soc-grupo-titulo::before{content:'';width:3px;height:14px;background:var(--cyan);border-radius:2px}
+    .soc-grupo.final{border-color:#fbbf24;background:rgba(251,191,36,.06);box-shadow:0 0 0 1px rgba(251,191,36,.25)}
+    .soc-grupo-titulo.final{color:#fbbf24;font-size:.8rem}
+    .soc-grupo-titulo.final::before{background:#fbbf24}
     .soc-partidos-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
     .soc-partido{display:flex;align-items:center;gap:8px;background:var(--panel);border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;transition:all .2s}
     .soc-partido.finalizado{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.04)}
@@ -1339,10 +1342,14 @@ function renderConfigurarRondaSoccer() {
 
 async function confirmarRondaSoccer() {
   const c=state.socConfigRonda; if(!c) return;
+  // Si toda la ronda queda con 2 equipos en total, es la final directa —
+  // se nombra "FINAL" en vez de "L1" para que no se pierda entre los
+  // resultados de las llaves de grupo de rondas anteriores.
+  const esFinal=c.pool.length===2;
   const llaves=[];
   for(let i=1;i<=c.numLlaves;i++){
     const equipos=c.pool.filter(eq=>c.asignacion[eq.id]===i).map(eq=>({id:eq.id,nombre:eq.nombre}));
-    if(equipos.length) llaves.push({llave_id:'L'+i,equipos});
+    if(equipos.length) llaves.push({llave_id:esFinal?'FINAL':'L'+i,equipos});
   }
   loading(true, c.ronda===1?'GENERANDO RONDA 1...':'GENERANDO SIGUIENTE RONDA...');
   try{
@@ -1387,7 +1394,7 @@ function renderTorneoSoccer() {
     if(filtroActivo!=='TODOS'&&!llavesRondaActual.includes(filtroActivo))filtroActivo='TODOS';
     filtroBar.style.display='flex';
     filtroBar.innerHTML=`<span class="soc-grupo-filtro-label">👁 Ver solo:</span>`+
-      ['TODOS',...llavesRondaActual].map(g=>`<button class="soc-filtro-btn ${g===filtroActivo?'active':''}" onclick="filtrarGrupoSoccer('${g}')">${g==='TODOS'?'Todos':'🔹 '+g}</button>`).join('');
+      ['TODOS',...llavesRondaActual].map(g=>`<button class="soc-filtro-btn ${g===filtroActivo?'active':''}" onclick="filtrarGrupoSoccer('${g}')">${g==='TODOS'?'Todos':(g==='FINAL'?'🏆 FINAL':'🔹 '+g)}</button>`).join('');
   } else {
     filtroBar.style.display='none';
   }
@@ -1402,17 +1409,21 @@ function renderTorneoSoccer() {
       if(esActual&&filtroActivo!=='TODOS'&&ll!==filtroActivo) return;
       const pLlave=pRonda.filter(p=>p.llave===ll);
       const tablaLl=tabla[r+'|'+ll]||[];
-      contenido+=`<div class="soc-grupo"><div class="soc-grupo-titulo">🔹 ${ll}</div><div class="soc-partidos-lista">`;
+      const esLlaveFinal=ll==='FINAL';
+      contenido+=`<div class="soc-grupo${esLlaveFinal?' final':''}"><div class="soc-grupo-titulo${esLlaveFinal?' final':''}">${esLlaveFinal?'🏆 GRAN FINAL':'🔹 '+ll}</div><div class="soc-partidos-lista">`;
       pLlave.forEach(p=>{ contenido+=renderSocPartido(p); });
       contenido+=`</div>`;
       if(tablaLl.length>1) contenido+=renderTablaSoc(tablaLl);
       if(esActual&&pLlave.length&&pLlave.every(p=>p.estado==='FINALIZADO')) contenido+=renderAvanceLlaveSoccer(torneo,r,ll,tablaLl);
       contenido+=`</div>`;
     });
+    const esRondaFinal=llavesRonda.length===1&&llavesRonda[0]==='FINAL';
     if(esActual){
-      html+=`<div class="soc-fase-final"><div class="soc-fase-titulo">🔴 RONDA ${r} (actual)</div>${contenido}</div>`;
+      const tituloRonda=esRondaFinal?'🏆 GRAN FINAL':'🔴 RONDA '+r+' (actual)';
+      html+=`<div class="soc-fase-final"><div class="soc-fase-titulo"${esRondaFinal?' style="color:#fbbf24;"':''}>${tituloRonda}</div>${contenido}</div>`;
     } else {
-      html+=`<details style="margin-bottom:10px;"><summary style="cursor:pointer;font-family:Orbitron;font-size:.7rem;color:var(--muted);padding:6px 0;">Ronda ${r} (ver)</summary>${contenido}</details>`;
+      const tituloVer=esRondaFinal?'🏆 Final (ver)':'Ronda '+r+' (ver)';
+      html+=`<details style="margin-bottom:10px;"><summary style="cursor:pointer;font-family:Orbitron;font-size:.7rem;color:${esRondaFinal?'#fbbf24':'var(--muted)'};padding:6px 0;">${tituloVer}</summary>${contenido}</details>`;
     }
   });
   html+=renderResumenAvanceSoccer(torneo, rondaActual);
