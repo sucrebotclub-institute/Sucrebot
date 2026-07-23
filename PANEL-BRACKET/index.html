@@ -973,62 +973,7 @@ function renderBracket() {
     const esFaseEditable = !esRR && ultimaReal && fase.nombre===ultimaReal.nombre;
     return `<div class="bracket-fase">${label}<div class="fase-partidos">${fase.partidos.map(p=>renderPartido(p,esFaseEditable)).join('')}</div></div>`;
   }).join('');
-  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>{ centrarFasesBracket(fasesParaDibujar); dibujarConectores(fasesParaDibujar); }); }
-}
-
-// ── Centra verticalmente cada tarjeta de ronda 2+ entre las dos tarjetas
-// de la ronda anterior que la alimentan (el punto medio exacto de sus
-// centros), en vez de dejarlas apiladas arriba por el flujo normal — así
-// el conector queda una simple "H" sin cruzarse con el de al lado. Se
-// posiciona con position:absolute usando la altura natural ya medida en
-// el flujo normal (primera pasada de render), ronda por ronda de
-// izquierda a derecha, porque cada ronda depende de las posiciones ya
-// recalculadas de la ronda anterior.
-function centrarFasesBracket(fases) {
-  const wrap = document.getElementById('bracketFases');
-  if (!wrap || fases.length < 2) return;
-  const cols = wrap.querySelectorAll('.bracket-fase');
-  const wrapRect = wrap.getBoundingClientRect();
-
-  for (let i = 1; i < fases.length; i++) {
-    const prevFase = fases[i-1];
-    const prevById = {};
-    prevFase.partidos.forEach(p => { if (p.ganador_id) prevById[p.ganador_id] = p; });
-    const col = cols[i];
-    const contenedor = col?.querySelector('.fase-partidos');
-    if (!contenedor) continue;
-    const contTop = contenedor.getBoundingClientRect().top - wrapRect.top;
-    contenedor.style.position = 'relative';
-
-    let maxBottom = 0;
-    fases[i].partidos.forEach(p => {
-      const el = contenedor.querySelector(`[data-pid="${CSS.escape(String(p.partido_id))}"]`);
-      if (!el) return;
-      let sources = [];
-      if (p._sourceIdx) {
-        sources = p._sourceIdx.map(idx => prevFase.partidos[idx]).filter(Boolean);
-      } else {
-        [p.equipo_a_id, p.equipo_b_id].forEach(eqId => {
-          const o = eqId && prevById[eqId];
-          if (o) sources.push(o);
-        });
-      }
-      const centros = sources.map(s => {
-        const elS = wrap.querySelector(`[data-pid="${CSS.escape(String(s.partido_id))}"]`);
-        if (!elS) return null;
-        const r = elS.getBoundingClientRect();
-        return (r.top - wrapRect.top) + r.height / 2;
-      }).filter(v => v !== null);
-      if (!centros.length) return;
-      const targetCenterY = centros.reduce((a,b)=>a+b, 0) / centros.length;
-      const elHeight = el.getBoundingClientRect().height;
-      const top = (targetCenterY - elHeight/2) - contTop;
-      el.style.position = 'absolute';
-      el.style.left = '0'; el.style.right = '0'; el.style.top = top + 'px';
-      maxBottom = Math.max(maxBottom, top + elHeight);
-    });
-    if (maxBottom > 0) contenedor.style.height = maxBottom + 'px';
-  }
+  if(esRR){ cargarTablaPosiciones(); } else { document.getElementById('tabla-posiciones-display').innerHTML=''; requestAnimationFrame(()=>dibujarConectores(fasesParaDibujar)); }
 }
 
 async function sortearSiguienteRonda(faseActual) {
