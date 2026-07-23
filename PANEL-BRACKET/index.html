@@ -224,9 +224,8 @@
     /* Marcador */
     .ms-marcador{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;background:var(--panel2);border-radius:12px;padding:8px 12px;border:1px solid var(--border);flex-shrink:0}
     .ms-eq{text-align:center}
-    .ms-eq-nombre{font-family:'Bebas Neue';font-size:.9rem;color:var(--text);letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .ms-eq-pts{font-family:'Orbitron';font-size:2rem;font-weight:900;color:var(--cyan);line-height:1}
-    .ms-eq-amon{font-size:.6rem;color:var(--orange);font-family:'DM Mono';margin-top:1px}
+    .ms-eq-nombre{font-family:'Bebas Neue';font-size:1.1rem;color:var(--text);letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ms-eq-amon{font-size:.7rem;color:var(--orange);font-family:'DM Mono';margin-top:2px;font-weight:700}
     .ms-vs{font-family:'Bebas Neue';font-size:1rem;color:var(--muted);opacity:.4}
     /* Cronómetro asalto */
     .ms-crono{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border-radius:10px;padding:6px 14px;border:2px solid var(--border2);flex-shrink:0;gap:10px}
@@ -511,13 +510,11 @@
     <div class="ms-marcador">
       <div class="ms-eq">
         <div class="ms-eq-nombre" id="msNombreA">A</div>
-        <div class="ms-eq-pts" id="msPtsA">0</div>
         <div class="ms-eq-amon" id="msAmonA">Asaltos: 0</div>
       </div>
       <div class="ms-vs">VS</div>
       <div class="ms-eq">
         <div class="ms-eq-nombre" id="msNombreB">B</div>
-        <div class="ms-eq-pts" id="msPtsB">0</div>
         <div class="ms-eq-amon" id="msAmonB">Asaltos: 0</div>
       </div>
     </div>
@@ -540,14 +537,14 @@
         <div class="ms-col-titulo" id="msColA">EQUIPO A</div>
         <button class="btn-ms expulsion" onclick="msExpulsion('A')">🏟 Expulsión de A → gana asalto A</button>
         <button class="btn-ms abandono" onclick="msAbandono('A')">🚩 A abandona → gana asalto B</button>
-        <button class="btn-ms amon"     onclick="msAmonestar('A')">🟨 Amonestar A → −1 a A</button>
+        <button class="btn-ms amon"     onclick="msAmonestar('A')">🟨 Amonestar A → pierde asalto A</button>
         <button class="btn-ms" style="background:rgba(139,139,139,.15);color:var(--muted);border:1px solid rgba(139,139,139,.3)" onclick="msRetiro('A')">🔧 A no funciona</button>
       </div>
       <div class="ms-col">
         <div class="ms-col-titulo" id="msColB">EQUIPO B</div>
         <button class="btn-ms expulsion" onclick="msExpulsion('B')">🏟 Expulsión de B → gana asalto B</button>
         <button class="btn-ms abandono" onclick="msAbandono('B')">🚩 B abandona → gana asalto A</button>
-        <button class="btn-ms amon"     onclick="msAmonestar('B')">🟨 Amonestar B → −1 a B</button>
+        <button class="btn-ms amon"     onclick="msAmonestar('B')">🟨 Amonestar B → pierde asalto B</button>
         <button class="btn-ms" style="background:rgba(139,139,139,.15);color:var(--muted);border:1px solid rgba(139,139,139,.3)" onclick="msRetiro('B')">🔧 B no funciona</button>
       </div>
     </div>
@@ -2165,12 +2162,10 @@ const MS_POSICIONES = ['De espaldas', 'De lado', 'Frente a frente'];
 let ms = {
   partido: null,
   asaltoActual: 0,   // 0,1,2
-  fase: 'idle',      // idle|corriendo|pausado|fin_asalto|fin
+  fase: 'idle',      // idle|corriendo|pausado|fin
   corriendo: false,
   interval: null,
   segundos: 180,
-  // Estado del asalto en curso
-  asalto: { ptsA: 0, ptsB: 0 },
   // Resultado de cada asalto: null | 'A' | 'B'
   asaltos: [null, null, null]
 };
@@ -2184,7 +2179,6 @@ function abrirMinisumo(partido) {
   ms.asaltoActual = 0;
   ms.fase = 'idle'; ms.corriendo = false;
   ms.segundos = 180;
-  ms.asalto = { ptsA: 0, ptsB: 0 };
   ms.asaltos = [null, null, null];
   if (ms.interval) clearInterval(ms.interval);
 
@@ -2218,17 +2212,11 @@ function msActualizarUI() {
   // Badge
   if (ms.fase === 'fin') {
     document.getElementById('msBadge').textContent = 'COMBATE FINALIZADO';
-  } else if (ms.fase === 'fin_asalto') {
-    document.getElementById('msBadge').textContent = 'ASALTO ' + aNum + ' TERMINADO';
   } else {
     document.getElementById('msBadge').textContent = 'ASALTO ' + aNum + ' · ' + MS_POSICIONES[ms.asaltoActual];
   }
 
-  // Puntos del asalto actual
-  document.getElementById('msPtsA').textContent = ms.asalto.ptsA;
-  document.getElementById('msPtsB').textContent = ms.asalto.ptsB;
-
-  // Asaltos ganados como subtítulo de amonestaciones
+  // Asaltos ganados
   document.getElementById('msAmonA').textContent = 'Asaltos: ' + msAsaltosGanados('A');
   document.getElementById('msAmonB').textContent = 'Asaltos: ' + msAsaltosGanados('B');
 
@@ -2239,7 +2227,7 @@ function msActualizarUI() {
     const resEl = document.getElementById('msRes' + i);
     if (i === ms.asaltoActual && ms.fase !== 'fin') {
       el.classList.add('activo');
-      resEl.textContent = ms.asalto.ptsA + ' — ' + ms.asalto.ptsB;
+      resEl.textContent = 'EN CURSO';
       resEl.style.color = 'var(--cyan)';
     } else if (ganador) {
       const nom = ganador === 'A' ? msNomA() : msNomB();
@@ -2301,12 +2289,26 @@ function msPausarAsalto() {
   }
 }
 
+// ── Deshace el resultado del último asalto decidido (por si se marcó
+// por error) y vuelve a ese asalto para poder redefinirlo. El
+// cronómetro del combate no se toca (sigue corriendo o pausado, según
+// estaba).
 function msRepetirAsalto() {
-  if (!confirm('¿Repetir este asalto? Se borran los puntos del asalto actual.')) return;
-  ms.asalto = { ptsA: 0, ptsB: 0 };
-  // El cronómetro es único para todo el combate — repetir un asalto NO lo reinicia.
+  let idx = ms.asaltoActual;
+  if (idx > 0 && ms.asaltos[idx] === null) idx--;
+  if (ms.asaltos[idx] === null) { toast('⚠️ Todavía no hay resultado que repetir', 'error'); return; }
+  if (!confirm('¿Deshacer el resultado del Asalto ' + (idx + 1) + ' y volver a jugarlo?')) return;
+
+  ms.asaltos[idx] = null;
+  ms.asaltoActual = idx;
+  if (ms.fase === 'fin') {
+    ms.fase = ms.corriendo ? 'corriendo' : 'pausado';
+    document.getElementById('btnMsFinalizar').style.display = 'none';
+    document.getElementById('msEmpate').classList.remove('show');
+  }
+  document.getElementById('btnMsTerminarAsalto').style.display = '';
   msActualizarUI();
-  toast('🔄 Asalto reiniciado (el tiempo del combate sigue corriendo)');
+  toast('🔄 Asalto ' + (idx + 1) + ' para repetir');
 }
 
 // ── Expulsión/Abandono ganan el asalto al instante — el cronómetro
@@ -2328,7 +2330,6 @@ function msAsaltoGanadoInstantaneo(equipoGanador, motivoTexto) {
   }
 
   ms.asaltoActual++;
-  ms.asalto = { ptsA: 0, ptsB: 0 };
   msActualizarUI();
   toast('Asalto ' + (ms.asaltoActual + 1) + ' · ' + MS_POSICIONES[ms.asaltoActual]);
 }
@@ -2345,13 +2346,11 @@ function msAbandono(equipoQueAbandona) {
   msAsaltoGanadoInstantaneo(ganador, '🚩 ' + nomAband + ' abandonó');
 }
 
-function msAmonestar(equipo) {
-  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el asalto', 'error'); return; }
-  const nom = equipo === 'A' ? msNomA() : msNomB();
-  if (equipo === 'A') ms.asalto.ptsA--;
-  else ms.asalto.ptsB--;
-  toast('🟨 Amonestación −1 — ' + nom, 'error');
-  msActualizarUI();
+function msAmonestar(equipoAmonestado) {
+  if (ms.fase !== 'corriendo') { toast('⚠️ Primero inicia el combate', 'error'); return; }
+  const ganador = equipoAmonestado === 'A' ? 'B' : 'A';
+  const nomAmon = equipoAmonestado === 'A' ? msNomA() : msNomB();
+  msAsaltoGanadoInstantaneo(ganador, '🟨 ' + nomAmon + ' amonestado');
 }
 
 // ── Retiro por robot no funcional (termina el combate) ─────────
@@ -2377,21 +2376,8 @@ function msRetiro(equipoQueSeRetira) {
 // puntos acumulados en el asalto, o el juez decide si hay empate. No
 // pausa ni reinicia el cronómetro del combate. ──────────────────────
 function msTerminarAsalto() {
-  const pA = ms.asalto.ptsA, pB = ms.asalto.ptsB;
-  let ganadorAsalto;
-
-  if (pA > pB) {
-    ganadorAsalto = 'A';
-  } else if (pB > pA) {
-    ganadorAsalto = 'B';
-  } else {
-    // Empate en puntos del asalto → juez decide
-    toast('⚖️ Empate en asalto (' + pA + '-' + pB + ') — el juez decide', 'error');
-    const eligioA = confirm('¿Quién ganó este asalto?\nOK = ' + msNomA() + '\nCancelar = ' + msNomB());
-    ganadorAsalto = eligioA ? 'A' : 'B';
-  }
-
-  msAsaltoGanadoInstantaneo(ganadorAsalto, '🏁 Fin de asalto manual');
+  const eligioA = confirm('¿Quién ganó este asalto?\nOK = ' + msNomA() + '\nCancelar = ' + msNomB());
+  msAsaltoGanadoInstantaneo(eligioA ? 'A' : 'B', '🏁 Fin de asalto manual');
 }
 
 // ── Se agotó el tiempo total del combate (3 min) sin que nadie haya
