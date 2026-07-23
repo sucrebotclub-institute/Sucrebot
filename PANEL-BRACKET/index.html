@@ -1139,12 +1139,25 @@ function dibujarConectores(fases) {
     return { left: r.left - wrapRect.left, top: r.top - wrapRect.top, right: r.right - wrapRect.left, bottom: r.bottom - wrapRect.top, midY: r.top - wrapRect.top + r.height/2 };
   };
 
-  const trazarLinea = (origenPid, destPid, fantasma) => {
+  // Altura exacta de la fila del equipo (slot 0 = equipo_a, 1 = equipo_b)
+  // dentro de una tarjeta — así la línea sale/llega a la altura del
+  // ganador puntual, no al centro genérico de toda la tarjeta, y queda
+  // clarísimo hacia qué panel/casillero avanza cada uno.
+  const filaMidY = (pid, slot) => {
+    const el = wrap.querySelector(`[data-pid="${CSS.escape(String(pid))}"]`);
+    if (!el) return null;
+    const filas = el.querySelectorAll('.partido-eq');
+    const fila = (slot !== undefined && slot !== null && filas[slot]) ? filas[slot] : el;
+    const r = fila.getBoundingClientRect();
+    return r.top - wrapRect.top + r.height / 2;
+  };
+
+  const trazarLinea = (origenPid, destPid, fantasma, slotOrigen, slotDest) => {
     const rOrigen = rectOf(origenPid);
     const rDest = rectOf(destPid);
     if (!rOrigen || !rDest) return '';
-    const x1 = rOrigen.right, y1 = rOrigen.midY;
-    const x2 = rDest.left, y2 = rDest.midY;
+    const x1 = rOrigen.right, y1 = fantasma ? rOrigen.midY : (filaMidY(origenPid, slotOrigen) ?? rOrigen.midY);
+    const x2 = rDest.left, y2 = fantasma ? rDest.midY : (filaMidY(destPid, slotDest) ?? rDest.midY);
     const midX = (x1 + x2) / 2;
     const estilo = fantasma ? 'stroke="var(--border2)" stroke-opacity="0.4" stroke-dasharray="4,4" stroke-width="1.5"' : 'stroke="var(--cyan)" stroke-opacity="0.55" stroke-width="2"';
     return `<path d="M${x1},${y1} H${midX} V${y2} H${x2}" fill="none" ${estilo} />`;
@@ -1164,10 +1177,11 @@ function dibujarConectores(fases) {
         });
         return;
       }
-      [p.equipo_a_id, p.equipo_b_id].forEach(eqId => {
+      [p.equipo_a_id, p.equipo_b_id].forEach((eqId, slotDest) => {
         const origen = eqId && prevById[eqId];
         if (!origen) return;
-        paths += trazarLinea(origen.partido_id, p.partido_id, false);
+        const slotOrigen = eqId === origen.equipo_a_id ? 0 : 1;
+        paths += trazarLinea(origen.partido_id, p.partido_id, false, slotOrigen, slotDest);
       });
     });
   }
