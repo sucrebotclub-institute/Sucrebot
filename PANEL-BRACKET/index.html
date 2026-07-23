@@ -81,9 +81,6 @@
     .partido-card.finalizado{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.05)}
     .partido-card.pendiente-bloqueado{opacity:.55}
     .partido-card.bye{border:1.5px dashed var(--orange);background:rgba(243,156,18,.06);text-align:center;padding:12px}
-    .partido-card.placeholder{border:1.5px dashed var(--border);background:rgba(255,255,255,.015);opacity:.6}
-    .partido-card.placeholder.bye{border-color:rgba(243,156,18,.4)}
-    .placeholder-eq{opacity:.6;font-style:italic}
     .bye-nombre{font-family:'Bebas Neue';font-size:1.1rem;color:var(--text)}
     .bye-tag{font-family:'Orbitron';font-size:.55rem;color:var(--orange);letter-spacing:1px;margin-top:4px}
     .partido-equipos{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
@@ -969,12 +966,10 @@ function renderTablaPosiciones() {
 }
 
 function renderPartido(p) {
-  if(p.tipo==='PLACEHOLDER') return`<div class="partido-card placeholder" data-pid="${p.partido_id}"><div class="partido-equipos"><div class="partido-eq placeholder-eq"><span class="partido-eq-nombre">— Por definir —</span></div><div class="partido-eq placeholder-eq"><span class="partido-eq-nombre">— Por definir —</span></div></div></div>`;
-  if(p.tipo==='PLACEHOLDER_BYE') return`<div class="partido-card placeholder bye" data-pid="${p.partido_id}"><div class="bye-nombre">— Por definir —</div><div class="bye-tag">BYE · Pendiente</div></div>`;
-  if(p.tipo==='BYE') return`<div class="partido-card bye" data-pid="${p.partido_id}"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · Pasa directo</div></div>`;
+  if(p.tipo==='BYE') return`<div class="partido-card bye" data-pid="${p.partido_id}"><div class="bye-nombre">${p.equipo_a_nombre||p.equipoNombre||'—'}</div><div class="bye-tag">BYE · ${p.equipo_a_nombre||p.equipoNombre?'Pasa directo':'Pendiente'}</div></div>`;
   const esFin=p.estado==='FINALIZADO', puedeJugar=p.estado==='PENDIENTE'&&p.equipo_a_id&&p.equipo_b_id, bloq=!p.equipo_a_id||!p.equipo_b_id;
   const claseCard=esFin?'finalizado':bloq?'pendiente-bloqueado':'';
-  const nombreA=p.equipo_a_nombre||p.equipoA_nombre||'— Por definir —', nombreB=p.equipo_b_nombre||p.equipoB_nombre||'— Por definir —';
+  const nombreA=p.equipo_a_nombre||p.equipoA_nombre||'—', nombreB=p.equipo_b_nombre||p.equipoB_nombre||'—';
   const clA=esFin?(p.ganador_id===p.equipo_a_id?'ganador':'perdedor'):'';
   const clB=esFin?(p.ganador_id===p.equipo_b_id?'ganador':'perdedor'):'';
   let sA='',sB='';
@@ -1031,21 +1026,24 @@ function generarFasesPlaceholder(fasesReales) {
   const m = ultima.nombre.match(/RONDA\s+(\d+)/i);
   if (m) numRondaActual = parseInt(m[1]);
 
+  // Los partidos fantasma usan el mismo tipo/formato que uno real sin
+  // equipos asignados todavía (tarjeta "EN ESPERA" ya existente) — así
+  // se ven exactamente igual que una tarjeta real, solo que vacía.
   const placeholders = [];
   let contador = 0;
   while (prevCount > 1) {
     if (prevCount === 2) {
-      placeholders.push({ nombre: 'FINAL', partidos: [{ tipo: 'PLACEHOLDER', partido_id: 'ph-' + (contador++), _sourceIdx: [0, 1] }] });
+      placeholders.push({ nombre: 'FINAL', partidos: [{ tipo: 'NORMAL', partido_id: 'ph-' + (contador++), equipo_a_id: '', equipo_b_id: '', estado: 'PENDIENTE', _sourceIdx: [0, 1] }] });
       break;
     }
     const partidos = [];
     let idx = 0;
     if (prevCount % 2 !== 0) {
-      partidos.push({ tipo: 'PLACEHOLDER_BYE', partido_id: 'ph-' + (contador++), _sourceIdx: [0] });
+      partidos.push({ tipo: 'BYE', partido_id: 'ph-' + (contador++), _sourceIdx: [0] });
       idx = 1;
     }
     while (idx < prevCount) {
-      partidos.push({ tipo: 'PLACEHOLDER', partido_id: 'ph-' + (contador++), _sourceIdx: [idx, idx + 1] });
+      partidos.push({ tipo: 'NORMAL', partido_id: 'ph-' + (contador++), equipo_a_id: '', equipo_b_id: '', estado: 'PENDIENTE', _sourceIdx: [idx, idx + 1] });
       idx += 2;
     }
     numRondaActual++;
