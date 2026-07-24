@@ -41,6 +41,9 @@
     .stat-chip.total    { background: #e8f0ff; color: #1a5ca8; border: 1px solid #c5d8ff; }
     .stat-chip.pendiente{ background: #fff8e6; color: #c27803; border: 1px solid #fcd34d; }
     .stat-chip.generado { background: #ecfdf5; color: #0e9f6e; border: 1px solid #6ee7b7; }
+    .stat-chip.toggle-completados { background: #fff; color: #4a5568; border: 1px solid #e0e4ea; cursor: pointer; margin-left: auto; transition: all .2s; }
+    .stat-chip.toggle-completados:hover { background: #f0f4fa; }
+    .stat-chip.toggle-completados.activo { background: #1a5ca8; color: #fff; border-color: #1a5ca8; }
 
     .aviso { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-family: 'Exo 2'; font-size: 13px; color: #92400e; display: flex; align-items: center; gap: 10px; }
 
@@ -144,6 +147,7 @@
         <span class="stat-chip total"     id="stat-total">— total</span>
         <span class="stat-chip pendiente" id="stat-pend">— pendientes</span>
         <span class="stat-chip generado"  id="stat-ok">— generados</span>
+        <button class="stat-chip toggle-completados" id="btn-toggle-completados" onclick="toggleCompletados()">👁 Mostrar completados</button>
       </div>
     </div>
 
@@ -218,6 +222,7 @@ const CATEGORIA_MAP_CORTO = {
 document.addEventListener('componentsLoaded', () => {
   if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
   show('contenido-staff');
+  actualizarBotonToggleCompletados();
   cargarDatos().then(irACategoriaDeUrl);
 });
 
@@ -228,7 +233,15 @@ function irACategoriaDeUrl() {
   if (!corto) return;
   const full = CATEGORIA_MAP_CORTO[corto];
   if (!full) return;
-  const el = document.getElementById('cat-' + full.replace(/\W/g,'_'));
+  let el = document.getElementById('cat-' + full.replace(/\W/g,'_'));
+  if (!el && !mostrarCompletados) {
+    // La categoría ya está 100% completa y por eso quedó oculta por defecto —
+    // mostrar completados para poder ubicarla igual.
+    mostrarCompletados = true;
+    actualizarBotonToggleCompletados();
+    renderTodo();
+    el = document.getElementById('cat-' + full.replace(/\W/g,'_'));
+  }
   if (!el) return;
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   el.classList.add('cat-resaltada');
@@ -284,10 +297,38 @@ function actualizarStats() {
   document.getElementById('stat-ok').textContent    = ok + ' generados';
 }
 
+// Por defecto solo se ven las categorías/filas con algo pendiente — una vez
+// generado el diploma, esa fila (o la categoría entera si ya no queda nada
+// pendiente) deja de ocupar espacio. El toggle "Mostrar completados" es para
+// cuando hace falta volver a revisar o reabrir un diploma ya generado.
+const MOSTRAR_COMPLETADOS_KEY = 'sucrebot_certs_mostrar_completados';
+let mostrarCompletados = false;
+try { mostrarCompletados = localStorage.getItem(MOSTRAR_COMPLETADOS_KEY) === '1'; } catch(e) {}
+
+function toggleCompletados() {
+  mostrarCompletados = !mostrarCompletados;
+  try { localStorage.setItem(MOSTRAR_COMPLETADOS_KEY, mostrarCompletados ? '1' : '0'); } catch(e) {}
+  actualizarBotonToggleCompletados();
+  renderTodo();
+}
+
+function actualizarBotonToggleCompletados() {
+  const btn = document.getElementById('btn-toggle-completados');
+  if (!btn) return;
+  btn.textContent = mostrarCompletados ? '🙈 Ocultar completados' : '👁 Mostrar completados';
+  btn.classList.toggle('activo', mostrarCompletados);
+}
+
 function renderTodo() {
   const container = document.getElementById('cats-container');
-  const cats = Object.keys(estado).sort();
-  if (!cats.length) { container.innerHTML = ''; return; }
+  const cats = Object.keys(estado).sort()
+    .filter(cat => mostrarCompletados || estado[cat].some(i => !i.archivoUrl));
+  if (!cats.length) {
+    container.innerHTML = Object.keys(estado).length
+      ? '<div class="vacio">🎉 No hay nada pendiente — todos los certificados están generados.</div>'
+      : '';
+    return;
+  }
   container.innerHTML = cats.map(cat => renderCat(cat)).join('');
 }
 
@@ -296,6 +337,7 @@ function renderCat(cat) {
   const pending = items.filter(i => !i.archivoUrl).length;
   const done    = items.filter(i =>  i.archivoUrl).length;
   const catKey  = cat.replace(/\W/g,'_');
+  const visibles = mostrarCompletados ? items : items.filter(i => !i.archivoUrl);
 
   const chipPend = pending ? `<span class="cat-chip pend">⏳ ${pending} pendientes</span>` : '';
   const chipOk   = done    ? `<span class="cat-chip ok">✅ ${done} listos</span>` : '';
@@ -303,7 +345,7 @@ function renderCat(cat) {
     ? `<button class="cat-chip todos-btn" id="btn-todos-${catKey}" onclick="generarTodos('${catKey}')">⚡ Generar todos (${pending})</button>`
     : '';
 
-  const filas = items.map((item, i) => renderFila(item, catKey, i)).join('');
+  const filas = visibles.map((item, i) => renderFila(item, catKey, items.indexOf(item))).join('');
 
   return `
     <div class="cat-block" id="cat-${catKey}">
