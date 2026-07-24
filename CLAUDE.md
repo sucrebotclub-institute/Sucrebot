@@ -43,6 +43,8 @@ Todas las llamadas `gasPost` deben incluir `staffToken`, **excepto** las ACCIONE
 - Google OAuth / `STAFF_EMAILS` en config.js — reemplazado por staff token compartido.
 - Batalla en PANEL-CALIFICACION — eliminado 21 jun 2026. Migró a PANEL-BRACKET.
 - Soccer en `bracket_general` — eliminado 22 jun 2026. Tiene hoja propia `soccer_torneo`.
+- `publicarJSON()` / `RESULTADOS/resultados.json` / `GITHUB_TOKEN` — eliminados 23-24 jul 2026. RESULTADOS ya no lee un JSON publicado a GitHub, consulta GAS directo (`getPodioPublicado`/`getPodioManual`). El token también desapareció del código (resuelve el pendiente de rotarlo, por eliminación).
+- `RESULTADOS_ABIERTO_AL_PUBLICO` — eliminado 23-24 jul 2026. RESULTADOS pasó a ser staff-only permanente, sin toggle público.
 
 ---
 
@@ -83,18 +85,21 @@ const CATEGORIA_MAP = {
 | `puntuaciones` | 11 | id_participante, nombre, robot, institucion, categoria, juez_email, juez_nombre, criterios_json, notas_json, total, timestamp |
 | `bracket_general` | 13 | torneo_id, categoria, fase, partido_id, equipo_a_id/nombre, equipo_b_id/nombre, ganador_id, marcador, estado, siguiente_partido_id, timestamp — solo ms_a, ms_rc, bat (NO soccer) |
 | `soccer_torneo` | — | hoja propia para Robot Soccer (formatos GRUPOS_8 a GRUPOS_14) |
+| `podio_manual` | 6 | categoria, posicion, equipo_id, equipo_nombre, timestamp, total — equipo_id de Soccer es sintético (`'eq-'+nombre del equipo`), NO el id real del participante |
+| `podio_publicado` | 2 | categoria, timestamp — gate de RESULTADOS, se marca/desmarca solo desde `guardarPodioManual`/`despublicarPodio` |
 
 ---
 
 ## Reglas críticas (no romper esto)
 
 ### Flujo de la API de GitHub
-- **Siempre** pedir el SHA fresco inmediatamente antes de cada PUT — nunca reusar un SHA cacheado. El bot de resultados commitea cada 15–20 segundos y reutilizar un SHA viejo causa conflictos 409.
+- (Nota: el "bot de resultados" que commiteaba cada 15-20s vía `publicarJSON()` se eliminó por completo en el sprint 23-24 jul — ya no hay commits automáticos de Code.gs a GitHub. Los puntos de abajo siguen valiendo para cualquier push manual/vía Claude Code.)
+- **Siempre** pedir el SHA fresco inmediatamente antes de cada PUT — nunca reusar un SHA cacheado, evita conflictos 409.
 - Verificar deploys con la **Contents API** (`GET /contents/PATH?ref=main` con header de Authorization), **no** con `raw.githubusercontent.com` (tiene cache de CDN que puede estar desactualizado 10–15 min tras el build).
 - Después de un commit: `POST /pages/builds` → hacer polling a `/pages/builds/latest` chequeando **ambas** condiciones: `status === "built"` Y `commit === target_sha`.
 - `status: "errored"` con `duration: 0` es un hipo transitorio del pipeline de GitHub — reintentar.
 - El Service Worker cachea agresivamente. Ctrl+Shift+R evita la CDN pero no el Cache Storage del SW — usar incógnito o DevTools → Application → Service Workers → Unregister para limpiar de verdad.
-- Los commits rápidos del bot pueden hacer que el build del commit correcto aparezca como "errored" mientras un commit posterior del bot ya muestra "built" con el contenido correcto incluido — la verificación de contenido vía Contents API es el chequeo confiable.
+- El CDN de GitHub Pages (Fastly) puede tardar varios minutos en propagar incluso después de que el build de Actions ya muestre ✅ — no es lo mismo "build exitoso" que "ya se ve en producción", verificar ambos por separado con un `fetch(..., {cache:'no-store'})` directo a `sucrebotclub-institute.github.io`.
 
 ### Encoding y validación (siempre antes de cada push)
 - Codificar en base64 con Python, verificar `content.count('Ã') == 0` (detecta doble-encoding UTF-8).
@@ -130,7 +135,7 @@ const CATEGORIA_MAP = {
 
 ### Bugs recurrentes ya documentados (no reintroducir)
 - `bloquearCategoria` está ausente del frontend de PANEL-BRACKET (Soccer es seguro en multi-dispositivo en paralelo durante fase de grupos; requiere recarga manual antes de la fase eliminatoria).
-- `publicarJSON` con `posiciones: []` vacío desde `guardarPodioManual` **no debe** llamar a `publicarJSON` — evita sobreescribir el bracket.
+- (Deprecado, ya no aplica desde sprint 23-24 jul: `publicarJSON`/`resultados.json` se eliminaron por completo.) `guardarPodioManual` con `posiciones: []` vacío desmarca `podio_publicado` (categoría deja de verse en RESULTADOS) — resetear un bracket ya NO hace esto, es una acción aparte (`despublicarPodio`, botón "Quitar de Resultados" en RESULTADOS).
 - Marcadores de soccer: `setValue()` de GAS autodetecta `"3-4"` como fecha → arreglar con `setNumberFormat('@').setValue(String(marcador))` antes de guardar.
 - El flag `esperandoConfirmacionIntento` bloquea tanto clicks manuales como triggers automáticos de sensor para evitar avances de intento no intencionados.
 - `reiniciarCrono()` debe enviar `'R'` a CATS_PULSADOR (Cubo Rubik) después de resetear, o los pulsadores quedan permanentemente sin respuesta; **no** debe enviar `'R'` en `iniciarCrono()` (causa doble START).
@@ -186,9 +191,12 @@ const CATEGORIA_MAP = {
 
 El evento SucreBot 2026 se realizó el 16 de julio de 2026 y ya concluyó. El trabajo actual es de mantenimiento y mejoras pendientes, no de sprint pre-evento. Pendientes conocidos:
 
-- Rotación del `GITHUB_TOKEN` (expuesto en `Code.gs`) — crítico, aplazado repetidamente.
-- Activar `RESULTADOS_ABIERTO_AL_PUBLICO = true` — debería activarse ~1 día antes de cualquier futuro evento.
+- [x] `GITHUB_TOKEN` — resuelto por eliminación (sprint 23-24 jul): se quitó el pipeline `publicarJSON()`/GitHub completo de `Code.gs`, el token ya no existe en el código, no hace falta rotarlo.
+- [x] RESULTADOS ya no tiene un toggle de "abrir al público" — pasó a ser staff-only permanente (sprint 23-24 jul), ver SKILL.md.
 - Verificar salud de sesión del bot de WhatsApp antes de futuros eventos; establecer plan de respaldo manual con un miembro del comité.
 - Soporte multi-mesa en CRONOMETRO — evaluar solo si el volumen de inscritos en una categoría lo justifica en un futuro evento.
 - Alinear "Miembro 2" → "Subcapitán" en MI-REGISTRO y PARTICIPANTES_REGISTRADOS.
 - Popular `driveId` de Minisumo RC en REGLAMENTOS.
+- **Producción migró a un Sheet/proyecto de Apps Script nuevo** (sprint 23-24 jul) — el viejo (151 versiones) queda como archivo histórico. Ver memoria `project-migracion-sheet-nuevo-23jul` para el Deployment ID vigente y qué datos no se copiaron.
+- Extender el patrón de RESULTADOS ("solo se ve al guardar podio") a CRONOMETRO/INSECTOS (tiempos) y PANEL-CALIFICACION (bai/dev/lk) — hoy solo cubre ms_a/ms_rc/bat/soc.
+- Auditar `cache:'no-store'` en el resto de páginas con `fetch(GAS...)` propio (INSECTOS, ESCANER, etc.) — se encontró y corrigió el mismo bug en CRONOMETRO/PANEL-CALIFICACION/MANILLAS/PANEL-BRACKET esta sesión, no se revisaron todas.

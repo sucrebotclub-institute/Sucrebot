@@ -92,7 +92,8 @@ const CATEGORIA_MAP = {
 | `puntuaciones` | 11 | id_participante, nombre, robot, institucion, categoria, juez_email, juez_nombre, criterios_json, notas_json, total, timestamp |
 | `bracket_general` | 13 | torneo_id, categoria, fase, partido_id, equipo_a_id, equipo_a_nombre, equipo_b_id, equipo_b_nombre, ganador_id, marcador, estado, siguiente_partido_id, timestamp — **ms_a, ms_rc, bat** (NO soccer) |
 | `soccer_torneo` | 13 | torneo_id, formato, grupo, partido_id, equipo_a_id, equipo_a_nombre, equipo_b_id, equipo_b_nombre, ganador_id, marcador, estado, partido_num, timestamp — **solo soc** |
-| `podio_manual` | 5 | categoria, posicion, equipo_id, equipo_nombre, timestamp |
+| `podio_manual` | 6 | categoria, posicion, equipo_id, equipo_nombre, timestamp, total — **equipo_id de Soccer es sintético** (`'eq-'+nombre del equipo`, columna `equipo` de `participantes`), NO el id real del participante como en ms_a/ms_rc/bat |
+| `podio_publicado` | 2 | categoria, timestamp — gate de RESULTADOS (sprint 23-24 jul), se marca/desmarca solo desde `guardarPodioManual`/`despublicarPodio`, nunca desde resetear el bracket |
 | `resultados_publicados` | 3 | categoria, ranking_json, timestamp — **bai/dev/lk permanentes** |
 
 ---
@@ -838,7 +839,7 @@ Patrón recurrente esta sesión: el primer intento de `POST /pages/builds` frecu
 - [ ] Limpiar manualmente las filas duplicadas/basura viejas en la hoja `certificados` — sigue pendiente, y creció: al 21-jul la hoja tiene cientos de filas de formato heredado vacío más allá de los datos reales (no solo duplicados de certificados regenerados)
 
 ### Pendientes nuevos — sprint 21 jul 2026
-- [ ] **Robot Soccer no se muestra en RESULTADOS público** — el podio (DarkCode/Los Guilcapis/Niupi FC) está guardado en `podio_manual`, pero la pantalla de Soccer solo lee de `soccer_torneo` (vacío desde que se perdió el torneo). Si se quiere ver en la página pública, hay que agregar un fallback a `podio_manual` en el frontend + `Code.gs`, igual al que ya tienen ms_a/ms_rc/bat.
+- [x] **Robot Soccer no se muestra en RESULTADOS** — resuelto arquitectónicamente en el sprint 23-24 jul: RESULTADOS ahora lee `podio_manual` genérico para toda categoría (incluida `soc`), sin pasar por `soccer_torneo`. **Pero el dato real (DarkCode/Los Guilcapis/Niupi FC) no existe en el Sheet nuevo** (ver [[project-migracion-sheet-nuevo-23jul]]) — si se quiere ver en RESULTADOS hay que volver a guardarlo a mano desde PANEL-BRACKET → Podio Manual, con los equipos reales.
 - [ ] Investigar cuándo/cómo se perdió el torneo real de Robot Soccer (`soccer_torneo`, formato GRUPOS_14) — confirmado con datos reales el 19-jul, vacío desde algún momento después sin rastro en ninguna sesión de Claude Code. Revisar el log de Ejecuciones de Apps Script si sigue disponible (7 días de retención).
 - [ ] Considerar agregar una acción `eliminarCertificado` a `Code.gs` (mismo patrón que `eliminarPartidoGeneral`) — hoy no existe forma segura de borrar una fila de certificado por API, hubo que pedirle a Raku que lo hiciera a mano en Sheets varias veces esta sesión.
 
@@ -1071,5 +1072,41 @@ Patrón recurrente esta sesión: el primer intento de `POST /pages/builds` frecu
 
 ---
 
+### Sprint 23-24 jul 2026 — RESULTADOS reescrito (sin JSON), bracket manual, migración de Sheet/Apps Script
+
+**Contexto**: sesión larga (dos días) que arrancó con "reestructurar RESULTADOS" y terminó tocando el pipeline de publicación completo, la lógica de sorteo de brackets, la siembra de certificados, y — a mitad de sesión, sin que fuera el plan original — Raku migró producción a un **Google Sheet y proyecto de Apps Script completamente nuevos**, dejando los viejos como archivo histórico. Ver [[project-migracion-sheet-nuevo-23jul]] para ese punto específico, es la nota más importante para no perder.
+
+#### RESULTADOS — reescritura completa
+- **Se eliminó el pipeline `publicarJSON()` → GitHub por completo.** El JSON público (`RESULTADOS/resultados.json`) nunca se usó en producción real (la página no tuvo visitas). De paso esto elimina `GITHUB_TOKEN` del código — **resuelve por eliminación el pendiente crítico de rotar el token**, ya no existe.
+- RESULTADOS pasó de ser pública a **staff-only** (mismo gate `esStaffCompleto()` que GENERAR-CERTIFICADOS), y el link en `nav.html` se movió del dropdown público "Organización" al dropdown staff "Jueces".
+- **Nuevo modelo de "podio publicado"**: una categoría solo aparece en RESULTADOS cuando se presiona "Guardar Podio" (acción `guardarPodioManual`), y solo se muestra el **top-3**, nada de bracket en progreso, tabla de tiempos ni calificación en vivo — eso lo sigue viendo el staff directo en PANEL-BRACKET/CRONOMETRO/PANEL-CALIFICACION.
+- Nueva hoja `podio_publicado` (categoria, timestamp) — gate leído por el nuevo action `getPodioPublicado`. Se marca/desmarca desde `guardarPodioManual` según si `posiciones` viene vacío o no.
+- **Alcance de esta migración: solo categorías de PANEL-BRACKET** (`ms_a`, `ms_rc`, `bat`, `soc`). CRONOMETRO/INSECTOS (tiempos) y PANEL-CALIFICACION (bai/dev/lk) quedan con su comportamiento actual — RESULTADOS ya no lee ninguna categoría de esas todavía (queda como trabajo futuro extender el mismo patrón).
+- Botón **"🎓 Generar certificados de esta categoría"** en cada podio publicado → lleva a `GENERAR-CERTIFICADOS/?categoria=ms_a` (nuevo query param), que hace scroll + resalta el bloque correcto.
+- Botón **"🗑️ Quitar de Resultados"** (ver más abajo, sección "resetear vs. despublicar").
+
+#### PANEL-BRACKET — sorteo manual + certificados con alcance correcto
+- **Hallazgo real**: el frontend de PANEL-BRACKET ya tenía construido un flujo de "sorteo manual de cada ronda" (botón `🎲 Sortear`, placeholders de ronda pendiente, comentario explícito "el sorteo de cada ronda 2+ ahora es manual") pero el backend **nunca implementó la acción `sortearSiguienteRonda`** que ese botón llama — seguía generando la siguiente ronda automáticamente apenas terminaba el último partido (`_revisarAvanceFase`), sin pasar nunca por el botón. Se implementó `sortearSiguienteRondaHelper` (misma lógica de ganadores/BYE-sin-repetir/FINAL vs siguiente RONDA, ahora on-demand) y se quitó la generación automática de `registrarResultadoGeneralHelper`.
+- **Única excepción manual→automática**: si una ronda deja exactamente 2 ganadores, la **FINAL se genera sola** (sin botón) — con 2 equipos no hay ningún sorteo real que hacer (un solo cruce posible), pedir el click era fricción de más. Confirmado con Raku explícitamente ("eso está de más").
+- **`guardarPodio()` (botón real "Guardar Podio" del panel) reescrito**: antes generaba certificados el mismo directo con su propio loop (`guardarCertEquipo`), sin pasar nunca por `guardarPodioManual` — significa que nunca marcaba el podio como publicado ni sembraba certificados de participación para el resto del campo. Ahora llama a la misma acción `guardarPodioManual` que usan los flujos de "🥉 3er lugar" y "🏆 Podio Manual", unificando los 3 caminos en un solo punto de entrada al backend.
+- **Certificados de participación con alcance incorrecto (bug real, corregido)**: `sembrarCertificadosPendientesHelper` originalmente certificaba a **todos los aprobados de la categoría** en el Sheet, no solo a quienes de verdad se eligieron/sortearon para ese bracket específico. Corregido para leer los ids reales desde `bracket_general` (el pool que efectivamente jugó), cayendo a `participantes`+categoría+aprobado solo si `bracket_general` está vacío (bracket ya reseteado pero podio_manual sigue vigente).
+- **Soccer tiene un bug aparte y más grave, corregido**: `equipo_id` en Soccer (`podio_manual`/`soccer_torneo`) es un **id sintético** (`'eq-' + nombre del EQUIPO`, columna `equipo` de `participantes`), NO el `id` real del participante (`sb-2026-soc-XXX`). La siembra de certificados nunca funcionaba para Soccer — ni siquiera para el propio podio — porque buscaba por `id` real. Se agregó una rama específica para `categoriaCorta === 'soc'`: correlaciona por la columna `equipo`, y usa "todos los aprobados de la categoría" como pool (Soccer no tiene `bracket_general` propio — las llaves las arma el juez a mano cada ronda, no hay un pool acotable de la misma forma).
+- **Resetear bracket vs. despublicar podio — separados a propósito** (pedido explícito de Raku tras notar que probar brackets de prueba le borraba podios reales de RESULTADOS): `resetearBracketGeneralHelper`/`resetearTorneoSoccerHelper` ya **no** borran `podio_manual` como efecto secundario — resetear es para volver a jugar la categoría (ej. se sorteó mal), no debería hacer desaparecer de golpe el resultado que el público ya está viendo. Nueva acción `despublicarPodio` (borra `podio_manual` + desmarca `podio_publicado`) es la única forma de quitar un resultado de RESULTADOS ahora, disparada por el botón "🗑️ Quitar de Resultados" en RESULTADOS mismo (no en PANEL-BRACKET).
+
+#### GENERAR-CERTIFICADOS
+- Soporta `?categoria=ms_a` en la URL (llegando desde el botón de RESULTADOS): mapea el código corto a nombre completo con un `CATEGORIA_MAP_CORTO` local (espejo del de `Code.gs`), hace scroll + resalta el bloque (`.cat-resaltada`, clase temporal ~2.2s).
+- **Oculta por defecto lo ya generado** (pedido de Raku viendo la UI con 8/8 "Listo" ocupando espacio sin necesidad): por defecto solo se ven categorías con algo pendiente, y dentro de cada categoría solo las filas sin diploma. Botón "👁 Mostrar completados" / "🙈 Ocultar completados" (persistido en `localStorage`, key `sucrebot_certs_mostrar_completados`) para revisar/reabrir algo ya generado. Los índices de fila (`generarUno`/`previewItem`) usan `items.indexOf(item)` sobre el array completo, no la posición dentro de la vista filtrada — ojo si se toca este archivo, es fácil romper el mapeo fila↔persona si se re-indexa mal.
+
+#### `cache: 'no-store'` faltante en varias páginas (bug real, encontrado probando)
+Síntoma reportado por Raku: "salieron participantes del sheet antiguo" en PANEL-BRACKET al armar un bracket. Causa: `gasGet`/`fetch()` de lecturas GET a Code.gs sin `cache:'no-store'` — el navegador podía servir una respuesta vieja desde su caché HTTP normal (mismo caso en cualquier página con este patrón, no relacionado al Service Worker). Corregido en **CRONOMETRO, PANEL-CALIFICACION, MANILLAS, PANEL-BRACKET**. RESULTADOS ya se escribió bien desde el principio en esta misma sesión. **Pendiente revisar** si INSECTOS/ESCANER/otras páginas con `fetch(GAS...)` propio tienen el mismo problema — no se auditaron todas.
+
+#### Principios nuevos
+- **Un flujo de UI ya construido en el frontend (botón, placeholder, comentario) no garantiza que el backend lo soporte** — antes de asumir que algo "no funciona" o "está mal", verificar si el backend realmente tiene la acción que ese botón llama. El caso del sorteo manual llevaba tiempo con el botón listo y sin backend.
+- **Verificar contra la API en vivo antes de escribir una corrección "obvia"** — el primer intento de restaurar el podio real de Soccer sobreescrito por pruebas casi termina en adivinar el formato del id a mano; resultó que ese Sheet nuevo nunca tuvo ese dato para empezar (ver nota de migración). Comprobar antes de asumir qué se rompió.
+- **Acciones destructivas por defecto deben acotarse a lo mínimo que el usuario pidió** — `resetearBracketGeneral` borrando `podio_manual` como efecto secundario silencioso es exactamente el tipo de acoplamiento que hay que evitar: cada acción del staff debe borrar solo lo que su nombre promete.
+- **Categorías con arquitectura distinta (Soccer) necesitan revisión aparte, no asumir que la lógica de ms_a/ms_rc/bat aplica igual** — mismo patrón ya visto con brackets normales vs. TCV; ahora también con el id sintético de equipos de Soccer.
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 23 julio 2026**
+**SKILL.md actualizado por última vez: 24 julio 2026**
