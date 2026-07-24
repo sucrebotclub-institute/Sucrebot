@@ -471,6 +471,17 @@
           </div>
         </div>
 
+        <div class="panel-card" id="cardNumJueces" style="display:none">
+          <div class="panel-card-title">Jueces</div>
+          <div style="font-size:.8rem;color:var(--text-dim);margin-bottom:12px;">
+            Cantidad de jueces que calificarán esta categoría en simultáneo, cada uno desde su propio dispositivo.
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <input type="number" id="numJuecesInput" min="1" max="10" style="width:80px;padding:8px 10px;border-radius:8px;border:1px solid var(--panel-border2);background:var(--panel-bg2);color:var(--text-main);font-family:'DM Mono';font-size:1rem;text-align:center;">
+            <button class="btn btn-outline btn-sm" onclick="guardarNumJueces()">💾 Guardar</button>
+          </div>
+        </div>
+
       </config-grid>
 
       <div class="btn-row" style="margin-top:24px;justify-content:flex-end">
@@ -508,9 +519,7 @@
     <!-- Barra selector de juez (dev e bai) -->
     <div id="juezBar" style="display:none;align-items:center;gap:10px;background:var(--panel-bg2);border:1px solid var(--panel-border2);border-radius:12px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;">
       <span style="font-family:'Orbitron';font-size:.6rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;white-space:nowrap;">👤 Juez activo:</span>
-      <button id="btnJuez0" onclick="cambiarJuez(0)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
-      <button id="btnJuez1" onclick="cambiarJuez(1)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
-      <button id="btnJuez2" onclick="cambiarJuez(2)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
+      <div id="juezBarBtns" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;"></div>
     </div>
 
     <!-- Cronómetro LK Fase 1 -->
@@ -612,9 +621,7 @@
     <!-- Barra juez para fase final -->
     <div id="juezBarFinal" style="display:none;align-items:center;gap:10px;background:var(--panel-bg2);border:1px solid var(--panel-border2);border-radius:12px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;">
       <span style="font-family:'Orbitron';font-size:.6rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;white-space:nowrap;">👤 Juez activo:</span>
-      <button id="btnJuezF0" onclick="cambiarJuez(0)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
-      <button id="btnJuezF1" onclick="cambiarJuez(1)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
-      <button id="btnJuezF2" onclick="cambiarJuez(2)" style="flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid var(--panel-border2);cursor:pointer;transition:all .2s;"></button>
+      <div id="juezBarFinalBtns" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;"></div>
     </div>
     <div class="calificar-split">
       <div class="lista-robots">
@@ -684,7 +691,7 @@
       <div style="overflow-x:auto">
         <table class="ranking-table">
           <thead>
-            <tr><th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th><th>Eliminatoria</th><th>J1 / J2 / J3 Final</th><th>TOTAL FINAL</th><th>ESTADO</th></tr>
+            <tr><th>#</th><th>ROBOT</th><th>INSTITUCIÓN</th><th>Eliminatoria</th><th id="thJuecesFinalCol">J1 / J2 / J3 Final</th><th>TOTAL FINAL</th><th>ESTADO</th></tr>
           </thead>
           <tbody id="rankingTbodyFinal">
             <tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">🏆</div><p>Aún no hay calificaciones de la ronda final.</p></div></td></tr>
@@ -786,26 +793,22 @@ const DEV_CRITERIOS = [
   { nombre: 'Documentación y material de apoyo',    descripcion: 'Calidad y organización de informes, diagramas, planos y material gráfico', peso: 5 },
 ];
 
-// Jueces para dev (3 dispositivos simultáneos)
-const DEV_JUECES = [
-  { email: 'juez1@dev', nombre: 'Juez 1 — Dev' },
-  { email: 'juez2@dev', nombre: 'Juez 2 — Dev' },
-  { email: 'juez3@dev', nombre: 'Juez 3 — Dev' },
-];
+// Categorías con múltiples jueces simultáneos — cantidad configurable por categoría
+// (persistida en GAS vía setEstado/getAllEstados, clave 'panel_cal_num_jueces_<cat>')
+const MULTI_JUEZ_CATS = ['bai', 'dev', 'lk'];
+const JUECES_LABEL = { bai: 'Bai', dev: 'Dev', lk: 'LK' };
+const DEFAULT_NUM_JUECES = { bai: 3, dev: 3, lk: 2 };
 
-// Jueces para bai (3 dispositivos simultáneos)
-const BAI_JUECES = [
-  { email: 'juez1@bai', nombre: 'Juez 1 — Bai' },
-  { email: 'juez2@bai', nombre: 'Juez 2 — Bai' },
-  { email: 'juez3@bai', nombre: 'Juez 3 — Bai' },
-];
-
-// Categorías con múltiples jueces simultáneos
-const LK_JUECES = [
-  { email: 'juez1@lk', nombre: 'Juez 1 — LK' },
-  { email: 'juez2@lk', nombre: 'Juez 2 — LK' },
-];
-const CATS_MULTI_JUEZ = { dev: DEV_JUECES, bai: BAI_JUECES, lk: LK_JUECES };
+function getNumJueces(cat) {
+  return (state.numJueces && state.numJueces[cat]) || DEFAULT_NUM_JUECES[cat] || 0;
+}
+function getJueces(cat) {
+  if (!MULTI_JUEZ_CATS.includes(cat)) return null;
+  const n = getNumJueces(cat);
+  const label = JUECES_LABEL[cat] || cat.toUpperCase();
+  return Array.from({ length: n }, (_, i) => ({ email: `juez${i + 1}@${cat}`, nombre: `Juez ${i + 1} — ${label}` }));
+}
+function esMultiJuez(cat) { return MULTI_JUEZ_CATS.includes(cat); }
 
 const DEFAULTS_CRITERIOS = {
   bai: BAI_CRITERIOS,
@@ -837,6 +840,7 @@ let state = {
   calificacionesFinalPorJuez: {}, // notas final por juez bai
   selectedFinalId: null,
   podioManualOverride: null, // [id1,id2,id3]|null — ajuste manual del podio (panel-4, RANKING)
+  numJueces: {}, // { bai: n, dev: n, lk: n } — cantidad de jueces configurada por categoría (leída de GAS)
 };
 
 // ── CRONÓMETRO LK ─────────────────────────────────────────────
@@ -1054,7 +1058,6 @@ function cerrarModal() { document.getElementById('confirmModal').classList.remov
 document.getElementById('modalConfirmBtn').onclick = () => { const cb = _modalCb; cerrarModal(); if (cb) cb(); };
 
 // ── HELPERS: jueces múltiples ─────────────────────────────────
-function getJueces(cat) { return CATS_MULTI_JUEZ[cat] || null; }
 function getJuezIdx(cat) {
   if (cat === 'bai') return state.baiJuezIdx;
   if (cat === 'lk')  return state.lkJuezIdx;
@@ -1066,7 +1069,6 @@ function setJuezIdx(cat, idx) {
   else state.devJuezIdx = idx;
 }
 function getJuezActivo(cat) { const j = getJueces(cat); return j ? j[getJuezIdx(cat)] : null; }
-function esMultiJuez(cat) { return !!CATS_MULTI_JUEZ[cat]; }
 
 // ── HELPERS: ¿tiene dos fases? ─────────────────────────────────
 function esDasFases(cat) { return !!CATS_DOS_FASES[cat]; }
@@ -1114,7 +1116,15 @@ async function seleccionarCategoria(cat) {
   document.getElementById('devNota').classList.toggle('show', cat === 'dev' || cat === 'bai' || cat === 'lk');
   const mostrarJuezP1 = cat === 'dev' || cat === 'bai' || cat === 'lk';
   document.getElementById('juezSelectorP1').style.display = mostrarJuezP1 ? 'block' : 'none';
-  if (mostrarJuezP1) renderJuezSelectorP1(cat);
+  if (mostrarJuezP1) {
+    try {
+      const estRes = await gasGet({ action: 'getAllEstados' });
+      const clave = estRes && estRes['panel_cal_num_jueces_' + cat];
+      state.numJueces[cat] = (clave && clave.estado && parseInt(clave.estado.n)) || DEFAULT_NUM_JUECES[cat];
+    } catch(e) { state.numJueces[cat] = DEFAULT_NUM_JUECES[cat]; }
+    renderJuezSelectorP1(cat);
+    renderConfigNumJueces(cat);
+  }
 
   state.categoria = cat;
   document.getElementById('configuracionPanel').classList.add('show');
@@ -1206,15 +1216,15 @@ async function iniciarCalificacion() {
   if (cat === 'lk') {
     state.criterios = [...LK_CRITERIOS_F1]; state.lkFase = 1;
     const juezGuardadoLk = parseInt(localStorage.getItem('sucrebot_lk_juez') || '0');
-    state.lkJuezIdx = (juezGuardadoLk >= 0 && juezGuardadoLk <= 1) ? juezGuardadoLk : 0;
+    state.lkJuezIdx = (juezGuardadoLk >= 0 && juezGuardadoLk < getNumJueces('lk')) ? juezGuardadoLk : 0;
   } else if (cat === 'bai') {
     state.criterios = BAI_CRITERIOS; state.baiFase = 1;
     const juezGuardadoBai = parseInt(localStorage.getItem('sucrebot_bai_juez') || '0');
-    state.baiJuezIdx = (juezGuardadoBai >= 0 && juezGuardadoBai <= 2) ? juezGuardadoBai : 0;
+    state.baiJuezIdx = (juezGuardadoBai >= 0 && juezGuardadoBai < getNumJueces('bai')) ? juezGuardadoBai : 0;
   } else if (cat === 'dev') {
     state.criterios = DEV_CRITERIOS;
     const juezGuardado = parseInt(localStorage.getItem('sucrebot_dev_juez') || '0');
-    state.devJuezIdx = (juezGuardado >= 0 && juezGuardado <= 2) ? juezGuardado : 0;
+    state.devJuezIdx = (juezGuardado >= 0 && juezGuardado < getNumJueces('dev')) ? juezGuardado : 0;
   } else {
     state.criterios = leerCriteriosConfig();
     if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
@@ -1340,9 +1350,6 @@ function buildPaso3() {
   document.getElementById('lkCronometroBar').classList.toggle('show', esLk);
   document.getElementById('lkFase2Trigger').style.display = esLk ? 'block' : 'none';
   document.getElementById('juezBar').style.display = esMultiJuez(cat) ? 'flex' : 'none';
-  const juecesN = getJueces(cat) ? getJueces(cat).length : 3;
-  const btn2 = document.getElementById('btnJuez2');
-  if (btn2) btn2.style.display = juecesN >= 3 ? '' : 'none';
   if (esMultiJuez(cat)) { renderJuezBar(); iniciarPollJueces(); }
 
   // Actualizar label del trigger según categoría
@@ -1530,7 +1537,7 @@ function actualizarTotal() {
 
 // ── SELECTOR DE JUEZ PASO 1 ──────────────────────────────────
 function renderJuezSelectorP1(cat) {
-  const jueces = CATS_MULTI_JUEZ[cat];
+  const jueces = getJueces(cat);
   if (!jueces) return;
   const juezIdx = getJuezIdx(cat);
   const container = document.getElementById('juezSelectorBtns');
@@ -1564,15 +1571,44 @@ function renderJuezSelectorP1(cat) {
   });
 }
 
+// ── CANTIDAD DE JUECES CONFIGURABLE ────────────────────────────
+function renderConfigNumJueces(cat) {
+  const card = document.getElementById('cardNumJueces');
+  if (!card) return;
+  if (!esMultiJuez(cat)) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  document.getElementById('numJuecesInput').value = getNumJueces(cat);
+}
+
+async function guardarNumJueces() {
+  const cat = state.categoria;
+  if (!esMultiJuez(cat)) return;
+  const input = document.getElementById('numJuecesInput');
+  let n = parseInt(input.value);
+  if (isNaN(n) || n < 1) n = 1;
+  if (n > 10) n = 10;
+  input.value = n;
+  state.numJueces[cat] = n;
+  if (getJuezIdx(cat) >= n) setJuezIdx(cat, 0);
+
+  try {
+    await gasPost({ action: 'setEstado', ruta: 'panel_cal_num_jueces_' + cat, estado: { n } });
+    toast(`✅ ${n} juez(es) configurado(s) para ${CAT_NOMBRES[cat]}`, 'success');
+  } catch(e) {
+    toast('⚠️ No se pudo guardar en el servidor (queda aplicado solo en este dispositivo)', 'error');
+  }
+  renderJuezSelectorP1(cat);
+}
+
 // ── SELECTOR DE JUEZ (dev + bai) ──────────────────────────────
 function renderJuezBar() {
   const cat = state.categoria;
   const jueces = getJueces(cat);
   const juezIdx = getJuezIdx(cat);
-  if (!jueces) return;
+  const container = document.getElementById('juezBarBtns');
+  if (!jueces || !container) return;
+  container.innerHTML = '';
   jueces.forEach((j, i) => {
-    const btn = document.getElementById(`btnJuez${i}`);
-    if (!btn) return;
     const calificados = Object.values(state.calificaciones).filter(c => {
       if (!c?.jueces) return false;
       return c.jueces.some(jj => jj.email === j.email);
@@ -1589,12 +1625,12 @@ function renderJuezBar() {
     } else {
       bg = 'var(--panel-bg3)'; color = 'var(--text-dim)'; border = 'var(--panel-border2)';
     }
+    const btn = document.createElement('button');
+    btn.style.cssText = `flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid ${border};cursor:pointer;transition:all .2s;background:${bg};color:${color};font-weight:${activo ? '700' : '400'};`;
     btn.innerHTML = `${j.nombre}<br><span style="font-size:.6rem;opacity:.8">${calificados}/${total} calificados</span>${extraLabel}`;
-    btn.style.background = bg;
-    btn.style.color = color;
-    btn.style.borderColor = border;
-    btn.style.fontWeight = activo ? '700' : '400';
     btn.title = ocupadoRemoto ? 'Otro dispositivo está usando este juez' : '';
+    btn.onclick = () => cambiarJuez(i);
+    container.appendChild(btn);
   });
 }
 
@@ -1606,11 +1642,21 @@ function cambiarJuez(idx) {
   setJuezIdx(cat, idx);
   localStorage.setItem('sucrebot_' + cat + '_juez', idx);
   publicarJuezActivo(cat, idx);
-  state.selectedId = null;
-  document.getElementById('formCal').style.display = 'none';
-  document.getElementById('emptyFormState').style.display = 'block';
-  renderJuezBar();
-  renderListaRobots();
+
+  const esFinal = cat === 'bai' && state.baiFase === 2;
+  if (esFinal) {
+    state.selectedFinalId = null;
+    document.getElementById('formCalFinal').style.display = 'none';
+    document.getElementById('emptyFormStateFinal').style.display = 'block';
+    renderJuezBarFinal();
+    renderListaFinal(state.participantes.filter(p => state.baiFinalistas.includes(p.id)));
+  } else {
+    state.selectedId = null;
+    document.getElementById('formCal').style.display = 'none';
+    document.getElementById('emptyFormState').style.display = 'block';
+    renderJuezBar();
+    renderListaRobots();
+  }
 }
 
 async function guardarCalificacion() {
@@ -1870,9 +1916,9 @@ function volverAConfigurar() {
     ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === state.categoria));
     document.getElementById('lkNota').classList.toggle('show', state.categoria === 'lk');
     document.getElementById('devNota').classList.toggle('show', state.categoria === 'dev' || state.categoria === 'bai');
-    const mostrarJuezV = state.categoria === 'dev' || state.categoria === 'bai';
+    const mostrarJuezV = esMultiJuez(state.categoria);
     document.getElementById('juezSelectorP1').style.display = mostrarJuezV ? 'block' : 'none';
-    if (mostrarJuezV) renderJuezSelectorP1(state.categoria);
+    if (mostrarJuezV) { renderJuezSelectorP1(state.categoria); renderConfigNumJueces(state.categoria); }
     document.getElementById('configuracionPanel').classList.add('show');
     document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
     document.getElementById('btnIniciarCal').disabled = false;
@@ -1944,8 +1990,7 @@ async function cargarRanking(soloRerenderizar) {
   const esMultiRank = esMultiJuez(cat);
   document.getElementById('thF1Col').textContent = esLk ? 'F1 (70)' : (esBai ? 'Eliminatoria' : (esMultiRank ? 'PROMEDIO' : 'PUNTOS'));
   document.getElementById('thF2Col').style.display = (dosFases || esMultiRank) ? '' : 'none';
-  if (esBai) document.getElementById('thF2Col').textContent = 'J1 / J2 / J3';
-  else if (esMultiRank) document.getElementById('thF2Col').textContent = 'J1 / J2 / J3';
+  if (esMultiRank) document.getElementById('thF2Col').textContent = getJueces(cat).map((j, i) => 'J' + (i + 1)).join(' / ');
 
   try {
     if (!soloRerenderizar) {
@@ -2290,9 +2335,10 @@ function buildPasoFinal() {
 
 function renderJuezBarFinal() {
   const juezIdx = state.baiJuezIdx;
-  BAI_JUECES.forEach((j, i) => {
-    const btn = document.getElementById(`btnJuezF${i}`);
-    if (!btn) return;
+  const container = document.getElementById('juezBarFinalBtns');
+  if (!container) return;
+  container.innerHTML = '';
+  getJueces('bai').forEach((j, i) => {
     const calificados = state.baiFinalistas.filter(pid => {
       const cal = state.calificacionesFinal?.[pid];
       return (cal?.jueces || []).some(jj => jj.email === j.email);
@@ -2308,19 +2354,19 @@ function renderJuezBarFinal() {
     } else {
       bg = 'var(--panel-bg3)'; color = 'var(--text-dim)'; border = 'var(--panel-border2)';
     }
+    const btn = document.createElement('button');
+    btn.style.cssText = `flex:1;min-width:120px;padding:10px 14px;font-family:'Orbitron';font-size:.6rem;letter-spacing:1.5px;border-radius:8px;border:2px solid ${border};cursor:pointer;transition:all .2s;background:${bg};color:${color};font-weight:${activo ? '700' : '400'};`;
     btn.innerHTML = `${j.nombre}<br><span style="font-size:.6rem;opacity:.8">${calificados}/${state.baiFinalistas.length} calificados</span>${extraLabel}`;
-    btn.style.background = bg;
-    btn.style.color = color;
-    btn.style.borderColor = border;
-    btn.style.fontWeight = activo ? '700' : '400';
     btn.title = ocupadoRemoto ? 'Otro dispositivo está usando este juez' : '';
+    btn.onclick = () => cambiarJuez(i);
+    container.appendChild(btn);
   });
 }
 
 function renderListaFinal(finalistas) {
   const lista = document.getElementById('robotsListFinal');
   lista.innerHTML = '';
-  const juezActivo = BAI_JUECES[state.baiJuezIdx];
+  const juezActivo = getJueces('bai')[state.baiJuezIdx];
   const calificados = finalistas.filter(p => (state.calificacionesFinal?.[p.id]?.jueces || []).some(j => j.email === juezActivo.email)).length;
   document.getElementById('progCalFinal').textContent = calificados;
   document.getElementById('progTotalFinal').textContent = finalistas.length;
@@ -2347,7 +2393,7 @@ function seleccionarRobotFinal(id) {
   state.selectedFinalId = id;
   const p = state.participantes.find(x => x.id === id);
   if (!p) return;
-  const juezActivo = BAI_JUECES[state.baiJuezIdx];
+  const juezActivo = getJueces('bai')[state.baiJuezIdx];
   const cal = state.calificacionesFinal?.[id];
   const calJuez = (state.calificacionesFinalPorJuez?.[id] || {})[juezActivo.email];
   let notasGuardadas = {};
@@ -2404,7 +2450,7 @@ async function guardarCalificacionFinal() {
   const id = state.selectedFinalId;
   if (!id) return;
   const p = state.participantes.find(x => x.id === id);
-  const juezActivo = BAI_JUECES[state.baiJuezIdx];
+  const juezActivo = getJueces('bai')[state.baiJuezIdx];
   const inputs = document.querySelectorAll('.criterio-nota-input-final');
   let suma = 0, valido = true;
   const notasJson = { fase: 'final' };
@@ -2448,7 +2494,7 @@ async function guardarCalificacionFinal() {
 }
 
 function siguienteRobotFinal() {
-  const juezActivo = BAI_JUECES[state.baiJuezIdx];
+  const juezActivo = getJueces('bai')[state.baiJuezIdx];
   const finalistas = state.participantes.filter(p => state.baiFinalistas.includes(p.id));
   const pendientes = finalistas.filter(p => !(state.calificacionesFinal?.[p.id]?.jueces || []).some(j => j.email === juezActivo.email));
   const idx = pendientes.findIndex(p => p.id === state.selectedFinalId);
@@ -2463,6 +2509,8 @@ async function cargarRankingFinal() {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
     const rankingFinal = res.ranking || [];
     document.getElementById('rankingStatsFinal').textContent = `${rankingFinal.length} finalistas evaluados`;
+    document.getElementById('thJuecesFinalCol').textContent =
+      getJueces('bai').map((j, i) => 'J' + (i + 1)).join(' / ') + ' Final';
     const tbody = document.getElementById('rankingTbodyFinal');
     tbody.innerHTML = '';
     if (!rankingFinal.length) {
@@ -2475,7 +2523,7 @@ async function cargarRankingFinal() {
       const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
       const pct = maxScore > 0 ? (r.total / maxScore) * 100 : 0;
       const jueces = r.jueces || [];
-      const notasJueces = BAI_JUECES.map(j => {
+      const notasJueces = getJueces('bai').map(j => {
         const jData = jueces.find(jj => jj.email === j.email);
         return jData ? jData.total.toFixed(1) : '—';
       }).join(' / ');
@@ -2578,14 +2626,15 @@ async function guardarPodioFinal() {
   } catch(e) { toast('Error', 'error'); loading(false); }
 }
 function generarExcelPodioFinal(rankingFinal) {
-  const header = ['#','Robot','Nombre','Institución','Eliminatoria','J1 Final','J2 Final','J3 Final','TOTAL FINAL'];
+  const juecesBai = getJueces('bai');
+  const header = ['#','Robot','Nombre','Institución','Eliminatoria', ...juecesBai.map((j, i) => `J${i + 1} Final`), 'TOTAL FINAL'];
   const rows = [header];
   rankingFinal.forEach((r, i) => {
     const jueces = r.jueces || [];
     const elim = state.calificaciones[r.id];
     rows.push([i+1, r.robot||r.nombre, r.nombre, r.institucion||'',
       elim ? parseFloat((elim.fase1Total||elim.total||0).toFixed(1)) : '—',
-      ...BAI_JUECES.map(j => { const jd = jueces.find(jj => jj.email===j.email); return jd ? parseFloat(jd.total.toFixed(1)) : '—'; }),
+      ...juecesBai.map(j => { const jd = jueces.find(jj => jj.email===j.email); return jd ? parseFloat(jd.total.toFixed(1)) : '—'; }),
       parseFloat(r.total).toFixed(2)]);
   });
 
