@@ -535,7 +535,7 @@ async function elegirCategoria(cat,ev){
     if(modoOffline){
       lista=OfflineExcel.getParticipantes(cat);
     }else{
-      const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}));
+      const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}),{cache:'no-store'});
       const todos=await r.json();
       lista=(Array.isArray(todos)?todos:(todos.participantes||[])).filter(p=>p.categoria===cat&&p.aprobado==='APROBADO');
     }
@@ -620,14 +620,14 @@ function tiempoASegundos(t){if(!t||t==='—'||t==='DNF'||t==='00:00:00')return I
 
 async function bloquearCategoria(cat){const user=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');try{const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'bloquearCategoria',categoria:cat,usuario:user.email})});const d=await r.json();return d.ok;}catch(e){return false;}}
 async function desbloquearCategoria(cat){try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearCategoria',categoria:cat})});}catch(e){}}
-async function verificarBloqueo(cat){try{const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getCategoriasActivas'}));const a=await r.json();return a.find(c=>String(c.categoria||'').toLowerCase().trim()===String(cat||'').toLowerCase().trim());}catch(e){return null;}}
+async function verificarBloqueo(cat){try{const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getCategoriasActivas'}),{cache:'no-store'});const a=await r.json();return a.find(c=>String(c.categoria||'').toLowerCase().trim()===String(cat||'').toLowerCase().trim());}catch(e){return null;}}
 
 function iniciarPolling(){
   if(pollingInterval)clearInterval(pollingInterval);
   pollingInterval=setInterval(async()=>{
     if(!categoriaActual)return;
     try{
-      const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getActivo',ruta:getRuta()||'general'}));
+      const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getActivo',ruta:getRuta()||'general'}),{cache:'no-store'});
       const data=await r.json();if(!data?.raw||data.raw==='')return;
       let nuevoP;try{nuevoP=JSON.parse(data.raw);}catch{return;}
       if(cronoInterval)return;
@@ -1130,7 +1130,7 @@ document.addEventListener('componentsLoaded',async function(){
       if(typeof mostrarBotonSerial==='function')setTimeout(()=>window.mostrarBotonSerial(CATS_SERIAL.includes(catGuardada)),300);
       cargarEstado(catGuardada);if(!modoOffline)iniciarPolling();setStep(3);showToast('✅ Categoría "'+catGuardada+'" restaurada');
       try{
-        const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}));const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
+        const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}),{cache:'no-store'});const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
         presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
       }catch(e){console.warn('No se pudieron recargar presentes tras F5:',e);}
     }
