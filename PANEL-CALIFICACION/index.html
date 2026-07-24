@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
   <script src="../shared/js/config.js"></script>
+  <script src="../shared/js/vendor/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
@@ -676,7 +677,6 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="setStep(5)">← Volver a Final</button>
-          <button class="btn btn-primary btn-sm" onclick="exportarExcelFinal()">📊 Exportar CSV</button>
           <button class="btn btn-green btn-sm" onclick="guardarPodioFinal()">🏆 Guardar Podio Final</button>
           <button class="btn btn-terminar btn-sm" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
         </div>
@@ -704,7 +704,6 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="irACalificar()">← Volver a Calificar</button>
-          <button class="btn btn-primary btn-sm" onclick="exportarExcel()">📊 Exportar CSV</button>
           <button class="btn btn-green btn-sm" id="btnTop3Ranking" style="display:none" onclick="abrirSelectorFinalistas()">🏆 Seleccionar TOP 3 Finalistas →</button>
           <button class="btn btn-outline btn-sm" onclick="abrirModalPodioManualCal()">✏️ Ajustar Podio</button>
           <button class="btn btn-outline btn-sm" id="btnQuitarPodioManualCal" style="display:none" onclick="quitarPodioManualCal()">↩️ Quitar ajuste manual</button>
@@ -2164,6 +2163,11 @@ async function guardarPodio() {
           } catch(e) {}
         }
       }
+
+      loading(true, 'GENERANDO EXCEL...');
+      try { await generarExcelPodio(state.categoria); }
+      catch(e) { console.warn('No se pudo generar el Excel del podio', e); toast('⚠️ Podio guardado, pero falló la generación del Excel', 'error'); }
+
       loading(false);
       if (podioPublicadoOk) {
         toast(`✅ ${totalDiplomas} diplomas guardados`, 'success');
@@ -2174,10 +2178,8 @@ async function guardarPodio() {
   );
 }
 
-async function exportarExcel() {
-  if (!state.rankingData.length) { toast('No hay datos', 'error'); return; }
-  loading(true, 'GENERANDO CSV...');
-  const cat      = state.categoria;
+async function generarExcelPodio(cat) {
+  if (!state.rankingData.length) return;
   const esLk     = cat === 'lk';
   const esBai    = cat === 'bai';
   const dosFases = esLk || esBai;
@@ -2258,12 +2260,17 @@ async function exportarExcel() {
     rows.push(row);
   });
 
-  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'ranking_' + CAT_NOMBRES[cat] + '_' + Date.now() + '.csv'; a.click();
-  URL.revokeObjectURL(url);
-  loading(false);
+  const podioHeader = ['Posici\u00F3n', 'Robot', 'Nombre', 'Instituci\u00F3n', 'Total'];
+  const TITULOS_PODIO = ['\uD83E\uDD47 1er lugar', '\uD83E\uDD48 2do lugar', '\uD83E\uDD49 3er lugar'];
+  const podioRows = [podioHeader];
+  state.rankingData.slice(0, 3).forEach((r, i) => {
+    podioRows.push([TITULOS_PODIO[i] || (i + 1), r.robot || r.nombre, r.nombre, r.institucion || '', parseFloat(r.total).toFixed(2)]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(podioRows), 'Podio');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Ranking Completo');
+  XLSX.writeFile(wb, 'SucreBot2026_' + CAT_NOMBRES[cat].replace(/\s+/g, '_') + '_Podio_' + Date.now() + '.xlsx');
 }
 
 // ── PASO 5: RONDA FINAL (bai) ────────────────────────────────
@@ -2552,6 +2559,10 @@ async function guardarPodioFinal() {
           }
         }
 
+        loading(true, 'GENERANDO EXCEL...');
+        try { generarExcelPodioFinal(rankingFinal); }
+        catch(e) { console.warn('No se pudo generar el Excel del podio final', e); toast('⚠️ Podio guardado, pero falló la generación del Excel', 'error'); }
+
         loading(false);
         if (podioPublicadoOk) {
           toast('✅ Podio final guardado', 'success');
@@ -2562,28 +2573,29 @@ async function guardarPodioFinal() {
     );
   } catch(e) { toast('Error', 'error'); loading(false); }
 }
-async function exportarExcelFinal() {
-  loading(true, 'GENERANDO CSV...');
-  try {
-    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
-    const ranking = res.ranking || [];
-    const header = ['#','Robot','Nombre','Institución','Eliminatoria','J1 Final','J2 Final','J3 Final','TOTAL FINAL'];
-    const rows = [header];
-    ranking.forEach((r, i) => {
-      const jueces = r.jueces || [];
-      const elim = state.calificaciones[r.id];
-      rows.push([i+1, r.robot||r.nombre, r.nombre, r.institucion||'',
-        elim ? (elim.fase1Total||elim.total||0).toFixed(1) : '—',
-        ...BAI_JUECES.map(j => { const jd = jueces.find(jj => jj.email===j.email); return jd ? jd.total.toFixed(1) : '—'; }),
-        parseFloat(r.total).toFixed(2)]);
-    });
-        const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
-    const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url; a.download=`ranking_bai_final_${Date.now()}.csv`; a.click();
-    URL.revokeObjectURL(url);
-  } catch(e) { toast('Error', 'error'); }
-  loading(false);
+function generarExcelPodioFinal(rankingFinal) {
+  const header = ['#','Robot','Nombre','Institución','Eliminatoria','J1 Final','J2 Final','J3 Final','TOTAL FINAL'];
+  const rows = [header];
+  rankingFinal.forEach((r, i) => {
+    const jueces = r.jueces || [];
+    const elim = state.calificaciones[r.id];
+    rows.push([i+1, r.robot||r.nombre, r.nombre, r.institucion||'',
+      elim ? parseFloat((elim.fase1Total||elim.total||0).toFixed(1)) : '—',
+      ...BAI_JUECES.map(j => { const jd = jueces.find(jj => jj.email===j.email); return jd ? parseFloat(jd.total.toFixed(1)) : '—'; }),
+      parseFloat(r.total).toFixed(2)]);
+  });
+
+  const podioHeader = ['Posición', 'Robot', 'Nombre', 'Institución', 'Total Final'];
+  const TITULOS_PODIO = ['🥇 1er lugar', '🥈 2do lugar', '🥉 3er lugar'];
+  const podioRows = [podioHeader];
+  rankingFinal.slice(0, 3).forEach((r, i) => {
+    podioRows.push([TITULOS_PODIO[i] || (i + 1), r.robot || r.nombre, r.nombre, r.institucion || '', parseFloat(r.total).toFixed(2)]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(podioRows), 'Podio');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Ranking Final Completo');
+  XLSX.writeFile(wb, 'SucreBot2026_Bailarin_PodioFinal_' + Date.now() + '.xlsx');
 }
 
 // ── INIT ──────────────────────────────────────────────────────
