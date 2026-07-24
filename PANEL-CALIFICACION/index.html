@@ -705,6 +705,7 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="irACalificar()">← Volver a Calificar</button>
           <button class="btn btn-green btn-sm" id="btnTop3Ranking" style="display:none" onclick="abrirSelectorFinalistas()">🏆 Seleccionar TOP 3 Finalistas →</button>
+          <button class="btn btn-ranking btn-sm" id="btnIrRankingFinalDesdeElim" style="display:none" onclick="irARankingFinal()">📊 Ir a Ranking Final →</button>
           <button class="btn btn-outline btn-sm" onclick="abrirModalPodioManualCal()">✏️ Ajustar Podio</button>
           <button class="btn btn-outline btn-sm" id="btnQuitarPodioManualCal" style="display:none" onclick="quitarPodioManualCal()">↩️ Quitar ajuste manual</button>
           <button class="btn btn-green btn-sm" onclick="guardarPodio()">🏆 Guardar Podio</button>
@@ -1965,9 +1966,12 @@ async function cargarRanking(soloRerenderizar) {
   const maxScore = state.rankingData[0]?.total || 1;
   document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[cat]}`;
   document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados` + (state.podioManualOverride ? ' · ✏️ Podio ajustado manualmente' : '');
-  // Mostrar botón TOP 3 solo para bai y solo si aún no se han elegido finalistas
+  // Mostrar botón TOP 3 solo para bai
   const btnTop3 = document.getElementById('btnTop3Ranking');
   if (btnTop3) btnTop3.style.display = (cat === 'bai') ? 'inline-flex' : 'none';
+  // Si ya se eligieron finalistas, ofrecer ir directo al Ranking Final sin tener que reabrir el selector
+  const btnIrFinal = document.getElementById('btnIrRankingFinalDesdeElim');
+  if (btnIrFinal) btnIrFinal.style.display = (cat === 'bai' && state.baiFinalistas.length) ? 'inline-flex' : 'none';
 
   const tbody = document.getElementById('rankingTbody');
   tbody.innerHTML = '';
