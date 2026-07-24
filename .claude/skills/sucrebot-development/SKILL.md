@@ -815,10 +815,10 @@ Patrón recurrente esta sesión: el primer intento de `POST /pages/builds` frecu
 ## Pending Tasks (actualizado 07 julio 2026 — noche)
 
 ### Modo Offline / Service Worker — seguimiento
-- [ ] Probar INSECTOS en vivo (offline completo: crear archivo → cortar internet → cronometrar → guardar podio → sincronizar) — construido pero no probado en vivo aún, a diferencia de CRONOMETRO
-- [ ] Probar el Service Worker en vivo (recargar página con internet cortado) en los 3 módulos donde se agregó
-- [ ] Decisión pendiente: ¿extender el Service Worker al resto del sitio (REGISTRO, INICIO, etc.) o dejarlo solo en los 3 módulos actuales?
-- [ ] Antes del evento: cada dispositivo de staff (CRONOMETRO/INSECTOS/PANEL-CALIFICACION) debe presionar "🆕 Crear archivo offline" al menos una vez CON internet, y guardar el .xlsx en un lugar reconocible (esto registra también el Service Worker)
+- [x] ~~Probar INSECTOS en vivo (offline completo)~~ — **ya no aplica: modo offline (Excel local) y Service Worker removidos de INSECTOS el 23-jul-2026**, ver sprint más abajo
+- [ ] Probar el Service Worker en vivo (recargar página con internet cortado) en los módulos donde sigue activo (CRONOMETRO, PANEL-CALIFICACION)
+- [ ] Decisión pendiente: ¿extender el Service Worker al resto del sitio (REGISTRO, INICIO, etc.) o dejarlo solo en los módulos actuales?
+- [ ] Antes del evento: cada dispositivo de staff (CRONOMETRO/PANEL-CALIFICACION) debe presionar "🆕 Crear archivo offline" al menos una vez CON internet, y guardar el .xlsx en un lugar reconocible (esto registra también el Service Worker)
 - [ ] Comunicar al equipo la regla operativa de PANEL-CALIFICACION: si se corta la luz, calificar offline sin problema, pero "Guardar Podio" solo debe presionarse cuando TODOS los jueces de esa categoría ya sincronizaron con internet
 - [ ] PANEL-BRACKET: definir/imprimir la plantilla de respaldo en papel antes del evento (decisión: sin Excel local para este módulo)
 
@@ -1053,5 +1053,23 @@ Patrón recurrente esta sesión: el primer intento de `POST /pages/builds` frecu
 
 ---
 
+### Sprint 23 jul 2026 — se elimina el modo offline de INSECTOS
+
+**Contexto**: al probar en vivo (simulado, ver principio nuevo abajo) el modo offline de INSECTOS que quedó pendiente de prueba desde el 07-jul, Raku decidió directamente eliminar el sistema offline de esta categoría en vez de seguir manteniéndolo — no quería el riesgo/complejidad para un módulo que ya no lo justifica.
+
+**Cambios en `INSECTOS/index.html`**:
+- Quitados los `<script>` de `../shared/js/vendor/xlsx.full.min.js`, `../shared/js/offline-excel.js` y `../shared/js/sw-register.js` del `<head>`.
+- Quitado el panel UI "📂 Modo Offline (sin internet)" (badge + 4 botones: Crear/Abrir archivo, Sincronizar, Modo normal) del paso 1 (PRESENTES).
+- Eliminadas las funciones `actualizarBadgeOffline`, `prepararArchivoOffline`, `activarModoOffline`, `sincronizarPendientesOffline`, `desactivarModoOffline`.
+- `cargarParticipantes()` y el guardado del podio final (`btnGuardarPodio`) vuelven a ser 100% online (sin rama `modoOffline`/`OfflineExcel`), llamando siempre a `gasPost`/`fetch` contra GAS.
+- Decisión explícita de Raku: eliminar también el Service Worker (`sw-register.js`), no solo el Excel offline — cada página registra su propio SW por separado, así que quitarlo de INSECTOS no afecta a CRONOMETRO/PANEL-CALIFICACION, que lo conservan.
+- `shared/js/offline-excel.js` y `shared/js/vendor/xlsx.full.min.js` **no se tocaron** — siguen usándose en CRONOMETRO y PANEL-CALIFICACION.
+
+**Verificación realizada**: JS extraído del HTML pasa `node --check`; grep confirma cero referencias residuales a `OfflineExcel`/`offline`/`sw-register`/`xlsx.full` en el archivo; página cargada en navegador real (servidor estático local) sin errores de consola, panel offline ausente del DOM.
+
+**Principio nuevo — probar flujos que dependen de `showSaveFilePicker`/`showOpenFilePicker` (File System Access API)**: el navegador automatizado (Browser pane) no puede operar el diálogo nativo del SO — la promesa se resuelve con `AbortError` automáticamente. Para validar el resto del flujo sin ese diálogo, se puede inyectar un shim de `window.OfflineExcel` vía `javascript_tool` (mismos métodos: `soportado`, `estaActivo`, `getParticipantes`, `guardarResultado`, `guardarPodio`, `sincronizar`) para simular "modo activo" con datos falsos y ejercitar toda la lógica de negocio downstream (selección de presentes, cronómetro, guardado, ranking) sin tocar disco real. Los diálogos `confirm()`/`alert()` nativos también se auto-suprimen en el navegador automatizado (confirm devuelve `false`) — sobreescribir `window.confirm`/`window.alert` antes de ejercitar flujos que los usan.
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 21 julio 2026**
+**SKILL.md actualizado por última vez: 23 julio 2026**
