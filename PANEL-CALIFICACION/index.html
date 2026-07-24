@@ -434,6 +434,15 @@
 
       <!-- Selector de juez paso 1 -->
       <div id="juezSelectorP1" style="display:none;margin-top:14px;background:var(--panel-bg2);border:1px solid var(--panel-border2);border-radius:12px;padding:16px 20px;">
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--panel-border2);">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-family:'Orbitron';font-size:.65rem;letter-spacing:1.5px;color:var(--cyan);text-transform:uppercase;">
+            <input type="checkbox" id="esJefeCheckbox" onchange="toggleEsJefe()" style="width:18px;height:18px;cursor:pointer;">
+            👑 Soy el Jefe de Jurado en este dispositivo
+          </label>
+          <div style="font-size:.78rem;color:var(--text-dim);margin-top:6px;">
+            El Jefe de Jurado puede configurar criterios, cantidad de jueces y guardar el podio. Los demás jueces solo califican.
+          </div>
+        </div>
         <div id="cardNumJueces" style="display:none;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--panel-border2);">
           <div style="font-family:'Orbitron';font-size:.65rem;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:8px;">🔢 ¿Cuántos jueces?</div>
           <div style="font-size:.8rem;color:var(--text-dim);margin-bottom:12px;">
@@ -470,7 +479,7 @@
           <div style="font-family:'Exo 2';font-size:.82rem;color:var(--text-dim)" id="listPreview"></div>
         </div>
 
-        <div class="panel-card">
+        <div class="panel-card" id="cardCriterios">
           <div class="panel-card-title">Criterios de Evaluación</div>
           <table class="criterios-table">
             <thead><tr><th>CRITERIO</th><th>DESCRIPCIÓN</th><th></th></tr></thead>
@@ -506,7 +515,7 @@
       </div>
       <div class="presentes-grid" id="presentesGrid"></div>
       <div class="btn-row" style="justify-content:flex-end">
-        <button class="btn btn-outline btn-sm" onclick="abrirModalPodioManualCal()">🏆 Podio Manual (sin calificar)</button>
+        <button class="btn btn-outline btn-sm" id="btnPodioManualP2" onclick="abrirModalPodioManualCal()">🏆 Podio Manual (sin calificar)</button>
         <button class="btn btn-green" id="btnIniciarCalPresentes" disabled onclick="iniciarCalificacionConPresentes()">Iniciar Calificación →</button>
       </div>
     </div>
@@ -683,8 +692,8 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="setStep(5)">← Volver a Final</button>
-          <button class="btn btn-green btn-sm" onclick="guardarPodioFinal()">🏆 Guardar Podio Final</button>
-          <button class="btn btn-terminar btn-sm" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
+          <button class="btn btn-green btn-sm" id="btnGuardarPodioFinalCal" onclick="guardarPodioFinal()">🏆 Guardar Podio Final</button>
+          <button class="btn btn-terminar btn-sm" id="btnTerminarCatP6" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -712,10 +721,10 @@
           <button class="btn btn-outline btn-sm" onclick="irACalificar()">← Volver a Calificar</button>
           <button class="btn btn-green btn-sm" id="btnTop3Ranking" style="display:none" onclick="abrirSelectorFinalistas()">🏆 Seleccionar TOP 3 Finalistas →</button>
           <button class="btn btn-ranking btn-sm" id="btnIrRankingFinalDesdeElim" style="display:none" onclick="irARankingFinal()">📊 Ir a Ranking Final →</button>
-          <button class="btn btn-outline btn-sm" onclick="abrirModalPodioManualCal()">✏️ Ajustar Podio</button>
+          <button class="btn btn-outline btn-sm" id="btnAjustarPodioCal" onclick="abrirModalPodioManualCal()">✏️ Ajustar Podio</button>
           <button class="btn btn-outline btn-sm" id="btnQuitarPodioManualCal" style="display:none" onclick="quitarPodioManualCal()">↩️ Quitar ajuste manual</button>
-          <button class="btn btn-green btn-sm" onclick="guardarPodio()">🏆 Guardar Podio</button>
-          <button class="btn btn-terminar btn-sm" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
+          <button class="btn btn-green btn-sm" id="btnGuardarPodioCal" onclick="guardarPodio()">🏆 Guardar Podio</button>
+          <button class="btn btn-terminar btn-sm" id="btnTerminarCatP4" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -840,6 +849,7 @@ let state = {
   selectedFinalId: null,
   podioManualOverride: null, // [id1,id2,id3]|null — ajuste manual del podio (panel-4, RANKING)
   numJueces: {}, // { bai: n, dev: n, lk: n } — cantidad de jueces configurada por categoría (leída de GAS)
+  esJefe: {}, // { bai: bool, dev: bool, lk: bool } — si ESTE dispositivo es el Jefe de Jurado en esa categoría (local, por dispositivo)
 };
 
 // ── CRONÓMETRO LK ─────────────────────────────────────────────
@@ -1121,8 +1131,11 @@ async function seleccionarCategoria(cat) {
       const clave = estRes && estRes['panel_cal_num_jueces_' + cat];
       state.numJueces[cat] = (clave && clave.estado && parseInt(clave.estado.n)) || DEFAULT_NUM_JUECES[cat];
     } catch(e) { state.numJueces[cat] = DEFAULT_NUM_JUECES[cat]; }
+    state.esJefe[cat] = localStorage.getItem('sucrebot_' + cat + '_jefe') === '1';
+    document.getElementById('esJefeCheckbox').checked = state.esJefe[cat];
     renderJuezSelectorP1(cat);
     renderConfigNumJueces(cat);
+    aplicarPermisosJefe(cat);
   }
 
   state.categoria = cat;
@@ -1300,6 +1313,7 @@ function buildPasoPresentes() {
   // Por defecto todos seleccionados
   state.presentes = new Set(state.participantes.map(p => p.id));
   renderPresentes();
+  aplicarPermisosJefe(cat);
 }
 
 function renderPresentes() {
@@ -1568,6 +1582,44 @@ function renderJuezSelectorP1(cat) {
     };
     container.appendChild(btn);
   });
+}
+
+// ── JEFE DE JURADO (rol local por dispositivo, gate de UI) ─────
+// No es un permiso real a nivel de servidor (el staff token es compartido
+// para todo el panel) — es un candado de interfaz para evitar que un juez
+// que solo está calificando toque por error la configuración o el podio.
+function esJefeActivo(cat) { return !!(state.esJefe && state.esJefe[cat]); }
+
+function toggleEsJefe() {
+  const cat = state.categoria;
+  if (!cat) return;
+  const checked = document.getElementById('esJefeCheckbox').checked;
+  state.esJefe[cat] = checked;
+  localStorage.setItem('sucrebot_' + cat + '_jefe', checked ? '1' : '0');
+  renderConfigNumJueces(cat);
+  aplicarPermisosJefe(cat);
+}
+
+// Controles que solo tienen sentido para el Jefe y no tienen ninguna otra
+// lógica de visibilidad propia — se muestran/ocultan 100% según el rol.
+const CONTROLES_SOLO_JEFE = ['cardCriterios', 'btnPodioManualP2', 'btnAjustarPodioCal',
+  'btnGuardarPodioCal', 'btnTerminarCatP4', 'btnGuardarPodioFinalCal', 'btnTerminarCatP6'];
+
+function aplicarPermisosJefe(cat) {
+  const jefe = esJefeActivo(cat);
+  CONTROLES_SOLO_JEFE.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = jefe ? '' : 'none';
+  });
+  // cardNumJueces (esMultiJuez) y btnTop3Ranking/btnQuitarPodioManualCal (bai / ajuste
+  // manual activo) ya deciden por su cuenta cuándo mostrarse — acá solo los restringimos
+  // más si NO sos jefe, nunca los forzamos a aparecer.
+  if (!jefe) {
+    ['cardNumJueces', 'btnTop3Ranking', 'btnQuitarPodioManualCal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
 }
 
 // ── CANTIDAD DE JUECES CONFIGURABLE ────────────────────────────
@@ -1917,7 +1969,12 @@ function volverAConfigurar() {
     document.getElementById('devNota').classList.toggle('show', state.categoria === 'dev' || state.categoria === 'bai');
     const mostrarJuezV = esMultiJuez(state.categoria);
     document.getElementById('juezSelectorP1').style.display = mostrarJuezV ? 'block' : 'none';
-    if (mostrarJuezV) { renderJuezSelectorP1(state.categoria); renderConfigNumJueces(state.categoria); }
+    if (mostrarJuezV) {
+      document.getElementById('esJefeCheckbox').checked = esJefeActivo(state.categoria);
+      renderJuezSelectorP1(state.categoria);
+      renderConfigNumJueces(state.categoria);
+      aplicarPermisosJefe(state.categoria);
+    }
     document.getElementById('configuracionPanel').classList.add('show');
     document.getElementById('btnVerRankingP1').style.display = 'inline-flex';
     document.getElementById('btnIniciarCal').disabled = false;
@@ -2016,6 +2073,7 @@ async function cargarRanking(soloRerenderizar) {
   // Si ya se eligieron finalistas, ofrecer ir directo al Ranking Final sin tener que reabrir el selector
   const btnIrFinal = document.getElementById('btnIrRankingFinalDesdeElim');
   if (btnIrFinal) btnIrFinal.style.display = (cat === 'bai' && state.baiFinalistas.length) ? 'inline-flex' : 'none';
+  aplicarPermisosJefe(cat);
 
   const tbody = document.getElementById('rankingTbody');
   tbody.innerHTML = '';
@@ -2139,7 +2197,7 @@ async function confirmarPodioManualCal() {
   aplicarOrdenPodioManual();
   setStep(4);
   await cargarRanking(true); // re-renderiza tabla ya con el orden ajustado (sin volver a pedir al GAS)
-  document.getElementById('btnQuitarPodioManualCal').style.display = 'inline-flex';
+  document.getElementById('btnQuitarPodioManualCal').style.display = esJefeActivo(state.categoria) ? 'inline-flex' : 'none';
   toast('✏️ Podio ajustado manualmente', 'success');
 
   const posiciones = state.podioManualOverride.map((id, i) => {
@@ -2510,6 +2568,7 @@ async function cargarRankingFinal() {
     document.getElementById('rankingStatsFinal').textContent = `${rankingFinal.length} finalistas evaluados`;
     document.getElementById('thJuecesFinalCol').textContent =
       getJueces('bai').map((j, i) => 'J' + (i + 1)).join(' / ') + ' Final';
+    aplicarPermisosJefe('bai');
     const tbody = document.getElementById('rankingTbodyFinal');
     tbody.innerHTML = '';
     if (!rankingFinal.length) {
