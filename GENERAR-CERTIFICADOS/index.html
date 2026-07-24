@@ -51,7 +51,8 @@
     .progreso-bar-fill { height: 100%; background: linear-gradient(90deg,#1a5ca8,#5bc8f0); border-radius: 8px; transition: width .3s; width: 0%; }
     .progreso-texto { font-family: 'DM Mono'; font-size: 11px; color: #7a7a8c; margin-top: 6px; }
 
-    .cat-block { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(26,92,168,0.08); border: 1px solid #e0e8f4; margin-bottom: 28px; overflow: hidden; }
+    .cat-block { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(26,92,168,0.08); border: 1px solid #e0e8f4; margin-bottom: 28px; overflow: hidden; transition: box-shadow .3s, border-color .3s; }
+    .cat-block.cat-resaltada { border-color: #5bc8f0; box-shadow: 0 0 0 4px rgba(91,200,240,.35), 0 2px 12px rgba(26,92,168,0.08); }
     .cat-header { display: flex; align-items: center; gap: 14px; padding: 14px 20px; background: linear-gradient(135deg,#1a3a6e,#1a5ca8); }
     .cat-nombre { font-family: 'Bebas Neue'; font-size: 1.3rem; letter-spacing: 2px; color: #fff; flex: 1; }
     .cat-chips { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -205,11 +206,34 @@ const TIPO_INTERNO = {
 
 function strVal(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
 
+// Código corto → nombre completo, para resolver el ?categoria= que llega
+// desde el botón "Generar certificados" de RESULTADOS (espejo de CATEGORIA_MAP en Code.gs).
+const CATEGORIA_MAP_CORTO = {
+  ins: 'Insectos', trp_a: 'Trepador (Amateur)', sl_a: 'Seguidor de línea ST (Amateur)',
+  sl_p: 'Seguidor de línea ST (Pro)', ms_a: 'Minisumo Autónomo', ms_rc: 'Minisumo RC',
+  bai: 'Bailarín', bat: 'Batalla', dev: 'Impacto Tecnológico', trp_p: 'Trepador (Pro)',
+  soc: 'Robot soccer', cr: 'Cubo Rubik', lk: 'Lego Kids'
+};
+
 document.addEventListener('componentsLoaded', () => {
   if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
   show('contenido-staff');
-  cargarDatos();
+  cargarDatos().then(irACategoriaDeUrl);
 });
+
+// Si se llegó con ?categoria=ms_a (link desde RESULTADOS), hace scroll y
+// resalta ese bloque para que el staff lo ubique entre las 13 categorías.
+function irACategoriaDeUrl() {
+  const corto = new URLSearchParams(location.search).get('categoria');
+  if (!corto) return;
+  const full = CATEGORIA_MAP_CORTO[corto];
+  if (!full) return;
+  const el = document.getElementById('cat-' + full.replace(/\W/g,'_'));
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.classList.add('cat-resaltada');
+  setTimeout(() => el.classList.remove('cat-resaltada'), 2200);
+}
 function show(id) { document.getElementById(id).style.display = 'block'; }
 
 async function cargarDatos() {

@@ -1852,32 +1852,22 @@ async function guardarPodio() {
   confirmar('🏆','GUARDAR PODIO',`¿Guardar el podio en el sistema?`,'Guardar','success',
     async()=>{
       loading(true,'GUARDANDO PODIO...');
-      const catNombre=CAT_INFO[state.categoria]?.gasNombre||CAT_INFO[state.categoria]?.nombre||'';
-      function datosP(id){ return state.participantes.find(x=>x.id===id)||{}; }
-
-      async function guardarCertEquipo(id,nombreFallback,tipo) {
-        const p=datosP(id);
-        if(state.tipo==='soccer'){
-          const robots=p.robots||[];
-          for(const robot of robots){
-            const nom=robot.nombre||nombreFallback;
-            await gasPost({action:'guardarCertificado',id_participante:robot.id,correo:p.correo||'',nombre:nom,nombre_completo:nom,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
-            if(robot.miembro2){
-              await gasPost({action:'guardarCertificado',id_participante:robot.id+'-m2',correo:p.correo||'',nombre:robot.miembro2,nombre_completo:robot.miembro2,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
-            }
-          }
-        } else {
-          const nom=p.sub||p.nombre||nombreFallback;
-          await gasPost({action:'guardarCertificado',id_participante:id,correo:p.correo||'',nombre:nom,nombre_completo:nom,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'});
-          if(p.miembro2){ await gasPost({action:'guardarCertificado',id_participante:id+'-m2',correo:p.correo||'',nombre:p.miembro2,nombre_completo:p.miembro2,categoria:catNombre,institucion:p.institucion||'',tipo_certificado:tipo,evento:'SucreBot 2026'}); }
-        }
-      }
       try{
-        await guardarCertEquipo(podio.primero.id,podio.primero.nombre,'GANADOR');
-        await guardarCertEquipo(podio.segundo.id,podio.segundo.nombre,'SUBCAMPEÓN');
-        if(podio.tercero) await guardarCertEquipo(podio.tercero.id,podio.tercero.nombre,'TERCER LUGAR');
-        if(podio.cuarto)  await guardarCertEquipo(podio.cuarto.id,podio.cuarto.nombre,'PARTICIPACIÓN');
-        toast('🏆 Podio guardado en certificados','success'); verPodioEnBracket();
+        // Un solo action (guardarPodioManual) para las 4 rutas que arman "podio" arriba
+        // (bracket final, todos-contra-todos, soccer, o un podio manual ya guardado):
+        // el backend usa esto tanto para marcar la categoría como "publicada" en
+        // RESULTADOS como para sembrar los certificados pendientes (podio + participación)
+        // de todos los inscritos de la categoría — ya no hace falta llamar
+        // guardarCertificado equipo por equipo desde acá.
+        const posiciones=[
+          { posicion:1, equipo_id:podio.primero.id, equipo_nombre:podio.primero.nombre },
+          { posicion:2, equipo_id:podio.segundo.id, equipo_nombre:podio.segundo.nombre }
+        ];
+        if(podio.tercero) posiciones.push({ posicion:3, equipo_id:podio.tercero.id, equipo_nombre:podio.tercero.nombre });
+        if(podio.cuarto)  posiciones.push({ posicion:4, equipo_id:podio.cuarto.id, equipo_nombre:podio.cuarto.nombre });
+        const r=await gasPost({action:'guardarPodioManual',categoria:state.categoria,posiciones});
+        if(!r.ok) throw new Error(r.error||'Error');
+        toast('🏆 Podio guardado — visible en Resultados y certificados listos para generar','success'); verPodioEnBracket();
         if(!podio.soccer) descargarImagenBracketGeneral();
         else await exportarExcelSoccer();
       }catch(e){toast('Error: '+e.message,'error');}
@@ -2084,7 +2074,7 @@ async function guardarPodioManualUI() {
   try{
     const r=await gasPost({action:'guardarPodioManual',categoria:state.categoria,posiciones});
     if(!r.ok) throw new Error(r.error||'Error');
-    toast('🏆 Podio manual guardado','success'); cerrarPodioManual(); verPodioEnBracket();
+    toast('🏆 Podio manual guardado — visible en Resultados y certificados listos para generar','success'); cerrarPodioManual(); verPodioEnBracket();
   }catch(e){ toast('Error: '+e.message,'error'); }
   loading(false);
 }

@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-  <title>SucreBot — Resultados en Vivo</title> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SucreBot — Resultados</title>
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;600&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/css/styles.css">
@@ -26,6 +26,10 @@
     .sticky-header { position: sticky; top: 0; z-index: 1000; }
     .screen { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 80vh; padding: 20px 48px 40px; background: #ffffff; }
 
+    .acceso-denegado-wrap { max-width: 600px; margin: 60px auto; }
+    .acceso-denegado { background: linear-gradient(135deg,#ff3b3b,#c41e3a); border-radius: 16px; padding: 60px 40px; text-align: center; color: #fff; }
+    .acceso-denegado h3 { font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 12px; letter-spacing: 2px; }
+
     .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-radius: 12px; box-shadow: 0 4px 12px rgba(26,92,168,0.15); flex-shrink: 0; }
     .page-header-left { display: flex; align-items: center; gap: 18px; }
     .page-header-left img { width: 56px; filter: drop-shadow(0 0 12px rgba(91,200,240,0.6)); }
@@ -39,10 +43,6 @@
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
     .cat-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; justify-content: center; }
-    .cat-group-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.18em; color: #94a3b8; font-weight: 700; text-transform: uppercase; padding: 4px 8px; background: #f1f5f9; border-radius: 6px; white-space: nowrap; flex-shrink: 0; align-self: center; border: 1px solid #e2e8f0; }
-    .cat-group-label.amateur { color: #1a5ca8; background: #e8f0ff; border-color: #c5d8ff; }
-    .cat-group-label.pro     { color: #7c3aed; background: #f3e8ff; border-color: #ddd6fe; }
-    .cat-group-label.open    { color: #b45309; background: #fef3c7; border-color: #fde68a; }
     .cat-tab { font-family: 'Exo 2', sans-serif; font-size: 0.75rem; letter-spacing: 0.02em; padding: 12px 10px; background: #2d3748; border: 2px solid #4a5568; border-radius: 8px; color: #e2e8f0; cursor: pointer; transition: all 0.25s; font-weight: 600; white-space: normal; flex: 0 0 110px; width: 110px; text-align: center; line-height: 1.3; min-height: 56px; display: flex; align-items: center; justify-content: center; }
     .cat-tab:hover { background: #3d4e63; border-color: #5bc8f0; color: #90dcff; transform: translateY(-1px); }
     .cat-tab.active { background: linear-gradient(135deg, #1a5ca8 0%, #2474cc 100%); border-color: #1a5ca8; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(26,92,168,0.3); transform: translateY(-2px); }
@@ -79,110 +79,7 @@
     .pc-2 { background: rgba(192,192,192,0.18); color: #606060; border: 2px solid rgba(192,192,192,0.55); box-shadow: 0 0 10px rgba(192,192,192,0.25); }
     .pc-3 { background: rgba(205,127,50,0.18); color: #8b4513; border: 2px solid rgba(205,127,50,0.55); box-shadow: 0 0 10px rgba(205,127,50,0.25); }
     .pc-n { background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid #e2e8f0; }
-    .td-robot { min-width: 200px; }
-    .robot-name { font-size: 1.3rem; font-weight: 700; color: #0e2a5a; letter-spacing: 0.01em; line-height: 1.2; }
-    .robot-inst { font-family: var(--font-mono); font-size: 0.7rem; color: #6a7a94; margin-top: 2px; }
-    .td-mejor { text-align: center; min-width: 150px; }
-    .tiempo-valor { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; }
-    .tiempo-valor.dnf { color: #c82020; font-size: 1.4rem; }
-    tr.pos-1 .tiempo-valor { font-size: 2.2rem; color: #b8860b; }
-    .td-ronda { min-width: 140px; }
-    .ronda-num { font-family: var(--font-mono); font-size: 0.72rem; color: #6a7a94; }
     .row-altura { height: 88px; }
-
-    .calificacion-wrap { flex: 1; overflow: auto; }
-    .calificacion-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; margin-bottom: 16px; background: linear-gradient(135deg, #1a3a6e, #1a5ca8); border-radius: 10px; }
-    .calificacion-header-icon { font-size: 1.8rem; }
-    .calificacion-header-title { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 2px; color: #ffffff; }
-    .calificacion-header-sub { font-family: var(--font-mono); font-size: 0.65rem; color: rgba(255,255,255,0.6); letter-spacing: 2px; margin-top: 2px; }
-    .calificacion-badge { margin-left: auto; background: rgba(91,200,240,0.2); border: 1px solid rgba(91,200,240,0.4); color: #5bc8f0; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 2px; padding: 5px 12px; border-radius: 20px; }
-    .score-bar-wrap { display: flex; align-items: center; gap: 10px; min-width: 200px; }
-    .score-bar-bg { flex: 1; height: 8px; background: #e8edf3; border-radius: 4px; overflow: hidden; }
-    .score-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #1a5ca8, #5bc8f0); transition: width 0.6s ease; }
-    tr.pos-1 .score-bar-fill { background: linear-gradient(90deg, #c8900a, #ffd700); }
-    tr.pos-2 .score-bar-fill { background: linear-gradient(90deg, #7a7a7a, #c0c0c0); }
-    tr.pos-3 .score-bar-fill { background: linear-gradient(90deg, #7a4a1a, #cd7f32); }
-    .score-num { font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.06em; color: #1a5ca8; font-weight: 700; min-width: 60px; text-align: right; }
-    tr.pos-1 .score-num { font-size: 2.2rem; color: #b8860b; }
-    tr.pos-2 .score-num { color: #606060; }
-    tr.pos-3 .score-num { color: #8b4513; }
-
-    /* ── Bracket normal (ms_a, ms_rc, bat) ── */
-    .bracket-wrap { flex: 1; overflow-x: auto; }
-    .bracket-title { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 2px; color: #1a3a6e; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .bracket-sin-datos { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; gap: 12px; }
-    .bracket-sin-datos-icon { font-size: 3.5rem; opacity: 0.25; }
-    .bracket-sin-datos-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.15em; color: #6a7a94; }
-    .bracket-fases { display: flex; gap: 40px; min-width: max-content; padding-bottom: 8px; }
-    .bracket-fase { display: flex; flex-direction: column; gap: 16px; min-width: 260px; }
-    .fase-nombre { font-family: var(--font-mono); font-size: 0.7rem; color: #1a5ca8; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; text-align: center; margin-bottom: 8px; padding: 6px; background: rgba(26,92,168,0.08); border-radius: 8px; }
-    .fase-nombre.fase-3er { color: #9a3412; background: rgba(205,127,50,0.1); }
-    .partido-card { background: #ffffff; border: 2px solid #e0e7ef; border-radius: 12px; padding: 14px; box-shadow: 0 2px 12px rgba(26,92,168,0.08); transition: all 0.2s; }
-    .partido-card:hover { border-color: #5bc8f0; box-shadow: 0 4px 16px rgba(91,200,240,0.2); transform: translateY(-2px); }
-    .partido-card.finalizado { border-color: #00d95f; background: #f0fdf4; }
-    .partido-card.pendiente  { border-color: #e0e7ef; }
-    .partido-card.bye        { background: #fffbeb; border: 2px dashed #fbbf24; text-align: center; }
-    .partido-equipo-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; background: #f8f9fa; margin-bottom: 6px; border: 1px solid #e0e7ef; }
-    .partido-equipo-row:last-of-type { margin-bottom: 0; }
-    .partido-equipo-row.ganador { background: #e8f5e9; border-color: #00d95f; }
-    .partido-equipo-row.perdedor { opacity: 0.5; }
-    .partido-equipo-nombre { font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; color: #1a3a6e; }
-    .partido-equipo-score { font-family: 'Orbitron', monospace; font-size: 1.2rem; font-weight: 900; color: #1a5ca8; }
-    .partido-equipo-row.ganador .partido-equipo-score { color: #00a046; }
-    .partido-estado { text-align: center; margin-top: 8px; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; font-weight: 700; }
-    .partido-estado.fin { color: #00a046; }
-    .partido-estado.pend { color: #94a3b8; }
-    .partido-estado.espera { color: #cbd5e1; font-style: italic; }
-    .bye-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: #1a3a6e; }
-    .bye-badge { display: inline-block; background: #fbbf24; color: #78350f; font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 10px; border-radius: 10px; font-weight: 700; margin-top: 4px; }
-
-    /* ── Soccer: vista de grupos ── */
-    .soc-wrap { flex: 1; overflow-y: auto; }
-    .soc-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; margin-bottom: 20px; background: linear-gradient(135deg, #0e4a20, #1a7a38); border-radius: 10px; }
-    .soc-header-icon { font-size: 1.8rem; }
-    .soc-header-title { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 2px; color: #ffffff; }
-    .soc-header-sub { font-family: var(--font-mono); font-size: 0.65rem; color: rgba(255,255,255,0.6); letter-spacing: 2px; margin-top: 2px; }
-    .soc-formato-badge { margin-left: auto; background: rgba(46,204,113,0.2); border: 1px solid rgba(46,204,113,0.4); color: #2ecc71; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 2px; padding: 5px 12px; border-radius: 20px; }
-    .soc-grupos-grid { display: flex; flex-direction: column; gap: 24px; }
-    .soc-grupo-card { background: #f8faff; border: 1.5px solid #c5d8ff; border-radius: 12px; padding: 18px; }
-    .soc-grupo-titulo { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 2px; color: #1a5ca8; font-weight: 700; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-    .soc-grupo-titulo::before { content: ''; width: 3px; height: 14px; background: #1a5ca8; border-radius: 2px; display: inline-block; }
-    .soc-partidos-lista { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-    .soc-partido-row { display: flex; align-items: center; gap: 10px; background: #ffffff; border: 1.5px solid #e0e7ef; border-radius: 8px; padding: 10px 14px; }
-    .soc-partido-row.finalizado { border-color: #00d95f; background: #f0fdf4; }
-    .soc-partido-row.en-espera { opacity: 0.6; }
-    .soc-partido-eq { flex: 1; font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; color: #1a3a6e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .soc-partido-eq.ganador { color: #00a046; }
-    .soc-partido-eq.perdedor { opacity: 0.5; }
-    .soc-partido-vs { font-family: var(--font-mono); font-size: 0.65rem; color: #94a3b8; flex-shrink: 0; }
-    .soc-partido-marcador { font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 900; color: #1a5ca8; flex-shrink: 0; min-width: 60px; text-align: center; }
-    .soc-partido-marcador.fin { color: #00a046; }
-    .soc-partido-estado { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 1px; padding: 2px 8px; border-radius: 6px; flex-shrink: 0; }
-    .soc-estado-fin { background: rgba(0,212,95,0.12); color: #00a046; }
-    .soc-estado-pend { background: rgba(91,200,240,0.1); color: #5bc8f0; }
-    .soc-estado-esp { background: rgba(148,163,184,0.1); color: #94a3b8; }
-    /* Tabla de posiciones soccer */
-    .soc-tabla { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    .soc-tabla th { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 1px; color: #6a7a94; text-transform: uppercase; text-align: center; padding: 6px 8px; border-bottom: 1.5px solid #c5d8ff; background: rgba(26,92,168,0.04); }
-    .soc-tabla td { text-align: center; padding: 8px; color: #1a3a6e; border-bottom: 1px solid #e0e7ef; }
-    .soc-tabla tr:first-child td { background: rgba(0,212,95,0.05); font-weight: 700; }
-    .soc-tabla .soc-tnombre { text-align: left !important; font-weight: 700; }
-    .soc-tabla .soc-tpos { font-family: 'Orbitron', monospace; font-weight: 700; color: #1a5ca8; font-size: 0.75rem; }
-    .soc-tabla .soc-tpts { font-family: 'Orbitron', monospace; font-weight: 900; color: #00a046; font-size: 0.9rem; }
-    /* Fase final soccer */
-    .soc-fase-final { background: linear-gradient(135deg, #0e2a5a, #1a3a6e); border-radius: 12px; padding: 18px; margin-top: 8px; }
-    .soc-fase-final-titulo { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 2px; color: #5bc8f0; margin-bottom: 14px; }
-    .soc-partido-final { background: rgba(255,255,255,0.07); border: 1.5px solid rgba(91,200,240,0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
-    .soc-partido-final.finalizado { border-color: rgba(0,212,95,0.5); background: rgba(0,212,95,0.06); }
-    .soc-partido-final-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 8px; text-transform: uppercase; }
-    .soc-partido-final-equipos { display: flex; align-items: center; gap: 10px; }
-    .soc-partido-final-eq { flex: 1; font-family: 'Exo 2', sans-serif; font-size: 0.95rem; font-weight: 700; color: #e8eaf2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .soc-partido-final-eq.ganador { color: #2ecc71; }
-    .soc-partido-final-eq.perdedor { opacity: 0.5; }
-    .soc-partido-final-vs { font-family: var(--font-mono); font-size: 0.65rem; color: rgba(255,255,255,0.3); flex-shrink: 0; }
-    .soc-partido-final-score { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 900; color: #5bc8f0; flex-shrink: 0; min-width: 70px; text-align: center; }
-    .soc-partido-final-score.fin { color: #2ecc71; }
-    .soc-por-def { font-family: var(--font-mono); font-size: 0.65rem; color: rgba(255,255,255,0.3); text-align: center; padding: 12px; }
 
     /* Podio compartido */
     .podio-inline { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px; padding: 20px; background: linear-gradient(135deg, #0e2a5a, #1a3a6e); border-radius: 12px; }
@@ -198,6 +95,9 @@
     .podio-card.bronce .podio-card-nombre { color: #cd7f32; }
     .podio-card-label  { font-family: var(--font-mono); font-size: 0.55rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
 
+    .btn-generar-cert { display: inline-flex; align-items: center; gap: 8px; font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; color: #ffffff; background: linear-gradient(135deg,#7c3aed,#4c1d95); padding: 12px 22px; border-radius: 10px; text-decoration: none; transition: all .2s; box-shadow: 0 3px 10px rgba(124,58,237,.25); }
+    .btn-generar-cert:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(124,58,237,.35); }
+
     .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; gap: 16px; }
     .empty-icon { font-size: 4rem; opacity: 0.2; filter: grayscale(1); }
     .empty-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.18em; color: #6a7a94; font-weight: 600; }
@@ -208,12 +108,6 @@
 
     .cat-select-mobile { display: none; width: 100%; margin-bottom: 20px; background: #2d3748; border: 2px solid #1a5ca8; color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 1rem; font-weight: 700; padding: 14px 16px; border-radius: 10px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235bc8f0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 44px; }
     .cat-select-mobile option { background: #1a3a6b; color: #ffffff; }
-    .cat-select-mobile optgroup { background: #0e2a5a; color: #5bc8f0; font-weight: 700; }
-
-    .lk-fases-wrap { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .lk-fase-badge { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 20px; font-weight: 700; }
-    .lk-fase-badge.f1 { background: rgba(240,165,0,0.15); color: #f0a500; border: 1px solid rgba(240,165,0,0.35); }
-    .lk-fase-badge.f2 { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.35); }
 
     .inst-ranking-wrap { flex: 1; overflow: auto; }
     .inst-ranking-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; margin-bottom: 16px; background: linear-gradient(135deg, #0e2a5a, #1a3a6e); border-radius: 10px; }
@@ -249,12 +143,9 @@
       .screen { padding: 12px 16px 32px; }
       .cat-tabs { display: none; }
       .cat-select-mobile { display: block; }
-      .bracket-fases { gap: 20px; }
-      .bracket-fase { min-width: 200px; }
       .page-header { padding: 16px; }
       .page-header-title { font-size: 2rem; }
       .ronda-label { font-size: 1.4rem; }
-      .score-bar-wrap { min-width: 120px; }
       .td-inst-bar { display: none; }
     }
     body.fs-activo .sticky-header { display: none !important; }
@@ -263,63 +154,6 @@
   </style>
 </head>
 <body>
-  <style>
-    .resultados-gate-overlay {
-      position: fixed; inset: 0; z-index: 100000;
-      background: linear-gradient(135deg, #0e2a5a 0%, #1a5ca8 55%, #0e2a5a 100%);
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px;
-    }
-    .resultados-gate-card {
-      max-width: 460px; text-align: center;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(91,200,240,0.25);
-      border-top: 3px solid #5bc8f0; border-radius: 16px; padding: 44px 34px;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.4);
-    }
-    .resultados-gate-icon { font-size: 48px; margin-bottom: 18px; }
-    .resultados-gate-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 0.05em;
-      color: #fff; margin-bottom: 14px;
-    }
-    .resultados-gate-text {
-      font-family: 'Exo 2', sans-serif; font-size: 15px; line-height: 1.7;
-      color: rgba(255,255,255,0.85); margin-bottom: 10px;
-    }
-    .resultados-gate-tag {
-      display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
-      background: rgba(91,200,240,0.1); border: 1px solid rgba(91,200,240,0.3);
-      color: #5bc8f0; font-family: 'Orbitron', monospace; font-size: 9px;
-      font-weight: 700; letter-spacing: 2.5px; padding: 6px 16px; border-radius: 20px;
-      text-transform: uppercase;
-    }
-  </style>
-  <script>
-    // ── Control de acceso público a Resultados ──────────────────────────
-    // Cambiar a "true" el día antes del evento (o cuando Raku lo indique).
-    const RESULTADOS_ABIERTO_AL_PUBLICO = true;
-    const RESULTADOS_STAFF_TOKEN = 'SucreBot2026-CMI-Sucre-x7k9mQ';
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const esStaff = localStorage.getItem('sucrebot_staff_token') === RESULTADOS_STAFF_TOKEN;
-      if (RESULTADOS_ABIERTO_AL_PUBLICO || esStaff) return;
-
-      const main = document.querySelector('main.screen');
-      if (main) main.style.display = 'none';
-
-      const overlay = document.createElement('div');
-      overlay.className = 'resultados-gate-overlay';
-      overlay.innerHTML =
-        '<div class="resultados-gate-card">' +
-          '<div class="resultados-gate-icon">🏆</div>' +
-          '<div class="resultados-gate-title">Resultados en Vivo</div>' +
-          '<p class="resultados-gate-text">Esta sección estará disponible próximamente, poco antes del evento.</p>' +
-          '<p class="resultados-gate-text">¡Vuelve pronto para seguir la competencia en tiempo real!</p>' +
-          '<div class="resultados-gate-tag">📅 SucreBot 2026 — 16 de julio</div>' +
-        '</div>';
-      document.body.appendChild(overlay);
-    });
-  </script>
-
   <div class="ausp-splash-overlay" id="auspSplashOverlay">
     <div class="ausp-splash-tag">Presentado por</div>
     <div class="ausp-splash-logo-box" id="auspSplashLogoBox"></div>
@@ -362,165 +196,98 @@
   </div>
 
   <main class="screen">
-    <div id="autoRotateBar" style="display:flex;justify-content:center;margin:0 0 10px;">
-      <button id="btnAutoRotate" onclick="toggleAutoRotate()" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;padding:6px 16px;border-radius:20px;border:1.5px solid #cbd5e1;background:#fff;color:#64748b;cursor:pointer;transition:all .2s;">🔄 Rotación automática (3 min): OFF</button>
-    </div>
-    <div class="page-header">
-      <div class="page-header-left">
-        <img src="../shared/images/robot-campeon.png" alt="Robot campeón">
-        <div>
-          <div class="live-badge"><span class="live-dot"></span>EN VIVO</div>
-          <div class="page-header-title">SUCREBOT</div>
-          <div class="page-header-sub">SUCREBOT SYSTEM · CRONOMETRAJE EN TIEMPO REAL</div>
+    <div id="acceso-denegado" style="display:none;">
+      <div class="acceso-denegado-wrap">
+        <div class="acceso-denegado">
+          <div style="font-size:64px;margin-bottom:20px;">🔒</div>
+          <h3>ACCESO RESTRINGIDO</h3>
+          <p>Solo personal autorizado del staff.</p>
         </div>
       </div>
-      <div class="page-header-right">
-        <div class="ronda-label" id="tv-ronda">RONDA 1</div>
-        <div class="cat-label" id="tv-cat">—</div>
-      </div>
     </div>
 
-    <div class="cat-tabs" id="cat-tabs"></div>
-
-    <select class="cat-select-mobile" id="cat-select-mobile" onchange="seleccionarManual(this.value)">
-      <option value="">Selecciona una categoría...</option>
-      <optgroup label="🏅 AMATEUR">
-        <option value="ins">Insectos</option>
-        <option value="trp_a">Trepador (Amateur)</option>
-        <option value="sl_a">Seguidor ST (Amateur)</option>
-      </optgroup>
-      <optgroup label="🏆 PRO">
-        <option value="sl_p">Seguidor ST (Pro)</option>
-        <option value="ms_a">Minisumo Autónomo</option>
-        <option value="ms_rc">Minisumo RC</option>
-        <option value="bai">Bailarín</option>
-        <option value="bat">Batalla</option>
-        <option value="trp_p">Trepador (Pro)</option>
-        <option value="soc">Robot Soccer</option>
-      </optgroup>
-      <optgroup label="🌟 OPEN">
-        <option value="cr">Cubo Rubik</option>
-        <option value="lk">Lego Kids</option>
-        <option value="dev">Impacto Tecnológico</option>
-      </optgroup>
-      <option value="instituciones">🏆 Ranking Instituciones</option>
-    </select>
-
-    <div class="tabla-wrap" id="tv-tabla-wrap">
-      <div class="empty-state">
-        <div class="empty-icon">🏁</div>
-        <div class="empty-text">ESPERANDO RESULTADOS...</div>
+    <div id="contenido-staff" style="display:none;">
+      <div id="autoRotateBar" style="display:flex;justify-content:center;margin:0 0 10px;">
+        <button id="btnAutoRotate" onclick="toggleAutoRotate()" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;padding:6px 16px;border-radius:20px;border:1.5px solid #cbd5e1;background:#fff;color:#64748b;cursor:pointer;transition:all .2s;">🔄 Rotación automática (3 min): OFF</button>
       </div>
-    </div>
+      <div class="page-header">
+        <div class="page-header-left">
+          <img src="../shared/images/robot-campeon.png" alt="Robot campeón">
+          <div>
+            <div class="live-badge"><span class="live-dot"></span>STAFF</div>
+            <div class="page-header-title">RESULTADOS</div>
+            <div class="page-header-sub">SUCREBOT SYSTEM · PODIOS PUBLICADOS</div>
+          </div>
+        </div>
+        <div class="page-header-right">
+          <div class="ronda-label" id="tv-ronda">PODIO</div>
+          <div class="cat-label" id="tv-cat">—</div>
+        </div>
+      </div>
 
-    <div class="tv-footer">
-      <div class="tv-footer-left">SUCREBOT SYSTEM</div>
-      <div class="tv-footer-right" id="tv-hora">00:00:00</div>
+      <div class="cat-tabs" id="cat-tabs"></div>
+
+      <select class="cat-select-mobile" id="cat-select-mobile" onchange="seleccionarManual(this.value)">
+        <option value="">Selecciona una categoría...</option>
+      </select>
+
+      <div class="tabla-wrap" id="tv-tabla-wrap">
+        <div class="empty-state">
+          <div class="empty-icon">🏁</div>
+          <div class="empty-text">AÚN NO HAY PODIOS PUBLICADOS</div>
+        </div>
+      </div>
+
+      <div class="tv-footer">
+        <div class="tv-footer-left">SUCREBOT SYSTEM</div>
+        <div class="tv-footer-right" id="tv-hora">00:00:00</div>
+      </div>
     </div>
   </main>
 
   <div data-include="../shared/components/footer.html"></div>
 
   <script>
-    const JSON_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/RESULTADOS/resultados.json';
-    const GAS_URL  = CONFIG.GAS_URL();
+    const GAS_URL = CONFIG.GAS_URL();
 
-    // soc YA NO está en CATS_BRACKET — tiene su propio flujo
-    const CATS_CALIFICACION = new Set(['bai', 'dev', 'lk']);
-    const CATS_BRACKET      = new Set(['ms_a', 'ms_rc', 'bat']);
-    const CATS_SOCCER       = new Set(['soc']);
+    // Solo se usa para traducir el código corto de una categoría (ej. 'ms_a')
+    // a su nombre visible — la lista de tabs ya no es fija, se arma dinámicamente
+    // a partir de lo que devuelva getPodioPublicado.
+    const RUTAS_NOMBRE = {
+      ins: 'Insectos', trp_a: 'Trepador (Amateur)', sl_a: 'Seguidor ST (Amateur)',
+      sl_p: 'Seguidor ST (Pro)', ms_a: 'Minisumo Autónomo', ms_rc: 'Minisumo RC',
+      bai: 'Bailarín', bat: 'Batalla', trp_p: 'Trepador (Pro)', soc: 'Robot Soccer',
+      cr: 'Cubo Rubik', lk: 'Lego Kids', dev: 'Impacto Tecnológico'
+    };
 
-    const CAT_ICONO   = { ms_a: '🤖', ms_rc: '🕹️', bat: '⚔️' };
-    const CAT_ICON    = { bai: '🕺', dev: '💡', lk: '🧱' };
-    const CAT_MAX_SCORE = { bai: 100, dev: 100, lk: 100 };
-
-    const GRUPOS = [
-      { label: '🏅 AMATEUR', clase: 'amateur', rutas: [
-          { ruta: 'ins',   nombre: 'Insectos' },
-          { ruta: 'trp_a', nombre: 'Trepador (Amateur)' },
-          { ruta: 'sl_a',  nombre: 'Seguidor ST (Amateur)' }
-        ]
-      },
-      { label: '🏆 PRO', clase: 'pro', rutas: [
-          { ruta: 'sl_p',  nombre: 'Seguidor ST (Pro)' },
-          { ruta: 'ms_a',  nombre: 'Minisumo Autónomo' },
-          { ruta: 'ms_rc', nombre: 'Minisumo RC' },
-          { ruta: 'bai',   nombre: 'Bailarín' },
-          { ruta: 'bat',   nombre: 'Batalla' },
-          { ruta: 'trp_p', nombre: 'Trepador (Pro)' },
-          { ruta: 'soc',   nombre: 'Robot Soccer' }
-        ]
-      },
-      { label: '🌟 OPEN', clase: 'open', rutas: [
-          { ruta: 'cr',  nombre: 'Cubo Rubik' },
-          { ruta: 'lk',  nombre: 'Lego Kids' },
-          { ruta: 'dev', nombre: 'Impacto Tecnológico' }
-        ]
-      }
-    ];
-
-    const RUTAS_NOMBRE = {};
-    GRUPOS.forEach(g => g.rutas.forEach(r => { RUTAS_NOMBRE[r.ruta] = r.nombre; }));
-
-    function claseAlterna(pos) { return pos % 2 === 0 ? 'row-par' : 'row-impar'; }
-    function tiempoASegundos(t) { if (!t || t === '—' || t === 'DNF' || t === '00:00:00') return Infinity; const p = t.split(':').map(Number); return p[0] * 60 + p[1] + p[2] / 100; }
-    function tiempoValido(t) { return t && t !== '—' && t !== 'DNF' && t !== '00:00:00'; }
     function hora() { return new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
     setInterval(() => { document.getElementById('tv-hora').textContent = hora(); }, 1000);
     document.getElementById('tv-hora').textContent = hora();
 
-    let datosJSON       = null;
-    let categoriaActiva = null;
-    let rutasConDatos   = [];
-    let ultimoTs        = 0;
-    const CACHE_KEY     = 'sucrebot_res_cache';
-    const bracketCache  = { ms_a: null, ms_rc: null, bat: null };
-    let soccerTorneo    = null;  // cache del torneo soccer
-    let soccerTs        = 0;
-
-    try {
-      const raw = localStorage.getItem(CACHE_KEY);
-      if (raw) {
-        const cached = JSON.parse(raw);
-        if (cached && cached.resultados) {
-          datosJSON = cached;
-          ultimoTs = cached.ts || 0;
-          // Alimentar bracketCache y soccer desde el cache
-          if (cached.bracket) {
-            ['ms_a','ms_rc','bat'].forEach(function(cat) {
-              bracketCache[cat] = cached.bracket[cat] || null;
-            });
-          }
-          if (cached.soccer !== undefined) soccerTorneo = cached.soccer || null;
-          renderTabs(); actualizarVista();
-        }
-      }
-    } catch(e) {}
-
-    function categoriaTieneDatos(ruta) {
-      if (ruta === 'instituciones') return datosJSON && datosJSON.ranking_instituciones && datosJSON.ranking_instituciones.length > 0;
-      if (CATS_BRACKET.has(ruta)) { const b = bracketCache[ruta]; return b && b.fases && b.fases.length > 0; }
-      if (CATS_SOCCER.has(ruta))  return soccerTorneo !== null;
-      const datos = datosJSON && datosJSON.resultados && datosJSON.resultados[ruta];
-      if (!datos || datos.length === 0) return false;
-      if (CATS_CALIFICACION.has(ruta)) return datos.some(d => (parseFloat(d.total) || 0) > 0);
-      return datos.some(d => tiempoValido(d.tiempo) || d.tiempo === 'DNF');
+    async function fetchJSON(action, params) {
+      const qs = new URLSearchParams(Object.assign({ action: action }, params || {})).toString();
+      const r = await fetch(GAS_URL + '?' + qs, { cache: 'no-store' });
+      return r.json();
     }
+
+    let categoriaActiva  = null;
+    let publicados       = [];   // [{categoria, timestamp}]
+    let ultimoPublicadosKey = '';
 
     function renderTabs() {
       const container = document.getElementById('cat-tabs');
+      const sel = document.getElementById('cat-select-mobile');
       let html = '';
-      GRUPOS.forEach(grupo => {
-        grupo.rutas.forEach(({ ruta, nombre }) => {
-          const tieneDatos = categoriaTieneDatos(ruta);
-          html += `<button class="cat-tab ${tieneDatos ? 'tiene-datos' : ''} ${categoriaActiva === ruta ? 'active' : ''}" data-ruta="${ruta}" onclick="seleccionarManual('${ruta}')">${nombre}</button>`;
-        });
+      let selHtml = '<option value="">Selecciona una categoría...</option>';
+      publicados.forEach(function(p) {
+        const nombre = RUTAS_NOMBRE[p.categoria] || p.categoria;
+        html += `<button class="cat-tab tiene-datos ${categoriaActiva === p.categoria ? 'active' : ''}" data-ruta="${p.categoria}" onclick="seleccionarManual('${p.categoria}')">${nombre}</button>`;
+        selHtml += `<option value="${p.categoria}">${nombre}</option>`;
       });
-      const instActiva = categoriaActiva === 'instituciones';
-      const instDatos  = categoriaTieneDatos('instituciones');
-      html += `<button class="cat-tab tab-instituciones ${instDatos ? 'tiene-datos' : ''} ${instActiva ? 'active' : ''}" data-ruta="instituciones" onclick="seleccionarManual('instituciones')">🏆 Ranking Instituciones</button>`;
+      html += `<button class="cat-tab tab-instituciones ${categoriaActiva === 'instituciones' ? 'active' : ''}" data-ruta="instituciones" onclick="seleccionarManual('instituciones')">🏆 Ranking Instituciones</button>`;
+      selHtml += `<option value="instituciones">🏆 Ranking Instituciones</option>`;
       container.innerHTML = html;
-      rutasConDatos = Object.keys(RUTAS_NOMBRE).filter(categoriaTieneDatos);
+      if (sel) { sel.innerHTML = selHtml; sel.value = categoriaActiva || ''; }
     }
 
     function seleccionarCategoria(ruta) {
@@ -528,25 +295,31 @@
       document.querySelectorAll('.cat-tab').forEach(t => t.classList.toggle('active', t.dataset.ruta === ruta));
       const sel = document.getElementById('cat-select-mobile');
       if (sel) sel.value = ruta;
-      if (ruta === 'instituciones')         renderizarInstituciones();
-      else if (CATS_BRACKET.has(ruta))      renderizarBracketGeneral(ruta);
-      else if (CATS_SOCCER.has(ruta))       renderizarSoccer();
-      else if (CATS_CALIFICACION.has(ruta)) renderizarCalificacion(ruta);
-      else                                   renderizarTabla(ruta);
+      if (ruta === 'instituciones') renderizarInstituciones();
+      else renderizarPodio(ruta);
     }
 
-    function seleccionarManual(ruta) { seleccionarCategoria(ruta); if (typeof autoRotateOn !== 'undefined' && autoRotateOn) iniciarAutoRotate(); }
+    function seleccionarManual(ruta) {
+      if (!ruta) return;
+      seleccionarCategoria(ruta);
+      if (typeof autoRotateOn !== 'undefined' && autoRotateOn) iniciarAutoRotate();
+    }
 
     function mostrarVacio() {
-      document.getElementById('tv-tabla-wrap').innerHTML = `<div class="empty-state"><div class="empty-icon">🏁</div><div class="empty-text">ESPERANDO RESULTADOS...</div></div>`;
+      document.getElementById('tv-ronda').textContent = 'PODIO';
+      document.getElementById('tv-cat').textContent   = '—';
+      document.getElementById('tv-tabla-wrap').innerHTML = `<div class="empty-state"><div class="empty-icon">🏁</div><div class="empty-text">AÚN NO HAY PODIOS PUBLICADOS</div></div>`;
     }
 
     // ── RANKING INSTITUCIONES ──────────────────────────────────────
-    function renderizarInstituciones() {
+    async function renderizarInstituciones() {
       document.getElementById('tv-ronda').textContent = 'RANKING';
       document.getElementById('tv-cat').textContent   = 'INSTITUCIONES';
-      const wrap    = document.getElementById('tv-tabla-wrap');
-      const ranking = (datosJSON && datosJSON.ranking_instituciones) || [];
+      const wrap = document.getElementById('tv-tabla-wrap');
+      let ranking = [];
+      try { const data = await fetchJSON('getRankingInstituciones'); ranking = (data && data.ranking) || []; }
+      catch(e) { console.error('Error al cargar ranking de instituciones:', e); }
+      if (categoriaActiva !== 'instituciones') return; // el staff cambió de tab mientras cargaba
       if (ranking.length === 0) {
         wrap.innerHTML = `<div class="inst-ranking-wrap"><div class="inst-ranking-header"><span class="inst-ranking-header-icon">🏆</span><div><div class="inst-ranking-header-title">RANKING INSTITUCIONES/CLUBES</div><div class="inst-ranking-header-sub">PUNTOS POR PODIO · 1º=10 · 2º=5 · 3º=1</div></div></div><div class="empty-state"><div class="empty-icon">🏛️</div><div class="empty-text">AÚN NO HAY PODIOS REGISTRADOS</div></div></div>`;
         return;
@@ -554,7 +327,7 @@
       const maxPts = ranking[0].puntos || 1;
       const filas = ranking.map((inst, i) => {
         const pos = i + 1;
-        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : claseAlterna(pos);
+        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : (pos % 2 === 0 ? 'row-par' : 'row-impar');
         const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
         const emoji     = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
         const pct       = Math.round((inst.puntos / maxPts) * 100);
@@ -568,244 +341,31 @@
       wrap.innerHTML = `<div class="inst-ranking-wrap"><div class="inst-ranking-header"><span class="inst-ranking-header-icon">🏆</span><div><div class="inst-ranking-header-title">RANKING INSTITUCIONES/CLUBES</div><div class="inst-ranking-header-sub">PUNTOS POR PODIO · 1º=10 · 2º=5 · 3º=1</div></div><div class="inst-ranking-puntos-info"><span class="inst-pts-badge oro">🥇 10 pts</span><span class="inst-pts-badge plata">🥈 5 pts</span><span class="inst-pts-badge bronce">🥉 1 pt</span></div></div><table><thead><tr><th class="c">#</th><th>Institución / Club</th><th class="c">Puntos</th><th>Progreso</th></tr></thead><tbody>${filas}</tbody></table></div>`;
     }
 
-    // ── BRACKET GENERAL (ms_a, ms_rc, bat) ───────────────────────
-    function renderizarBracketGeneral(ruta) {
+    // ── PODIO PUBLICADO (top 3 de una categoría) ────────────────────
+    async function renderizarPodio(ruta) {
       const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
-      const icono     = CAT_ICONO[ruta] || '🏆';
-      document.getElementById('tv-ronda').textContent = 'BRACKET';
+      document.getElementById('tv-ronda').textContent = 'PODIO';
       document.getElementById('tv-cat').textContent   = nombreCat;
-      const wrap    = document.getElementById('tv-tabla-wrap');
-      const bracket = bracketCache[ruta];
-      if (!bracket || !bracket.fases || bracket.fases.length === 0) {
-        wrap.innerHTML = `<div class="bracket-wrap"><div class="bracket-title">${icono} ${nombreCat}</div><div class="bracket-sin-datos"><div class="bracket-sin-datos-icon">${icono}</div><div class="bracket-sin-datos-text">BRACKET AÚN NO GENERADO</div></div></div>`;
-        return;
-      }
-      const faseFinal  = bracket.fases.find(f => f.nombre === 'FINAL');
-      const partidoFin = faseFinal?.partidos?.find(p => p.estado === 'FINALIZADO' && p.ganador_id);
-      const fase3er    = bracket.fases.find(f => f.nombre === '3ER LUGAR');
-      const partido3er = fase3er?.partidos?.[0];
-      const fasesHTML = bracket.fases.map(fase => {
-        const es3er = fase.nombre === '3ER LUGAR';
-        const partidosHTML = fase.partidos.map(p => {
-          if (p.tipo === 'BYE') return `<div class="partido-card bye"><div class="bye-nombre">${p.equipo_a_nombre || p.equipoNombre || '—'}</div><div class="bye-badge">BYE — Pasa directo</div></div>`;
-          const finalizado = p.estado === 'FINALIZADO';
-          const sinEquipos = !p.equipo_a_id && !p.equipo_b_id;
-          if (sinEquipos) return `<div class="partido-card pendiente"><div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div><div class="partido-equipo-row"><span class="partido-equipo-nombre" style="color:#cbd5e1;">Por definir</span></div><div class="partido-estado espera">Esperando ganadores</div></div>`;
-          let scoreA = '', scoreB = '';
-          if (finalizado && p.marcador && p.marcador !== '—') { const m = String(p.marcador).match(/^(\d+)-(\d+)/); if (m) { scoreA = m[1]; scoreB = m[2]; } }
-          const claseA = finalizado ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
-          const claseB = finalizado ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
-          const estadoHTML = finalizado ? `<div class="partido-estado fin">✓ ${p.marcador || 'FINALIZADO'}</div>` : `<div class="partido-estado pend">Pendiente</div>`;
-          return `<div class="partido-card ${finalizado ? 'finalizado' : 'pendiente'}"><div class="partido-equipo-row ${claseA}"><span class="partido-equipo-nombre">${p.equipo_a_nombre || '—'}</span>${scoreA ? `<span class="partido-equipo-score">${scoreA}</span>` : ''}</div><div class="partido-equipo-row ${claseB}"><span class="partido-equipo-nombre">${p.equipo_b_nombre || '—'}</span>${scoreB ? `<span class="partido-equipo-score">${scoreB}</span>` : ''}</div>${estadoHTML}</div>`;
-        }).join('');
-        return `<div class="bracket-fase"><div class="${es3er ? 'fase-nombre fase-3er' : 'fase-nombre'}">${fase.nombre}</div>${partidosHTML}</div>`;
-      }).join('');
-      let podioHTML = '';
-      // ── Podio desde TODOS CONTRA TODOS (tabla de puntos) ──
-      const faseTCV = bracket.fases.find(f => f.nombre === 'TODOS CONTRA TODOS');
-      if (faseTCV && faseTCV.partidos.every(p => p.estado === 'FINALIZADO')) {
-        // Calcular tabla de posiciones localmente desde los partidos del TCV
-        const tablaTCV = {};
-        faseTCV.partidos.forEach(p => {
-          if (!tablaTCV[p.equipo_a_id]) tablaTCV[p.equipo_a_id] = { nombre: p.equipo_a_nombre, puntos: 0, jugados: 0 };
-          if (!tablaTCV[p.equipo_b_id]) tablaTCV[p.equipo_b_id] = { nombre: p.equipo_b_nombre, puntos: 0, jugados: 0 };
-          if (p.estado === 'FINALIZADO' && p.ganador_id) {
-            tablaTCV[p.equipo_a_id].jugados++; tablaTCV[p.equipo_b_id].jugados++;
-            if (p.ganador_id === p.equipo_a_id) tablaTCV[p.equipo_a_id].puntos += 3;
-            else tablaTCV[p.equipo_b_id].puntos += 3;
-          }
-        });
-        const listaTCV = Object.values(tablaTCV).sort((a,b) => b.puntos - a.puntos);
-        if (listaTCV.length >= 2) {
-          const medals = ['🥇','🥈','🥉'];
-          const labels = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
-          const classes = ['oro','plata','bronce'];
-          const cards = listaTCV.slice(0,3).map((e,i) =>
-            `<div class="podio-card ${classes[i]}"><div class="podio-card-icon">${medals[i]}</div><div class="podio-card-nombre">${e.nombre}</div><div class="podio-card-label">${labels[i]}</div></div>`
-          ).join('');
-          podioHTML = `<div class="podio-inline"><div class="podio-inline-title">🏆 PODIO — ${nombreCat.toUpperCase()}</div>${cards}</div>`;
-        }
-      } else if (partidoFin) {
-        const ganId = partidoFin.ganador_id;
-        const ganN  = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_a_nombre : partidoFin.equipo_b_nombre;
-        const perN  = ganId === partidoFin.equipo_a_id ? partidoFin.equipo_b_nombre : partidoFin.equipo_a_nombre;
-        let bronce = '';
-        if (partido3er && partido3er.estado === 'FINALIZADO' && partido3er.ganador_id) {
-          const bId = partido3er.ganador_id;
-          const bN  = bId === partido3er.equipo_a_id ? partido3er.equipo_a_nombre : partido3er.equipo_b_nombre;
-          bronce = `<div class="podio-card bronce"><div class="podio-card-icon">🥉</div><div class="podio-card-nombre">${bN}</div><div class="podio-card-label">TERCER LUGAR</div></div>`;
-        } else if (partido3er && partido3er.estado === 'PENDIENTE') {
-          bronce = `<div class="podio-card bronce" style="opacity:.5;"><div class="podio-card-icon">🥉</div><div class="podio-card-nombre" style="font-size:.85rem;">${partido3er.equipo_a_nombre} vs ${partido3er.equipo_b_nombre}</div><div class="podio-card-label">3ER LUGAR — POR JUGAR</div></div>`;
-        } else {
-          // Fallback: leer del podio_manual del JSON
-          const podioMan = (datosJSON && datosJSON.podio_manual && datosJSON.podio_manual[ruta]) || [];
-          const terceroMan = podioMan.find(function(p) { return p.posicion === 3; });
-          if (terceroMan) {
-            bronce = `<div class="podio-card bronce"><div class="podio-card-icon">🥉</div><div class="podio-card-nombre">${terceroMan.equipo_nombre}</div><div class="podio-card-label">TERCER LUGAR</div></div>`;
-          }
-        }
-        podioHTML = `<div class="podio-inline"><div class="podio-inline-title">🏆 PODIO — ${nombreCat.toUpperCase()}</div><div class="podio-card oro"><div class="podio-card-icon">🥇</div><div class="podio-card-nombre">${ganN}</div><div class="podio-card-label">GANADOR</div></div><div class="podio-card plata"><div class="podio-card-icon">🥈</div><div class="podio-card-nombre">${perN}</div><div class="podio-card-label">SUBCAMPEÓN</div></div>${bronce}</div>`;
-      }
-      wrap.innerHTML = `<div class="bracket-wrap"><div class="bracket-title">${icono} ${nombreCat} — Bracket</div><div class="bracket-fases">${fasesHTML}</div>${podioHTML}</div>`;
-    }
-
-    // ── SOCCER — llaves flexibles por ronda ─────────────────────────
-    function renderizarSoccer() {
-      document.getElementById('tv-ronda').textContent = 'SOCCER';
-      document.getElementById('tv-cat').textContent   = 'Robot Soccer';
       const wrap = document.getElementById('tv-tabla-wrap');
-
-      if (!soccerTorneo) {
-        wrap.innerHTML = `<div class="soc-wrap"><div class="soc-header"><span class="soc-header-icon">⚽</span><div><div class="soc-header-title">ROBOT SOCCER</div><div class="soc-header-sub">TORNEO DE LLAVES</div></div></div><div class="empty-state"><div class="empty-icon">⚽</div><div class="empty-text">TORNEO AÚN NO GENERADO</div></div></div>`;
+      let podio = [];
+      try { const data = await fetchJSON('getPodioManual', { categoria: ruta }); podio = (data && data.podio) || []; }
+      catch(e) { console.error('Error al cargar podio:', e); }
+      if (categoriaActiva !== ruta) return; // el staff cambió de tab mientras cargaba
+      if (podio.length === 0) {
+        wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">AÚN NO HAY PODIO GUARDADO</div></div>`;
         return;
       }
-
-      const partidos     = soccerTorneo.partidos || [];
-      const tabla        = soccerTorneo.tabla    || {};
-      const rondas       = [...new Set(partidos.map(p => Number(p.ronda)))].sort((a, b) => a - b);
-      const rondaActual  = soccerTorneo.ronda_actual || rondas[rondas.length - 1];
-
-      function renderPartidoFila(p) {
-        const esFin    = p.estado === 'FINALIZADO';
-        const sinEquip = !p.equipo_a_id || !p.equipo_b_id;
-        const clA = esFin ? (p.ganador_id === p.equipo_a_id ? 'ganador' : 'perdedor') : '';
-        const clB = esFin ? (p.ganador_id === p.equipo_b_id ? 'ganador' : 'perdedor') : '';
-        const marcadorStr = esFin && p.marcador ? p.marcador : '';
-        const badgeHtml = esFin
-          ? `<span class="soc-partido-estado soc-estado-fin">✓ FIN</span>`
-          : sinEquip
-          ? `<span class="soc-partido-estado soc-estado-esp">EN ESPERA</span>`
-          : `<span class="soc-partido-estado soc-estado-pend">PENDIENTE</span>`;
-        return `<div class="soc-partido-row ${esFin ? 'finalizado' : sinEquip ? 'en-espera' : ''}">
-          <span class="soc-partido-eq ${clA}">${p.equipo_a_nombre || '— Por definir —'}</span>
-          <span class="soc-partido-vs">VS</span>
-          <span class="soc-partido-marcador ${esFin ? 'fin' : ''}">${marcadorStr || '—'}</span>
-          <span class="soc-partido-vs">VS</span>
-          <span class="soc-partido-eq ${clB}" style="text-align:right">${p.equipo_b_nombre || '— Por definir —'}</span>
-          ${badgeHtml}
+      const medals  = ['🥇','🥈','🥉'];
+      const labels  = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
+      const classes = ['oro','plata','bronce'];
+      const cards = podio.filter(p => p.posicion >= 1 && p.posicion <= 3).sort((a,b) => a.posicion - b.posicion).map(p => {
+        const i = p.posicion - 1;
+        return `<div class="podio-card ${classes[i]}"><div class="podio-card-icon">${medals[i]}</div><div class="podio-card-nombre">${p.equipo_nombre}</div><div class="podio-card-label">${labels[i]}</div></div>`;
+      }).join('');
+      wrap.innerHTML = `<div class="podio-inline"><div class="podio-inline-title">🏆 PODIO — ${nombreCat.toUpperCase()}</div>${cards}</div>
+        <div style="text-align:center;margin-top:28px;">
+          <a class="btn-generar-cert" href="../GENERAR-CERTIFICADOS/?categoria=${ruta}">🎓 Generar certificados de esta categoría →</a>
         </div>`;
-      }
-
-      function renderLlaveCard(ll, pLlave) {
-        const tablaG = tabla[ll] || [];
-        let h = `<div class="soc-grupo-card"><div class="soc-grupo-titulo">🔹 ${ll}</div><div class="soc-partidos-lista">`;
-        pLlave.forEach(p => { h += renderPartidoFila(p); });
-        h += `</div>`;
-        if (tablaG.length > 1) {
-          h += `<table class="soc-tabla"><thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>G</th><th>P</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead><tbody>`;
-          tablaG.forEach((t, i) => {
-            h += `<tr><td class="soc-tpos">${i+1}º</td><td class="soc-tnombre">${t.nombre}${i===0?' ✓':''}</td><td>${t.jugados}</td><td>${t.victorias}</td><td>${t.derrotas}</td><td>${t.favor}</td><td>${t.contra}</td><td>${t.diferencia > 0 ? '+' : ''}${t.diferencia}</td><td class="soc-tpts">${t.puntos}</td></tr>`;
-          });
-          h += `</tbody></table>`;
-        }
-        h += `</div>`;
-        return h;
-      }
-
-      let html = `<div class="soc-wrap"><div class="soc-header"><span class="soc-header-icon">⚽</span><div><div class="soc-header-title">ROBOT SOCCER</div><div class="soc-header-sub">RONDA ${rondaActual} — LLAVES</div></div><span class="soc-formato-badge">${partidos.filter(p=>p.estado==='FINALIZADO').length}/${partidos.length} partidos</span></div>`;
-
-      rondas.slice().reverse().forEach(r => {
-        const pRonda       = partidos.filter(p => Number(p.ronda) === r);
-        const llavesRonda  = [...new Set(pRonda.map(p => p.llave))];
-        const contenido    = `<div class="soc-grupos-grid">${llavesRonda.map(ll => renderLlaveCard(ll, pRonda.filter(p => p.llave === ll))).join('')}</div>`;
-        if (r === rondaActual) {
-          html += `<div class="soc-fase-final"><div class="soc-fase-final-titulo">🔴 RONDA ${r} (actual)</div>${contenido}</div>`;
-        } else {
-          html += `<details style="margin:10px 0;"><summary style="cursor:pointer;font-family:Orbitron;font-size:.7rem;color:#8a90a8;padding:6px 0;">Ronda ${r} (ver)</summary>${contenido}</details>`;
-        }
-      });
-
-      // Podio — el juez lo cierra manualmente al llegar a 2-3 equipos
-      // (guardarPodioManual, categoría 'soc'), igual que ms_a/ms_rc/bat.
-      const podio = (datosJSON && datosJSON.podio_manual && datosJSON.podio_manual.soc) || [];
-      if (podio.length >= 2) {
-        const pHTML = podio.map(p => {
-          const cl  = p.posicion === 1 ? 'oro' : p.posicion === 2 ? 'plata' : 'bronce';
-          const ico = p.posicion === 1 ? '🥇' : p.posicion === 2 ? '🥈' : '🥉';
-          const lbl = p.posicion === 1 ? 'GANADOR' : p.posicion === 2 ? 'SUBCAMPEÓN' : 'TERCER LUGAR';
-          return `<div class="podio-card ${cl}"><div class="podio-card-icon">${ico}</div><div class="podio-card-nombre">${p.equipo_nombre}</div><div class="podio-card-label">${lbl}</div></div>`;
-        }).join('');
-        html += `<div class="podio-inline"><div class="podio-inline-title">🏆 PODIO — ROBOT SOCCER</div>${pHTML}</div>`;
-      }
-
-      html += `</div>`;
-      wrap.innerHTML = html;
-    }
-
-    // ── RANKING CALIFICACIÓN ──────────────────────────────────────
-    function renderizarCalificacion(ruta) {
-      const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
-      const icon      = CAT_ICON[ruta] || '🏆';
-      const esLk      = ruta === 'lk';
-      const MAX_TOTAL = CAT_MAX_SCORE[ruta] || 25;
-      document.getElementById('tv-ronda').textContent = esLk ? 'LEGO KIDS' : 'CALIFICACIÓN';
-      document.getElementById('tv-cat').textContent   = nombreCat;
-      const ranking = (datosJSON && datosJSON.resultados && datosJSON.resultados[ruta]) || [];
-      const wrap    = document.getElementById('tv-tabla-wrap');
-      if (ranking.length === 0) {
-        wrap.innerHTML = `<div class="calificacion-wrap"><div class="calificacion-header"><span class="calificacion-header-icon">${icon}</span><div><div class="calificacion-header-title">${nombreCat.toUpperCase()}</div><div class="calificacion-header-sub">EVALUACIÓN POR JUECES · PUNTAJE SOBRE ${MAX_TOTAL}</div></div></div><div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-text">SIN CALIFICACIONES AÚN</div></div></div>`;
-        return;
-      }
-      const hayFase2  = esLk && ranking.some(p => (parseFloat(p.total) || 0) > 70);
-      const fasesInfo = esLk ? `<div class="lk-fases-wrap"><span class="lk-fase-badge f1">Fase 1: Ensamble + Funcionalidad (70 pts)</span>${hayFase2 ? '<span class="lk-fase-badge f2">Fase 2: Tiempo de carrera (30 pts)</span>' : ''}</div>` : '';
-      const filas = ranking.map((p, i) => {
-        const pos = i + 1;
-        const claseRow  = pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : claseAlterna(pos);
-        const claseCirc = pos === 1 ? 'pc-1'  : pos === 2 ? 'pc-2'  : pos === 3 ? 'pc-3'  : 'pc-n';
-        const emoji     = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
-        const total     = parseFloat(p.total) || 0;
-        const pct       = Math.min((total / MAX_TOTAL) * 100, 100);
-        let desglose    = '';
-        if (esLk && p.fase1Total !== undefined) { desglose = `<div style="font-family:var(--font-mono);font-size:0.6rem;color:#94a3b8;margin-top:4px;">F1: ${parseFloat(p.fase1Total||0).toFixed(1)}${p.fase2Total ? ' · F2: ' + parseFloat(p.fase2Total).toFixed(1) : ''}</div>`; }
-        return `<tr class="row-altura ${claseRow}"><td class="td-pos"><span class="pos-circle ${claseCirc}">${emoji}</span></td><td class="td-robot"><div class="robot-name">${p.robot || p.nombre}</div><div class="robot-inst">${p.nombre}${p.institucion ? ' · ' + p.institucion : ''}</div></td><td class="td-mejor"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span class="score-num">${total.toFixed(1)}</span><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${pct}%"></div></div></div><span style="font-family:var(--font-mono);font-size:0.6rem;color:#94a3b8;">/ ${MAX_TOTAL}</span>${desglose}</div></td><td class="td-ronda"><span class="ronda-num" style="font-family:var(--font-mono);font-size:0.65rem;color:#94a3b8;text-align:center;display:block;">${p.rondas || 1} evaluación${(p.rondas || 1) > 1 ? 'es' : ''}</span></td></tr>`;
-      }).join('');
-      wrap.innerHTML = `<div class="calificacion-wrap"><div class="calificacion-header"><span class="calificacion-header-icon">${icon}</span><div><div class="calificacion-header-title">${nombreCat.toUpperCase()}</div><div class="calificacion-header-sub">EVALUACIÓN POR JUECES · PUNTAJE SOBRE ${MAX_TOTAL}</div></div><div class="calificacion-badge">⭐ ${ranking.length} PARTICIPANTE${ranking.length > 1 ? 'S' : ''}</div></div>${fasesInfo}<table><thead><tr><th class="c">#</th><th>Robot / Participante</th><th class="c">Puntaje</th><th class="c">Evaluaciones</th></tr></thead><tbody>${filas}</tbody></table></div>`;
-    }
-
-    // ── TABLA TIEMPOS ─────────────────────────────────────────────
-    function renderizarTabla(ruta) {
-      if (!datosJSON || !datosJSON.resultados || !datosJSON.resultados[ruta] || datosJSON.resultados[ruta].length === 0) { mostrarVacio(); return; }
-      document.getElementById('tv-ronda').textContent = 'RONDA 1';
-      document.getElementById('tv-cat').textContent   = RUTAS_NOMBRE[ruta] || ruta;
-      const datos    = datosJSON.resultados[ruta];
-      const porRobot = {};
-      // Se agrupan los tiempos POR RONDA de cada robot (no todos juntos), para poder
-      // usar únicamente los de la ronda más alta que alcanzó (jerarquía real: la final
-      // manda sobre la clasificatoria, tal como exige el reglamento).
-      datos.forEach(d => {
-        if (!porRobot[d.robot]) porRobot[d.robot] = { robot: d.robot, porRonda: {}, rondaMax: 1 };
-        const ronda = Number(d.ronda) || 1;
-        if (!porRobot[d.robot].porRonda[ronda]) porRobot[d.robot].porRonda[ronda] = [];
-        if (tiempoValido(d.tiempo) || d.tiempo === 'DNF') porRobot[d.robot].porRonda[ronda].push(d.tiempo);
-        if (ronda > porRobot[d.robot].rondaMax) porRobot[d.robot].rondaMax = ronda;
-      });
-      const clasificados = Object.values(porRobot).map(r => {
-        const tiemposFinal = r.porRonda[r.rondaMax] || [];
-        const validosFinal = tiemposFinal.filter(tiempoValido);
-        const mejorTiempo  = validosFinal.length ? validosFinal.reduce((m, a) => tiempoASegundos(a) < tiempoASegundos(m) ? a : m) : 'DNF';
-        const esDNF        = validosFinal.length === 0;
-        // Si la ronda más alta (ej. la final) quedó en DNF y hubo rondas previas (ej.
-        // clasificatoria), se guarda el mejor tiempo anterior solo como referencia visual.
-        let referencia = null;
-        if (esDNF && r.rondaMax > 1) {
-          const anteriores = [];
-          for (let rn = 1; rn < r.rondaMax; rn++) (r.porRonda[rn] || []).forEach(t => { if (tiempoValido(t)) anteriores.push(t); });
-          if (anteriores.length) referencia = anteriores.reduce((m, a) => tiempoASegundos(a) < tiempoASegundos(m) ? a : m);
-        }
-        return { robot: r.robot, tiempo: mejorTiempo, ronda: r.rondaMax, esDNF, referencia };
-      });
-      clasificados.sort((a, b) => { if (a.ronda !== b.ronda) return b.ronda - a.ronda; if (a.esDNF && !b.esDNF) return 1; if (!a.esDNF && b.esDNF) return -1; return tiempoASegundos(a.tiempo) - tiempoASegundos(b.tiempo); });
-      if (clasificados.length === 0) { mostrarVacio(); return; }
-      const filas = clasificados.map((c, i) => {
-        const pos       = i + 1;
-        const claseRow  = c.esDNF ? claseAlterna(pos) : (pos === 1 ? 'pos-1' : pos === 2 ? 'pos-2' : pos === 3 ? 'pos-3' : claseAlterna(pos));
-        const claseCirc = c.esDNF ? 'pc-n' : (pos === 1 ? 'pc-1' : pos === 2 ? 'pc-2' : pos === 3 ? 'pc-3' : 'pc-n');
-        const emoji     = (!c.esDNF && pos === 1) ? '🥇' : (!c.esDNF && pos === 2) ? '🥈' : (!c.esDNF && pos === 3) ? '🥉' : (c.esDNF ? '—' : pos);
-        const tClase    = c.esDNF ? 'tiempo-valor dnf' : 'tiempo-valor';
-        const refHtml   = c.referencia ? `<div style="font-family:var(--font-mono);font-size:0.6rem;color:#94a3b8;margin-top:2px;">Clasificatoria: ${c.referencia}</div>` : '';
-        return `<tr class="row-altura ${claseRow}"><td class="td-pos"><span class="pos-circle ${claseCirc}">${emoji}</span></td><td class="td-robot"><div class="robot-name">${c.robot}</div></td><td class="td-mejor"><span class="${tClase}">${c.esDNF ? 'DNF' : c.tiempo}</span>${refHtml}</td><td class="td-ronda"><span class="ronda-num">Ronda ${c.ronda}</span></td></tr>`;
-      }).join('');
-      document.getElementById('tv-tabla-wrap').innerHTML = `<table><thead><tr><th class="c">#</th><th>Robot / Equipo</th><th class="c">Mejor Tiempo</th><th class="c">Ronda</th></tr></thead><tbody>${filas}</tbody></table>`;
     }
 
     // ── SPLASH DE AUSPICIANTES (rotación secuencial en localStorage) ──
@@ -832,49 +392,24 @@
       });
       setTimeout(() => { overlay.classList.add('hide'); }, 2000);
     }
-    mostrarSplashAuspiciante();
 
     // ── POLLING ───────────────────────────────────────────────────
-    function actualizarVista() {
-      if (!categoriaActiva) {
-        const primera = rutasConDatos[0] || null;
-        if (primera) { categoriaActiva = primera; seleccionarCategoria(primera); }
-      } else {
-        if (categoriaActiva === 'instituciones')          renderizarInstituciones();
-        else if (CATS_BRACKET.has(categoriaActiva))       renderizarBracketGeneral(categoriaActiva);
-        else if (CATS_SOCCER.has(categoriaActiva))        renderizarSoccer();
-        else if (CATS_CALIFICACION.has(categoriaActiva))  renderizarCalificacion(categoriaActiva);
-        else                                               renderizarTabla(categoriaActiva);
-      }
-    }
-
-    async function pollJSON() {
+    async function pollPodios() {
       try {
-        const r    = await fetch(JSON_URL + '?t=' + Date.now(), { cache: 'no-store' });
-        const data = await r.json();
-        const nuevoTs = data.ts || 0;
-        // Siempre alimentar bracket y soccer (el ts puede no cambiar si el GAS publicó rápido)
-        if (data.bracket) {
-          ['ms_a','ms_rc','bat'].forEach(function(cat) {
-            bracketCache[cat] = data.bracket[cat] || null;
-          });
-        }
-        if (data.soccer !== undefined) {
-          soccerTorneo = data.soccer || null;
-        }
-        if (nuevoTs !== ultimoTs) {
-          ultimoTs  = nuevoTs;
-          datosJSON = data;
-          try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch(e) {}
+        const data = await fetchJSON('getPodioPublicado');
+        const nuevos = (data && data.publicados) || [];
+        const key = nuevos.map(p => p.categoria + ':' + p.timestamp).sort().join('|');
+        if (key !== ultimoPublicadosKey) {
+          ultimoPublicadosKey = key;
+          publicados = nuevos;
           renderTabs();
+          const sigueExistiendo = categoriaActiva === 'instituciones' || publicados.some(p => p.categoria === categoriaActiva);
+          if (!categoriaActiva || !sigueExistiendo) categoriaActiva = publicados[0] ? publicados[0].categoria : null;
         }
-        actualizarVista();
-      } catch(e) { console.error('Error al cargar JSON:', e); }
+      } catch(e) { console.error('Error al consultar podios publicados:', e); }
+      if (categoriaActiva) seleccionarCategoria(categoriaActiva);
+      else mostrarVacio();
     }
-
-    setInterval(pollJSON, 60000);
-
-    pollJSON();
 
     // ── ROTACIÓN AUTOMÁTICA DE CATEGORÍAS (cada 3 min, solo frontend) ──
     const AUTO_ROTATE_MS = 3 * 60 * 1000;
@@ -883,8 +418,8 @@
     let autoRotateInterval = null;
 
     function categoriasParaRotar() {
-      const lista = [...rutasConDatos];
-      if (categoriaTieneDatos('instituciones')) lista.push('instituciones');
+      const lista = publicados.map(p => p.categoria);
+      if (lista.length) lista.push('instituciones');
       return lista;
     }
     function rotarSiguienteCategoria() {
@@ -922,29 +457,35 @@
       actualizarBotonAutoRotate();
       if (autoRotateOn) { rotarSiguienteCategoria(); iniciarAutoRotate(); } else { detenerAutoRotate(); }
     }
-    // Restaurar preferencia guardada (útil si la pantalla se recarga sola)
-    try {
-      if (localStorage.getItem(AUTO_ROTATE_KEY) === '1') {
-        autoRotateOn = true;
-        actualizarBotonAutoRotate();
-        iniciarAutoRotate();
+
+    // ── GATE staff-only ──────────────────────────────────────────
+    document.addEventListener('componentsLoaded', () => {
+      if (!window.esStaffCompleto || !window.esStaffCompleto()) {
+        document.getElementById('acceso-denegado').style.display = 'block';
+        return;
       }
-    } catch(e) {}
+      document.getElementById('contenido-staff').style.display = 'block';
+      mostrarSplashAuspiciante();
+      setInterval(pollPodios, 20000);
+      pollPodios();
+      try {
+        if (localStorage.getItem(AUTO_ROTATE_KEY) === '1') {
+          autoRotateOn = true;
+          actualizarBotonAutoRotate();
+          iniciarAutoRotate();
+        }
+      } catch(e) {}
+    });
   </script>
 
   <!-- PANTALLA COMPLETA (tecla F) -->
   <script>
   (function(){
     function enCampoTexto(e){const t=e.target.tagName;return t==='INPUT'||t==='TEXTAREA'||t==='SELECT'||e.target.isContentEditable;}
-    function actualizarHint(){
-      const hint=document.getElementById('fsHint');if(!hint)return;
-      hint.textContent=document.body.classList.contains('fs-activo')?'Presiona ESC para salir de pantalla completa':'Presiona F para pantalla completa';
-    }
     function toggleFullscreen(){
       const activo=document.body.classList.toggle('fs-activo');
       if(activo){const el=document.documentElement;(el.requestFullscreen?el.requestFullscreen():Promise.resolve()).catch(()=>{});}
       else{if(document.fullscreenElement)document.exitFullscreen&&document.exitFullscreen().catch(()=>{});}
-      actualizarHint();
     }
     document.addEventListener('keydown',function(e){
       if(enCampoTexto(e))return;
@@ -952,7 +493,6 @@
     });
     document.addEventListener('fullscreenchange',function(){
       if(!document.fullscreenElement)document.body.classList.remove('fs-activo');
-      actualizarHint();
     });
   })();
   </script>
