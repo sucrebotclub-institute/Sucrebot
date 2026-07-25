@@ -1722,6 +1722,23 @@ function cambiarJuez(idx) {
   }
 }
 
+// El fase1Total de ESTE juez para este participante — nunca el de otro juez.
+// state.calificaciones[id].fase1Total es un solo casillero compartido que
+// cualquier juez pisa con su propia nota (o que una recarga de getPuntuaciones
+// deja con lo último que haya llegado del sheet); usarlo directo para calcular
+// el total de fase 2 podía sumar el fase1 de OTRO juez si el dispositivo había
+// visto la nota de otro juez más recientemente (ej. un solo aparato usado para
+// más de un juez, o al recargar). state.calificacionesPorJuez sí está indexado
+// por juez y es la fuente correcta.
+function fase1TotalDelJuez(id, juezEmail) {
+  const cache = state.calificacionesPorJuez[id]?.[juezEmail];
+  if (!cache) return null;
+  try {
+    const n = JSON.parse(cache.notas_json);
+    return n.fase1Total !== undefined ? parseFloat(n.fase1Total) : parseFloat(cache.total) || 0;
+  } catch(e) { return parseFloat(cache.total) || 0; }
+}
+
 async function guardarCalificacion() {
   const id = state.selectedId;
   if (!id) return;
@@ -1731,6 +1748,10 @@ async function guardarCalificacion() {
   const esLk   = cat === 'lk';
   const esBai  = cat === 'bai';
   const calPrev = state.calificaciones[id];
+  const esMulti = esMultiJuez(cat);
+  const juezInfo = esMulti ? getJuezActivo(cat) : null;
+  const juezEmail  = juezInfo ? juezInfo.email  : 'operador@sucrebot2026';
+  const juezNombre = juezInfo ? juezInfo.nombre : 'Operador';
 
   // Detectar fase actual
   let faseActual = 1;
@@ -1773,7 +1794,7 @@ async function guardarCalificacion() {
 
   if (esLk) {
     if (faseActual === 2) {
-      fase1Total = calPrev?.fase1Total || 0;
+      fase1Total = (esMulti ? fase1TotalDelJuez(id, juezEmail) : null) ?? calPrev?.fase1Total ?? 0;
       fase2Total = parseFloat(notasJson.fase2Carrera) || 0;
       totalFinal = fase1Total + fase2Total;
       notasJson.fase1Total = fase1Total; notasJson.fase2Total = fase2Total;
@@ -1781,7 +1802,7 @@ async function guardarCalificacion() {
   } else if (esBai) {
     if (faseActual === 2) {
       // Fase final: nueva calificación completa (mismos criterios, 100 pts)
-      fase1Total = calPrev?.fase1Total || calPrev?.total || 0;
+      fase1Total = (esMulti ? fase1TotalDelJuez(id, juezEmail) : null) ?? calPrev?.fase1Total ?? calPrev?.total ?? 0;
       fase2Total = suma;
       // Total final = puntaje de la ronda final (fase 2), fase 1 queda como referencia
       totalFinal = fase2Total;
@@ -1793,10 +1814,6 @@ async function guardarCalificacion() {
 
   const ronda = state.rondaActual[id] || 1;
   const notas = document.getElementById('calNotas').value;
-  const esMulti = esMultiJuez(cat);
-  const juezInfo = esMulti ? getJuezActivo(cat) : null;
-  const juezEmail  = juezInfo ? juezInfo.email  : 'operador@sucrebot2026';
-  const juezNombre = juezInfo ? juezInfo.nombre : 'Operador';
 
   loading(true, 'GUARDANDO...');
   try {
@@ -1869,7 +1886,7 @@ function siguienteRobot() {
 }
 
 // ── SELECCIÓN DE CLASIFICADOS / FINALISTAS ────────────────────
-function abrirClasificados() {
+async function abrirClasificados() {
   const cat = state.categoria;
   const esLk = cat === 'lk';
   const esBai = cat === 'bai';
@@ -1888,19 +1905,31 @@ function abrirClasificados() {
   const maxLabel = document.getElementById('clasificadoMaxLabel');
   if (maxLabel) maxLabel.textContent = esBai ? '/ 100' : '/ 70';
 
+  const grid = document.getElementById('clasificadosGrid');
+  grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><p>Cargando puntajes...</p></div>';
+
+  // Puntaje real (promedio entre jueces) recién calculado por el backend —
+  // NO la caché local por participante (state.calificaciones[p.id].fase1Total),
+  // que cualquier juez puede pisar con su propia nota y termina mostrando el
+  // puntaje de un juez cualquiera en vez del promedio real de la eliminatoria.
+  let scoreDe = {};
+  try {
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: cat });
+    (res.ranking || []).forEach(r => { scoreDe[r.id] = parseFloat(r.total) || 0; });
+  } catch(e) {}
+
   const actuales = esBai ? state.baiFinalistas : state.lkClasificados;
   const ordenados = [...state.participantes]
-    .map(p => ({ ...p, fase1: state.calificaciones[p.id]?.fase1Total || 0 }))
+    .map(p => ({ ...p, fase1: scoreDe[p.id] ?? (state.calificaciones[p.id]?.fase1Total || 0) }))
     .sort((a, b) => b.fase1 - a.fase1);
 
-  const grid = document.getElementById('clasificadosGrid');
   grid.innerHTML = '';
   ordenados.forEach(p => {
     const checked = actuales.includes(p.id);
     const div = document.createElement('div');
     div.className = 'clasificado-item' + (checked ? ' checked' : ''); div.dataset.id = p.id;
     div.onclick = () => toggleClasificado(p.id, div);
-    div.innerHTML = `<div class="clasificado-check">${checked ? '✓' : ''}</div><div><div class="clasificado-nombre">${p.robot||p.nombre}</div><div style="font-size:.75rem;color:var(--text-dim)">${p.institucion||'—'}</div></div><div class="clasificado-score">${(state.calificaciones[p.id]?.fase1Total||0).toFixed(1)} ${esBai ? '/ 100' : '/ 70'}</div>`;
+    div.innerHTML = `<div class="clasificado-check">${checked ? '✓' : ''}</div><div><div class="clasificado-nombre">${p.robot||p.nombre}</div><div style="font-size:.75rem;color:var(--text-dim)">${p.institucion||'—'}</div></div><div class="clasificado-score">${p.fase1.toFixed(1)} ${esBai ? '/ 100' : '/ 70'}</div>`;
     grid.appendChild(div);
   });
 }
