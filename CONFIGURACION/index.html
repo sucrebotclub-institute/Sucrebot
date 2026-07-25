@@ -79,6 +79,10 @@
     .btn-pers-del { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.4); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; transition: filter .15s; }
     .btn-pers-del:hover { filter: brightness(1.2); }
     .btn-pers-del:disabled { opacity: .5; pointer-events: none; }
+
+    .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px); background: #0f2035; border: 1px solid rgba(91,200,240,0.4); border-radius: 10px; padding: 14px 22px; font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #c8d8f0; box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 99999; max-width: calc(100vw - 40px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: rgba(248,113,113,0.5); color: #f87171; }
   </style>
 </head>
 <body>
@@ -168,6 +172,8 @@
     </div>
   </main>
 
+  <div class="toast" id="toast"></div>
+
   <div data-include="../shared/components/footer.html"></div>
   <script src="../shared/js/load-components.js"></script>
   <script src="../shared/js/auth.js"></script>
@@ -190,6 +196,15 @@
     cargarEstado();
     cargarPersonal();
   });
+
+  let _toastTimer = null;
+  function showToast(msg, esError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (esError ? ' error' : '');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
 
   function renderEstado(abierto) {
     _abiertoActual = abierto;
@@ -251,26 +266,30 @@
   }
 
   async function toggleCategoria(nombre, cerradaActual, row) {
+    if (!confirm('¿Seguro que querés ' + (cerradaActual ? 'abrir' : 'cerrar') + ' las inscripciones de "' + nombre + '"?')) return;
     const btn = row.querySelector('button');
     btn.disabled = true;
     try {
       const cfg = await gasGet({ action: 'setCategoriaCerrada', categoria: nombre, cerrada: String(!cerradaActual) });
       renderCategorias(cfg && Array.isArray(cfg.categoriasCerradas) ? cfg.categoriasCerradas : []);
+      showToast('✅ "' + nombre + '" ' + (cerradaActual ? 'abierta' : 'cerrada'));
     } catch(e) {
-      alert('Error al actualizar la categoría: ' + e.message);
+      showToast('⚠️ Error al actualizar la categoría: ' + e.message, true);
       btn.disabled = false;
     }
   }
 
   async function toggleRegistro() {
-    const btn = document.getElementById('btn-toggle');
     const nuevoEstado = !_abiertoActual;
+    if (!confirm('¿Seguro que querés ' + (nuevoEstado ? 'ABRIR' : 'CERRAR') + ' las inscripciones de REGISTRO?')) return;
+    const btn = document.getElementById('btn-toggle');
     btn.disabled = true;
     try {
       const cfg = await gasGet({ action: 'setConfigRegistro', abierto: String(nuevoEstado) });
       renderEstado(cfg && cfg.abierto !== false ? cfg.abierto : nuevoEstado);
+      showToast('✅ Registro ' + (nuevoEstado ? 'abierto' : 'cerrado'));
     } catch(e) {
-      alert('Error al cambiar el estado: ' + e.message);
+      showToast('⚠️ Error al cambiar el estado: ' + e.message, true);
     }
     btn.disabled = false;
   }
@@ -326,7 +345,7 @@
         if (rol === p.rol) opt.selected = true;
         sel.appendChild(opt);
       });
-      sel.addEventListener('change', () => cambiarRolPersonal(p.correo, p.nombre, sel.value, sel));
+      sel.addEventListener('change', () => cambiarRolPersonal(p.correo, p.nombre, p.rol, sel.value, sel));
 
       const btnDel = document.createElement('button');
       btnDel.className = 'btn-pers-del';
@@ -352,6 +371,7 @@
     const nombre   = nombreEl.value.trim();
     const rol      = rolEl.value;
     if (!correo || !correo.includes('@')) { alert('Ingresá un correo válido'); return; }
+    if (!confirm('¿Agregar a ' + correo + ' como "' + ROL_LABEL[rol] + '"?')) return;
 
     const btn = document.getElementById('btn-pers-add');
     btn.disabled = true;
@@ -360,19 +380,25 @@
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
       correoEl.value = ''; nombreEl.value = ''; rolEl.value = 'ayudante';
       await cargarPersonal();
+      showToast('✅ ' + correo + ' agregado como ' + ROL_LABEL[rol]);
     } catch(e) {
-      alert('Error al agregar: ' + e.message);
+      showToast('⚠️ Error al agregar: ' + e.message, true);
     }
     btn.disabled = false;
   }
 
-  async function cambiarRolPersonal(correo, nombre, nuevoRol, selEl) {
+  async function cambiarRolPersonal(correo, nombre, rolActual, nuevoRol, selEl) {
+    if (!confirm('¿Cambiar el rol de ' + correo + ' a "' + ROL_LABEL[nuevoRol] + '"?')) {
+      selEl.value = rolActual;
+      return;
+    }
     selEl.disabled = true;
     try {
       const resp = await gasPost({ action: 'guardarPersonal', correo, nombre: nombre || '', rol: nuevoRol });
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Rol de ' + correo + ' actualizado a ' + ROL_LABEL[nuevoRol]);
     } catch(e) {
-      alert('Error al cambiar el rol: ' + e.message);
+      showToast('⚠️ Error al cambiar el rol: ' + e.message, true);
       await cargarPersonal();
     }
     selEl.disabled = false;
@@ -386,8 +412,9 @@
       const resp = await gasPost({ action: 'eliminarPersonal', correo, miCorreo: miCorreo() });
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
       await cargarPersonal();
+      showToast('✅ Acceso de ' + correo + ' eliminado');
     } catch(e) {
-      alert('Error al eliminar: ' + e.message);
+      showToast('⚠️ Error al eliminar: ' + e.message, true);
       btn.disabled = false;
     }
   }
