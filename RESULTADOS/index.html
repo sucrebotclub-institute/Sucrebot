@@ -348,26 +348,40 @@
       wrap.innerHTML = `<div class="inst-ranking-wrap"><div class="inst-ranking-header"><span class="inst-ranking-header-icon">🏆</span><div><div class="inst-ranking-header-title">RANKING INSTITUCIONES/CLUBES</div><div class="inst-ranking-header-sub">PUNTOS POR PODIO · 1º=10 · 2º=5 · 3º=1</div></div><div class="inst-ranking-puntos-info"><span class="inst-pts-badge oro">🥇 10 pts</span><span class="inst-pts-badge plata">🥈 5 pts</span><span class="inst-pts-badge bronce">🥉 1 pt</span></div></div><table><thead><tr><th class="c">#</th><th>Institución / Club</th><th class="c">Puntos</th><th>Progreso</th></tr></thead><tbody>${filas}</tbody></table></div>`;
     }
 
+    // Categorías de PANEL-CALIFICACION (jueces por criterios) — su podio vive
+    // en resultados_publicados, no en podio_manual como ms_a/ms_rc/bat/soc.
+    const CATS_CALIFICACION = ['bai', 'dev', 'lk'];
+
     // ── PODIO PUBLICADO (top 3 de una categoría) ────────────────────
     async function renderizarPodio(ruta) {
       const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
       document.getElementById('tv-ronda').textContent = 'PODIO';
       document.getElementById('tv-cat').textContent   = nombreCat;
       const wrap = document.getElementById('tv-tabla-wrap');
-      let podio = [];
-      try { const data = await fetchJSON('getPodioManual', { categoria: ruta }); podio = (data && data.podio) || []; }
-      catch(e) { console.error('Error al cargar podio:', e); }
+      let cardsData = []; // [{posicion, nombre}]
+      try {
+        if (CATS_CALIFICACION.includes(ruta)) {
+          const data = await fetchJSON('getResultadosPublicados', { categoria: ruta });
+          const ranking = (data && data.ranking) || [];
+          cardsData = ranking.slice(0, 3).map((r, i) => ({ posicion: i + 1, nombre: r.robot || r.nombre }));
+        } else {
+          const data = await fetchJSON('getPodioManual', { categoria: ruta });
+          const podio = (data && data.podio) || [];
+          cardsData = podio.filter(p => p.posicion >= 1 && p.posicion <= 3).sort((a, b) => a.posicion - b.posicion)
+            .map(p => ({ posicion: p.posicion, nombre: p.equipo_nombre }));
+        }
+      } catch(e) { console.error('Error al cargar podio:', e); }
       if (categoriaActiva !== ruta) return; // el staff cambió de tab mientras cargaba
-      if (podio.length === 0) {
+      if (cardsData.length === 0) {
         wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">AÚN NO HAY PODIO GUARDADO</div></div>`;
         return;
       }
       const medals  = ['🥇','🥈','🥉'];
       const labels  = ['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
       const classes = ['oro','plata','bronce'];
-      const cards = podio.filter(p => p.posicion >= 1 && p.posicion <= 3).sort((a,b) => a.posicion - b.posicion).map(p => {
+      const cards = cardsData.map(p => {
         const i = p.posicion - 1;
-        return `<div class="podio-card ${classes[i]}"><div class="podio-card-icon">${medals[i]}</div><div class="podio-card-nombre">${p.equipo_nombre}</div><div class="podio-card-label">${labels[i]}</div></div>`;
+        return `<div class="podio-card ${classes[i]}"><div class="podio-card-icon">${medals[i]}</div><div class="podio-card-nombre">${p.nombre}</div><div class="podio-card-label">${labels[i]}</div></div>`;
       }).join('');
       wrap.innerHTML = `<div class="podio-inline"><div class="podio-inline-title">🏆 PODIO — ${nombreCat.toUpperCase()}</div>${cards}</div>
         <div style="text-align:center;margin-top:28px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
