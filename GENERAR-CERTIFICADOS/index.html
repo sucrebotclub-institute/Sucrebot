@@ -273,6 +273,18 @@ async function cargarDatos() {
       });
     });
 
+    // Orden de fila = orden de podio (1ro/2do/3ro/participación), no el
+    // orden de inserción en la hoja (que sigue el orden del bracket, no el
+    // del podio, y puede mostrar el 3ro antes que el 2do).
+    const ORDEN_TIPO = { '1ro': 0, '2do': 1, '3ro': 2, 'participacion': 3 };
+    Object.keys(estado).forEach(cat => {
+      estado[cat].sort((a, b) => {
+        const oa = ORDEN_TIPO[TIPO_INTERNO[a.tipo]] ?? 3;
+        const ob = ORDEN_TIPO[TIPO_INTERNO[b.tipo]] ?? 3;
+        return oa - ob;
+      });
+    });
+
     if (!certs.length) {
       document.getElementById('aviso-vacio').style.display = 'flex';
       document.getElementById('cats-container').innerHTML = '';
