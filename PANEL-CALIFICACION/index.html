@@ -1617,6 +1617,16 @@ function aplicarPermisosJefe(cat) {
       if (el) el.style.display = 'none';
     });
   }
+  // Bailarín: el ranking del paso 4 es solo la ELIMINATORIA — el podio real se
+  // guarda después de la ronda final (ver guardarPodioFinal). Ocultar acá las
+  // acciones de podio sin importar el rol, para no certificar por error el
+  // top 3 de la eliminatoria como si fuera el resultado definitivo.
+  if (cat === 'bai') {
+    ['btnAjustarPodioCal', 'btnGuardarPodioCal', 'btnQuitarPodioManualCal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
 }
 
 // ── CANTIDAD DE JUECES CONFIGURABLE ────────────────────────────
