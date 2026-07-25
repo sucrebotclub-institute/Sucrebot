@@ -553,6 +553,7 @@
     try {
       const cfg = await fetch(GAS_URL + '?action=getConfigRegistro').then(r => r.json());
       if (cfg && cfg.abierto === false) { mostrarRegistroCerrado(); return; }
+      if (cfg && Array.isArray(cfg.categoriasCerradas)) CATEGORIAS_CERRADAS = cfg.categoriasCerradas;
     } catch(e) { /* si falla la consulta, no bloquear el registro */ }
     cargarInstituciones();
   }
@@ -604,7 +605,7 @@
     dropZone.classList.remove('has-logo'); logoUploader.classList.remove('has-logo');
   }
 
-  const CATEGORIAS_CERRADAS = [];
+  let CATEGORIAS_CERRADAS = [];
   const CATEGORIAS_SIN_ROBOT = ['Robot soccer', 'Cubo Rubik', 'Lego Kids', 'Impacto Tecnológico'];
 
   function onCategoriaChange() {
@@ -726,6 +727,9 @@
         }
         if (respRegistro.error === 'CATEGORIA_CERRADA') {
           throw new Error(respRegistro.mensaje || 'Esa categoría tiene las inscripciones agotadas');
+        }
+        if (respRegistro.error === 'REGISTRO_CERRADO') {
+          throw new Error(respRegistro.mensaje || 'Las inscripciones están cerradas por el momento');
         }
         throw new Error(respRegistro.error || 'No se pudo completar el registro');
       }

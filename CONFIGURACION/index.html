@@ -48,6 +48,18 @@
     .loading-msg { text-align: center; padding: 40px; font-family: 'DM Mono'; font-size: 13px; color: #4a7a9a; }
     .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #1a3a5a; border-top-color: #5bc8f0; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 8px; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .cat-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: #0d1f33; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px; border: 1px solid #1a3a5a; }
+    .cat-row:last-child { margin-bottom: 0; }
+    .cat-nombre { font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #c8d8f0; }
+    .cat-estado { font-family: 'DM Mono'; font-size: 11px; letter-spacing: 1px; padding: 3px 10px; border-radius: 20px; margin-left: 10px; }
+    .cat-estado.abierta { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .cat-estado.cerrada { background: rgba(248,113,113,0.15); color: #f87171; }
+    .btn-cat-toggle { font-family: 'Exo 2'; font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; transition: filter .15s; white-space: nowrap; }
+    .btn-cat-toggle:disabled { opacity: .5; pointer-events: none; }
+    .btn-cat-toggle.cerrar { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.4); }
+    .btn-cat-toggle.abrir  { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.4); }
+    .btn-cat-toggle:hover { filter: brightness(1.2); }
   </style>
 </head>
 <body>
@@ -98,6 +110,17 @@
 
             <button class="btn-toggle" id="btn-toggle" onclick="toggleRegistro()"></button>
           </div>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card-title">🏷️ Categorías individuales</div>
+          <div class="config-card-desc">
+            Cierra las inscripciones de una categoría específica sin afectar al resto
+            (ej. cupo agotado). No requiere cerrar todo REGISTRO.
+          </div>
+
+          <div id="cats-loading" class="loading-msg"><span class="spinner"></span> Cargando categorías...</div>
+          <div id="cats-lista"></div>
         </div>
 
       </div><!-- /contenido-staff -->
@@ -152,8 +175,47 @@
     try {
       const cfg = await gasGet({ action: 'getConfigRegistro' });
       renderEstado(cfg && cfg.abierto !== false);
+      renderCategorias(cfg && Array.isArray(cfg.categoriasCerradas) ? cfg.categoriasCerradas : []);
     } catch(e) {
       document.getElementById('config-loading').innerHTML = '⚠️ Error al cargar el estado: ' + e.message;
+      document.getElementById('cats-loading').innerHTML = '⚠️ Error al cargar categorías: ' + e.message;
+    }
+  }
+
+  // Mismas 13 categorías que CATEGORIA_MAP en Code.gs
+  const CATEGORIAS = [
+    'Insectos', 'Trepador (Amateur)', 'Seguidor de línea ST (Amateur)',
+    'Seguidor de línea ST (Pro)', 'Minisumo Autónomo', 'Minisumo RC',
+    'Bailarín', 'Batalla', 'Trepador (Pro)', 'Robot soccer',
+    'Cubo Rubik', 'Lego Kids', 'Impacto Tecnológico'
+  ];
+
+  function renderCategorias(categoriasCerradas) {
+    const cont = document.getElementById('cats-lista');
+    cont.innerHTML = '';
+    CATEGORIAS.forEach(nombre => {
+      const cerrada = categoriasCerradas.includes(nombre);
+      const row = document.createElement('div');
+      row.className = 'cat-row';
+      row.innerHTML =
+        '<div><span class="cat-nombre">' + nombre + '</span>' +
+        '<span class="cat-estado ' + (cerrada ? 'cerrada' : 'abierta') + '">' + (cerrada ? 'CERRADA' : 'ABIERTA') + '</span></div>' +
+        '<button class="btn-cat-toggle ' + (cerrada ? 'abrir' : 'cerrar') + '">' + (cerrada ? '🔓 Abrir' : '🔒 Cerrar') + '</button>';
+      row.querySelector('button').addEventListener('click', () => toggleCategoria(nombre, cerrada, row));
+      cont.appendChild(row);
+    });
+    document.getElementById('cats-loading').style.display = 'none';
+  }
+
+  async function toggleCategoria(nombre, cerradaActual, row) {
+    const btn = row.querySelector('button');
+    btn.disabled = true;
+    try {
+      const cfg = await gasGet({ action: 'setCategoriaCerrada', categoria: nombre, cerrada: String(!cerradaActual) });
+      renderCategorias(cfg && Array.isArray(cfg.categoriasCerradas) ? cfg.categoriasCerradas : []);
+    } catch(e) {
+      alert('Error al actualizar la categoría: ' + e.message);
+      btn.disabled = false;
     }
   }
 
