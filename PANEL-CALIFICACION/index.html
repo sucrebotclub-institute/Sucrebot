@@ -679,6 +679,8 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="setStep(5)">← Volver a Final</button>
+          <button class="btn btn-outline btn-sm" id="btnAjustarPodioFinalCal" onclick="abrirModalPodioManualFinal()">✏️ Ajustar Podio Final</button>
+          <button class="btn btn-outline btn-sm" id="btnQuitarPodioManualFinalCal" style="display:none" onclick="quitarPodioManualFinalCal()">↩️ Quitar ajuste manual</button>
           <button class="btn btn-green btn-sm" id="btnGuardarPodioFinalCal" onclick="guardarPodioFinal()">🏆 Guardar Podio Final</button>
           <button class="btn btn-terminar btn-sm" id="btnTerminarCatP6" onclick="terminarCategoria()">🏁 Terminar Categoría</button>
         </div>
@@ -835,6 +837,7 @@ let state = {
   calificacionesFinalPorJuez: {}, // notas final por juez bai
   selectedFinalId: null,
   podioManualOverride: null, // [id1,id2,id3]|null — ajuste manual del podio (panel-4, RANKING)
+  podioManualOverrideFinal: null, // [id1,id2,id3]|null — ajuste manual del podio final de bai (panel-6)
   numJueces: {}, // { bai: n, dev: n, lk: n } — cantidad de jueces configurada por categoría (leída de GAS)
   esJefe: {}, // { bai: bool, dev: bool, lk: bool } — si ESTE dispositivo es el Jefe de Jurado en esa categoría (local, por dispositivo)
 };
@@ -1106,6 +1109,7 @@ async function seleccionarCategoria(cat) {
     state.calificacionesFinalPorJuez = {};
     state.selectedFinalId = null;
     state.podioManualOverride = null;
+    state.podioManualOverrideFinal = null;
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
@@ -1600,7 +1604,8 @@ function toggleEsJefe() {
 // Controles que solo tienen sentido para el Jefe y no tienen ninguna otra
 // lógica de visibilidad propia — se muestran/ocultan 100% según el rol.
 const CONTROLES_SOLO_JEFE = ['cardCriterios', 'btnPodioManualP2', 'btnAjustarPodioCal',
-  'btnGuardarPodioCal', 'btnTerminarCatP4', 'btnGuardarPodioFinalCal', 'btnTerminarCatP6'];
+  'btnGuardarPodioCal', 'btnTerminarCatP4', 'btnGuardarPodioFinalCal', 'btnTerminarCatP6',
+  'btnAjustarPodioFinalCal'];
 
 function aplicarPermisosJefe(cat) {
   const jefe = esJefeActivo(cat);
@@ -1612,7 +1617,7 @@ function aplicarPermisosJefe(cat) {
   // manual activo) ya deciden por su cuenta cuándo mostrarse — acá solo los restringimos
   // más si NO sos jefe, nunca los forzamos a aparecer.
   if (!jefe) {
-    ['cardNumJueces', 'btnTop3Ranking', 'btnQuitarPodioManualCal'].forEach(id => {
+    ['cardNumJueces', 'btnTop3Ranking', 'btnQuitarPodioManualCal', 'btnQuitarPodioManualFinalCal'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
@@ -2175,7 +2180,22 @@ function poolPodioManualCal() {
   return state.rankingData.length ? state.rankingData : poolPresentesCal();
 }
 
+// Pool de finalistas de bai para el ajuste manual del podio FINAL (panel-6).
+// Incluye a los 3 seleccionados aunque alguno no tenga nota final guardada
+// (ej. no se presentó, falló la calificación) — asi se puede igual asignarle
+// una posición (3er lugar, etc.) en vez de quedar sin podio.
+function poolPodioManualFinal() {
+  return (state.baiFinalistas || []).map(id => {
+    const p = state.participantes.find(x => x.id === id) || {};
+    const cal = (state.calificacionesFinal && state.calificacionesFinal[id]) || null;
+    return { id, nombre: p.nombre || '', robot: p.robot || p.nombre || id, institucion: p.institucion || '', total: cal ? (cal.total || 0) : 0 };
+  });
+}
+
+let _modalPodioTarget = 'elim'; // 'elim' (panel-4/2) | 'final' (panel-6, ronda final bai)
+
 function abrirModalPodioManualCal() {
+  _modalPodioTarget = 'elim';
   const pool = poolPodioManualCal();
   if (!pool.length) { toast('No hay participantes presentes seleccionados', 'error'); return; }
   const selects = ['selPodioCal1','selPodioCal2','selPodioCal3'].map(id => document.getElementById(id));
@@ -2183,6 +2203,20 @@ function abrirModalPodioManualCal() {
     sel.innerHTML = '<option value="">— (vacío) —</option>' +
       pool.map(r => `<option value="${r.id}">${r.robot || r.nombre} — ${r.nombre}</option>`).join('');
     const preset = state.podioManualOverride ? (state.podioManualOverride[i] || '') : (pool[i] ? pool[i].id : '');
+    sel.value = preset;
+  });
+  document.getElementById('modalPodioManualCal').classList.add('show');
+}
+
+function abrirModalPodioManualFinal() {
+  _modalPodioTarget = 'final';
+  const pool = poolPodioManualFinal();
+  if (!pool.length) { toast('No hay finalistas seleccionados', 'error'); return; }
+  const selects = ['selPodioCal1','selPodioCal2','selPodioCal3'].map(id => document.getElementById(id));
+  selects.forEach((sel, i) => {
+    sel.innerHTML = '<option value="">— (vacío) —</option>' +
+      pool.map(r => `<option value="${r.id}">${r.robot || r.nombre} — ${r.nombre}${r.total ? ' (' + r.total.toFixed(1) + ' pts)' : ' (sin calificar)'}</option>`).join('');
+    const preset = state.podioManualOverrideFinal ? (state.podioManualOverrideFinal[i] || '') : (pool[i] ? pool[i].id : '');
     sel.value = preset;
   });
   document.getElementById('modalPodioManualCal').classList.add('show');
@@ -2199,6 +2233,15 @@ async function confirmarPodioManualCal() {
     alert('No puedes repetir el mismo equipo en más de una posición.');
     return;
   }
+
+  if (_modalPodioTarget === 'final') {
+    state.podioManualOverrideFinal = ids.map(id => id || null);
+    cerrarModalPodioManualCal();
+    toast('✏️ Podio final ajustado manualmente', 'success');
+    await cargarRankingFinal();
+    return;
+  }
+
   if (!state.rankingData.length) state.rankingData = poolPresentesCal();
   state.podioManualOverride = ids.map(id => id || null);
   cerrarModalPodioManualCal();
@@ -2216,6 +2259,14 @@ async function confirmarPodioManualCal() {
   }).filter(Boolean);
   try { await gasPost({ action: 'guardarPodioManual', categoria: state.categoria, posiciones }); }
   catch(e) { console.error('No se pudo guardar podio manual en backend', e); }
+}
+
+async function quitarPodioManualFinalCal() {
+  if (!confirm('¿Quitar el ajuste manual y volver al ranking calculado por jueces?')) return;
+  state.podioManualOverrideFinal = null;
+  document.getElementById('btnQuitarPodioManualFinalCal').style.display = 'none';
+  await cargarRankingFinal();
+  toast('Ajuste manual removido', 'success');
 }
 
 async function quitarPodioManualCal() {
@@ -2572,10 +2623,21 @@ async function cargarRankingFinal() {
   loading(true, 'CALCULANDO RANKING FINAL...');
   try {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
-    const rankingFinal = res.ranking || [];
-    document.getElementById('rankingStatsFinal').textContent = `${rankingFinal.length} finalistas evaluados`;
+    let rankingFinal = res.ranking || [];
+    if (state.podioManualOverrideFinal) {
+      const pool = poolPodioManualFinal();
+      const ov = state.podioManualOverrideFinal.filter(Boolean);
+      const enOrden = ov.map(id => rankingFinal.find(r => r.id === id) || pool.find(p => p.id === id)).filter(Boolean);
+      const idsEnOrden = enOrden.map(r => r.id);
+      const resto = rankingFinal.filter(r => !idsEnOrden.includes(r.id));
+      rankingFinal = [...enOrden, ...resto];
+    }
+    document.getElementById('rankingStatsFinal').textContent = `${rankingFinal.length} finalistas evaluados` +
+      (state.podioManualOverrideFinal ? ' · ✏️ Podio ajustado manualmente' : '');
     document.getElementById('thJuecesFinalCol').textContent =
       getJueces('bai').map((j, i) => 'J' + (i + 1)).join(' / ') + ' Final';
+    document.getElementById('btnQuitarPodioManualFinalCal').style.display =
+      (state.podioManualOverrideFinal && esJefeActivo('bai')) ? 'inline-flex' : 'none';
     aplicarPermisosJefe('bai');
     const tbody = document.getElementById('rankingTbodyFinal');
     tbody.innerHTML = '';
@@ -2620,7 +2682,15 @@ async function guardarPodioFinal() {
   loading(true, 'CARGANDO RANKING FINAL...');
   try {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
-    const rankingFinal = res.ranking || [];
+    let rankingFinal = res.ranking || [];
+    if (state.podioManualOverrideFinal) {
+      const pool = poolPodioManualFinal();
+      const ov = state.podioManualOverrideFinal.filter(Boolean);
+      const enOrden = ov.map(id => rankingFinal.find(r => r.id === id) || pool.find(p => p.id === id)).filter(Boolean);
+      const idsEnOrden = enOrden.map(r => r.id);
+      const resto = rankingFinal.filter(r => !idsEnOrden.includes(r.id));
+      rankingFinal = [...enOrden, ...resto];
+    }
     if (!rankingFinal.length) { toast('No hay calificaciones de ronda final', 'error'); loading(false); return; }
 
     // Participantes de eliminatoria que NO pasaron a la final → Participación
