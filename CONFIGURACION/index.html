@@ -100,6 +100,27 @@
     .btn-pers-del:hover { filter: brightness(1.2); }
     .btn-pers-del:disabled { opacity: .5; pointer-events: none; }
 
+    .cambcat-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0d1f33; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid #1a3a5a; cursor: pointer; transition: border-color .15s, background .15s; flex-wrap: wrap; }
+    .cambcat-row:hover { border-color: rgba(91,200,240,0.4); background: #0f2540; }
+    .cambcat-row:last-child { margin-bottom: 0; }
+    .cambcat-info { display: flex; flex-direction: column; gap: 2px; min-width: 160px; }
+    .cambcat-nombre { font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #c8d8f0; }
+    .cambcat-sub { font-family: 'DM Mono'; font-size: 11px; color: #4a7a9a; }
+    .cambcat-hint { font-family: 'DM Mono'; font-size: 12px; color: #4a7a9a; padding: 10px 2px; }
+    .cambcat-vacio { font-family: 'DM Mono'; font-size: 12px; color: #4a7a9a; padding: 16px 2px; text-align: center; }
+
+    .cambcat-panel { background: #0d1f33; border: 1px solid rgba(91,200,240,0.35); border-radius: 12px; padding: 20px; margin-top: 16px; }
+    .cambcat-panel-nombre { font-family: 'Exo 2'; font-size: 15px; font-weight: 700; color: #e0eaff; margin-bottom: 2px; }
+    .cambcat-panel-sub { font-family: 'DM Mono'; font-size: 12px; color: #6a8aaa; margin-bottom: 16px; }
+    .cambcat-panel-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .cambcat-panel-row .form-control { flex: 1 1 220px; }
+    .btn-cambcat-guardar { flex: 0 1 140px; box-sizing: border-box; height: 44px; background: linear-gradient(135deg,#16a34a,#22c55e); color: #fff; border: none; border-radius: 8px; padding: 0 18px; font-family: 'Exo 2'; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: filter .15s, transform .1s; }
+    .btn-cambcat-guardar:hover { filter: brightness(1.12); }
+    .btn-cambcat-guardar:active { transform: scale(0.98); }
+    .btn-cambcat-guardar:disabled { opacity: .5; pointer-events: none; }
+    .btn-cambcat-cancelar { background: transparent; border: 1px solid #1a3a5a; color: #6a8aaa; border-radius: 8px; padding: 0 14px; height: 44px; font-family: 'Exo 2'; font-size: 12px; cursor: pointer; transition: all .15s; }
+    .btn-cambcat-cancelar:hover { border-color: #4a7a9a; color: #c8d8f0; }
+
     .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px); background: #0f2035; border: 1px solid rgba(91,200,240,0.4); border-radius: 10px; padding: 14px 22px; font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #c8d8f0; box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 99999; max-width: calc(100vw - 40px); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast.error { border-color: rgba(248,113,113,0.5); color: #f87171; }
@@ -135,6 +156,7 @@
             <button class="config-nav-item" data-section="registro" onclick="mostrarSeccion('registro')"><span class="config-nav-icon">📋</span> Registro</button>
             <button class="config-nav-item" data-section="categorias" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
             <button class="config-nav-item" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
+            <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
           </div>
 
           <div class="config-panel">
@@ -195,6 +217,23 @@
 
           <div id="pers-loading" class="loading-msg"><span class="spinner"></span> Cargando personal...</div>
           <div id="pers-lista"></div>
+        </div>
+
+        <div class="config-card config-section" data-section="cambcat">
+          <div class="config-card-title">🔄 Cambiar categoría de un participante</div>
+          <div class="config-card-desc">
+            Corrige la categoría de un participante ya registrado. Esto <strong>no</strong>
+            cambia su estado de aprobación ni actualiza manillas, certificados o brackets
+            que ya se hayan generado con la categoría anterior — revisá esos aparte si
+            corresponde.
+          </div>
+
+          <input type="text" id="cambcat-buscar" class="form-control" style="width:100%; margin-bottom:14px;" placeholder="Buscar por nombre, robot, institución o ID...">
+
+          <div id="cambcat-loading" class="loading-msg" style="display:none;"><span class="spinner"></span> Cargando participantes...</div>
+          <div id="cambcat-resultados"></div>
+
+          <div id="cambcat-seleccionado" style="display:none;"></div>
         </div>
 
           </div><!-- /config-panel -->
@@ -457,6 +496,119 @@
       btn.disabled = false;
     }
   }
+
+  // ── Cambiar categoría de un participante ─────────────────────────
+  let _cambcatParticipantes = null;
+  let _cambcatSeleccionado  = null;
+
+  function normalizarTexto(s) {
+    return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  async function cargarParticipantesCambCat() {
+    if (_cambcatParticipantes) return _cambcatParticipantes;
+    document.getElementById('cambcat-loading').style.display = 'block';
+    try {
+      const data = await gasGet({ action: 'getParticipantes' });
+      _cambcatParticipantes = Array.isArray(data) ? data : [];
+    } catch(e) {
+      _cambcatParticipantes = [];
+      showToast('⚠️ Error al cargar participantes: ' + e.message, true);
+    }
+    document.getElementById('cambcat-loading').style.display = 'none';
+    return _cambcatParticipantes;
+  }
+
+  async function buscarParticipantesCambCat() {
+    const q = normalizarTexto(document.getElementById('cambcat-buscar').value);
+    const cont = document.getElementById('cambcat-resultados');
+    if (!q) { cont.innerHTML = ''; return; }
+
+    const lista = await cargarParticipantesCambCat();
+    const encontrados = lista.filter(p =>
+      normalizarTexto(p.nombre).includes(q) ||
+      normalizarTexto(p.robot).includes(q) ||
+      normalizarTexto(p.institucion).includes(q) ||
+      normalizarTexto(p.id).includes(q)
+    ).slice(0, 15);
+
+    cont.innerHTML = '';
+    if (!encontrados.length) {
+      cont.innerHTML = '<div class="cambcat-vacio">Sin resultados para "' + document.getElementById('cambcat-buscar').value + '"</div>';
+      return;
+    }
+    encontrados.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'cambcat-row';
+      row.innerHTML =
+        '<div class="cambcat-info">' +
+          '<span class="cambcat-nombre">' + (p.nombre || '—') + (p.robot ? ' · ' + p.robot : '') + '</span>' +
+          '<span class="cambcat-sub">' + (p.institucion || '—') + ' · ' + p.id + '</span>' +
+        '</div>' +
+        '<span class="cat-estado abierta">' + (p.categoria || '—') + '</span>';
+      row.addEventListener('click', () => seleccionarParticipanteCambCat(p));
+      cont.appendChild(row);
+    });
+  }
+
+  function seleccionarParticipanteCambCat(p) {
+    _cambcatSeleccionado = p;
+    document.getElementById('cambcat-resultados').innerHTML = '';
+    document.getElementById('cambcat-buscar').value = '';
+
+    const panel = document.getElementById('cambcat-seleccionado');
+    panel.style.display = 'block';
+    panel.innerHTML =
+      '<div class="cambcat-panel">' +
+        '<div class="cambcat-panel-nombre">' + (p.nombre || '—') + (p.robot ? ' · ' + p.robot : '') + '</div>' +
+        '<div class="cambcat-panel-sub">' + (p.institucion || '—') + ' · ID ' + p.id + ' · categoría actual: <strong>' + (p.categoria || '—') + '</strong></div>' +
+        '<div class="cambcat-panel-row">' +
+          '<select id="cambcat-nueva" class="form-control"></select>' +
+          '<button class="btn-cambcat-guardar" id="btn-cambcat-guardar">✅ Guardar</button>' +
+          '<button class="btn-cambcat-cancelar" onclick="cancelarCambCat()">Cancelar</button>' +
+        '</div>' +
+      '</div>';
+
+    const sel = document.getElementById('cambcat-nueva');
+    CATEGORIAS.forEach(nombre => {
+      const opt = document.createElement('option');
+      opt.value = nombre; opt.textContent = nombre;
+      if (nombre === p.categoria) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    document.getElementById('btn-cambcat-guardar').addEventListener('click', guardarCambioCategoria);
+  }
+
+  function cancelarCambCat() {
+    _cambcatSeleccionado = null;
+    document.getElementById('cambcat-seleccionado').style.display = 'none';
+    document.getElementById('cambcat-seleccionado').innerHTML = '';
+  }
+
+  async function guardarCambioCategoria() {
+    const p = _cambcatSeleccionado;
+    if (!p) return;
+    const nuevaCategoria = document.getElementById('cambcat-nueva').value;
+    if (nuevaCategoria === p.categoria) { showToast('Esa ya es su categoría actual', true); return; }
+    if (!confirm('¿Cambiar la categoría de ' + (p.nombre || p.id) + ' de "' + (p.categoria || '—') + '" a "' + nuevaCategoria + '"?\n\nEsto no actualiza manillas, certificados ni brackets ya generados con la categoría anterior.')) return;
+
+    const btn = document.getElementById('btn-cambcat-guardar');
+    btn.disabled = true;
+    try {
+      const resp = await gasPost({ action: 'cambiarCategoriaParticipante', id: p.id, categoria: nuevaCategoria });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      p.categoria = nuevaCategoria;
+      const idx = _cambcatParticipantes.findIndex(x => x.id === p.id);
+      if (idx >= 0) _cambcatParticipantes[idx].categoria = nuevaCategoria;
+      showToast('✅ Categoría de ' + (p.nombre || p.id) + ' actualizada a ' + nuevaCategoria);
+      cancelarCambCat();
+    } catch(e) {
+      showToast('⚠️ Error al cambiar la categoría: ' + e.message, true);
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('cambcat-buscar').addEventListener('input', buscarParticipantesCambCat);
   </script>
 </body>
 </html>
