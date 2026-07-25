@@ -1376,6 +1376,9 @@ function buildPaso3() {
   document.getElementById('emptyFormState').style.display = 'block';
   document.getElementById('formCal').style.display = 'none';
   document.getElementById('lkFase2Panel').classList.remove('show');
+  // Re-aplicar permisos DESPUES de fijar lkFase2Trigger en 'block' arriba —
+  // para lk, solo el Jefe de Jurado debe poder clasificar a Fase 2.
+  aplicarPermisosJefe(cat);
 }
 
 function renderListaRobots() {
@@ -1506,6 +1509,9 @@ function seleccionarRobot(id) {
   criteriosActivos.forEach((c, i) => {
     // lk: criterio F2 especial
     const esCriterioLkF2 = esLk && c.nombre === LK_CRITERIO_F2.nombre;
+    // lk: el tiempo de carrera es un dato objetivo unico, no una nota por
+    // juez — solo el Jefe de Jurado lo ingresa (ver principio en guardarCalificacion).
+    const lkF2SoloJefe = esCriterioLkF2 && !esJefeActivo('lk');
     // lk: solo lectura en fase 2 para criterios de fase 1
     const soloLectura = esLk && !esCriterioLkF2 && faseActual === 2 && cal?.guardado && !cal?.fase2;
     // bai: en fase 2 todos son editables (mismos criterios, calificación nueva)
@@ -1521,14 +1527,14 @@ function seleccionarRobot(id) {
       <div>
         <div class="criterio-nombre">${c.nombre}${esCriterioLkF2 ? ' <span style="color:var(--green);font-size:.7rem">(Fase 2)</span>' : ''}</div>
         ${c.descripcion ? `<div class="criterio-desc">${c.descripcion}</div>` : ''}
-        <div class="criterio-peso-hint">0 – ${c.peso}</div>
+        <div class="criterio-peso-hint">0 – ${c.peso}${lkF2SoloJefe ? ' · Solo el Jefe de Jurado lo ingresa' : ''}</div>
       </div>
       <div class="criterio-input-wrap">
         <input class="criterio-nota-input" type="number" min="0" max="${c.peso}" step="0.5"
           value="${valGuardado}" data-idx="${i}" data-peso="${c.peso}"
           data-f2="${esCriterioLkF2 ? '1' : '0'}"
           data-bai-f2="${(esBai && faseActual === 2) ? '1' : '0'}"
-          ${soloLectura ? 'disabled' : ''}
+          ${(soloLectura || lkF2SoloJefe) ? 'disabled' : ''}
           oninput="actualizarTotal()" placeholder="—">
         <span class="criterio-max">/ ${c.peso}</span>
       </div>`;
@@ -1631,6 +1637,13 @@ function aplicarPermisosJefe(cat) {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
+  }
+  // Lego Kids: el tiempo de carrera de Fase 2 es un dato objetivo único (no
+  // una nota por juez) — solo el Jefe de Jurado decide cuándo clasificar y
+  // lo ingresa. Los demás jueces solo califican Fase 1.
+  if (cat === 'lk') {
+    const trig = document.getElementById('lkFase2Trigger');
+    if (trig) trig.style.display = jefe ? 'block' : 'none';
   }
 }
 
