@@ -12,7 +12,24 @@
   <style>
     body { background: #07111e !important; font-family: 'Exo 2', sans-serif; color: #c8d8f0; padding-top: 0 !important; }
     main { padding-top: 120px; min-height: 100vh; background: #07111e; }
-    .wrapper { max-width: 780px; margin: 0 auto; padding: 0 32px 80px; }
+    .wrapper { max-width: 980px; margin: 0 auto; padding: 0 32px 80px; }
+
+    .config-shell { display: flex; align-items: flex-start; gap: 28px; }
+    .config-sidebar { flex: 0 0 210px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 132px; }
+    .config-nav-item { display: flex; align-items: center; gap: 10px; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 12px 14px; font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #6a8aaa; cursor: pointer; text-align: left; transition: all .15s; width: 100%; }
+    .config-nav-item:hover { background: rgba(91,200,240,0.07); color: #c8d8f0; }
+    .config-nav-item.active { background: rgba(91,200,240,0.12); border-color: rgba(91,200,240,0.35); color: #5bc8f0; }
+    .config-nav-icon { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; }
+    .config-panel { flex: 1; min-width: 0; }
+    .config-section { display: none; }
+    .config-section.active { display: block; animation: configFadeIn .18s ease; }
+    @keyframes configFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 760px) {
+      .config-shell { flex-direction: column; }
+      .config-sidebar { flex-direction: row; overflow-x: auto; gap: 8px; position: static; width: 100%; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+      .config-nav-item { flex: 0 0 auto; white-space: nowrap; width: auto; }
+    }
 
     .page-hero { padding: 28px 0 20px; }
     .page-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1a5ca8; color: #fff; font-family: 'Orbitron'; font-size: 11px; font-weight: 700; letter-spacing: 3px; padding: 7px 18px; border-radius: 20px; margin-bottom: 14px; }
@@ -110,7 +127,16 @@
           <h2>CONFIGURACIÓN <span>SUCREBOT</span></h2>
         </div>
 
-        <div class="config-card">
+        <div class="config-shell">
+          <div class="config-sidebar" id="config-sidebar">
+            <button class="config-nav-item" data-section="registro" onclick="mostrarSeccion('registro')"><span class="config-nav-icon">📋</span> Registro</button>
+            <button class="config-nav-item" data-section="categorias" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
+            <button class="config-nav-item" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
+          </div>
+
+          <div class="config-panel">
+
+        <div class="config-card config-section" data-section="registro">
           <div class="config-card-title">📋 Registro de participantes</div>
           <div class="config-card-desc">
             Controla si REGISTRO acepta nuevas inscripciones. Cuando está cerrado, quien
@@ -135,7 +161,7 @@
           </div>
         </div>
 
-        <div class="config-card">
+        <div class="config-card config-section" data-section="categorias">
           <div class="config-card-title">🏷️ Categorías individuales</div>
           <div class="config-card-desc">
             Cierra las inscripciones de una categoría específica sin afectar al resto
@@ -146,7 +172,7 @@
           <div id="cats-lista"></div>
         </div>
 
-        <div class="config-card">
+        <div class="config-card config-section" data-section="personal">
           <div class="config-card-title">👥 Personal</div>
           <div class="config-card-desc">
             Quién puede entrar como Staff, Ayudante (Jueces) o Administrador.
@@ -167,6 +193,9 @@
           <div id="pers-loading" class="loading-msg"><span class="spinner"></span> Cargando personal...</div>
           <div id="pers-lista"></div>
         </div>
+
+          </div><!-- /config-panel -->
+        </div><!-- /config-shell -->
 
       </div><!-- /contenido-staff -->
     </div>
@@ -193,9 +222,16 @@
     if (window.esperarRol) await window.esperarRol();
     if (!window.esAdmin || !window.esAdmin()) { show('acceso-denegado'); return; }
     show('contenido-staff');
+    mostrarSeccion(localStorage.getItem('sucrebot_config_seccion') || 'registro');
     cargarEstado();
     cargarPersonal();
   });
+
+  function mostrarSeccion(id) {
+    document.querySelectorAll('.config-section').forEach(s => s.classList.toggle('active', s.dataset.section === id));
+    document.querySelectorAll('.config-nav-item').forEach(b => b.classList.toggle('active', b.dataset.section === id));
+    localStorage.setItem('sucrebot_config_seccion', id);
+  }
 
   let _toastTimer = null;
   function showToast(msg, esError) {
