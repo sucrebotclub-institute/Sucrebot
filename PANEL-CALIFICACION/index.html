@@ -485,8 +485,9 @@
             <thead><tr><th>CRITERIO</th><th>DESCRIPCIÓN</th><th></th></tr></thead>
             <tbody id="criteriosTbody"></tbody>
           </table>
-          <div class="btn-row" style="margin-top:14px">
+          <div class="btn-row" style="margin-top:14px;justify-content:space-between">
             <button class="btn-agregar" onclick="agregarCriterio()">＋ Agregar</button>
+            <button class="btn btn-green" id="btnGuardarCriterios" onclick="guardarCriteriosConfig()">💾 Guardar Cambios</button>
           </div>
         </div>
 
@@ -1090,7 +1091,7 @@ function getFaseLabel(cat, n) { return (FASE_LABELS[cat] || { f1:'Fase 1', f2:'F
 // Para bai: fase 2 usa los mismos criterios (100 pts, misma tabla)
 // Para lk: fase 2 agrega LK_CRITERIO_F2
 function getCriteriosFase(cat, fase) {
-  if (cat === 'lk') return fase === 2 ? [...LK_CRITERIOS_F1, LK_CRITERIO_F2] : LK_CRITERIOS_F1;
+  if (cat === 'lk') return fase === 2 ? [...state.criterios, LK_CRITERIO_F2] : state.criterios;
   return state.criterios; // bai: mismos criterios en ambas fases
 }
 
@@ -1101,6 +1102,7 @@ async function seleccionarCategoria(cat) {
   cargandoCategoria = true;
   const grid = document.querySelector('.cat-cards-grid');
   if (grid) grid.classList.add('cargando');
+  loading(true, 'CARGANDO...');
 
   if (state.categoria && state.categoria !== cat) {
     gasPost({ action: 'desbloquearCategoria', categoria: CAT_NOMBRES[state.categoria] }).catch(() => {});
@@ -1144,15 +1146,11 @@ async function seleccionarCategoria(cat) {
   document.getElementById('btnVerRankingP1').style.display = 'none';
   document.getElementById('avisoSinParticipantes').style.display = 'none';
 
-  loading(true, 'CARGANDO...');
-
   try {
     const res = await gasGet({ action: 'getCriterios', categoria: cat });
-    const critConfig = cat === 'lk'
-      ? LK_CRITERIOS_F1
-      : ((res.ok && res.criterios?.length) ? res.criterios : DEFAULTS_CRITERIOS[cat]);
+    const critConfig = (res.ok && res.criterios?.length) ? res.criterios : DEFAULTS_CRITERIOS[cat];
     renderCriteriosConfig(critConfig);
-  } catch(e) { renderCriteriosConfig(cat === 'lk' ? LK_CRITERIOS_F1 : DEFAULTS_CRITERIOS[cat]); }
+  } catch(e) { renderCriteriosConfig(DEFAULTS_CRITERIOS[cat]); }
 
   try {
     const res2 = await gasGet({ action: 'getParticipantes' });
@@ -1221,25 +1219,39 @@ function leerCriteriosConfig() {
   return criterios;
 }
 
+async function guardarCriteriosConfig() {
+  const cat = state.categoria;
+  if (!cat) { toast('Selecciona una categoría primero', 'error'); return; }
+  const criterios = leerCriteriosConfig();
+  if (!criterios.length) { toast('Define al menos un criterio', 'error'); return; }
+
+  loading(true, 'GUARDANDO CRITERIOS...');
+  try {
+    const res = await gasPost({ action: 'guardarCriterios', categoria: cat, criterios });
+    if (res && res.ok === false) { toast('Error: ' + (res.error || 'desconocido'), 'error'); }
+    else { state.criterios = criterios; toast('✅ Criterios guardados', 'success'); }
+  } catch(e) { toast('Error de red al guardar criterios', 'error'); }
+  loading(false);
+}
+
 async function iniciarCalificacion() {
   const cat = state.categoria;
   if (!cat) { toast('Selecciona una categoría', 'error'); return; }
 
+  state.criterios = leerCriteriosConfig();
+  if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
+
   if (cat === 'lk') {
-    state.criterios = [...LK_CRITERIOS_F1]; state.lkFase = 1;
+    state.lkFase = 1;
     const juezGuardadoLk = parseInt(localStorage.getItem('sucrebot_lk_juez') || '0');
     state.lkJuezIdx = (juezGuardadoLk >= 0 && juezGuardadoLk < getNumJueces('lk')) ? juezGuardadoLk : 0;
   } else if (cat === 'bai') {
-    state.criterios = BAI_CRITERIOS; state.baiFase = 1;
+    state.baiFase = 1;
     const juezGuardadoBai = parseInt(localStorage.getItem('sucrebot_bai_juez') || '0');
     state.baiJuezIdx = (juezGuardadoBai >= 0 && juezGuardadoBai < getNumJueces('bai')) ? juezGuardadoBai : 0;
   } else if (cat === 'dev') {
-    state.criterios = DEV_CRITERIOS;
     const juezGuardado = parseInt(localStorage.getItem('sucrebot_dev_juez') || '0');
     state.devJuezIdx = (juezGuardado >= 0 && juezGuardado < getNumJueces('dev')) ? juezGuardado : 0;
-  } else {
-    state.criterios = leerCriteriosConfig();
-    if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
   }
 
   gasPost({ action: 'guardarCriterios', categoria: cat, criterios: state.criterios }).catch(() => {});
@@ -2141,7 +2153,8 @@ async function verRankingDesdePaso1() {
   }
   if (!state.criterios.length) {
     const cat = state.categoria;
-    state.criterios = cat === 'lk' ? [...LK_CRITERIOS_F1] : (cat === 'bai' ? BAI_CRITERIOS : DEFAULTS_CRITERIOS[cat]);
+    const tabla = leerCriteriosConfig();
+    state.criterios = tabla.length ? tabla : DEFAULTS_CRITERIOS[cat];
   }
   await cargarRanking();
   setStep(4);
@@ -2471,7 +2484,7 @@ function seleccionarRobotFinal(id) {
 
   const criteriosCal = document.getElementById('criteriosCalFinal');
   criteriosCal.innerHTML = '';
-  BAI_CRITERIOS.forEach((c, i) => {
+  state.criterios.forEach((c, i) => {
     const val = notasGuardadas[`cf${i}`] ?? '';
     const row = document.createElement('div');
     row.className = 'criterio-row';
