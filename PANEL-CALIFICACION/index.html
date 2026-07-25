@@ -2180,16 +2180,13 @@ function poolPodioManualCal() {
   return state.rankingData.length ? state.rankingData : poolPresentesCal();
 }
 
-// Pool de finalistas de bai para el ajuste manual del podio FINAL (panel-6).
-// Incluye a los 3 seleccionados aunque alguno no tenga nota final guardada
-// (ej. no se presentó, falló la calificación) — asi se puede igual asignarle
-// una posición (3er lugar, etc.) en vez de quedar sin podio.
-function poolPodioManualFinal() {
-  return (state.baiFinalistas || []).map(id => {
-    const p = state.participantes.find(x => x.id === id) || {};
-    const cal = (state.calificacionesFinal && state.calificacionesFinal[id]) || null;
-    return { id, nombre: p.nombre || '', robot: p.robot || p.nombre || id, institucion: p.institucion || '', total: cal ? (cal.total || 0) : 0 };
-  });
+// Objeto liviano para representar a cualquier participante en el ajuste manual
+// del podio FINAL (panel-6), aunque no tenga nota de ronda final (ej. no llegó
+// a ser finalista, o fue finalista pero no se le pudo guardar la nota).
+function personaParaPodioFinal(id) {
+  const p = state.participantes.find(x => x.id === id);
+  if (!p) return null;
+  return { id: p.id, nombre: p.nombre || '', robot: p.robot || p.nombre || id, institucion: p.institucion || '', total: 0 };
 }
 
 let _modalPodioTarget = 'elim'; // 'elim' (panel-4/2) | 'final' (panel-6, ronda final bai)
@@ -2208,16 +2205,42 @@ function abrirModalPodioManualCal() {
   document.getElementById('modalPodioManualCal').classList.add('show');
 }
 
-function abrirModalPodioManualFinal() {
+// El podio de Bailarín no tiene por qué salir solo de quienes llegaron a la
+// ronda final — si a la final avanzan menos de 3 (ej. solo 2), el 3er lugar
+// se asigna igual, tomando al mejor de la eliminatoria que no fue finalista.
+// Por eso el selector ofrece a TODOS los participantes, no solo finalistas.
+async function abrirModalPodioManualFinal() {
+  loading(true, 'CARGANDO...');
+  let rankingFinal = [];
+  try {
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
+    rankingFinal = res.ranking || [];
+  } catch(e) {}
+  loading(false);
+
+  const pool = (state.participantes || []).map(p => {
+    const rf = rankingFinal.find(r => r.id === p.id);
+    const calElim = state.calificaciones[p.id] || null;
+    return {
+      id: p.id, nombre: p.nombre || '', robot: p.robot || p.nombre || p.id,
+      totalFinal: rf ? (parseFloat(rf.total) || 0) : null,
+      totalElim: calElim ? (calElim.fase1Total || calElim.total || 0) : null
+    };
+  });
+  if (!pool.length) { toast('No hay participantes', 'error'); return; }
+
   _modalPodioTarget = 'final';
-  const pool = poolPodioManualFinal();
-  if (!pool.length) { toast('No hay finalistas seleccionados', 'error'); return; }
+  const ordenActual = state.podioManualOverrideFinal || rankingFinal.map(r => r.id);
   const selects = ['selPodioCal1','selPodioCal2','selPodioCal3'].map(id => document.getElementById(id));
   selects.forEach((sel, i) => {
     sel.innerHTML = '<option value="">— (vacío) —</option>' +
-      pool.map(r => `<option value="${r.id}">${r.robot || r.nombre} — ${r.nombre}${r.total ? ' (' + r.total.toFixed(1) + ' pts)' : ' (sin calificar)'}</option>`).join('');
-    const preset = state.podioManualOverrideFinal ? (state.podioManualOverrideFinal[i] || '') : (pool[i] ? pool[i].id : '');
-    sel.value = preset;
+      pool.map(r => {
+        const hint = r.totalFinal !== null ? `Final: ${r.totalFinal.toFixed(1)} pts`
+          : r.totalElim !== null ? `Eliminatoria: ${r.totalElim.toFixed(1)} pts, sin ronda final`
+          : 'sin calificar';
+        return `<option value="${r.id}">${r.robot || r.nombre} — ${r.nombre} (${hint})</option>`;
+      }).join('');
+    sel.value = ordenActual[i] || '';
   });
   document.getElementById('modalPodioManualCal').classList.add('show');
 }
@@ -2625,9 +2648,8 @@ async function cargarRankingFinal() {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
     let rankingFinal = res.ranking || [];
     if (state.podioManualOverrideFinal) {
-      const pool = poolPodioManualFinal();
       const ov = state.podioManualOverrideFinal.filter(Boolean);
-      const enOrden = ov.map(id => rankingFinal.find(r => r.id === id) || pool.find(p => p.id === id)).filter(Boolean);
+      const enOrden = ov.map(id => rankingFinal.find(r => r.id === id) || personaParaPodioFinal(id)).filter(Boolean);
       const idsEnOrden = enOrden.map(r => r.id);
       const resto = rankingFinal.filter(r => !idsEnOrden.includes(r.id));
       rankingFinal = [...enOrden, ...resto];
@@ -2684,9 +2706,8 @@ async function guardarPodioFinal() {
     const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
     let rankingFinal = res.ranking || [];
     if (state.podioManualOverrideFinal) {
-      const pool = poolPodioManualFinal();
       const ov = state.podioManualOverrideFinal.filter(Boolean);
-      const enOrden = ov.map(id => rankingFinal.find(r => r.id === id) || pool.find(p => p.id === id)).filter(Boolean);
+      const enOrden = ov.map(id => rankingFinal.find(r => r.id === id) || personaParaPodioFinal(id)).filter(Boolean);
       const idsEnOrden = enOrden.map(r => r.id);
       const resto = rankingFinal.filter(r => !idsEnOrden.includes(r.id));
       rankingFinal = [...enOrden, ...resto];
@@ -2781,9 +2802,31 @@ function generarExcelPodioFinal(rankingFinal) {
     podioRows.push([TITULOS_PODIO[i] || (i + 1), r.robot || r.nombre, r.nombre, r.institucion || '', parseFloat(r.total).toFixed(2)]);
   });
 
+  // Todos los participantes de la categoría (eliminatoria completa), no solo
+  // finalistas/podio — con su resultado final y posición de podio si aplica.
+  const idsFinales = rankingFinal.map(r => r.id);
+  const todosHeader = ['#', 'Robot', 'Nombre', 'Institución', 'Eliminatoria', 'Final', 'Podio'];
+  const todosRows = [todosHeader];
+  const todosOrdenados = [...state.participantes].sort((a, b) => {
+    const ea = state.calificaciones[a.id]?.fase1Total || state.calificaciones[a.id]?.total || 0;
+    const eb = state.calificaciones[b.id]?.fase1Total || state.calificaciones[b.id]?.total || 0;
+    return eb - ea;
+  });
+  todosOrdenados.forEach((p, i) => {
+    const elim = state.calificaciones[p.id];
+    const posFinal = idsFinales.indexOf(p.id);
+    const rf = posFinal >= 0 ? rankingFinal[posFinal] : null;
+    const podio = posFinal >= 0 ? (TITULOS_PODIO[posFinal] || 'Finalista') : '—';
+    todosRows.push([i + 1, p.robot || p.nombre, p.nombre, p.institucion || '',
+      elim ? parseFloat((elim.fase1Total || elim.total || 0).toFixed(1)) : '—',
+      rf ? parseFloat(rf.total).toFixed(2) : '—',
+      podio]);
+  });
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(podioRows), 'Podio');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Ranking Final Completo');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(todosRows), 'Todos los Participantes');
   XLSX.writeFile(wb, 'SucreBot2026_Bailarin_PodioFinal_' + Date.now() + '.xlsx');
 }
 
