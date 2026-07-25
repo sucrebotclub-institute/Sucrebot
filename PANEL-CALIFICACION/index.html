@@ -1961,13 +1961,34 @@ function irASeleccionarFinalistas() {
   abrirSelectorFinalistas();
 }
 
-function abrirSelectorFinalistas() {
-  // Mostrar modal de selección de finalistas sobre ranking
-  const ordenados = [...state.participantes]
-    .map(p => ({ ...p, fase1: state.calificaciones[p.id]?.fase1Total || state.calificaciones[p.id]?.total || 0 }))
-    .sort((a, b) => b.fase1 - a.fase1);
-  const actuales = state.baiFinalistas;
+async function abrirSelectorFinalistas() {
+  const panel = document.getElementById('lkFase2Panel');
+  const titulo = document.getElementById('lkFase2PanelTitle');
+  if (titulo) titulo.textContent = '🏆 Seleccionar TOP 3 Finalistas — Ronda Final';
+  const btnConfirmar = panel.querySelector('button.btn-green');
+  if (btnConfirmar) btnConfirmar.setAttribute('onclick', 'confirmarFinalistasYIrAFinal()');
+  document.getElementById('formCal').style.display = 'none';
+  document.getElementById('emptyFormState').style.display = 'none';
+  panel.classList.add('show');
+
   const grid = document.getElementById('clasificadosGrid');
+  grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><p>Cargando puntajes...</p></div>';
+
+  // Puntaje real (promedio entre jueces), no la caché local por participante
+  // (state.calificaciones[p.id].fase1Total) que cualquier juez pisa con su
+  // propia nota — mostraba el puntaje de un juez cualquiera en vez del
+  // promedio real de la eliminatoria.
+  let scoreDe = {};
+  try {
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai' });
+    (res.ranking || []).forEach(r => { scoreDe[r.id] = parseFloat(r.total) || 0; });
+  } catch(e) {}
+
+  const actuales = state.baiFinalistas;
+  const ordenados = [...state.participantes]
+    .map(p => ({ ...p, fase1: scoreDe[p.id] ?? (state.calificaciones[p.id]?.fase1Total || state.calificaciones[p.id]?.total || 0) }))
+    .sort((a, b) => b.fase1 - a.fase1);
+
   grid.innerHTML = '';
   ordenados.forEach(p => {
     const checked = actuales.includes(p.id);
@@ -1975,18 +1996,9 @@ function abrirSelectorFinalistas() {
     div.className = 'clasificado-item' + (checked ? ' checked' : '');
     div.dataset.id = p.id;
     div.onclick = () => toggleClasificado(p.id, div);
-    div.innerHTML = `<div class="clasificado-check">${checked ? '✓' : ''}</div><div><div class="clasificado-nombre">${p.robot||p.nombre}</div><div style="font-size:.75rem;color:var(--text-dim)">${p.institucion||'—'}</div></div><div class="clasificado-score">${(state.calificaciones[p.id]?.fase1Total||state.calificaciones[p.id]?.total||0).toFixed(1)} / 100</div>`;
+    div.innerHTML = `<div class="clasificado-check">${checked ? '✓' : ''}</div><div><div class="clasificado-nombre">${p.robot||p.nombre}</div><div style="font-size:.75rem;color:var(--text-dim)">${p.institucion||'—'}</div></div><div class="clasificado-score">${p.fase1.toFixed(1)} / 100</div>`;
     grid.appendChild(div);
   });
-  const panel = document.getElementById('lkFase2Panel');
-  const titulo = document.getElementById('lkFase2PanelTitle');
-  if (titulo) titulo.textContent = '🏆 Seleccionar TOP 3 Finalistas — Ronda Final';
-  // Cambiar confirmar para ir a paso 5
-  const btnConfirmar = panel.querySelector('button.btn-green');
-  if (btnConfirmar) btnConfirmar.setAttribute('onclick', 'confirmarFinalistasYIrAFinal()');
-  document.getElementById('formCal').style.display = 'none';
-  document.getElementById('emptyFormState').style.display = 'none';
-  panel.classList.add('show');
 }
 
 function confirmarFinalistasYIrAFinal() {
