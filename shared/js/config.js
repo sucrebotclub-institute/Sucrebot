@@ -40,6 +40,14 @@ const CONFIG = {
     'dgodoy@tecnologicosucre.edu.ec',
     'aperez@tecnologicosucre.edu.ec',
     'rakusho9999@gmail.com'
+  ],
+
+  // ── Administradores ────────────────────────────────────────────
+  // Todo lo de Staff (Jueces + Organización) más el dropdown "Admin"
+  // del nav (hoy: CONFIGURACION). Siempre subconjunto de STAFF_EMAILS.
+  ADMIN_EMAILS: [
+    'sucrebotclub@tecnologicosucre.edu.ec',
+    'cortega@tecnologicosucre.edu.ec'
   ]
 
 };

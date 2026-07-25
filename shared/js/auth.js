@@ -10,6 +10,10 @@ window.STAFF_EMAILS = STAFF_EMAILS;
 const AYUDANTE_EMAILS = CONFIG.AYUDANTE_EMAILS || [];
 window.AYUDANTE_EMAILS = AYUDANTE_EMAILS;
 
+// Administradores: todo lo de Staff + dropdown "Admin" del nav (ver config.js)
+const ADMIN_EMAILS = CONFIG.ADMIN_EMAILS || [];
+window.ADMIN_EMAILS = ADMIN_EMAILS;
+
 // ── Helper global: ¿el usuario logueado es staff completo? ──────
 // Usar esto (no el token) para gatear páginas de Organización, porque
 // el token se comparte también con los ayudantes para que les funcionen
@@ -34,6 +38,20 @@ window.esJuez = function() {
   try {
     const u = JSON.parse(s);
     return STAFF_EMAILS.includes(u.email) || AYUDANTE_EMAILS.includes(u.email);
+  } catch (e) {
+    return false;
+  }
+};
+
+// ── Helper global: ¿el usuario logueado es administrador? ───────
+// Usar para gatear páginas admin-only (ej. CONFIGURACION). Siempre
+// subconjunto de STAFF_EMAILS — un admin ya es staff completo.
+window.esAdmin = function() {
+  const s = localStorage.getItem('sucrebot_user');
+  if (!s) return false;
+  try {
+    const u = JSON.parse(s);
+    return ADMIN_EMAILS.includes(u.email);
   } catch (e) {
     return false;
   }
@@ -80,6 +98,7 @@ function activarSesion(data) {
   
   const isStaff    = STAFF_EMAILS.includes(data.email);
   const isAyudante = AYUDANTE_EMAILS.includes(data.email);
+  const isAdmin    = ADMIN_EMAILS.includes(data.email);
   const esJuezRol  = isStaff || isAyudante; // ambos ven/usan páginas de Jueces
 
   // ── Guardar/limpiar token staff según rol ──────────────────
@@ -90,21 +109,24 @@ function activarSesion(data) {
   } else {
     localStorage.removeItem('sucrebot_staff_token');
   }
-  
+
   const navStaff        = document.getElementById('navStaff');
   const navOrganizacion = document.getElementById('navOrganizacion');
+  const navAdmin        = document.getElementById('navAdmin');
   const navPartDropdown = document.getElementById('navPartDropdown');
   const navPartLink     = document.getElementById('navPartLink');
-  
+
   if (esJuezRol) {
     if (navStaff)        navStaff.style.display        = 'block';
     // Organización: SOLO staff completo, nunca ayudantes
     if (navOrganizacion) navOrganizacion.style.display = isStaff ? 'block' : 'none';
+    if (navAdmin)         navAdmin.style.display        = isAdmin ? 'block' : 'none';
     if (navPartLink)     navPartLink.style.display     = 'none';
     if (navPartDropdown) navPartDropdown.style.display = 'none';
   } else {
     if (navStaff)        navStaff.style.display        = 'none';
     if (navOrganizacion) navOrganizacion.style.display = 'none';
+    if (navAdmin)         navAdmin.style.display        = 'none';
     if (navPartLink)     navPartLink.style.display     = 'none';
     if (navPartDropdown) navPartDropdown.style.display = 'block';
   }
@@ -123,16 +145,18 @@ window.cerrarSesion = function() {
   const userInfo        = document.getElementById('userInfo');
   const navStaff        = document.getElementById('navStaff');
   const navOrganizacion = document.getElementById('navOrganizacion');
+  const navAdmin        = document.getElementById('navAdmin');
   const navPartDropdown = document.getElementById('navPartDropdown');
   const navPartLink     = document.getElementById('navPartLink');
-  
+
   if (btnLogin)        btnLogin.style.display        = 'flex';
   if (userInfo)        userInfo.classList.remove('visible');
   if (navStaff)        navStaff.style.display        = 'none';
   if (navOrganizacion) navOrganizacion.style.display = 'none';
+  if (navAdmin)        navAdmin.style.display        = 'none';
   if (navPartDropdown) navPartDropdown.style.display = 'none';
   if (navPartLink)     navPartLink.style.display     = 'none';
-  
+
   window.location.reload();
 };
 
@@ -215,21 +239,23 @@ window.cambiarCuenta = function() {
   
   localStorage.removeItem('sucrebot_user');
   localStorage.removeItem('sucrebot_staff_token'); // ── limpiar token staff
-  
+
   const btnLogin        = document.getElementById('btnLogin');
   const userInfo        = document.getElementById('userInfo');
   const navStaff        = document.getElementById('navStaff');
   const navOrganizacion = document.getElementById('navOrganizacion');
+  const navAdmin        = document.getElementById('navAdmin');
   const navPartDropdown = document.getElementById('navPartDropdown');
   const navPartLink     = document.getElementById('navPartLink');
-  
+
   if (btnLogin)        btnLogin.style.display        = 'flex';
   if (userInfo)        userInfo.classList.remove('visible');
   if (navStaff)        navStaff.style.display        = 'none';
   if (navOrganizacion) navOrganizacion.style.display = 'none';
+  if (navAdmin)        navAdmin.style.display        = 'none';
   if (navPartDropdown) navPartDropdown.style.display = 'none';
   if (navPartLink)     navPartLink.style.display     = 'none';
-  
+
   setTimeout(() => iniciarLogin(), 300);
 };
 
@@ -240,12 +266,14 @@ function inicializarMenus() {
   const navPartDropdown = document.getElementById('navPartDropdown');
   const navStaff        = document.getElementById('navStaff');
   const navOrganizacion = document.getElementById('navOrganizacion');
-  
+  const navAdmin        = document.getElementById('navAdmin');
+
   if (!savedUser) {
     if (navPartLink)     navPartLink.style.display     = 'none';
     if (navPartDropdown) navPartDropdown.style.display = 'none';
     if (navStaff)        navStaff.style.display        = 'none';
     if (navOrganizacion) navOrganizacion.style.display = 'none';
+    if (navAdmin)        navAdmin.style.display        = 'none';
   }
 }
 

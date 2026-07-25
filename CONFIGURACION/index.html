@@ -61,7 +61,7 @@
       <div id="acceso-denegado" style="display:none;">
         <div class="acceso-denegado">
           <h3>🔒 Acceso restringido</h3>
-          <p>Solo personal autorizado del staff puede ver esta página.</p>
+          <p>Solo administradores pueden ver esta página.</p>
         </div>
       </div>
 
@@ -70,7 +70,7 @@
         <div class="page-hero">
           <div class="page-hero-badge">
             <span class="page-hero-badge-dot"></span>
-            STAFF ONLY
+            ADMIN ONLY
           </div>
           <h2>CONFIGURACIÓN <span>SUCREBOT</span></h2>
         </div>
@@ -120,7 +120,7 @@
   function show(id) { document.getElementById(id).style.display = 'block'; }
 
   document.addEventListener('componentsLoaded', () => {
-    if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
+    if (!window.esAdmin || !window.esAdmin()) { show('acceso-denegado'); return; }
     show('contenido-staff');
     cargarEstado();
   });
