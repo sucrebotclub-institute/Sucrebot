@@ -87,6 +87,7 @@
     .criterios-table td { padding: 6px 6px; vertical-align: middle; }
     .crit-input { background: var(--panel-bg3); border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px 10px; color: var(--text-main); font-family: 'Exo 2'; font-size: .88rem; width: 100%; outline: none; }
     .crit-input:focus { border-color: var(--cyan); }
+    .crit-input-peso { width: 60px; text-align: center; padding: 6px 4px; }
     .btn-icon { background: transparent; border: 1.5px solid rgba(255,255,255,0.55); border-radius: 5px; cursor: pointer; padding: 3px 7px; color: #fff; font-size: .85rem; line-height: 1; transition: all .2s; }
     .btn-icon:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
     .btn-agregar { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); font-family: 'Orbitron'; font-size: .65rem; letter-spacing: 1.5px; padding: 8px 18px; border-radius: 8px; cursor: pointer; transition: all .2s; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
@@ -382,7 +383,7 @@
 
 <div class="stepper-wrap" id="stepperWrap">
   <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
-  <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Presentes</div></div>
+  <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Participantes</div></div>
   <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label" id="label-dot-3">Calificar</div></div>
   <div class="step-item" id="step-dot-4"><div class="step-dot">4</div><div class="step-label" id="label-dot-4">Ranking</div></div>
   <div class="step-item" id="step-dot-5" style="display:none"><div class="step-dot">5</div><div class="step-label">Final</div></div>
@@ -459,43 +460,28 @@
     </div>
 
     <div class="participantes-info-panel" id="configuracionPanel">
-      <config-grid class="config-grid">
+      <div style="display:none">
+        <span id="countAprobados">—</span>
+        <span id="countCalificados">0</span>
+        <div id="avisoSinParticipantes"></div>
+        <div id="listPreview"></div>
+      </div>
 
-        <div class="panel-card">
-          <div class="panel-card-title">Participantes</div>
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
-            <div style="background:var(--panel-bg2);border:1px solid var(--panel-border);border-radius:8px;padding:10px 16px;flex:1;text-align:center">
-              <div style="font-family:'DM Mono';font-size:1.6rem;color:var(--cyan)" id="countAprobados">—</div>
-              <div style="font-family:'Orbitron';font-size:.55rem;letter-spacing:1px;color:var(--text-dim);margin-top:4px">APROBADOS</div>
-            </div>
-            <div style="background:var(--panel-bg2);border:1px solid var(--panel-border);border-radius:8px;padding:10px 16px;flex:1;text-align:center">
-              <div style="font-family:'DM Mono';font-size:1.6rem;color:var(--green)" id="countCalificados">0</div>
-              <div style="font-family:'Orbitron';font-size:.55rem;letter-spacing:1px;color:var(--text-dim);margin-top:4px">CALIFICADOS</div>
-            </div>
-          </div>
-          <div id="avisoSinParticipantes" style="display:none;background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.35);border-radius:8px;padding:10px 16px;margin-bottom:10px;font-size:.82rem;color:#f39c12;">
-            ⚠️ Sin participantes aprobados aún.
-          </div>
-          <div style="font-family:'Exo 2';font-size:.82rem;color:var(--text-dim)" id="listPreview"></div>
+      <div class="panel-card" id="cardCriterios">
+        <div class="panel-card-title">Criterios de Evaluación</div>
+        <table class="criterios-table">
+          <thead><tr><th>CRITERIO</th><th>DESCRIPCIÓN</th><th style="width:70px">PTS MÁX</th><th style="width:36px"></th></tr></thead>
+          <tbody id="criteriosTbody"></tbody>
+        </table>
+        <div class="btn-row" style="margin-top:14px;justify-content:space-between">
+          <button class="btn-agregar" onclick="agregarCriterio()">＋ Agregar</button>
+          <button class="btn btn-green" id="btnGuardarCriterios" onclick="guardarCriteriosConfig()">💾 Guardar Cambios</button>
         </div>
-
-        <div class="panel-card" id="cardCriterios">
-          <div class="panel-card-title">Criterios de Evaluación</div>
-          <table class="criterios-table">
-            <thead><tr><th>CRITERIO</th><th>DESCRIPCIÓN</th><th></th></tr></thead>
-            <tbody id="criteriosTbody"></tbody>
-          </table>
-          <div class="btn-row" style="margin-top:14px;justify-content:space-between">
-            <button class="btn-agregar" onclick="agregarCriterio()">＋ Agregar</button>
-            <button class="btn btn-green" id="btnGuardarCriterios" onclick="guardarCriteriosConfig()">💾 Guardar Cambios</button>
-          </div>
-        </div>
-
-      </config-grid>
+      </div>
 
       <div class="btn-row" style="margin-top:24px;justify-content:flex-end">
         <button class="btn btn-ranking" id="btnVerRankingP1" onclick="verRankingDesdePaso1()" style="display:none">📊 Ver Ranking</button>
-        <button class="btn btn-green" id="btnIniciarCal" onclick="iniciarCalificacion()" disabled>Seleccionar Presentes →</button>
+        <button class="btn btn-green" id="btnIniciarCal" onclick="iniciarCalificacion()" disabled>Seleccionar Participantes →</button>
       </div>
     </div>
   </div>
@@ -505,7 +491,7 @@
     <div class="panel-card">
       <div class="presentes-header">
         <div>
-          <div class="panel-card-title" id="presentesTitulo">Robots Presentes</div>
+          <div class="panel-card-title" id="presentesTitulo">Participantes</div>
           <div class="presentes-counts">Total: <span id="presTotal">0</span> · Seleccionados: <span id="presCount">0</span></div>
         </div>
         <div class="presentes-acciones">
@@ -1191,6 +1177,7 @@ function renderCriteriosConfig(criterios) {
     tr.innerHTML = `
       <td><input class="crit-input" data-field="nombre" value="${c.nombre||''}" placeholder="Nombre"></td>
       <td><input class="crit-input" data-field="descripcion" value="${c.descripcion||''}" placeholder="Descripción"></td>
+      <td><input class="crit-input crit-input-peso" data-field="peso" type="number" min="1" step="1" value="${c.peso || 10}"></td>
       <td><button class="btn-icon" onclick="quitarCriterio(${i})">✕</button></td>`;
     tbody.appendChild(tr);
   });
@@ -1199,7 +1186,7 @@ function agregarCriterio() {
   const tbody = document.getElementById('criteriosTbody');
   const idx = tbody.children.length;
   const tr = document.createElement('tr'); tr.dataset.idx = idx;
-  tr.innerHTML = `<td><input class="crit-input" data-field="nombre" placeholder="Nuevo criterio"></td><td><input class="crit-input" data-field="descripcion" placeholder="Descripción"></td><td><button class="btn-icon" onclick="quitarCriterio(${idx})">✕</button></td>`;
+  tr.innerHTML = `<td><input class="crit-input" data-field="nombre" placeholder="Nuevo criterio"></td><td><input class="crit-input" data-field="descripcion" placeholder="Descripción"></td><td><input class="crit-input crit-input-peso" data-field="peso" type="number" min="1" step="1" value="10"></td><td><button class="btn-icon" onclick="quitarCriterio(${idx})">✕</button></td>`;
   tbody.appendChild(tr);
 }
 function quitarCriterio(idx) {
@@ -1211,9 +1198,7 @@ function leerCriteriosConfig() {
   document.querySelectorAll('#criteriosTbody tr').forEach(r => {
     const nombre = r.querySelector('[data-field="nombre"]').value.trim();
     const descripcion = r.querySelector('[data-field="descripcion"]').value.trim();
-    const esDef = DEFAULTS_CRITERIOS[state.categoria] || [];
-    const defMatch = esDef.find(d => d.nombre === nombre);
-    const peso = defMatch ? defMatch.peso : 5;
+    const peso = Math.max(1, parseFloat(r.querySelector('[data-field="peso"]')?.value) || 10);
     if (nombre) criterios.push({ nombre, descripcion, peso });
   });
   return criterios;
@@ -1320,7 +1305,7 @@ async function iniciarCalificacionConPresentes() {
 function buildPasoPresentes() {
   const cat = state.categoria;
   const nombre = { bai: 'Bailarín', dev: 'Impacto Tecnológico', lk: 'Lego Kids' }[cat] || cat;
-  document.getElementById('presentesTitulo').textContent = `Robots Presentes — ${nombre}`;
+  document.getElementById('presentesTitulo').textContent = `Participantes — ${nombre}`;
   document.getElementById('presTotal').textContent = state.participantes.length;
   // Por defecto todos seleccionados
   state.presentes = new Set(state.participantes.map(p => p.id));
