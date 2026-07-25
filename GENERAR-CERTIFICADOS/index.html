@@ -219,7 +219,8 @@ const CATEGORIA_MAP_CORTO = {
   soc: 'Robot soccer', cr: 'Cubo Rubik', lk: 'Lego Kids'
 };
 
-document.addEventListener('componentsLoaded', () => {
+document.addEventListener('componentsLoaded', async () => {
+  if (window.esperarRol) await window.esperarRol();
   if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
   show('contenido-staff');
   actualizarBotonToggleCompletados();

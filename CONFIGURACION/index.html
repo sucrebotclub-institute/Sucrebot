@@ -60,6 +60,25 @@
     .btn-cat-toggle.cerrar { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.4); }
     .btn-cat-toggle.abrir  { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.4); }
     .btn-cat-toggle:hover { filter: brightness(1.2); }
+
+    .form-control { background: #0d1f33; border: 1px solid #1a3a5a; border-radius: 8px; padding: 10px 12px; color: #c8d8f0; font-family: 'Exo 2'; font-size: 13px; outline: none; transition: border-color .2s; }
+    .form-control:focus { border-color: #5bc8f0; }
+    .personal-form { display: grid; grid-template-columns: 1.4fr 1.4fr 1fr auto; gap: 10px; margin-bottom: 20px; }
+    @media (max-width: 620px) { .personal-form { grid-template-columns: 1fr; } }
+    .btn-personal-add { background: linear-gradient(135deg,#1a5ca8,#5bc8f0); color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-family: 'Exo 2'; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: filter .15s; }
+    .btn-personal-add:hover { filter: brightness(1.15); }
+    .btn-personal-add:disabled { opacity: .5; pointer-events: none; }
+
+    .pers-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0d1f33; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid #1a3a5a; flex-wrap: wrap; }
+    .pers-row:last-child { margin-bottom: 0; }
+    .pers-info { display: flex; flex-direction: column; gap: 2px; min-width: 180px; }
+    .pers-correo { font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #c8d8f0; }
+    .pers-nombre { font-family: 'DM Mono'; font-size: 11px; color: #4a7a9a; }
+    .pers-acciones { display: flex; align-items: center; gap: 8px; }
+    .pers-rol-select { background: #0a1830; border: 1px solid #1a3a5a; border-radius: 6px; padding: 6px 10px; color: #c8d8f0; font-family: 'Exo 2'; font-size: 12px; }
+    .btn-pers-del { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.4); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; transition: filter .15s; }
+    .btn-pers-del:hover { filter: brightness(1.2); }
+    .btn-pers-del:disabled { opacity: .5; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -123,6 +142,28 @@
           <div id="cats-lista"></div>
         </div>
 
+        <div class="config-card">
+          <div class="config-card-title">👥 Personal</div>
+          <div class="config-card-desc">
+            Quién puede entrar como Staff, Ayudante (Jueces) o Administrador.
+            Un Admin ve todo lo de Staff, además de esta página.
+          </div>
+
+          <div class="personal-form">
+            <input type="text" id="pers-correo" class="form-control" placeholder="correo@ejemplo.com">
+            <input type="text" id="pers-nombre" class="form-control" placeholder="Nombre (opcional)">
+            <select id="pers-rol" class="form-control">
+              <option value="ayudante">Ayudante (Jueces)</option>
+              <option value="staff">Staff completo</option>
+              <option value="admin">Administrador</option>
+            </select>
+            <button class="btn-personal-add" id="btn-pers-add" onclick="agregarPersonal()">➕ Agregar</button>
+          </div>
+
+          <div id="pers-loading" class="loading-msg"><span class="spinner"></span> Cargando personal...</div>
+          <div id="pers-lista"></div>
+        </div>
+
       </div><!-- /contenido-staff -->
     </div>
   </main>
@@ -142,10 +183,12 @@
 
   function show(id) { document.getElementById(id).style.display = 'block'; }
 
-  document.addEventListener('componentsLoaded', () => {
+  document.addEventListener('componentsLoaded', async () => {
+    if (window.esperarRol) await window.esperarRol();
     if (!window.esAdmin || !window.esAdmin()) { show('acceso-denegado'); return; }
     show('contenido-staff');
     cargarEstado();
+    cargarPersonal();
   });
 
   function renderEstado(abierto) {
@@ -230,6 +273,123 @@
       alert('Error al cambiar el estado: ' + e.message);
     }
     btn.disabled = false;
+  }
+
+  // ── Personal (Staff / Ayudante / Admin) ─────────────────────────
+  function miCorreo() {
+    try { return (JSON.parse(localStorage.getItem('sucrebot_user') || '{}').email) || ''; }
+    catch(e) { return ''; }
+  }
+
+  async function gasPost(data) {
+    const r = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ ...data, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }),
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    return r.json();
+  }
+
+  const ROL_LABEL = { staff: 'Staff completo', ayudante: 'Ayudante (Jueces)', admin: 'Administrador' };
+
+  async function cargarPersonal() {
+    try {
+      const lista = await gasGet({ action: 'getPersonal', staffToken: localStorage.getItem('sucrebot_staff_token') || '' });
+      renderPersonal(Array.isArray(lista) ? lista : []);
+    } catch(e) {
+      document.getElementById('pers-loading').innerHTML = '⚠️ Error al cargar personal: ' + e.message;
+    }
+  }
+
+  function renderPersonal(lista) {
+    const cont = document.getElementById('pers-lista');
+    cont.innerHTML = '';
+    const yo = miCorreo();
+    lista.slice().sort((a, b) => a.correo.localeCompare(b.correo)).forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'pers-row';
+
+      const info = document.createElement('div');
+      info.className = 'pers-info';
+      info.innerHTML = '<span class="pers-correo">' + p.correo + '</span>' +
+        (p.nombre ? '<span class="pers-nombre">' + p.nombre + '</span>' : '');
+
+      const acciones = document.createElement('div');
+      acciones.className = 'pers-acciones';
+
+      const sel = document.createElement('select');
+      sel.className = 'pers-rol-select';
+      Object.keys(ROL_LABEL).forEach(rol => {
+        const opt = document.createElement('option');
+        opt.value = rol; opt.textContent = ROL_LABEL[rol];
+        if (rol === p.rol) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', () => cambiarRolPersonal(p.correo, p.nombre, sel.value, sel));
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn-pers-del';
+      btnDel.textContent = '🗑️';
+      btnDel.title = 'Quitar acceso';
+      if (p.correo === yo) { btnDel.disabled = true; btnDel.title = 'No podés eliminarte a vos mismo'; }
+      btnDel.addEventListener('click', () => eliminarPersonal(p.correo, row));
+
+      acciones.appendChild(sel);
+      acciones.appendChild(btnDel);
+      row.appendChild(info);
+      row.appendChild(acciones);
+      cont.appendChild(row);
+    });
+    document.getElementById('pers-loading').style.display = 'none';
+  }
+
+  async function agregarPersonal() {
+    const correoEl = document.getElementById('pers-correo');
+    const nombreEl = document.getElementById('pers-nombre');
+    const rolEl    = document.getElementById('pers-rol');
+    const correo   = correoEl.value.trim();
+    const nombre   = nombreEl.value.trim();
+    const rol      = rolEl.value;
+    if (!correo || !correo.includes('@')) { alert('Ingresá un correo válido'); return; }
+
+    const btn = document.getElementById('btn-pers-add');
+    btn.disabled = true;
+    try {
+      const resp = await gasPost({ action: 'guardarPersonal', correo, nombre, rol });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      correoEl.value = ''; nombreEl.value = ''; rolEl.value = 'ayudante';
+      await cargarPersonal();
+    } catch(e) {
+      alert('Error al agregar: ' + e.message);
+    }
+    btn.disabled = false;
+  }
+
+  async function cambiarRolPersonal(correo, nombre, nuevoRol, selEl) {
+    selEl.disabled = true;
+    try {
+      const resp = await gasPost({ action: 'guardarPersonal', correo, nombre: nombre || '', rol: nuevoRol });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+    } catch(e) {
+      alert('Error al cambiar el rol: ' + e.message);
+      await cargarPersonal();
+    }
+    selEl.disabled = false;
+  }
+
+  async function eliminarPersonal(correo, row) {
+    if (!confirm('¿Quitar acceso a ' + correo + '?')) return;
+    const btn = row.querySelector('.btn-pers-del');
+    btn.disabled = true;
+    try {
+      const resp = await gasPost({ action: 'eliminarPersonal', correo, miCorreo: miCorreo() });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      await cargarPersonal();
+    } catch(e) {
+      alert('Error al eliminar: ' + e.message);
+      btn.disabled = false;
+    }
   }
   </script>
 </body>

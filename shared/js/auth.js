@@ -3,27 +3,88 @@
 // Archivo: /shared/js/auth.js
 // ═══════════════════════════════════════════════════════════════
 
-const STAFF_EMAILS = CONFIG.STAFF_EMAILS;
-window.STAFF_EMAILS = STAFF_EMAILS;
+// El rol (staff/ayudante/admin) ya NO vive hardcodeado acá — se gestiona
+// desde CONFIGURACION (Admin) y se guarda en la hoja 'personal' de Sheets.
+// Como consultarlo es async (fetch a GAS), se cachea en localStorage para
+// que esStaffCompleto()/esJuez()/esAdmin() puedan seguir siendo síncronas
+// (muchas páginas las llaman justo al cargar, sin poder esperar un fetch).
+const ROL_CACHE_KEY = 'sucrebot_rol_cache';
+const ROL_TTL       = 15 * 60 * 1000; // 15 min
 
-// Ayudantes: ven Jueces pero NO Organización (ver config.js)
-const AYUDANTE_EMAILS = CONFIG.AYUDANTE_EMAILS || [];
-window.AYUDANTE_EMAILS = AYUDANTE_EMAILS;
+function obtenerRolCacheado(correo) {
+  try {
+    const raw = localStorage.getItem(ROL_CACHE_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    return c.correo === correo ? c.rol : null;
+  } catch (e) {
+    return null;
+  }
+}
 
-// Administradores: todo lo de Staff + dropdown "Admin" del nav (ver config.js)
-const ADMIN_EMAILS = CONFIG.ADMIN_EMAILS || [];
-window.ADMIN_EMAILS = ADMIN_EMAILS;
+function guardarRolCache(correo, rol) {
+  localStorage.setItem(ROL_CACHE_KEY, JSON.stringify({ correo: correo, rol: rol, ts: Date.now() }));
+}
+
+let _rolFetchPromise = null;
+let _rolFetchCorreo  = null;
+
+// Resuelve el rol de un correo: usa caché si está fresca, si no consulta
+// GAS. Si el fetch falla, cae a la caché vieja (aunque haya expirado) para
+// no dejar afuera al staff por un corte momentáneo de red.
+function resolverRol(correo) {
+  try {
+    const raw = localStorage.getItem(ROL_CACHE_KEY);
+    if (raw) {
+      const c = JSON.parse(raw);
+      if (c.correo === correo && (Date.now() - c.ts) < ROL_TTL) return Promise.resolve(c.rol);
+    }
+  } catch (e) {}
+
+  if (_rolFetchPromise && _rolFetchCorreo === correo) return _rolFetchPromise;
+
+  _rolFetchCorreo  = correo;
+  _rolFetchPromise = fetch(CONFIG.GAS_URL() + '?action=getRolPersonal&correo=' + encodeURIComponent(correo))
+    .then(r => r.json())
+    .then(data => {
+      const rol = data && data.rol ? data.rol : null;
+      guardarRolCache(correo, rol);
+      return rol;
+    })
+    .catch(() => obtenerRolCacheado(correo))
+    .finally(() => { _rolFetchPromise = null; _rolFetchCorreo = null; });
+
+  return _rolFetchPromise;
+}
+
+// ── Helper global: esperar a que el rol del usuario logueado esté
+// resuelto (fresco o desde caché) antes de chequear esStaffCompleto()/
+// esJuez()/esAdmin(). Las páginas que gatean acceso al cargar DEBEN
+// await esto primero — si no, pueden leer una caché vacía en el primer
+// login de la sesión y negar acceso a alguien que sí tiene rol.
+window.esperarRol = function() {
+  const s = localStorage.getItem('sucrebot_user');
+  if (!s) return Promise.resolve(null);
+  try {
+    const u = JSON.parse(s);
+    return resolverRol(u.email);
+  } catch (e) {
+    return Promise.resolve(null);
+  }
+};
 
 // ── Helper global: ¿el usuario logueado es staff completo? ──────
 // Usar esto (no el token) para gatear páginas de Organización, porque
 // el token se comparte también con los ayudantes para que les funcionen
-// las páginas de Jueces.
+// las páginas de Jueces. Lee de caché (síncrono) — llamar después de
+// `await esperarRol()` si es la primera vez que se resuelve en la sesión.
 window.esStaffCompleto = function() {
   const s = localStorage.getItem('sucrebot_user');
   if (!s) return false;
   try {
     const u = JSON.parse(s);
-    return STAFF_EMAILS.includes(u.email);
+    const rol = obtenerRolCacheado(u.email);
+    return rol === 'staff' || rol === 'admin';
   } catch (e) {
     return false;
   }
@@ -37,7 +98,8 @@ window.esJuez = function() {
   if (!s) return false;
   try {
     const u = JSON.parse(s);
-    return STAFF_EMAILS.includes(u.email) || AYUDANTE_EMAILS.includes(u.email);
+    const rol = obtenerRolCacheado(u.email);
+    return rol === 'staff' || rol === 'admin' || rol === 'ayudante';
   } catch (e) {
     return false;
   }
@@ -45,19 +107,19 @@ window.esJuez = function() {
 
 // ── Helper global: ¿el usuario logueado es administrador? ───────
 // Usar para gatear páginas admin-only (ej. CONFIGURACION). Siempre
-// subconjunto de STAFF_EMAILS — un admin ya es staff completo.
+// subconjunto de Staff completo — un admin ya ve todo lo de Staff.
 window.esAdmin = function() {
   const s = localStorage.getItem('sucrebot_user');
   if (!s) return false;
   try {
     const u = JSON.parse(s);
-    return ADMIN_EMAILS.includes(u.email);
+    return obtenerRolCacheado(u.email) === 'admin';
   } catch (e) {
     return false;
   }
 };
 
-// Token compartido con GAS — debe coincidir exactamente con STAFF_TOKEN en Code.gs
+// Token compartido con GAS — debe coincidir exactamente con STAFF_TOKEN_VALUE en Code.gs
 const STAFF_TOKEN_VALUE = 'SucreBot2026-CMI-Sucre-x7k9mQ';
 
 // ── FUNCIÓN: Parsear JWT de Google
@@ -83,22 +145,23 @@ window.handleCredentialResponse = function(response) {
 }
 
 // ── FUNCIÓN: Activar sesión del usuario
-function activarSesion(data) {
+async function activarSesion(data) {
   localStorage.setItem('sucrebot_user', JSON.stringify(data));
-  
+
   const btnLogin    = document.getElementById('btnLogin');
   const userInfo    = document.getElementById('userInfo');
   const userName    = document.getElementById('userName');
   const userAvatar  = document.getElementById('userAvatar');
-  
+
   if (btnLogin)  btnLogin.style.display = 'none';
   if (userInfo)  userInfo.classList.add('visible');
   if (userName)  userName.textContent = data.name || data.email;
   if (userAvatar && data.picture) userAvatar.src = data.picture;
-  
-  const isStaff    = STAFF_EMAILS.includes(data.email);
-  const isAyudante = AYUDANTE_EMAILS.includes(data.email);
-  const isAdmin    = ADMIN_EMAILS.includes(data.email);
+
+  const rol = await resolverRol(data.email);
+  const isStaff    = rol === 'staff' || rol === 'admin';
+  const isAyudante = rol === 'ayudante';
+  const isAdmin    = rol === 'admin';
   const esJuezRol  = isStaff || isAyudante; // ambos ven/usan páginas de Jueces
 
   // ── Guardar/limpiar token staff según rol ──────────────────
@@ -136,7 +199,8 @@ function activarSesion(data) {
 window.cerrarSesion = function() {
   localStorage.removeItem('sucrebot_user');
   localStorage.removeItem('sucrebot_staff_token'); // ── limpiar token staff
-  
+  localStorage.removeItem(ROL_CACHE_KEY);          // ── limpiar caché de rol
+
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.disableAutoSelect();
   }
@@ -239,6 +303,7 @@ window.cambiarCuenta = function() {
   
   localStorage.removeItem('sucrebot_user');
   localStorage.removeItem('sucrebot_staff_token'); // ── limpiar token staff
+  localStorage.removeItem(ROL_CACHE_KEY);          // ── limpiar caché de rol
 
   const btnLogin        = document.getElementById('btnLogin');
   const userInfo        = document.getElementById('userInfo');
@@ -292,6 +357,7 @@ document.addEventListener('componentsLoaded', function() {
       console.error('Error al restaurar sesión:', e);
       localStorage.removeItem('sucrebot_user');
       localStorage.removeItem('sucrebot_staff_token');
+      localStorage.removeItem(ROL_CACHE_KEY);
     }
   }
   

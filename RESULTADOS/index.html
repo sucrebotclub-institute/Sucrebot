@@ -484,7 +484,8 @@
     }
 
     // ── GATE staff-only ──────────────────────────────────────────
-    document.addEventListener('componentsLoaded', () => {
+    document.addEventListener('componentsLoaded', async () => {
+      if (window.esperarRol) await window.esperarRol();
       if (!window.esStaffCompleto || !window.esStaffCompleto()) {
         document.getElementById('acceso-denegado').style.display = 'block';
         return;

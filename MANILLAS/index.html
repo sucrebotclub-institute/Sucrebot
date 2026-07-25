@@ -246,7 +246,8 @@
     return r.json();
   }
 
-  document.addEventListener('componentsLoaded', () => {
+  document.addEventListener('componentsLoaded', async () => {
+    if (window.esperarRol) await window.esperarRol();
     if (!window.esStaffCompleto || !window.esStaffCompleto()) { window.location.href = '../INICIO/'; return; }
     refrescar(false); // false = respetar cache
   });
