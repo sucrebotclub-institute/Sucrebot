@@ -254,7 +254,7 @@
   let _abiertoActual = null;
 
   function gasGet(params) {
-    const qs = new URLSearchParams(params).toString();
+    const qs = new URLSearchParams({ ...params, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }).toString();
     return fetch(GAS_URL + '?' + qs).then(r => r.json());
   }
 

@@ -469,7 +469,7 @@
     try {
       const ruta = categoriaSeleccionada ? categoriaSeleccionada.ruta : 'general';
       await fetch(GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({ action:'setActivo', ruta, participante:{ id:p.id, robot:p.robot, nombre:p.nombre||'', institucion:p.institucion||'', ciudad:p.ciudad||'', categoria:p.categoria||'', timestamp:Date.now() }}), redirect:'follow' });
+        body: JSON.stringify({ action:'setActivo', ruta, participante:{ id:p.id, robot:p.robot, nombre:p.nombre||'', institucion:p.institucion||'', ciudad:p.ciudad||'', categoria:p.categoria||'', timestamp:Date.now() }, staffToken: localStorage.getItem('sucrebot_staff_token')||'' }), redirect:'follow' });
     } catch(e) {}
   }
 

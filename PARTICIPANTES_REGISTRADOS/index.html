@@ -452,7 +452,7 @@
   let _participantesIndex = [];
 
   function strVal(v) { if(v===null||v===undefined)return ''; return String(v).trim(); }
-  function gasGet(params) { const qs=new URLSearchParams(params).toString(); return fetch(GAS_URL+'?'+qs).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}); }
+  function gasGet(params) { const qs=new URLSearchParams({...params,staffToken:localStorage.getItem('sucrebot_staff_token')||''}).toString(); return fetch(GAS_URL+'?'+qs).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}); }
   async function gasPost(data) { const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({...data,staffToken:'SucreBot2026-CMI-Sucre-x7k9mQ'}),redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'}});return r.json(); }
   function limpiarCacheInstituciones() { localStorage.removeItem('sucrebot_instituciones_cache'); showToast('✅ Cache del dropdown limpiado'); }
   document.addEventListener('componentsLoaded', async function() {

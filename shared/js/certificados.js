@@ -581,7 +581,8 @@ async function guardarYSubirCertificado(idx, nombreOverride, tipoOverride) {
         action: 'guardarCertificado',
         correo: participante.correo, nombre_completo: nombreFinal,
         categoria: participante.categoria, institucion: participante.institucion,
-        evento: 'SucreBot 2026', fecha_evento: fechaEvento, tipo_certificado: tipo
+        evento: 'SucreBot 2026', fecha_evento: fechaEvento, tipo_certificado: tipo,
+        staffToken: localStorage.getItem('sucrebot_staff_token') || ''
       }),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
@@ -632,7 +633,7 @@ async function generarYSubirPDF(pObj, tipo, fechaEvento, codigoCert, nombreFinal
     const fileName  = 'Diploma_' + nombre.replace(/\s+/g, '_') + '_' + codigoCert + '.pdf';
     const uploadResp = await fetch(CONFIG.GAS_URL(), {
       method: 'POST',
-      body: JSON.stringify({ action: 'uploadDiploma', base64: pdfBase64, fileName, codigo: codigoCert }),
+      body: JSON.stringify({ action: 'uploadDiploma', base64: pdfBase64, fileName, codigo: codigoCert, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
     const uploadResult = await uploadResp.json();

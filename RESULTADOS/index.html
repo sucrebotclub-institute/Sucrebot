@@ -273,7 +273,7 @@
     }
 
     async function postJSON(body) {
-      const r = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+      const r = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...body, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }) });
       return r.json();
     }
 

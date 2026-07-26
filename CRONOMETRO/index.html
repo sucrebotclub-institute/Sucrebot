@@ -618,8 +618,8 @@ function bloquearBtn(){const b=document.getElementById('btn-start');if(b)b.disab
 function desbloquearBtn(){const b=document.getElementById('btn-start');if(b)b.disabled=false;}
 function tiempoASegundos(t){if(!t||t==='—'||t==='DNF'||t==='00:00:00')return Infinity;const p=t.split(':').map(Number);return p[0]*60+p[1]+p[2]/100;}
 
-async function bloquearCategoria(cat){const user=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');try{const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'bloquearCategoria',categoria:cat,usuario:user.email})});const d=await r.json();return d.ok;}catch(e){return false;}}
-async function desbloquearCategoria(cat){try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearCategoria',categoria:cat})});}catch(e){}}
+async function bloquearCategoria(cat){const user=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');try{const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'bloquearCategoria',categoria:cat,usuario:user.email,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});const d=await r.json();return d.ok;}catch(e){return false;}}
+async function desbloquearCategoria(cat){try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearCategoria',categoria:cat,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});}catch(e){}}
 async function verificarBloqueo(cat){try{const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getCategoriasActivas'}),{cache:'no-store'});const a=await r.json();return a.find(c=>String(c.categoria||'').toLowerCase().trim()===String(cat||'').toLowerCase().trim());}catch(e){return null;}}
 
 function iniciarPolling(){
@@ -645,7 +645,7 @@ function recibirParticipante(p){
   if(!competenciaIniciada){showToast('⚠️ Configura e inicia la competencia primero',true);return;}
   participanteActual=p;
   esperandoConfirmacionIntento=false;
-  const rd=getRonda(rondaActual);const yaEnRanking=rd.clasificados.find(c=>c.id===p.id||c.robot===p.robot);const tiemposYa=yaEnRanking?(yaEnRanking.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00'):[];intentosLog=tiemposYa.map((t,i)=>({ronda:rondaActual,intento:i+1,tiempo:t,esDNF:t==='DNF'}));intentoActual=intentosLog.length+1;
+  const rd=getRonda(rondaActual);const yaEnRanking=rd.clasificados.find(c=>c.id===p.id);const tiemposYa=yaEnRanking?(yaEnRanking.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00'):[];intentosLog=tiemposYa.map((t,i)=>({ronda:rondaActual,intento:i+1,tiempo:t,esDNF:t==='DNF'}));intentoActual=intentosLog.length+1;
   actualizarBadges();reiniciarCrono();
   ocultarBotonesAccion();
   if(intentosLog.length>=maxIntentos){bloquearBtn();mostrarBtnSigPart();document.getElementById('crono-status').textContent='✓ '+intentosLog.length+'/'+maxIntentos+' intentos completados';}else{desbloquearBtn();}
@@ -661,7 +661,7 @@ function limpiarParticipante(){
   const strip=document.getElementById('participante-strip');strip.className='participante-strip empty';
   strip.innerHTML='<div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner o selección...</div></div><div class="p-badge">—</div>';
   ocultarBotonesAccion();
-  if(categoriaActual)fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general'})}).catch(()=>{});
+  if(categoriaActual)fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
 }
 
 // Categorías donde el sensor solo detiene (no arranca) el tiempo —
@@ -716,14 +716,15 @@ async function reiniciarCrono(){
     }
     intentosLog.splice(idxLog, 1);
     esperandoConfirmacionIntento=false;
-    quitarTiempoDelRanking(participanteActual.robot, intentoABorrar.tiempo, rondaActual);
+    quitarTiempoDelRanking(participanteActual.id, intentoABorrar.tiempo, rondaActual);
     try {
       await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({
         action:'eliminarResultado',
         participanteId:participanteActual.id,
         ronda:rondaActual,
         intento:intentoActual,
-        ruta:getRuta()||'general'
+        ruta:getRuta()||'general',
+        staffToken:localStorage.getItem('sucrebot_staff_token')||''
       })});
     } catch(e){ console.error('Error eliminando resultado en GAS:', e); }
     desbloquearBtn();
@@ -741,9 +742,9 @@ async function reiniciarCrono(){
 // Quita un tiempo específico del array `tiempos` de un participante en
 // una ronda dada, y recalcula su mejor tiempo (`tiempo`) y estado DNF
 // a partir de los intentos restantes.
-function quitarTiempoDelRanking(robot, tiempoABorrar, ronda){
+function quitarTiempoDelRanking(id, tiempoABorrar, ronda){
   const rd = getRonda(ronda);
-  const c = rd.clasificados.find(x => x.robot === robot);
+  const c = rd.clasificados.find(x => x.id === id);
   if (!c) return;
   const idxT = (c.tiempos || []).indexOf(tiempoABorrar);
   if (idxT >= 0) c.tiempos.splice(idxT, 1);
@@ -787,8 +788,8 @@ function ocultarBotonesAccion(){['btn-sig-intento','btn-sig-part','btn-saltar'].
 function mostrarBtnSigPart(){
   const btn=document.getElementById('btn-sig-part');if(!btn)return;
   const rd=getRonda(rondaActual);
-  const robotActual=participanteActual?participanteActual.robot:null;
-  const quedanPendientes=rd.clasificados.some(c=>c.robot!==robotActual&&(c.tiempos||[]).length<maxIntentos);
+  const idActual=participanteActual?participanteActual.id:null;
+  const quedanPendientes=rd.clasificados.some(c=>c.id!==idActual&&(c.tiempos||[]).length<maxIntentos);
   btn.textContent=quedanPendientes?'⏭ Siguiente participante':'✅ Finalizar último participante';
   btn.classList.add('visible');
 }
@@ -819,7 +820,7 @@ function getRonda(r){if(!rondasData[r])rondasData[r]={clasificados:[],eliminados
 
 function agregarAlRanking(tiempo,esDNF){
   if(!participanteActual)return;
-  const rd=getRonda(rondaActual);const idx=rd.clasificados.findIndex(c=>c.robot===participanteActual.robot);
+  const rd=getRonda(rondaActual);const idx=rd.clasificados.findIndex(c=>c.id===participanteActual.id);
   if(idx>=0){
     const ant=rd.clasificados[idx];ant.tiempos=ant.tiempos||[];
     if(tiempo&&tiempo!=='—'&&tiempo!=='00:00:00')ant.tiempos.push(tiempo);
@@ -839,11 +840,11 @@ function toggleAvanza(ts,r){const rd=getRonda(r);const c=rd.clasificados.find(x=
 
 async function seleccionarCompetido(ts,r){
   const rd=getRonda(r);const c=rd.clasificados.find(x=>x.ts===ts);if(!c)return;
-  if(participanteActual&&participanteActual.robot!==c.robot){if(!(await customConfirm('Ya tienes "'+participanteActual.robot+'". ¿Cambiar a "'+c.robot+'"?')))return;}
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general'})}).catch(()=>{});
+  if(participanteActual&&participanteActual.id!==c.id){if(!(await customConfirm('Ya tienes "'+participanteActual.robot+'". ¿Cambiar a "'+c.robot+'"?')))return;}
+  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
   participanteActual={id:c.id,robot:c.robot,nombre:c.nombre,institucion:c.institucion,ciudad:c.ciudad,categoria:c.categoria,correo:c.correo||'',miembro2:c.miembro2||''};
   esperandoConfirmacionIntento=false;
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setActivo',ruta:getRuta()||'general',participante:{...participanteActual,timestamp:Date.now()}})}).catch(()=>{});
+  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setActivo',ruta:getRuta()||'general',participante:{...participanteActual,timestamp:Date.now()},staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
   const tiemposYa=(c.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00');
   intentosLog=tiemposYa.map((t,i)=>({ronda:rondaActual,intento:i+1,tiempo:t,esDNF:t==='DNF'}));intentoActual=intentosLog.length+1;
   actualizarBadges();reiniciarCrono();ocultarBotonesAccion();
@@ -891,7 +892,7 @@ function pedirCerrarRonda(){
 }
 function confirmarCerrarRonda(){
   cerrarModal('modal-ronda');getRonda(rondaActual).cerrada=true;
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general'})}).catch(()=>{});
+  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
   if(rondaActual<maxRondas){const ant=rondaActual++;intentoActual=1;maxIntentos=getIntentosRonda(rondaActual);actualizarBadges();getRonda(rondaActual).clasificados=getRonda(ant).clasificados.filter(c=>c.avanza&&!c.esDNF).map((c,i)=>({...c,tiempo:'—',tiempos:[],esDNF:false,avanza:false,ronda:rondaActual,ts:c.ts+rondaActual+i}));actualizarContador();renderRondas();limpiarParticipante();desbloquearBtn();guardarEstado();const nom=getNombreRonda(rondaActual);showToast('🏁 Ronda '+ant+' cerrada · Ronda '+rondaActual+(nom?' ('+nom+')':'')+' lista · '+maxIntentos+' intento(s)');}
   else{const btn=document.getElementById('btn-cerrar-ronda');btn.disabled=true;btn.innerHTML='✓ Competencia finalizada';btn.style.opacity='0.5';renderRondas();limpiarParticipante();guardarEstado();document.getElementById('btn-excel').classList.add('visible');document.getElementById('btn-podio').classList.add('visible');showToast('🏆 ¡Competencia finalizada!');setTimeout(()=>exportarExcel(),500);}
 }
@@ -904,7 +905,8 @@ async function confirmarCerrarCategoria(){
     if(!modoOffline){
       await desbloquearCategoria(categoriaActual);
       const ruta=getRuta()||'general';
-      await Promise.all([fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta})}),fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null})})]);
+      const staffToken=localStorage.getItem('sucrebot_staff_token')||'';
+      await Promise.all([fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta,staffToken})}),fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null,staffToken})})]);
     }
     localStorage.removeItem(getKey());localStorage.removeItem('cronometro_categoria_activa');
     if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
@@ -914,7 +916,7 @@ async function confirmarCerrarCategoria(){
   }catch(e){showToast('❌ Error al cerrar categoría',true);}
 }
 
-function guardarEstado(){if(!categoriaActual)return;const estado={rondaActual,intentoActual,maxRondas,maxIntentos,fasesConfig,rondasData,categoria:categoriaActual,competenciaIniciada};localStorage.setItem(getKey(),JSON.stringify(estado));const ruta=getRuta();if(!ruta)return;fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado})}).catch(()=>{});}
+function guardarEstado(){if(!categoriaActual)return;const estado={rondaActual,intentoActual,maxRondas,maxIntentos,fasesConfig,rondasData,categoria:categoriaActual,competenciaIniciada};localStorage.setItem(getKey(),JSON.stringify(estado));const ruta=getRuta();if(!ruta)return;fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado,staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});}
 
 function cargarEstado(cat){
   try{
@@ -940,7 +942,7 @@ async function guardarResultadoGAS(tiempo){
     return;
   }
   try{
-    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:'pushResultado'},payload))});
+    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:'pushResultado',staffToken:localStorage.getItem('sucrebot_staff_token')||''},payload))});
   }catch(e){
     console.error('Error guardar resultado:',e);
     showToast('⚠️ Sin conexión al guardar. Activa el modo offline si el internet no vuelve pronto.',true);
@@ -950,16 +952,17 @@ async function guardarResultadoGAS(tiempo){
 document.getElementById('cfg-rondas').addEventListener('input',function(){if(competenciaIniciada){showToast('⚠️ No se puede cambiar durante la competencia',true);this.value=maxRondas;return;}maxRondas=parseInt(this.value)||1;renderFasesConfig();guardarEstado();});
 
 function construirRankingGeneralData(){
-  // Recorre TODAS las rondas en orden ascendente y cada robot se SOBREESCRIBE por
-  // completo con los datos de la ronda más alta en la que participó — igual que
-  // guardarPodioCrono(). Incluye tanto clasificados como eliminados de cada ronda,
-  // para que aparezcan TODOS los que participaron, no solo quienes llegaron a la última.
+  // Recorre TODAS las rondas en orden ascendente y cada participante (por id, no por
+  // nombre de robot — dos robots pueden compartir nombre) se SOBREESCRIBE por completo
+  // con los datos de la ronda más alta en la que participó — igual que guardarPodioCrono().
+  // Incluye tanto clasificados como eliminados de cada ronda, para que aparezcan TODOS
+  // los que participaron, no solo quienes llegaron a la última.
   const mapa=new Map();
   Object.keys(rondasData).map(Number).sort((a,b)=>a-b).forEach(r=>{
     const rd=rondasData[r];
     [...rd.clasificados,...rd.eliminados].forEach(c=>{
-      if(!c.robot)return;
-      mapa.set(c.robot,{...c,ronda:r});
+      if(!c.id)return;
+      mapa.set(c.id,{...c,ronda:r});
     });
   });
   return [...mapa.values()];
@@ -1063,16 +1066,17 @@ function showToast(msg,error=false){const t=document.getElementById('toast');t.t
 async function guardarPodioCrono(){
   const catNombre=categoriaActual||'';if(!catNombre){showToast('⚠️ Sin categoría activa',true);return;}
   const mapaParticipantes=new Map();
-  // Se procesan las rondas en orden ascendente y cada robot se SOBREESCRIBE por completo
-  // con los datos de la ronda más alta en la que participó (no se mezcla el tiempo de
-  // una ronda anterior —p.ej. clasificatoria— con el de la ronda final).
+  // Se procesan las rondas en orden ascendente y cada participante (por id, no por nombre
+  // de robot — dos robots pueden compartir nombre) se SOBREESCRIBE por completo con los
+  // datos de la ronda más alta en la que participó (no se mezcla el tiempo de una ronda
+  // anterior —p.ej. clasificatoria— con el de la ronda final).
   Object.keys(rondasData).map(Number).filter(r=>r>0).sort((a,b)=>a-b).forEach(r=>{
     const rd=rondasData[r];
     [...rd.clasificados,...rd.eliminados].forEach(c=>{
-      if(!c.robot)return;
+      if(!c.id)return;
       const full=presentes.find(p=>p.id===c.id)||{};
-      const prev=mapaParticipantes.get(c.robot);
-      mapaParticipantes.set(c.robot,{...c,correo:c.correo||prev?.correo||full.correo||'',miembro2:c.miembro2||prev?.miembro2||full.miembro2||''});
+      const prev=mapaParticipantes.get(c.id);
+      mapaParticipantes.set(c.id,{...c,correo:c.correo||prev?.correo||full.correo||'',miembro2:c.miembro2||prev?.miembro2||full.miembro2||''});
     });
   });
   if(mapaParticipantes.size===0){showToast('⚠️ No hay participantes en el ranking',true);return;}
@@ -1085,7 +1089,7 @@ async function guardarPodioCrono(){
   if(!(await customConfirm('¿Guardar podio de '+catNombre+' en certificados?\n'+ranking.length+' participantes:\n'+preview)))return;
   const tipos=['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
   const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
-  async function gasCert(payload){try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});}catch(e){console.warn('[gasCert] fetch error (ignorado):',e.message,'— payload:',payload.nombre_completo);}}
+  async function gasCert(payload){try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...payload,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});}catch(e){console.warn('[gasCert] fetch error (ignorado):',e.message,'— payload:',payload.nombre_completo);}}
   async function guardarCertParticipante(p,tipo){
     const correo=p.correo||'',inst=p.institucion||'',m2=p.miembro2||'',nombre=p.nombre||p.robot||'';
     const base={action:'guardarCertificado',id_participante:p.id,correo,categoria:catNombre,institucion:inst,tipo_certificado:tipo,evento:'SucreBot 2026'};

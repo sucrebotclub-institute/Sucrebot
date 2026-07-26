@@ -263,7 +263,8 @@ window.OfflineExcel = (function () {
               action: 'pushResultado',
               participanteId: r.participanteId, nombre: r.nombre, robot: r.robot,
               institucion: r.institucion, tiempo: r.tiempo, ronda: r.ronda,
-              intento: r.intento, ruta: r.ruta, fecha: r.fecha
+              intento: r.intento, ruta: r.ruta, fecha: r.fecha,
+              staffToken: localStorage.getItem('sucrebot_staff_token') || ''
             })
           });
           r.sincronizado = 'TRUE';
@@ -289,7 +290,8 @@ window.OfflineExcel = (function () {
               action: 'guardarCertificado',
               id_participante: r.id_participante, correo: r.correo, categoria: r.categoria,
               institucion: r.institucion, tipo_certificado: r.tipo_certificado,
-              evento: r.evento, nombre: r.nombre, nombre_completo: r.nombre_completo
+              evento: r.evento, nombre: r.nombre, nombre_completo: r.nombre_completo,
+              staffToken: localStorage.getItem('sucrebot_staff_token') || ''
             })
           });
           r.sincronizado = 'TRUE';
@@ -317,7 +319,8 @@ window.OfflineExcel = (function () {
               institucion: r.institucion, categoria: r.categoria,
               juez_email: r.juez_email, juez_nombre: r.juez_nombre,
               criterios: safeParse(r.criterios, {}), notas: safeParse(r.notas, {}),
-              total: r.total, timestamp: r.timestamp
+              total: r.total, timestamp: r.timestamp,
+              staffToken: localStorage.getItem('sucrebot_staff_token') || ''
             })
           });
           r.sincronizado = 'TRUE';
