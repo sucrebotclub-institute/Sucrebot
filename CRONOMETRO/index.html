@@ -1111,6 +1111,17 @@ async function guardarPodioCrono(){
   if(errores===0)showToast(modoOffline?'💾 Podio guardado en Excel local — '+guardados+' participantes':'🏆 Podio guardado — '+guardados+' participantes');
   else showToast('⚠️ '+guardados+' guardados, '+errores+' con error',true);
   if(modoOffline)actualizarBadgeOffline();
+  // Publica el ranking en resultados_publicados (mismo mecanismo que ya usa
+  // PANEL-CALIFICACION para bai/dev/lk) para que RESULTADOS pueda mostrar el
+  // podio de esta categoría — antes CRONOMETRO nunca marcaba podio_publicado.
+  if(!modoOffline){
+    try{
+      const rutaCorta=getRuta();
+      if(rutaCorta){
+        await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo})),staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
+      }
+    }catch(e){console.warn('No se pudo publicar el podio en RESULTADOS:',e);}
+  }
 }
 
 document.addEventListener('componentsLoaded',async function(){

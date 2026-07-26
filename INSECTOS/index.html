@@ -1461,6 +1461,17 @@
       btn.textContent = `${ok} ok · ${errores} errores`;
       btn.disabled = false;
     }
+
+    // Publica el ranking en resultados_publicados (mismo mecanismo que ya usa
+    // PANEL-CALIFICACION para bai/dev/lk) para que RESULTADOS pueda mostrar el
+    // podio de Insectos — antes esta página nunca marcaba podio_publicado.
+    try {
+      await gasPost({
+        action: 'publicarPodioCalificacion',
+        categoria: 'ins',
+        ranking: todos.map(entry => ({ robot: entry.p.robot, nombre: entry.p.nombre, tiempo: entry.tiempo }))
+      });
+    } catch(e) { console.warn('No se pudo publicar el podio en RESULTADOS:', e); }
   });
 
   document.getElementById('btnReiniciar').addEventListener('click', () => {
