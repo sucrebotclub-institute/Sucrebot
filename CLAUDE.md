@@ -198,5 +198,6 @@ El evento SucreBot 2026 se realizó el 16 de julio de 2026 y ya concluyó. El tr
 - Alinear "Miembro 2" → "Subcapitán" en MI-REGISTRO y PARTICIPANTES_REGISTRADOS.
 - Popular `driveId` de Minisumo RC en REGLAMENTOS.
 - **Producción migró a un Sheet/proyecto de Apps Script nuevo** (sprint 23-24 jul) — el viejo (151 versiones) queda como archivo histórico. Ver memoria `project-migracion-sheet-nuevo-23jul` para el Deployment ID vigente y qué datos no se copiaron.
-- Extender el patrón de RESULTADOS ("solo se ve al guardar podio") a CRONOMETRO/INSECTOS (tiempos) y PANEL-CALIFICACION (bai/dev/lk) — hoy solo cubre ms_a/ms_rc/bat/soc.
+- [x] Extender el patrón de RESULTADOS a PANEL-CALIFICACION (bai/dev/lk) — hecho sprint 25-jul, ver SKILL.md. Sigue pendiente extenderlo a CRONOMETRO/INSECTOS (tiempos).
 - Auditar `cache:'no-store'` en el resto de páginas con `fetch(GAS...)` propio (INSECTOS, ESCANER, etc.) — se encontró y corrigió el mismo bug en CRONOMETRO/PANEL-CALIFICACION/MANILLAS/PANEL-BRACKET esta sesión, no se revisaron todas.
+- **CRONOMETRO — ranking indexado por nombre de robot, no por ID** (encontrado sprint 25-jul, ver SKILL.md): riesgo real si dos robots de la misma categoría comparten nombre. Pendiente de corregir, es la próxima tarea acordada con Raku.

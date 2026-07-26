@@ -1108,5 +1108,58 @@ Síntoma reportado por Raku: "salieron participantes del sheet antiguo" en PANEL
 
 ---
 
+### Sprint 25 jul 2026 — PANEL-CALIFICACION: edición de criterios, separación eliminatoria/final, 4 bugs de multi-juez, extensión de RESULTADOS
+
+**Contexto**: sesión larga enfocada primero en hacer editables los criterios de evaluación de bai/dev/lk (hasta ahora la tabla se veía pero los cambios se descartaban), y que fue escalando — a pedido de Raku — hasta una batería completa de pruebas con 1 a 5 jueces y hasta 25 participantes por categoría, que destapó 4 bugs reales de cálculo específicos de la arquitectura multi-juez. Se cierra el ciclo extendiendo RESULTADOS y GENERAR-CERTIFICADOS a estas 3 categorías, que hasta hoy solo cubrían las de PANEL-BRACKET.
+
+#### Edición de criterios de evaluación
+- **Bug real**: la tabla de criterios (nombre/descripción) siempre fue editable en el DOM, pero `iniciarCalificacion()` **descartaba cualquier edición** y volvía a guardar las constantes fijas del código (`BAI_CRITERIOS`/`DEV_CRITERIOS`/`LK_CRITERIOS_F1`) sin importar lo que el Jefe hubiera escrito — por eso parecía "no editable".
+- Fix: nuevo botón **"💾 Guardar Cambios"** (`guardarCriteriosConfig()`) + `iniciarCalificacion()` reescrita para usar siempre `leerCriteriosConfig()` (el contenido real de la tabla) en las 3 categorías.
+- Nueva columna **"PTS MÁX"** editable por criterio — antes el peso se adivinaba por coincidencia exacta de nombre contra las constantes oficiales y caía a 5 si no coincidía (esto causó una regresión real: Raku probó el botón nuevo escribiendo criterios de prueba "BUENO/BONITO/BARATO/AURA" para Bailarín, y quedaron así en producción — **no era corrupción, fue una edición intencional de Raku**, restaurada tal cual a pedido suyo tras una confusión mía).
+- Se quitó el panel de conteo "Participantes" del paso 1 (redundante con el paso 2). Paso 2 renombrado de "Presentes" a "Participantes" en toda la UI.
+- Overlay de carga (`loading(true,...)`) movido al inicio de `seleccionarCategoria()`, antes de la llamada a `getAllEstados` — antes la pantalla parecía no responder unos segundos.
+
+#### Separación eliminatoria vs. resultado definitivo (solo Bailarín)
+- El ranking del paso 4 para `bai` es solo la eliminatoria — el resultado real llega tras la ronda final (paso 6, `guardarPodioFinal`). Se ocultan ahí `Ajustar Podio`/`Guardar Podio` para `bai` (sin importar el rol), que antes permitían certificar por error el top 3 de la eliminatoria como si fuera el podio real. **Impacto Tecnológico y Lego Kids SÍ conservan `Guardar Podio` en el paso 4** — para ellas ese ranking ya es el resultado definitivo.
+- Nuevo **"✏️ Ajustar Podio Final"** (paso 6): si a la final avanzan menos de 3 finalistas, permite asignar manualmente el 3er lugar eligiendo entre **todos** los participantes de la categoría, no solo los finalistas ya seleccionados.
+- Excel del podio final de Bailarín ahora incluye una hoja "Todos los Participantes" (antes solo listaba a los finalistas), igual que ya hacía el Excel de dev/lk.
+
+#### Los 4 bugs reales de multi-juez (encontrados probando con 2 a 5 jueces)
+1. **`fase1Total` cruzado entre jueces** (bai/lk, Fase 2): `guardarCalificacion()` leía `state.calificaciones[id].fase1Total`, un casillero único por participante que cualquier juez pisa con su propia nota. Al entrar Fase 2, un juez podía terminar sumando el fase1 de OTRO juez. Fix: nueva `fase1TotalDelJuez(id, juezEmail)` que consulta la caché correcta indexada por juez (`state.calificacionesPorJuez`). Verificado: antes 60 (35+25, fase1 ajeno), después 88 (63+25, propio).
+2. **`abrirSelectorFinalistas()` (bai) mostraba la nota de un juez cualquiera**, no el promedio — mismo antipatrón que el bug 1 pero en una función distinta (no `abrirClasificados`, que solo usa lk). Reescrita para pedir el ranking recién calculado al backend antes de renderizar. Verificado con 5 jueces: 55.2 (nota del último) → 75.2 (promedio real).
+3. **`bai_final` no promediaba entre jueces — tomaba el máximo** (Code.gs): faltaba la clave `'bai_final'` en `CATS_PROMEDIO_JUECES` (la ronda final usa una categoría de puntuaciones separada de `bai`). Con 5 jueces: 95.2 (máximo) → 75.2 (promedio) tras el fix.
+4. **Lego Kids: el tiempo de carrera (Fase 2) distorsionaba el promedio con 2+ jueces** — `calcularRankingCalificacion` promediaba el total crudo de cada fila; la fila del juez que medía el tiempo pasaba a valer (fase1+tiempo) mientras las demás valían solo fase1, magnitudes no comparables (ej. 54 en vez de 74). **Fix de arquitectura, no solo de cálculo**, a pedido explícito de Raku: se aprovecha el rol de Jefe de Jurado ya existente — ahora **solo el Jefe** puede "Clasificar a Fase 2" y entrar el tiempo de carrera (botón oculto e input deshabilitado para el resto de jueces, con hint "Solo el Jefe de Jurado lo ingresa"). En Code.gs, para `'lk'` el promedio de Fase 1 se calcula aparte entre TODOS los jueces, y el tiempo (una sola fila, la del Jefe) se suma una vez al final.
+
+Los 4 bugs comparten la misma causa raíz: confundir el estado **agregado** (compartido, lo último que llegó) con el estado **por juez** (indexado correctamente). Principio para el futuro: toda lectura de "mi nota anterior" en una categoría multi-juez debe indexarse explícitamente por la identidad del juez activo.
+
+#### Metodología y hallazgo operativo importante
+- Pruebas ejecutadas contra producción real con participantes `[DEV]`, variando de 1 a 5 jueces y hasta 25 participantes por categoría (ver también sección "Pruebas de volumen" más abajo).
+- **Hallazgo no relacionado a ningún bug de código**: al probar, se encontró que **Bailarín, Impacto Tecnológico y Lego Kids estaban configuradas con 1 solo juez en producción** (no los defaults de 3/3/2). Si para un futuro evento se espera más de un juez en alguna de estas categorías, hay que subir ese número desde "🔢 ¿Cuántos jueces?" antes de calificar — con 1 juez configurado, un segundo juez ni siquiera aparece como opción seleccionable.
+- Cada prueba con más jueces de los configurados en producción se hizo subiendo `panel_cal_num_jueces_<cat>` temporalmente y **restaurando siempre al valor original al terminar** — no queda alterada la configuración operativa real.
+
+#### RESULTADOS extendido a bai/dev/lk
+- `publicarPodioCalificacion` (Code.gs) ahora también marca `podio_publicado` (antes solo escribía en `resultados_publicados`, nunca activaba el gate — por eso estas 3 categorías nunca llegaban a aparecer en RESULTADOS aunque el podio ya estuviera guardado).
+- Nueva acción GET `getResultadosPublicados(categoria)`, equivalente a `getPodioManual` pero para las categorías de PANEL-CALIFICACION.
+- RESULTADOS (`CATS_CALIFICACION = ['bai','dev','lk']`) bifurca `renderizarPodio()` según el origen de datos, normalizando ambas fuentes a la misma forma `{posicion, nombre}` antes de renderizar. `despublicarPodio` funciona igual para las 3 sin cambios (solo actúa sobre el gate genérico).
+
+#### GENERAR-CERTIFICADOS — flujo completo probado de punta a punta
+- Aclarado con Raku: activar RESULTADOS con `publicarPodioCalificacion` a secas (atajo usado varias veces esta sesión) **no** siembra `certificados` — son dos llamadas encadenadas distintas en el botón real (`publicarPodioCalificacion` + un bucle de `guardarCertificado` por integrante, ver diferencia con PANEL-BRACKET abajo).
+- A pedido de Raku ("quiero generar los certificados yo"), se completó el ciclo real: se sembraron los certificados de las 3 categorías de prueba (75 filas: 25 dev + 25 lk + 3 finalistas + 22 participación de bai) replicando exactamente el bucle del botón real, y se verificó que aparecen como pendientes en GENERAR-CERTIFICADOS — sin generar los PDFs, eso quedó para que Raku lo haga desde ahí.
+- **Diferencia técnica aclarada**: PANEL-BRACKET usa una sola acción de backend (`guardarPodioManual`) que hace las 3 cosas atómicamente (guardar podio + marcar RESULTADOS + sembrar certificados). PANEL-CALIFICACION reparte lo mismo en 2 llamadas encadenadas desde el frontend (`publicarPodioCalificacion` + bucle de `guardarCertificado`). Para el usuario final el resultado es idéntico (un solo botón hace todo), pero importa si se quiere replicar el flujo por API sin pasar por la UI.
+
+#### Documentación técnica para tesis
+Se generó un documento Word (`.docx`, vía la librería `docx` de Node) con la arquitectura completa de PANEL-CALIFICACION, flujo funcional paso a paso, los 4 bugs (síntoma/causa raíz/corrección/validación), integración con RESULTADOS y GENERAR-CERTIFICADOS, y la matriz de pruebas — a pedido de Raku para su tesis. Sin LibreOffice/pandoc instalados en este equipo no se pudo renderizar una vista previa visual (solo verificación de integridad del XML interno del .docx).
+
+#### Análisis de CRONOMETRO (Trepador/Seguidor/Cubo Rubik) — pendiente de corregir
+Revisado a pedido de Raku antes de tocar código. **Hallazgo principal, no corregido aún**: todo el ranking de CRONOMETRO (`agregarAlRanking`, `seleccionarCompetido`, `guardarPodioCrono`, `construirRankingGeneralData`) está indexado por **`c.robot` (nombre de texto libre)**, no por el `id` real del participante — cada objeto sí tiene `id`, pero nunca se usa como clave. Riesgo real: dos robots con el mismo nombre en la misma categoría se fusionarían en una sola fila del ranking, perdiendo silenciosamente los datos de uno de los dos al guardar el podio. Minisumo (PANEL-BRACKET) no tiene este problema — ahí todo se referencia por `equipo_a_id`/`equipo_b_id` reales del bracket. **Es la próxima tarea acordada con Raku**, aún sin empezar al cierre de esta sesión.
+
+#### Principios nuevos
+- **En una categoría con jueces múltiples, nunca leer "mi nota anterior" del estado agregado compartido — siempre indexar por la identidad del juez activo.** Los 4 bugs de esta sesión son variaciones del mismo error.
+- **Antes de "restaurar" un dato que parece corrupto, confirmar con el dueño del proyecto si fue un cambio intencional.** Los criterios "BUENO/BONITO/BARATO/AURA" de Bailarín no eran corrupción — eran una prueba de Raku probando el botón nuevo; se sobrescribieron sin preguntar primero.
+- **Cuando se sube temporalmente un valor de configuración operativa (ej. cantidad de jueces) para probar, restaurarlo siempre al valor real de producción al terminar** — no dejar la configuración de prueba puesta.
+- **Un flujo indexado por nombre de texto libre (no ID) es un riesgo silencioso en cualquier módulo con inscripciones**: nombres de robot no son únicos por diseño (no hay validación de unicidad en REGISTRO); cualquier lugar del código que use el nombre como clave de matching, en vez del ID, puede fusionar dos participantes distintos sin ningún error visible.
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 24 julio 2026**
+**SKILL.md actualizado por última vez: 25 julio 2026**
