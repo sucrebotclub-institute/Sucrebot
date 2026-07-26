@@ -619,7 +619,7 @@ function desbloquearBtn(){const b=document.getElementById('btn-start');if(b)b.di
 function tiempoASegundos(t){if(!t||t==='—'||t==='DNF'||t==='00:00:00')return Infinity;const p=t.split(':').map(Number);return p[0]*60+p[1]+p[2]/100;}
 
 async function bloquearCategoria(cat){const user=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');try{const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'bloquearCategoria',categoria:cat,usuario:user.email,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});const d=await r.json();return d.ok;}catch(e){return false;}}
-async function desbloquearCategoria(cat){try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearCategoria',categoria:cat,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});}catch(e){}}
+async function desbloquearCategoria(cat){try{const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearCategoria',categoria:cat,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});const d=await r.json();return d.ok;}catch(e){return false;}}
 async function verificarBloqueo(cat){try{const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getCategoriasActivas'}),{cache:'no-store'});const a=await r.json();return a.find(c=>String(c.categoria||'').toLowerCase().trim()===String(cat||'').toLowerCase().trim());}catch(e){return null;}}
 
 function iniciarPolling(){
@@ -902,8 +902,9 @@ async function confirmarCerrarCategoria(){
   cerrarModal('modal-cat');if(!categoriaActual)return;
   const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
   try{
+    let desbloqueoOk=true;
     if(!modoOffline){
-      await desbloquearCategoria(categoriaActual);
+      desbloqueoOk=await desbloquearCategoria(categoriaActual);
       const ruta=getRuta()||'general';
       const staffToken=localStorage.getItem('sucrebot_staff_token')||'';
       await Promise.all([fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta,staffToken})}),fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null,staffToken})})]);
@@ -912,7 +913,9 @@ async function confirmarCerrarCategoria(){
     if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
     categoriaActual=null;participanteActual=null;rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
     rondasData={};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
-    reiniciarCrono();limpiarParticipante();actualizarBadges();renderRondas();document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));showToast('✅ Categoría cerrada');setStep(1);
+    reiniciarCrono();limpiarParticipante();actualizarBadges();renderRondas();document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);
+    if(desbloqueoOk)showToast('✅ Categoría cerrada');
+    else showToast('⚠️ Categoría cerrada acá, pero el servidor no confirmó el desbloqueo — puede seguir marcada "en uso" para otro dispositivo',true);
   }catch(e){showToast('❌ Error al cerrar categoría',true);}
 }
 
@@ -942,7 +945,9 @@ async function guardarResultadoGAS(tiempo){
     return;
   }
   try{
-    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:'pushResultado',staffToken:localStorage.getItem('sucrebot_staff_token')||''},payload))});
+    const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:'pushResultado',staffToken:localStorage.getItem('sucrebot_staff_token')||''},payload))});
+    const d=await r.json();
+    if(!d.ok){console.error('pushResultado rechazado por el backend:',d.error);showToast('⚠️ El tiempo NO se guardó en el servidor: '+(d.error||'error desconocido'),true);}
   }catch(e){
     console.error('Error guardar resultado:',e);
     showToast('⚠️ Sin conexión al guardar. Activa el modo offline si el internet no vuelve pronto.',true);
@@ -1089,7 +1094,7 @@ async function guardarPodioCrono(){
   if(!(await customConfirm('¿Guardar podio de '+catNombre+' en certificados?\n'+ranking.length+' participantes:\n'+preview)))return;
   const tipos=['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
   const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
-  async function gasCert(payload){try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...payload,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});}catch(e){console.warn('[gasCert] fetch error (ignorado):',e.message,'— payload:',payload.nombre_completo);}}
+  async function gasCert(payload){const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...payload,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});const d=await r.json();if(!d.ok)throw new Error(d.error||'Rechazado por el backend');}
   async function guardarCertParticipante(p,tipo){
     const correo=p.correo||'',inst=p.institucion||'',m2=p.miembro2||'',nombre=p.nombre||p.robot||'';
     const base={action:'guardarCertificado',id_participante:p.id,correo,categoria:catNombre,institucion:inst,tipo_certificado:tipo,evento:'SucreBot 2026'};
@@ -1118,9 +1123,11 @@ async function guardarPodioCrono(){
     try{
       const rutaCorta=getRuta();
       if(rutaCorta){
-        await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo})),staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
+        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo})),staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
+        const d=await r.json();
+        if(!d.ok){console.warn('publicarPodioCalificacion rechazado:',d.error);showToast('⚠️ Certificados guardados, pero el podio NO se pudo publicar en RESULTADOS: '+(d.error||'error desconocido'),true);}
       }
-    }catch(e){console.warn('No se pudo publicar el podio en RESULTADOS:',e);}
+    }catch(e){console.warn('No se pudo publicar el podio en RESULTADOS:',e);showToast('⚠️ Certificados guardados, pero el podio NO se pudo publicar en RESULTADOS (sin conexión)',true);}
   }
 }
 

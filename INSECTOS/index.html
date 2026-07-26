@@ -516,7 +516,10 @@
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ ...data, staffToken: staffToken() }),
       keepalive: true
-    }).then(r => r.json());
+    }).then(r => r.json()).then(d => {
+      if (!d.ok) throw new Error(d.error || 'Rechazado por el backend');
+      return d;
+    });
   }
   function staffToken() {
     return localStorage.getItem('sucrebot_staff_token') || '';
@@ -1471,7 +1474,11 @@
         categoria: 'ins',
         ranking: todos.map(entry => ({ robot: entry.p.robot, nombre: entry.p.nombre, tiempo: entry.tiempo }))
       });
-    } catch(e) { console.warn('No se pudo publicar el podio en RESULTADOS:', e); }
+    } catch(e) {
+      console.warn('No se pudo publicar el podio en RESULTADOS:', e);
+      btn.textContent += ' · ⚠️ no se publicó en RESULTADOS';
+      btn.className = 'btn';
+    }
   });
 
   document.getElementById('btnReiniciar').addEventListener('click', () => {
