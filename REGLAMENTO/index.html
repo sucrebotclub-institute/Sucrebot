@@ -193,6 +193,84 @@
             font-style: italic;
         }
 
+        /* ── Edición (solo visible para Organizador/Admin logueado) ── */
+        .reg-loading-msg { color: #7a7a8c; font-size: .9rem; padding: 12px 4px; }
+        .btn-reg-editar {
+            display: none;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #fff;
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-reg-editar:hover { background: rgba(255,255,255,0.28); }
+        body.staff-mode .btn-reg-editar { display: inline-flex; }
+
+        .reg-modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(14,18,30,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 99999;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .reg-modal-overlay.show { display: flex; }
+        .reg-modal {
+            background: #fff; border-radius: 14px;
+            width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+            padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        }
+        .reg-modal h4 {
+            font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+            letter-spacing: 1px; color: #1a3a6e; margin: 0 0 18px;
+        }
+        .reg-modal-check {
+            display: flex; align-items: center; gap: 8px;
+            font-family: 'Exo 2', sans-serif; font-size: .9rem; color: #1a1c28;
+            margin-bottom: 20px; cursor: pointer;
+        }
+        .reg-modal-seccion {
+            border-top: 1px solid #eef1f7;
+            padding-top: 16px; margin-top: 16px;
+        }
+        .reg-modal-seccion label {
+            display: block;
+            font-family: 'Orbitron', monospace; font-size: .62rem;
+            letter-spacing: 1.5px; color: #1a5ca8; text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .reg-modal-archivo-actual { font-size: .82rem; margin-bottom: 8px; }
+        .reg-modal-archivo-actual a { color: #1a5ca8; }
+        .reg-modal-sin-archivo { color: #b0b0bc; font-style: italic; }
+        .reg-modal-seccion input[type="file"] {
+            width: 100%; box-sizing: border-box; font-size: .8rem;
+            margin-bottom: 8px;
+        }
+        .reg-modal-seccion .reg-modal-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+        .reg-modal-seccion button {
+            border: none; border-radius: 6px; padding: 8px 14px;
+            font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: .78rem;
+            cursor: pointer;
+        }
+        .reg-btn-subir { background: #1a5ca8; color: #fff; }
+        .reg-btn-subir:hover { background: #1e6ec0; }
+        .reg-btn-subir:disabled { opacity: .6; cursor: default; }
+        .reg-btn-quitar { background: #fdecec; color: #c0392b; }
+        .reg-btn-quitar:hover { background: #fbdada; }
+        .reg-modal-cerrar {
+            width: 100%; margin-top: 22px; padding: 12px;
+            border-radius: 8px; background: #eef1f7; color: #4a4a5a;
+            border: none; font-family: 'Exo 2', sans-serif; font-weight: 700;
+            font-size: .88rem; cursor: pointer;
+        }
+        .reg-modal-cerrar:hover { background: #dde2ed; }
+
         @media (max-width: 1100px) {
             .reglamento-layout { flex-direction: column; align-items: center; }
             .reglamento-robot { display: none; }
@@ -237,56 +315,158 @@
     </div>
 </div>
 
+<div class="reg-modal-overlay" id="regModalOverlay">
+    <div class="reg-modal">
+        <h4 id="regModalTitulo">Editar archivos</h4>
+
+        <label class="reg-modal-check">
+            <input type="checkbox" id="regModalDisponible" onchange="cambiarDisponibleReglamento()">
+            Reglamento disponible al público
+        </label>
+
+        <div class="reg-modal-seccion">
+            <label>PDF del reglamento</label>
+            <div class="reg-modal-archivo-actual" id="regModalPdfActual"></div>
+            <input type="file" id="regModalPdfInput" accept="application/pdf">
+            <div class="reg-modal-botones">
+                <button class="reg-btn-subir" id="regModalPdfBtn" onclick="subirArchivoModal('pdf')">📤 Subir / Reemplazar</button>
+            </div>
+        </div>
+
+        <div class="reg-modal-seccion">
+            <label>Música (opcional — Bailarín)</label>
+            <div class="reg-modal-archivo-actual" id="regModalAudioActual"></div>
+            <input type="file" id="regModalAudioInput" accept="audio/*">
+            <div class="reg-modal-botones">
+                <button class="reg-btn-subir" id="regModalAudioBtn" onclick="subirArchivoModal('audio')">📤 Subir / Reemplazar</button>
+                <button class="reg-btn-quitar" id="regModalAudioQuitar" onclick="quitarArchivoModal('audio')">🗑️ Quitar música</button>
+            </div>
+        </div>
+
+        <div class="reg-modal-seccion">
+            <label>Imagen de pista (opcional — Seguidor de línea)</label>
+            <div class="reg-modal-archivo-actual" id="regModalPistaActual"></div>
+            <input type="file" id="regModalPistaInput" accept="image/*">
+            <div class="reg-modal-botones">
+                <button class="reg-btn-subir" id="regModalPistaBtn" onclick="subirArchivoModal('pista')">📤 Subir / Reemplazar</button>
+                <button class="reg-btn-quitar" id="regModalPistaQuitar" onclick="quitarArchivoModal('pista')">🗑️ Quitar pista</button>
+            </div>
+        </div>
+
+        <button class="reg-modal-cerrar" onclick="cerrarModalReglamento()">Cerrar</button>
+    </div>
+</div>
+
 <div data-include="../shared/components/footer.html"></div>
 
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 <script>
 // ── Definición de categorías ──────────────────────────────────
-// Para agregar un PDF: pon el ID de Drive en driveId y cambia disponible: true
-// 👉 actualizado: cambia esta fecha (formato 'YYYY-MM-DD') solo de la categoría
-//    cuyo PDF subiste/modificaste de nuevo. Las demás no se tocan.
+// Datos fijos (emoji/nombre/desc) -- coinciden con CATEGORIA_MAP de Code.gs,
+// no se agregan/quitan categorías desde acá. Lo editable (driveId del PDF,
+// audioId, pistaId de la imagen de pista, disponible, actualizado) vive en
+// la hoja 'reglamentos_config' y se carga vía getReglamentosConfig, ver
+// REGLAMENTOS_CONFIG/cargarReglamentosConfig más abajo.
 const CATEGORIAS = [
   {
     nivel: '🏅 Amateur',
     items: [
-      { emoji: '🐛', nombre: 'Insectos',                         desc: 'Robots de combate pequeño formato', disponible: true, driveId: '1G3wuCVUeWJLLIb1Um2e9Ho6AN0kyzxGG', actualizado: '2026-06-23' },
-      { emoji: '🧗', nombre: 'Trepador (Amateur)',               desc: 'Ascenso de estructura vertical',     disponible: true, driveId: '15RbzZX_5ZH9QVLNdxiEQUvy2w6XqafHb', actualizado: '2026-06-23' },
-      { emoji: '➡️', nombre: 'Seguidor de línea ST (Amateur)',   desc: 'Seguimiento autónomo de trayectoria',disponible: true, driveId: '1c3PLc2LAgAyHk5mSWt0yLOGUZV8Bu_dK', actualizado: '2026-06-23', pistaImg: '../shared/images/pistas/seguidor-amateur-velocidad.png' },
+      { emoji: '🐛', nombre: 'Insectos',                         desc: 'Robots de combate pequeño formato' },
+      { emoji: '🧗', nombre: 'Trepador (Amateur)',               desc: 'Ascenso de estructura vertical' },
+      { emoji: '➡️', nombre: 'Seguidor de línea ST (Amateur)',   desc: 'Seguimiento autónomo de trayectoria' },
     ]
   },
   {
     nivel: '🏆 Pro',
     items: [
-      { emoji: '➡️', nombre: 'Seguidor de línea ST (Pro)',       desc: 'Seguimiento autónomo avanzado',       disponible: true, driveId: '1PC1Vsmq7t-zXG4XvhNsBzJkFBfqRVnij', actualizado: '2026-06-23', pistaImg: '../shared/images/pistas/seguidor-pro-velocidad.png' },
-      { emoji: '⚔️', nombre: 'Minisumo Autónomo',               desc: 'Combate autónomo en ring circular',   disponible: true, driveId: '1jA1rpxHkfF2qPllJLlZOilzkNphn0Ag8', actualizado: '2026-06-23' },
-      { emoji: '🕹️', nombre: 'Minisumo RC',                     desc: 'Combate con control remoto',          disponible: true, driveId: '1oAZSwjWpGIjJm0WEUqY27W_G0OArn2n_', actualizado: '2026-06-23' },
-      { emoji: '💃', nombre: 'Bailarín',                         desc: 'Coreografía sincronizada con música', disponible: true, driveId: '1ASoMKzt00Gp98X2o-cFfIAQzDrQBoHNk', actualizado: '2026-07-07', audioId: '1xfKidekIANwPJpmM7UN4MmbtIillJJIK' },
-      { emoji: '🥊', nombre: 'Batalla',                          desc: 'Combate por criterios de jurado',     disponible: true, driveId: '1r4Ip1yBNli40e0M5EHXbmvzVkhRajl5L', actualizado: '2026-07-01' },
-      { emoji: '🧗', nombre: 'Trepador (Pro)',                   desc: 'Ascenso de estructura vertical Pro',  disponible: true, driveId: '1hHlhJGyBMp4kmiBxyPa9lvY45Ult52fJ', actualizado: '2026-06-23' },
-      { emoji: '⚽', nombre: 'Robot Soccer',                     desc: 'Fútbol robótico por equipos',         disponible: true, driveId: '1eW8xMnFzJ3Zy6xog2WLX7rcYgDvk5F_D', actualizado: '2026-07-3' },
+      { emoji: '➡️', nombre: 'Seguidor de línea ST (Pro)',       desc: 'Seguimiento autónomo avanzado' },
+      { emoji: '⚔️', nombre: 'Minisumo Autónomo',               desc: 'Combate autónomo en ring circular' },
+      { emoji: '🕹️', nombre: 'Minisumo RC',                     desc: 'Combate con control remoto' },
+      { emoji: '💃', nombre: 'Bailarín',                         desc: 'Coreografía sincronizada con música' },
+      { emoji: '🥊', nombre: 'Batalla',                          desc: 'Combate por criterios de jurado' },
+      { emoji: '🧗', nombre: 'Trepador (Pro)',                   desc: 'Ascenso de estructura vertical Pro' },
+      { emoji: '⚽', nombre: 'Robot Soccer',                     desc: 'Fútbol robótico por equipos' },
     ]
   },
   {
     nivel: '🌟 Open',
     items: [
-      { emoji: '🟥', nombre: 'Cubo Rubik',                       desc: 'Resolución de cubo Rubik',            disponible: true, driveId: '1MNQjQtTWm1nH9s2mrhBeU0EBuuG0BFG3', actualizado: '2026-06-23' }, 
-      { emoji: '🧱', nombre: 'Lego Kids',                        desc: 'Ensamble y carrera con Lego',         disponible: true, driveId: '1YoCcHmOHK2cnEhC2KOUeIP7a9goA78Za', actualizado: '2026-06-23' },
-      { emoji: '💡', nombre: 'Impacto Tecnológico',              desc: 'Proyecto de innovación y tecnología',  disponible: true, driveId: '1GXFAlV9OoLZ-Mmw8HT_pLCSB822uqF9V', actualizado: '2026-06-23' },
+      { emoji: '🟥', nombre: 'Cubo Rubik',                       desc: 'Resolución de cubo Rubik' },
+      { emoji: '🧱', nombre: 'Lego Kids',                        desc: 'Ensamble y carrera con Lego' },
+      { emoji: '💡', nombre: 'Impacto Tecnológico',              desc: 'Proyecto de innovación y tecnología' },
     ]
   }
 ];
 
+const GAS_URL = CONFIG.GAS_URL();
+const REG_CACHE_KEY = 'sucrebot_reglamentos_cache';
+let REGLAMENTOS_CONFIG = {}; // nombre de categoría -> {driveId, audioId, pistaId, disponible, actualizado}
+let regEditCategoria = null; // nombre de la categoría abierta en el modal
+
+function buscarCategoriaBase(nombre) {
+  for (const grupo of CATEGORIAS) {
+    const item = grupo.items.find(i => i.nombre === nombre);
+    if (item) return item;
+  }
+  return null;
+}
+
+function categoriaCompleta(nombre) {
+  const base = buscarCategoriaBase(nombre) || {};
+  const cfg  = REGLAMENTOS_CONFIG[nombre] || {};
+  return {
+    nombre,
+    emoji: base.emoji || '',
+    desc: base.desc || '',
+    driveId: cfg.driveId || '',
+    audioId: cfg.audioId || '',
+    pistaId: cfg.pistaId || '',
+    disponible: cfg.disponible === true,
+    actualizado: cfg.actualizado || ''
+  };
+}
+
+async function cargarReglamentosConfig(forzar) {
+  if (!forzar) {
+    try {
+      const cache = JSON.parse(localStorage.getItem(REG_CACHE_KEY) || 'null');
+      if (cache && cache.data) { REGLAMENTOS_CONFIG = cache.data; renderReglamentos(); }
+    } catch (e) {}
+  }
+  try {
+    const r = await fetch(GAS_URL + '?action=getReglamentosConfig', { cache: 'no-store' }).then(x => x.json());
+    if (r && r.ok) {
+      REGLAMENTOS_CONFIG = {};
+      (r.data || []).forEach(c => { REGLAMENTOS_CONFIG[c.categoria] = c; });
+      localStorage.setItem(REG_CACHE_KEY, JSON.stringify({ data: REGLAMENTOS_CONFIG }));
+      renderReglamentos();
+    }
+  } catch (e) {
+    console.error('Error cargando reglamentos', e);
+    if (!Object.keys(REGLAMENTOS_CONFIG).length) {
+      document.getElementById('reglamentos-content').innerHTML =
+        '<div class="reg-loading-msg">⚠️ No se pudieron cargar los reglamentos. Intenta recargar la página.</div>';
+    }
+  }
+}
+
 function renderReglamentos() {
   const container = document.getElementById('reglamentos-content');
+  if (!Object.keys(REGLAMENTOS_CONFIG).length) {
+    container.innerHTML = '<div class="reg-loading-msg">Cargando reglamentos...</div>';
+    return;
+  }
   let html = '';
 
   CATEGORIAS.forEach(grupo => {
     html += `<div class="nivel-label">${grupo.nivel}</div>`;
-    grupo.items.forEach((cat, i) => {
+    grupo.items.forEach((catBase, i) => {
+      const cat = categoriaCompleta(catBase.nombre);
       const id = `reg-${grupo.nivel.replace(/\s/g,'-')}-${i}`;
       const iframeId = `iframe-${id}`;
       const imgWrapId = `img-${id}`;
+      const nombreSeguro = cat.nombre.replace(/'/g, "\\'");
       html += `
       <div class="reg-card" id="${id}">
         <div class="reg-card-header">
@@ -302,9 +482,10 @@ function renderReglamentos() {
               ${cat.disponible ? '✓ Disponible' : '⏳ Próximamente'}
             </span>
             ${cat.disponible && cat.actualizado ? `<span class="reg-card-fecha">Actualizado: ${formatearFecha(cat.actualizado)}</span>` : ''}
+            <button class="btn-reg-editar" onclick="abrirModalReglamento('${nombreSeguro}')">🔧 Editar archivos</button>
           </div>
         </div>
-        ${cat.disponible ? `
+        ${cat.disponible && cat.driveId ? `
         <div class="reg-acciones show">
           <a class="btn-reg btn-reg-descargar"
              href="https://drive.google.com/uc?export=download&id=${cat.driveId}"
@@ -317,16 +498,16 @@ function renderReglamentos() {
           <button class="btn-reg btn-reg-preview" onclick="togglePreview('${iframeId}', '${cat.driveId}', this)">
             👁 Vista previa
           </button>
-          ${cat.pistaImg ? `
+          ${cat.pistaId ? `
           <a class="btn-reg btn-reg-pista"
-             href="${cat.pistaImg}"
-             download="Pista-${cat.nombre.replace(/[^a-zA-Z0-9]+/g,'-')}-SucreBot2026.png">🗺️ Descargar Pista</a>
-          <button class="btn-reg btn-reg-preview-pista" onclick="toggleImagenPista('${imgWrapId}', '${cat.pistaImg}', this)">
+             href="https://drive.google.com/uc?export=download&id=${cat.pistaId}"
+             target="_blank" rel="noopener">🗺️ Descargar Pista</a>
+          <button class="btn-reg btn-reg-preview-pista" onclick="toggleImagenPista('${imgWrapId}', '${cat.pistaId}', this)">
             👁 Ver Pista
           </button>
           ` : ''}
         </div>
-        ${cat.pistaImg ? `
+        ${cat.pistaId ? `
         <div class="reg-imagen-wrap" id="${imgWrapId}">
           <div class="reg-iframe-header">
             <span>Pista · ${cat.nombre}</span>
@@ -376,7 +557,7 @@ function cerrarIframe(iframeId, e) {
   if (btn) btn.textContent = '👁 Vista previa';
 }
 
-function toggleImagenPista(imgWrapId, srcImg, btn) {
+function toggleImagenPista(imgWrapId, pistaId, btn) {
   const wrap = document.getElementById(imgWrapId);
   const img = wrap.querySelector('img');
   const visible = wrap.classList.contains('show');
@@ -385,7 +566,7 @@ function toggleImagenPista(imgWrapId, srcImg, btn) {
     img.src = '';
     btn.textContent = '👁 Ver Pista';
   } else {
-    img.src = srcImg;
+    img.src = `https://drive.google.com/uc?export=view&id=${pistaId}`;
     wrap.classList.add('show');
     btn.textContent = '🔼 Ocultar';
   }
@@ -406,7 +587,120 @@ function formatearFecha(fechaStr) {
   return fecha.toLocaleDateString('es-EC', { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '');
 }
 
-document.addEventListener('componentsLoaded', renderReglamentos);
+// ═══════════════════════════════════════════════════════
+//  Edición de archivos -- editable para Organizador/Admin
+// ═══════════════════════════════════════════════════════
+function gasPostReglamento(body) {
+  return fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ ...body, staffToken: localStorage.getItem('sucrebot_staff_token') || '' })
+  }).then(r => r.json());
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function capitalizar(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function actualizarEstadoArchivoModal(tipo, id) {
+  const cont = document.getElementById('regModal' + capitalizar(tipo) + 'Actual');
+  cont.innerHTML = id
+    ? `<a href="https://drive.google.com/file/d/${id}/view" target="_blank" rel="noopener">📄 Ver archivo actual</a>`
+    : '<span class="reg-modal-sin-archivo">Sin archivo</span>';
+  const btnQuitar = document.getElementById('regModal' + capitalizar(tipo) + 'Quitar');
+  if (btnQuitar) btnQuitar.style.display = id ? 'inline-flex' : 'none';
+}
+
+function abrirModalReglamento(nombre) {
+  regEditCategoria = nombre;
+  const cat = categoriaCompleta(nombre);
+  document.getElementById('regModalTitulo').textContent = 'Editar archivos — ' + cat.nombre;
+  document.getElementById('regModalDisponible').checked = cat.disponible;
+  actualizarEstadoArchivoModal('pdf', cat.driveId);
+  actualizarEstadoArchivoModal('audio', cat.audioId);
+  actualizarEstadoArchivoModal('pista', cat.pistaId);
+  document.getElementById('regModalPdfInput').value = '';
+  document.getElementById('regModalAudioInput').value = '';
+  document.getElementById('regModalPistaInput').value = '';
+  document.getElementById('regModalOverlay').classList.add('show');
+}
+
+function cerrarModalReglamento() {
+  document.getElementById('regModalOverlay').classList.remove('show');
+  regEditCategoria = null;
+}
+
+async function cambiarDisponibleReglamento() {
+  const checkbox = document.getElementById('regModalDisponible');
+  const disponible = checkbox.checked;
+  checkbox.disabled = true;
+  try {
+    const r = await gasPostReglamento({ action: 'setDisponibleReglamento', categoria: regEditCategoria, disponible });
+    if (!r || !r.ok) { alert('Error: ' + (r && r.error || 'desconocido')); checkbox.checked = !disponible; return; }
+    await cargarReglamentosConfig(true);
+  } catch (e) {
+    alert('Error: ' + e.message);
+    checkbox.checked = !disponible;
+  }
+  checkbox.disabled = false;
+}
+
+async function subirArchivoModal(tipo) {
+  const input = document.getElementById('regModal' + capitalizar(tipo) + 'Input');
+  const file = input.files[0];
+  if (!file) { alert('Selecciona un archivo primero.'); return; }
+  const btn = document.getElementById('regModal' + capitalizar(tipo) + 'Btn');
+  btn.disabled = true;
+  const textoOriginal = btn.textContent;
+  btn.textContent = 'Subiendo...';
+  try {
+    const base64 = await fileToBase64(file);
+    const r = await gasPostReglamento({
+      action: 'subirArchivoReglamento',
+      categoria: regEditCategoria,
+      tipo,
+      fileName: file.name,
+      mimeType: file.type,
+      base64
+    });
+    if (!r || !r.ok) { alert('Error al subir: ' + (r && r.error || 'desconocido')); return; }
+    actualizarEstadoArchivoModal(tipo, r.driveId);
+    input.value = '';
+    await cargarReglamentosConfig(true);
+  } catch (e) {
+    alert('Error al subir: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = textoOriginal;
+}
+
+async function quitarArchivoModal(tipo) {
+  if (!confirm('¿Quitar este archivo?')) return;
+  try {
+    const r = await gasPostReglamento({ action: 'eliminarArchivoReglamento', categoria: regEditCategoria, tipo });
+    if (!r || !r.ok) { alert('Error al quitar: ' + (r && r.error || 'desconocido')); return; }
+    actualizarEstadoArchivoModal(tipo, '');
+    await cargarReglamentosConfig(true);
+  } catch (e) {
+    alert('Error al quitar: ' + e.message);
+  }
+}
+
+cargarReglamentosConfig(false);
+
+(async () => {
+  if (window.esperarRol) await window.esperarRol();
+  if (window.esStaffCompleto && window.esStaffCompleto()) {
+    document.body.classList.add('staff-mode');
+  }
+})();
 </script>
 
 </body>
