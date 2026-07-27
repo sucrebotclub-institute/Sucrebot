@@ -311,6 +311,131 @@
             .faq-layout { padding-left: 0; padding-right: 0; }
             .page-hero { padding: 40px 0 24px; }
         }
+
+        /* ── Edición (solo visible para Organizador/Admin logueado) ── */
+        .faq-edit-bar { display: none; align-items: center; gap: 4px; flex-shrink: 0; }
+        body.staff-mode .faq-edit-bar { display: flex; }
+
+        .faq-mini-btn {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #ffffff;
+            border-radius: 6px;
+            width: 26px;
+            height: 26px;
+            font-size: .8rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s ease;
+        }
+        .faq-mini-btn:hover { background: rgba(255,255,255,0.28); }
+        .faq-mini-btn:disabled { opacity: .3; cursor: default; }
+
+        .faq-add-wrap { display: none; margin-top: 20px; }
+        body.staff-mode .faq-add-wrap { display: block; }
+
+        .faq-btn-add {
+            background: #1a5ca8;
+            color: #ffffff;
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 700;
+            font-size: .9rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background .2s ease;
+        }
+        .faq-btn-add:hover { background: #1e6ec0; }
+
+        .faq-loading-msg { color: #7a7a8c; font-size: .9rem; padding: 12px 4px; }
+
+        /* ── Modal de edición ── */
+        .faq-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(14,18,30,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .faq-modal-overlay.show { display: flex; }
+
+        .faq-modal {
+            background: #ffffff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        }
+
+        .faq-modal h4 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            color: #1a3a6e;
+            margin: 0 0 18px;
+        }
+
+        .faq-modal label {
+            display: block;
+            font-family: 'Orbitron', monospace;
+            font-size: .62rem;
+            letter-spacing: 1.5px;
+            color: #1a5ca8;
+            text-transform: uppercase;
+            margin: 14px 0 6px;
+        }
+
+        .faq-modal input[type="text"],
+        .faq-modal textarea {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #d5dae5;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: 'Exo 2', sans-serif;
+            font-size: .92rem;
+            color: #1a1c28;
+        }
+        .faq-modal textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
+
+        .faq-modal-hint {
+            font-size: .78rem;
+            color: #8a8a9a;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .faq-modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+        .faq-modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 700;
+            font-size: .88rem;
+            cursor: pointer;
+            border: none;
+        }
+        .faq-btn-guardar { background: #1a5ca8; color: #fff; }
+        .faq-btn-guardar:hover { background: #1e6ec0; }
+        .faq-btn-cancelar { background: #eef1f7; color: #4a4a5a; }
+        .faq-btn-cancelar:hover { background: #dde2ed; }
     </style>
 </head>
 <body>
@@ -404,175 +529,16 @@
                 </div>
             </div>
 
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cómo me registro?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>El registro se realiza directamente en esta plataforma. Haz clic en <strong>SucreBot 2026 → Registro</strong> en el menú principal, completa el formulario con tus datos, sube el comprobante de pago y el logo de tu institución. Una vez revisado por el equipo organizador, recibirás tu código QR de acceso al evento en el correo que registraste.</p>
-                </div>
+            <!-- Preguntas editables de esta misma sección (Organizador/Admin) -->
+            <div id="faqSeccionInscripcionDinamica"></div>
+
+            <!-- Resto de secciones -- 100% dinámico, editable por Organizador/Admin -->
+            <div id="faqSeccionesDinamicas">
+                <div class="faq-loading-msg">Cargando preguntas...</div>
             </div>
 
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>No puedo subir mi comprobante o logo porque está en OneDrive/Google Drive, ¿qué hago?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>El formulario solo acepta archivos que estén guardados directamente en tu computador o celular, no enlaces ni archivos que sigan "en la nube". Si tu comprobante o logo está en OneDrive, Google Drive u otro servicio similar, primero descárgalo a tu dispositivo y luego súbelo desde ahí:</p>
-                    <ul>
-                        <li><strong>En computador:</strong> abre el archivo en OneDrive/Drive, haz clic derecho → <strong>Descargar</strong> (se guardará en tu carpeta de <em>Descargas</em>), y en el formulario selecciona ese archivo descargado.</li>
-                        <li><strong>En celular:</strong> abre la app de OneDrive/Drive, toca los tres puntos (⋮) junto al archivo → <strong>Descargar</strong> o <strong>Guardar en el dispositivo</strong>, y luego selecciónalo desde la galería o el explorador de archivos al momento de subirlo.</li>
-                    </ul>
-                    <p>Si después de descargarlo sigues sin poder subirlo, revisa que el archivo sea una imagen (JPG/PNG) o PDF y que no supere el tamaño permitido, o escríbenos a <strong>sucrebotclub@tecnologicosucre.edu.ec</strong>.</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cómo sé si mi inscripción fue exitosa?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Después de completar el formulario verás un mensaje de confirmación con tu ID de participante. Tu registro quedará en estado <strong>En Revisión</strong> hasta que el equipo lo apruebe. Una vez aprobado, recibirás un correo con tu <strong>código QR</strong> de acceso. También puedes consultar el estado en <strong>Mi Registro</strong> dentro de la plataforma.</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Puedo cambiar mi categoría después de registrarme?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Los cambios de categoría deben solicitarse antes del cierre de inscripciones escribiendo a <strong>sucrebotclub@tecnologicosucre.edu.ec</strong> o contactando al WhatsApp <strong>0987887551</strong>. No se garantizan cambios una vez iniciado el proceso de aprobación.</p>
-                </div>
-            </div>
-
-            <!-- ── CATEGORÍAS ── -->
-            <div class="faq-section-label">🤖 Categorías y Participación</div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Quiénes pueden participar?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Pueden participar todas las personas interesadas en robótica y tecnología, sin restricción de edad ni nivel de experiencia. El torneo cuenta con categorías <strong>Amateur</strong>, <strong>Pro</strong> y <strong>Open</strong> para adaptarse a diferentes niveles.</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cuántos integrantes puede tener un equipo?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Cada equipo puede tener <strong>máximo 2 integrantes</strong>: un <strong>Capitán</strong> y un <strong>Subcapitán</strong>. El subcapitán es opcional — puedes participar solo si lo prefieres — pero no se aceptarán más de 2 personas por inscripción. Ambos integrantes recibirán diploma de participación.</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cuáles son las categorías disponibles?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>SucreBot 2026 ofrece las siguientes categorías:</p>
-                    <ul>
-                        <li><strong>🏅 Amateur:</strong> Insectos, Trepador (Amateur), Seguidor de línea ST (Amateur)</li>
-                        <li><strong>🏆 Pro:</strong> Seguidor de línea ST (Pro), Minisumo Autónomo, Minisumo RC, Bailarín, Batalla, Trepador (Pro), Robot Soccer</li>
-                        <li><strong>🌟 Open:</strong> Cubo Rubik, Lego Kids, Impacto Tecnológico</li>
-                    </ul>
-                    <p>Consulta el <strong>Reglamento</strong> para conocer las reglas específicas de cada categoría.</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Puedo inscribirme en más de una categoría?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Sí, puedes competir en más de una categoría. Cada inscripción es independiente y tiene su propio costo. Deberás completar un formulario de registro por cada categoría en la que desees participar.</p>
-                </div>
-            </div>
-
-            <!-- ── EVENTO ── -->
-            <div class="faq-section-label">📍 Evento y Lugar</div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cuál es la fecha del evento?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>La competencia nacional se realizará el <strong>16 de julio de 2026</strong>. ¡Marca la fecha en tu calendario!</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Dónde se realizará el evento?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>El evento se llevará a cabo en el <strong>Centro Múltiple de Institutos (CMI)</strong>, ubicado en:</p>
-                    <p>📍 <strong>Ciudad Mitad del Mundo – San Antonio de Pichincha</strong><br>
-                    (Antiguo edificio de la UNASUR)</p>
-                </div>
-            </div>
-
-            <!-- ── RESULTADOS Y DIPLOMAS ── -->
-            <div class="faq-section-label">🏆 Resultados y Diplomas</div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Dónde veo mis resultados?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Los resultados se actualizan en tiempo real durante el evento en la sección <strong>Resultados</strong> de esta plataforma. Puedes consultarlos desde cualquier dispositivo con acceso a internet, sin necesidad de iniciar sesión.</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cómo obtengo mi diploma?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Los diplomas se generan automáticamente al finalizar el evento y estarán disponibles en la sección <strong>Certificados</strong> de la plataforma. Podrás buscarlos por tu nombre o correo electrónico y descargarlos en formato PDF. Cada diploma incluye un <strong>código de verificación único</strong> para validar su autenticidad.</p>
-                </div>
-            </div>
-
-            <!-- ── REGLAMENTO Y CONTACTO ── -->
-            <div class="faq-section-label">📄 Reglamento y Contacto</div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Dónde descargo el reglamento?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>El reglamento completo está disponible en la sección <strong>Reglamento</strong> del menú principal de esta plataforma. Te recomendamos leerlo antes de registrarte para conocer las reglas específicas de tu categoría.</p>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿Cómo contacto a los organizadores?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Puedes contactarnos por cualquiera de estos canales:</p>
-                    <ul>
-                        <li>📲 <strong>WhatsApp:</strong> <a href="https://wa.me/593987887551">0987887551</a></li>
-                        <li>📧 <strong>Correo:</strong> <a href="mailto:vandrade@tecnologicosucre.edu.ec">vandrade@tecnologicosucre.edu.ec</a></li>
-                        <li>📧 <strong>Correo:</strong> <a href="mailto:sucrebotclub@tecnologicosucre.edu.ec">sucrebotclub@tecnologicosucre.edu.ec</a></li>
-                    </ul>
-                    <p>Respondemos en horario de oficina de lunes a viernes.</p>
-                </div>
+            <div class="faq-add-wrap">
+                <button class="faq-btn-add" onclick="abrirModalFAQ(null)">➕ Agregar pregunta</button>
             </div>
 
         </div>
@@ -583,12 +549,41 @@
     </div>
 </div>
 
+<div class="faq-modal-overlay" id="faqModalOverlay">
+    <div class="faq-modal">
+        <h4 id="faqModalTitulo">Agregar pregunta</h4>
+
+        <label for="faqInputSeccion">Sección</label>
+        <input type="text" id="faqInputSeccion" list="faqSeccionesList" placeholder="Ej: 📋 Inscripción y Costos">
+        <datalist id="faqSeccionesList"></datalist>
+
+        <label for="faqInputPregunta">Pregunta</label>
+        <input type="text" id="faqInputPregunta" placeholder="¿Cuál es tu pregunta?">
+
+        <label for="faqInputRespuesta">Respuesta</label>
+        <textarea id="faqInputRespuesta" placeholder="Escribe la respuesta..."></textarea>
+        <div class="faq-modal-hint">
+            Podés usar <strong>**negrita**</strong>, líneas que empiecen con "<strong>- </strong>" para listas, y
+            <strong>[texto](enlace)</strong> o <strong>[texto](mailto:correo)</strong> para links.
+            Dejá una línea en blanco entre párrafos.
+        </div>
+
+        <div class="faq-modal-actions">
+            <button class="faq-btn-cancelar" onclick="cerrarModalFAQ()">Cancelar</button>
+            <button class="faq-btn-guardar" onclick="guardarFAQForm()">💾 Guardar</button>
+        </div>
+    </div>
+</div>
+
 <div data-include="../shared/components/footer.html"></div>
 
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 <script>
-    document.querySelectorAll('.faq-question').forEach(question => {
+    // Acordeón de las 2 preguntas fijas (tabla de precios / cuenta bancaria),
+    // que siguen hardcodeadas -- las dinámicas registran su propio listener
+    // al crearse (ver crearFaqItemEl).
+    document.querySelectorAll('.faq-item .faq-question').forEach(question => {
         question.addEventListener('click', () => {
             const faqItem = question.parentElement;
             const isActive = faqItem.classList.contains('active');
@@ -596,6 +591,211 @@
             if (!isActive) faqItem.classList.add('active');
         });
     });
+
+    // ═══════════════════════════════════════════════════════
+    //  FAQ dinámica -- editable para Organizador/Admin
+    // ═══════════════════════════════════════════════════════
+    const GAS_URL = CONFIG.GAS_URL();
+    const FAQ_CACHE_KEY = 'sucrebot_faq_cache';
+    const SECCION_INSCRIPCION = '📋 Inscripción y Costos';
+    let FAQ_DATA = [];
+    let faqEditId = null;
+
+    function gasPostFAQ(body) {
+        return fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ ...body, staffToken: localStorage.getItem('sucrebot_staff_token') || '' })
+        }).then(r => r.json());
+    }
+
+    function escapeHtmlFAQ(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function formatearInlineFAQ(linea) {
+        let t = escapeHtmlFAQ(linea);
+        t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        return t;
+    }
+
+    function formatearRespuestaFAQ(texto) {
+        const bloques = String(texto || '').trim().split(/\n\s*\n/);
+        return bloques.map(bloque => {
+            const lineas = bloque.split('\n').map(l => l.trim()).filter(Boolean);
+            if (lineas.length && lineas.every(l => l.startsWith('- '))) {
+                const items = lineas.map(l => '<li>' + formatearInlineFAQ(l.slice(2)) + '</li>').join('');
+                return '<ul>' + items + '</ul>';
+            }
+            return '<p>' + lineas.map(formatearInlineFAQ).join('<br>') + '</p>';
+        }).join('');
+    }
+
+    function crearFaqItemEl(item, esPrimero, esUltimo) {
+        const div = document.createElement('div');
+        div.className = 'faq-item';
+        div.innerHTML =
+            '<div class="faq-question">' +
+                '<h3></h3>' +
+                '<div class="faq-edit-bar">' +
+                    '<button class="faq-mini-btn" data-accion="arriba" title="Mover arriba"' + (esPrimero ? ' disabled' : '') + '>↑</button>' +
+                    '<button class="faq-mini-btn" data-accion="abajo" title="Mover abajo"' + (esUltimo ? ' disabled' : '') + '>↓</button>' +
+                    '<button class="faq-mini-btn" data-accion="editar" title="Editar">✏️</button>' +
+                    '<button class="faq-mini-btn" data-accion="eliminar" title="Eliminar">🗑️</button>' +
+                '</div>' +
+                '<span class="faq-icon">▼</span>' +
+            '</div>' +
+            '<div class="faq-answer"></div>';
+
+        div.querySelector('h3').textContent = item.pregunta;
+        div.querySelector('.faq-answer').innerHTML = formatearRespuestaFAQ(item.respuesta);
+
+        div.querySelector('.faq-question').addEventListener('click', (ev) => {
+            if (ev.target.closest('.faq-edit-bar')) return;
+            const isActive = div.classList.contains('active');
+            document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('active'));
+            if (!isActive) div.classList.add('active');
+        });
+
+        div.querySelectorAll('.faq-mini-btn').forEach(btn => {
+            btn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                if (btn.disabled) return;
+                const accion = btn.dataset.accion;
+                if (accion === 'editar') abrirModalFAQ(item);
+                else if (accion === 'eliminar') eliminarFAQItem(item.id);
+                else moverFAQItem(item.id, accion);
+            });
+        });
+
+        return div;
+    }
+
+    function renderFAQ() {
+        const porSeccion = {};
+        const ordenSecciones = [];
+        FAQ_DATA.slice().sort((a, b) => a.orden - b.orden).forEach(item => {
+            if (!porSeccion[item.seccion]) { porSeccion[item.seccion] = []; ordenSecciones.push(item.seccion); }
+            porSeccion[item.seccion].push(item);
+        });
+
+        const contInsc = document.getElementById('faqSeccionInscripcionDinamica');
+        contInsc.innerHTML = '';
+        (porSeccion[SECCION_INSCRIPCION] || []).forEach((item, i, arr) => {
+            contInsc.appendChild(crearFaqItemEl(item, i === 0, i === arr.length - 1));
+        });
+
+        const contResto = document.getElementById('faqSeccionesDinamicas');
+        contResto.innerHTML = '';
+        ordenSecciones.filter(s => s !== SECCION_INSCRIPCION).forEach(seccion => {
+            const label = document.createElement('div');
+            label.className = 'faq-section-label';
+            label.textContent = seccion;
+            contResto.appendChild(label);
+            porSeccion[seccion].forEach((item, i, arr) => {
+                contResto.appendChild(crearFaqItemEl(item, i === 0, i === arr.length - 1));
+            });
+        });
+
+        const dl = document.getElementById('faqSeccionesList');
+        dl.innerHTML = '';
+        [SECCION_INSCRIPCION].concat(ordenSecciones.filter(s => s !== SECCION_INSCRIPCION)).forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            dl.appendChild(opt);
+        });
+    }
+
+    async function cargarFAQ(forzar) {
+        if (!forzar) {
+            try {
+                const cache = JSON.parse(localStorage.getItem(FAQ_CACHE_KEY) || 'null');
+                if (cache && Array.isArray(cache.data)) { FAQ_DATA = cache.data; renderFAQ(); }
+            } catch (e) {}
+        }
+        try {
+            const r = await fetch(GAS_URL + '?action=getFAQ', { cache: 'no-store' }).then(x => x.json());
+            if (r && r.ok) {
+                FAQ_DATA = r.data || [];
+                localStorage.setItem(FAQ_CACHE_KEY, JSON.stringify({ data: FAQ_DATA, ts: Date.now() }));
+                renderFAQ();
+            }
+        } catch (e) {
+            console.error('Error cargando FAQ', e);
+            if (!FAQ_DATA.length) {
+                document.getElementById('faqSeccionesDinamicas').innerHTML =
+                    '<div class="faq-loading-msg">⚠️ No se pudieron cargar las preguntas. Intenta recargar la página.</div>';
+            }
+        }
+    }
+
+    function abrirModalFAQ(item) {
+        faqEditId = item ? item.id : null;
+        document.getElementById('faqModalTitulo').textContent = item ? 'Editar pregunta' : 'Agregar pregunta';
+        document.getElementById('faqInputSeccion').value = item ? item.seccion : '';
+        document.getElementById('faqInputPregunta').value = item ? item.pregunta : '';
+        document.getElementById('faqInputRespuesta').value = item ? item.respuesta : '';
+        document.getElementById('faqModalOverlay').classList.add('show');
+    }
+
+    function cerrarModalFAQ() {
+        document.getElementById('faqModalOverlay').classList.remove('show');
+    }
+
+    async function guardarFAQForm() {
+        const seccion   = document.getElementById('faqInputSeccion').value.trim();
+        const pregunta  = document.getElementById('faqInputPregunta').value.trim();
+        const respuesta = document.getElementById('faqInputRespuesta').value.trim();
+        if (!seccion || !pregunta || !respuesta) {
+            alert('Completa sección, pregunta y respuesta.');
+            return;
+        }
+        const body = { action: 'guardarFAQ', seccion, pregunta, respuesta };
+        if (faqEditId) body.id = faqEditId;
+        try {
+            const r = await gasPostFAQ(body);
+            if (!r || !r.ok) { alert('Error al guardar: ' + (r && r.error || 'desconocido')); return; }
+            cerrarModalFAQ();
+            await cargarFAQ(true);
+        } catch (e) {
+            alert('Error al guardar: ' + e.message);
+        }
+    }
+
+    async function eliminarFAQItem(id) {
+        if (!confirm('¿Eliminar esta pregunta? Esta acción no se puede deshacer.')) return;
+        try {
+            const r = await gasPostFAQ({ action: 'eliminarFAQ', id });
+            if (!r || !r.ok) { alert('Error al eliminar: ' + (r && r.error || 'desconocido')); return; }
+            await cargarFAQ(true);
+        } catch (e) {
+            alert('Error al eliminar: ' + e.message);
+        }
+    }
+
+    async function moverFAQItem(id, direccion) {
+        try {
+            const r = await gasPostFAQ({ action: 'moverFAQ', id, direccion });
+            if (!r || !r.ok) { alert('Error al mover: ' + (r && r.error || 'desconocido')); return; }
+            await cargarFAQ(true);
+        } catch (e) {
+            alert('Error al mover: ' + e.message);
+        }
+    }
+
+    cargarFAQ(false);
+
+    (async () => {
+        if (window.esperarRol) await window.esperarRol();
+        if (window.esStaffCompleto && window.esStaffCompleto()) {
+            document.body.classList.add('staff-mode');
+        }
+    })();
 </script>
 
 </body>
