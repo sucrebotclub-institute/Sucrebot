@@ -2314,7 +2314,19 @@ function abrirCombateBatalla(partido) {
   actualizarDisplayCombate(); actualizarMarcadorCombate(); actualizarAmonestacionesBat();
   document.getElementById('combateOverlay').classList.add('show');
 }
-function cerrarCombate() { if(combate.corriendo&&!confirm('¿Cerrar sin guardar el resultado?'))return; if(combate.interval)clearInterval(combate.interval); combate.corriendo=false; document.getElementById('combateOverlay').classList.remove('show'); }
+function cerrarCombate() {
+  // combate.corriendo ya está en false cuando el combate TERMINA (fase='fin')
+  // pero todavía no se guardó — sin este chequeo aparte, cerrar acá perdía el
+  // resultado sin ningún aviso. Mismo bug encontrado en cerrarMinisumo().
+  if (combate.fase === 'fin') {
+    if (!confirm('El combate ya terminó pero el resultado NO se guardó.\n¿Cerrar de todas formas? Se va a perder el resultado.')) return;
+  } else if (combate.corriendo && !confirm('¿Cerrar sin guardar el resultado?')) {
+    return;
+  }
+  if (combate.interval) clearInterval(combate.interval);
+  combate.corriendo = false;
+  document.getElementById('combateOverlay').classList.remove('show');
+}
 
 function iniciarCombate() {
   if(combate.fase==='idle'||combate.fase==='tecnico')combate.fase='corriendo';
@@ -2462,7 +2474,15 @@ function abrirMinisumo(partido) {
 }
 
 function cerrarMinisumo() {
-  if (ms.corriendo && !confirm('¿Cerrar sin guardar el resultado?')) return;
+  // ms.corriendo ya está en false cuando el combate TERMINA (fase='fin',
+  // msPausarAsalto() lo apaga) pero todavía no se presionó "Guardar resultado
+  // del combate" — sin este chequeo aparte, cerrar acá perdía el resultado
+  // sin ningún aviso (bug real encontrado probando Minisumo RC).
+  if (ms.fase === 'fin') {
+    if (!confirm('El combate ya terminó pero el resultado NO se guardó.\n¿Cerrar de todas formas? Se va a perder el resultado.')) return;
+  } else if (ms.corriendo && !confirm('¿Cerrar sin guardar el resultado?')) {
+    return;
+  }
   if (ms.interval) clearInterval(ms.interval);
   ms.corriendo = false;
   document.getElementById('msOverlay').classList.remove('show');
