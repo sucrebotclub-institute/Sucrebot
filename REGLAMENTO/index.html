@@ -213,6 +213,23 @@
 
         .reg-add-wrap { display: none; margin-top: 20px; }
         body.staff-mode .reg-add-wrap { display: block; }
+
+        .reg-card-oculta { display: none; }
+        body.staff-mode .reg-card-oculta { display: block; opacity: .6; }
+        .reg-badge-oculta {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            border-radius: 20px;
+            font-family: 'Orbitron', monospace;
+            font-size: .5rem;
+            letter-spacing: 1px;
+            padding: 2px 8px;
+            margin-left: 6px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
         .reg-btn-add {
             background: #1a5ca8;
             color: #ffffff;
@@ -363,6 +380,11 @@
             Reglamento disponible al público
         </label>
 
+        <label class="reg-modal-check">
+            <input type="checkbox" id="regModalOculta" onchange="cambiarOcultaReglamento()">
+            🙈 Ocultar esta categoría del público (vos la seguís viendo así, atenuada)
+        </label>
+
         <label for="regModalFecha">Fecha de "Actualizado"</label>
         <div class="reg-modal-fecha-fila">
             <input type="date" id="regModalFecha">
@@ -501,7 +523,8 @@ function categoriaCompleta(nombre) {
     pistaId: cfg.pistaId || '',
     disponible: cfg.disponible === true,
     actualizado: cfg.actualizado || '',
-    personalizada: !base && cfg.personalizada === true
+    personalizada: !base && cfg.personalizada === true,
+    oculta: cfg.oculta === true
   };
 }
 
@@ -557,17 +580,21 @@ function renderReglamentos() {
     const nombresDelGrupo = grupo.items.map(i => i.nombre).concat(personalizadasPorNivel[grupo.nivel] || []);
     nombresDelGrupo.forEach((nombreCat, i) => {
       const cat = categoriaCompleta(nombreCat);
+      // La visibilidad de '.reg-card-oculta' es 100% CSS (display:none por
+      // defecto, visible atenuada solo con body.staff-mode) -- así no
+      // depende de si este render corrió antes o después de que se
+      // resuelva esperarRol()/staff-mode, igual que los botones de editar.
       const id = `reg-${grupo.nivel.replace(/\s/g,'-')}-${i}`;
       const iframeId = `iframe-${id}`;
       const imgWrapId = `img-${id}`;
       const nombreSeguro = cat.nombre.replace(/'/g, "\\'");
       html += `
-      <div class="reg-card" id="${id}">
+      <div class="reg-card${cat.oculta ? ' reg-card-oculta' : ''}" id="${id}">
         <div class="reg-card-header">
           <div class="reg-card-titulo">
             <span class="reg-card-emoji">${cat.emoji}</span>
             <div>
-              <div class="reg-card-nombre">${cat.nombre}</div>
+              <div class="reg-card-nombre">${cat.nombre}${cat.oculta ? ' <span class="reg-badge-oculta">🙈 Oculta al público</span>' : ''}</div>
               <div class="reg-card-desc">${cat.desc}</div>
             </div>
           </div>
@@ -722,6 +749,7 @@ function abrirModalReglamento(nombre) {
   const cat = categoriaCompleta(nombre);
   document.getElementById('regModalTitulo').textContent = 'Editar archivos — ' + cat.nombre;
   document.getElementById('regModalDisponible').checked = cat.disponible;
+  document.getElementById('regModalOculta').checked = cat.oculta;
   document.getElementById('regModalFecha').value = cat.actualizado || '';
   actualizarEstadoArchivoModal('pdf', cat.driveId);
   actualizarEstadoArchivoModal('audio', cat.audioId);
@@ -749,6 +777,21 @@ async function cambiarDisponibleReglamento() {
   } catch (e) {
     alert('Error: ' + e.message);
     checkbox.checked = !disponible;
+  }
+  checkbox.disabled = false;
+}
+
+async function cambiarOcultaReglamento() {
+  const checkbox = document.getElementById('regModalOculta');
+  const oculta = checkbox.checked;
+  checkbox.disabled = true;
+  try {
+    const r = await gasPostReglamento({ action: 'setOcultaReglamento', categoria: regEditCategoria, oculta });
+    if (!r || !r.ok) { alert('Error: ' + (r && r.error || 'desconocido')); checkbox.checked = !oculta; return; }
+    await cargarReglamentosConfig(true);
+  } catch (e) {
+    alert('Error: ' + e.message);
+    checkbox.checked = !oculta;
   }
   checkbox.disabled = false;
 }
