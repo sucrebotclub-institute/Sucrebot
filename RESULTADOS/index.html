@@ -501,7 +501,25 @@
         const categoriasOrdenadas = publicados.map(p => p.categoria)
           .sort((a, b) => ORDEN_CATS.indexOf(a) - ORDEN_CATS.indexOf(b));
 
-        const filas = [];
+        // Nombre de hoja de Excel: máx 31 caracteres, sin : \ / ? * [ ]
+        function nombreHojaSeguro(nombre, usados) {
+          let base = String(nombre).replace(/[:\\\/?*\[\]]/g, '').trim().slice(0, 31) || 'Categoria';
+          let candidato = base;
+          let n = 2;
+          while (usados.has(candidato)) {
+            const sufijo = ' (' + n + ')';
+            candidato = base.slice(0, 31 - sufijo.length) + sufijo;
+            n++;
+          }
+          usados.add(candidato);
+          return candidato;
+        }
+
+        const wb = XLSX.utils.book_new();
+        const nombresUsados = new Set();
+        const medalla = { 1: '🥇 1er lugar', 2: '🥈 2do lugar', 3: '🥉 3er lugar' };
+        let huboAlgunPodio = false;
+
         for (const cat of categoriasOrdenadas) {
           const nombreCat = RUTAS_NOMBRE[cat] || cat;
           let cardsData = [];
@@ -521,23 +539,21 @@
                 });
             }
           } catch(e) { console.error('Error al cargar podio de ' + cat + ':', e); }
-          const medalla = { 1: '🥇 1er lugar', 2: '🥈 2do lugar', 3: '🥉 3er lugar' };
-          cardsData.forEach(c => {
-            filas.push({
-              'Categoría': nombreCat,
-              'Posición': medalla[c.posicion] || c.posicion,
-              'Robot / Equipo': c.nombre || '',
-              'Institución / Club': c.institucion || ''
-            });
-          });
+
+          if (!cardsData.length) continue;
+          huboAlgunPodio = true;
+
+          const filasCat = cardsData.map(c => ({
+            'Posición': medalla[c.posicion] || c.posicion,
+            'Robot / Equipo': c.nombre || '',
+            'Institución / Club': c.institucion || ''
+          }));
+          const wsCat = XLSX.utils.json_to_sheet(filasCat);
+          wsCat['!cols'] = [{wch:14},{wch:30},{wch:30}];
+          XLSX.utils.book_append_sheet(wb, wsCat, nombreHojaSeguro(nombreCat, nombresUsados));
         }
 
-        if (!filas.length) { alert('No se encontraron datos de podio para exportar.'); return; }
-
-        const wb = XLSX.utils.book_new();
-        const wsPodios = XLSX.utils.json_to_sheet(filas);
-        wsPodios['!cols'] = [{wch:26},{wch:14},{wch:30},{wch:30}];
-        XLSX.utils.book_append_sheet(wb, wsPodios, 'Podios');
+        if (!huboAlgunPodio) { alert('No se encontraron datos de podio para exportar.'); return; }
 
         try {
           const dataInst = await fetchJSON('getRankingInstituciones');
