@@ -12,7 +12,6 @@
   <script src="../shared/js/auspiciantes.js"></script>
   <script src="../shared/js/load-components.js"></script>
   <script src="../shared/js/auth.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
     :root {
@@ -457,13 +456,35 @@
     // siempre en el mismo orden sin importar en qué orden se fueron publicando.
     const ORDEN_CATS = ['ins','trp_a','sl_a','sl_p','ms_a','ms_rc','bai','bat','dev','trp_p','soc','cr','lk'];
 
+    // SheetJS se carga a demanda (solo al presionar el botón), NO en el <head>.
+    // Esta página se recarga sola cada 3 min en un TV rotando resultados —
+    // meter una librería externa de ~900KB como script bloqueante en el head
+    // colgaba la carga completa de la página cuando el navegador no tenía
+    // caché tibia (ej. justo después de borrar caché). Cargarla solo cuando
+    // se necesita evita ese riesgo para todo el resto de la página.
+    let xlsxCargando = null;
+    function cargarXLSX() {
+      if (window.XLSX) return Promise.resolve();
+      if (xlsxCargando) return xlsxCargando;
+      xlsxCargando = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        s.onload = () => resolve();
+        s.onerror = () => { xlsxCargando = null; reject(new Error('No se pudo cargar la librería de Excel (sin conexión a cdnjs.cloudflare.com)')); };
+        document.head.appendChild(s);
+      });
+      return xlsxCargando;
+    }
+
     async function descargarTodosPodios() {
       const btn = document.getElementById('btnDescargarPodios');
       const textoOriginal = btn.textContent;
       if (!publicados.length) { alert('Todavía no hay ningún podio publicado.'); return; }
       btn.disabled = true;
-      btn.textContent = '⏳ Generando...';
+      btn.textContent = '⏳ Cargando librería...';
       try {
+        await cargarXLSX();
+        btn.textContent = '⏳ Generando...';
         // institución no viene en podio_manual (solo guarda equipo_id/equipo_nombre),
         // así que se arma un lookup contra participantes: por id (ms_a/ms_rc/bat) y
         // por categoria+equipo (soccer, cuyo equipo_id es sintético 'eq-'+nombre equipo).
