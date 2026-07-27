@@ -232,14 +232,14 @@
         .faq-answer strong { color: #90dcff; }
         .faq-answer a { color: #90dcff; text-decoration: underline; }
 
-        /* Tabla de precios */
-        .precio-tabla {
+        /* Tabla dinámica genérica (editable desde el modal FAQ) */
+        .faq-tabla-din {
             width: 100%;
             border-collapse: collapse;
             margin-top: 12px;
             font-size: .88rem;
         }
-        .precio-tabla th {
+        .faq-tabla-din th {
             font-family: 'Orbitron', monospace;
             font-size: .6rem;
             letter-spacing: 1.5px;
@@ -248,14 +248,16 @@
             text-align: left;
             border-bottom: 1px solid rgba(255,255,255,0.15);
         }
-        .precio-tabla td {
+        .faq-tabla-din td {
             padding: 9px 12px;
             border-bottom: 1px solid rgba(255,255,255,0.07);
             color: #e8f0ff;
             vertical-align: middle;
         }
-        .precio-tabla tr:last-child td { border-bottom: none; }
-        .precio-descuento {
+        .faq-tabla-din tr:last-child td { border-bottom: none; }
+
+        /* Estilos de celda seleccionables en el editor */
+        .celda-badge {
             display: inline-block;
             background: rgba(46,204,113,0.2);
             color: #2ecc71;
@@ -266,39 +268,23 @@
             letter-spacing: 1px;
             padding: 2px 8px;
         }
-        .precio-valor {
+        .celda-valor {
             font-family: 'Orbitron', monospace;
             font-size: .9rem;
             font-weight: 700;
             color: #f0a500;
         }
-
-        /* Tabla de cuenta bancaria */
-        .banco-tabla {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            font-size: .88rem;
+        .celda-mono {
+            font-family: 'DM Mono', monospace;
+            color: #90dcff;
+            letter-spacing: 1px;
         }
-        .banco-tabla td {
-            padding: 8px 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-            color: #e8f0ff;
-            vertical-align: middle;
-        }
-        .banco-tabla tr:last-child td { border-bottom: none; }
-        .banco-tabla td:first-child {
+        .celda-label {
             color: rgba(255,255,255,0.5);
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             white-space: nowrap;
-            width: 120px;
-        }
-        .banco-tabla .mono {
-            font-family: 'DM Mono', monospace;
-            color: #90dcff;
-            letter-spacing: 1px;
         }
 
         @media (max-width: 1100px) {
@@ -409,6 +395,98 @@
             color: #1a1c28;
         }
         .faq-modal textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
+        #faqCamposTabla textarea { min-height: 60px; }
+
+        .faq-modal select {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #d5dae5;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: 'Exo 2', sans-serif;
+            font-size: .92rem;
+            color: #1a1c28;
+            background: #fff;
+        }
+
+        .faq-tabla-config {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .faq-tabla-config select { width: auto; flex: 0 0 140px; }
+        .faq-check-encabezados {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Exo 2', sans-serif;
+            font-size: .82rem;
+            color: #4a4a5a;
+            text-transform: none;
+            letter-spacing: normal;
+            cursor: pointer;
+        }
+
+        .faq-tabla-encabezados {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .faq-tabla-encabezados input {
+            flex: 1;
+            border: 1px solid #d5dae5;
+            border-radius: 6px;
+            padding: 7px 9px;
+            font-size: .82rem;
+            font-family: 'Exo 2', sans-serif;
+        }
+
+        #faqTablaFilas { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .faq-tabla-fila-editor {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f6f8fb;
+            border-radius: 8px;
+            padding: 8px;
+        }
+        .faq-tabla-celda-editor { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+        .faq-celda-texto {
+            border: 1px solid #d5dae5;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: .8rem;
+            font-family: 'Exo 2', sans-serif;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .faq-celda-estilo {
+            border: 1px solid #d5dae5;
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: .7rem;
+            font-family: 'Exo 2', sans-serif;
+            width: 100%;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        .faq-tabla-quitar-fila { flex-shrink: 0; background: #fdecec; border: 1px solid #f3c6c6; color: #c0392b; }
+        .faq-tabla-quitar-fila:hover { background: #fbdada; }
+
+        .faq-btn-fila-add {
+            margin-top: 8px;
+            background: #eef1f7;
+            color: #1a5ca8;
+            border: 1px dashed #1a5ca8;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 700;
+            font-size: .8rem;
+            cursor: pointer;
+        }
+        .faq-btn-fila-add:hover { background: #e2e8f5; }
 
         .faq-modal-hint {
             font-size: .78rem;
@@ -461,78 +539,7 @@
                 </div>
             </div>
 
-            <!-- ── INSCRIPCIÓN ── -->
-            <div class="faq-section-label">📋 Inscripción y Costos</div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿La inscripción tiene costo?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Sí, la inscripción tiene un valor que varía según la fecha en que te registres. ¡Mientras antes te inscribas, mejor precio obtienes!</p>
-                    <table class="precio-tabla">
-                        <thead>
-                            <tr><th>PERÍODO</th><th>PRECIO</th><th>DESCUENTO</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Hasta el <strong>30 de junio</strong></td>
-                                <td><span class="precio-valor">$12</span></td>
-                                <td><span class="precio-descuento">40% OFF</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>1 al 6 de julio</strong></td>
-                                <td><span class="precio-valor">$15</span></td>
-                                <td><span class="precio-descuento">25% OFF</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>9 al 10 de julio</strong></td>
-                                <td><span class="precio-valor">$20</span></td>
-                                <td>Tarifa regular</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <h3>¿A qué cuenta realizo el pago?</h3>
-                    <span class="faq-icon">▼</span>
-                </div>
-                <div class="faq-answer">
-                    <p>Realiza la transferencia o depósito a la siguiente cuenta bancaria y adjunta el comprobante al momento de registrarte:</p>
-                    <table class="banco-tabla">
-                        <tr>
-                            <td>Banco</td>
-                            <td><strong>Banco Pichincha</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Tipo</td>
-                            <td>Cuenta de Ahorros</td>
-                        </tr>
-                        <tr>
-                            <td>N.° Cuenta</td>
-                            <td><span class="mono">2215952522</span></td>
-                        </tr>
-                        <tr>
-                            <td>C.I. Titular</td>
-                            <td><span class="mono">1719651190</span></td>
-                        </tr>
-                        <tr>
-                            <td>Titular</td>
-                            <td><strong>Christian Ortega</strong></td>
-                        </tr>
-                    </table>
-                    <p>Una vez realizado el pago, sube la imagen o PDF del comprobante en el formulario de registro.</p>
-                </div>
-            </div>
-
-            <!-- Preguntas editables de esta misma sección (Organizador/Admin) -->
-            <div id="faqSeccionInscripcionDinamica"></div>
-
-            <!-- Resto de secciones -- 100% dinámico, editable por Organizador/Admin -->
+            <!-- Todo el contenido es dinámico, editable por Organizador/Admin -->
             <div id="faqSeccionesDinamicas">
                 <div class="faq-loading-msg">Cargando preguntas...</div>
             </div>
@@ -560,12 +567,51 @@
         <label for="faqInputPregunta">Pregunta</label>
         <input type="text" id="faqInputPregunta" placeholder="¿Cuál es tu pregunta?">
 
-        <label for="faqInputRespuesta">Respuesta</label>
-        <textarea id="faqInputRespuesta" placeholder="Escribe la respuesta..."></textarea>
-        <div class="faq-modal-hint">
-            Podés usar <strong>**negrita**</strong>, líneas que empiecen con "<strong>- </strong>" para listas, y
-            <strong>[texto](enlace)</strong> o <strong>[texto](mailto:correo)</strong> para links.
-            Dejá una línea en blanco entre párrafos.
+        <label for="faqTipoRespuesta">Tipo de respuesta</label>
+        <select id="faqTipoRespuesta" onchange="cambiarTipoRespuestaFAQ()">
+            <option value="texto">Texto simple</option>
+            <option value="tabla">Tabla</option>
+        </select>
+
+        <div id="faqCamposTexto">
+            <label for="faqInputRespuesta">Respuesta</label>
+            <textarea id="faqInputRespuesta" placeholder="Escribe la respuesta..."></textarea>
+            <div class="faq-modal-hint">
+                Podés usar <strong>**negrita**</strong>, líneas que empiecen con "<strong>- </strong>" para listas, y
+                <strong>[texto](enlace)</strong> o <strong>[texto](mailto:correo)</strong> para links.
+                Dejá una línea en blanco entre párrafos.
+            </div>
+        </div>
+
+        <div id="faqCamposTabla" style="display:none;">
+            <label for="faqTablaIntro">Texto antes de la tabla (opcional)</label>
+            <textarea id="faqTablaIntro" rows="2" placeholder="Ej: Sí, la inscripción tiene un valor..."></textarea>
+
+            <label>Columnas</label>
+            <div class="faq-tabla-config">
+                <select id="faqTablaNumCols" onchange="reconstruirFilasAlCambiarColumnas()">
+                    <option value="2">2 columnas</option>
+                    <option value="3">3 columnas</option>
+                    <option value="4">4 columnas</option>
+                </select>
+                <label class="faq-check-encabezados">
+                    <input type="checkbox" id="faqTablaConEncabezados" onchange="reconstruirEncabezados()">
+                    Mostrar fila de encabezados
+                </label>
+            </div>
+            <div id="faqTablaEncabezados" class="faq-tabla-encabezados"></div>
+
+            <label>Filas</label>
+            <div id="faqTablaFilas"></div>
+            <button type="button" class="faq-btn-fila-add" onclick="agregarFilaTablaVacia()">➕ Agregar fila</button>
+
+            <div class="faq-modal-hint">
+                Cada celda acepta el mismo formato de texto simple (<strong>**negrita**</strong>, <strong>[texto](enlace)</strong>).
+                El estilo de celda (Normal / Destacado / Insignia / Monoespaciado / Etiqueta) define cómo se ve.
+            </div>
+
+            <label for="faqTablaOutro">Texto después de la tabla (opcional)</label>
+            <textarea id="faqTablaOutro" rows="2" placeholder="Ej: Una vez realizado el pago..."></textarea>
         </div>
 
         <div class="faq-modal-actions">
@@ -597,7 +643,13 @@
     // ═══════════════════════════════════════════════════════
     const GAS_URL = CONFIG.GAS_URL();
     const FAQ_CACHE_KEY = 'sucrebot_faq_cache';
-    const SECCION_INSCRIPCION = '📋 Inscripción y Costos';
+    const ESTILOS_CELDA = [
+        { value: 'normal', label: 'Normal' },
+        { value: 'valor',  label: 'Destacado (precio)' },
+        { value: 'badge',  label: 'Insignia verde' },
+        { value: 'mono',   label: 'Monoespaciado' },
+        { value: 'label',  label: 'Etiqueta (gris)' }
+    ];
     let FAQ_DATA = [];
     let faqEditId = null;
 
@@ -636,6 +688,38 @@
         }).join('');
     }
 
+    function renderTablaFAQ(tabla) {
+        let html = '';
+        if (tabla.intro) html += formatearRespuestaFAQ(tabla.intro);
+        html += '<table class="faq-tabla-din">';
+        if (tabla.columnas && tabla.columnas.length && tabla.columnas.some(c => c)) {
+            html += '<thead><tr>' + tabla.columnas.map(c => '<th>' + escapeHtmlFAQ(c) + '</th>').join('') + '</tr></thead>';
+        }
+        html += '<tbody>' + (tabla.filas || []).map(fila =>
+            '<tr>' + fila.map(celda => {
+                const estilo = celda.estilo || 'normal';
+                const contenido = formatearInlineFAQ(celda.texto || '');
+                return estilo !== 'normal'
+                    ? '<td><span class="celda-' + estilo + '">' + contenido + '</span></td>'
+                    : '<td>' + contenido + '</td>';
+            }).join('') + '</tr>'
+        ).join('') + '</tbody>';
+        html += '</table>';
+        if (tabla.outro) html += formatearRespuestaFAQ(tabla.outro);
+        return html;
+    }
+
+    function renderizarRespuestaFAQ(item) {
+        if (item.tipo === 'tabla') {
+            try {
+                return renderTablaFAQ(JSON.parse(item.respuesta));
+            } catch (e) {
+                return '<p>⚠️ Error al leer la tabla.</p>';
+            }
+        }
+        return formatearRespuestaFAQ(item.respuesta);
+    }
+
     function crearFaqItemEl(item, esPrimero, esUltimo) {
         const div = document.createElement('div');
         div.className = 'faq-item';
@@ -653,7 +737,7 @@
             '<div class="faq-answer"></div>';
 
         div.querySelector('h3').textContent = item.pregunta;
-        div.querySelector('.faq-answer').innerHTML = formatearRespuestaFAQ(item.respuesta);
+        div.querySelector('.faq-answer').innerHTML = renderizarRespuestaFAQ(item);
 
         div.querySelector('.faq-question').addEventListener('click', (ev) => {
             if (ev.target.closest('.faq-edit-bar')) return;
@@ -677,34 +761,37 @@
     }
 
     function renderFAQ() {
+        // El orden de SECCIÓN se determina por primera aparición en el orden
+        // natural que devuelve el backend (estable, refleja cuándo se creó
+        // cada sección) -- NUNCA por el campo 'orden' de un ítem individual,
+        // que es solo relativo DENTRO de su propia sección (ver moverFAQ en
+        // Code.gs). Mezclar ambos conceptos causaba que mover una pregunta
+        // al principio de su sección (ej. orden=10) empatara con el 'orden'
+        // de la PRIMERA pregunta de otra sección y la sección entera saltara
+        // de posición según qué fila física ganaba el desempate.
         const porSeccion = {};
         const ordenSecciones = [];
-        FAQ_DATA.slice().sort((a, b) => a.orden - b.orden).forEach(item => {
+        FAQ_DATA.forEach(item => {
             if (!porSeccion[item.seccion]) { porSeccion[item.seccion] = []; ordenSecciones.push(item.seccion); }
             porSeccion[item.seccion].push(item);
         });
+        ordenSecciones.forEach(seccion => porSeccion[seccion].sort((a, b) => a.orden - b.orden));
 
-        const contInsc = document.getElementById('faqSeccionInscripcionDinamica');
-        contInsc.innerHTML = '';
-        (porSeccion[SECCION_INSCRIPCION] || []).forEach((item, i, arr) => {
-            contInsc.appendChild(crearFaqItemEl(item, i === 0, i === arr.length - 1));
-        });
-
-        const contResto = document.getElementById('faqSeccionesDinamicas');
-        contResto.innerHTML = '';
-        ordenSecciones.filter(s => s !== SECCION_INSCRIPCION).forEach(seccion => {
+        const cont = document.getElementById('faqSeccionesDinamicas');
+        cont.innerHTML = '';
+        ordenSecciones.forEach(seccion => {
             const label = document.createElement('div');
             label.className = 'faq-section-label';
             label.textContent = seccion;
-            contResto.appendChild(label);
+            cont.appendChild(label);
             porSeccion[seccion].forEach((item, i, arr) => {
-                contResto.appendChild(crearFaqItemEl(item, i === 0, i === arr.length - 1));
+                cont.appendChild(crearFaqItemEl(item, i === 0, i === arr.length - 1));
             });
         });
 
         const dl = document.getElementById('faqSeccionesList');
         dl.innerHTML = '';
-        [SECCION_INSCRIPCION].concat(ordenSecciones.filter(s => s !== SECCION_INSCRIPCION)).forEach(s => {
+        ordenSecciones.forEach(s => {
             const opt = document.createElement('option');
             opt.value = s;
             dl.appendChild(opt);
@@ -734,12 +821,166 @@
         }
     }
 
+    // ── Constructor de tablas dentro del modal ──────────────────
+    function crearSelectEstilo(valorActual) {
+        const sel = document.createElement('select');
+        sel.className = 'faq-celda-estilo';
+        ESTILOS_CELDA.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e.value;
+            opt.textContent = e.label;
+            if (e.value === valorActual) opt.selected = true;
+            sel.appendChild(opt);
+        });
+        return sel;
+    }
+
+    function crearFilaTabla(numCols, celdas) {
+        const fila = document.createElement('div');
+        fila.className = 'faq-tabla-fila-editor';
+        for (let c = 0; c < numCols; c++) {
+            const celda = (celdas && celdas[c]) || { texto: '', estilo: 'normal' };
+            const grupo = document.createElement('div');
+            grupo.className = 'faq-tabla-celda-editor';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'faq-celda-texto';
+            input.value = celda.texto || '';
+            input.placeholder = 'Columna ' + (c + 1);
+            grupo.appendChild(input);
+            grupo.appendChild(crearSelectEstilo(celda.estilo || 'normal'));
+            fila.appendChild(grupo);
+        }
+        const btnQuitar = document.createElement('button');
+        btnQuitar.type = 'button';
+        btnQuitar.className = 'faq-mini-btn faq-tabla-quitar-fila';
+        btnQuitar.textContent = '🗑️';
+        btnQuitar.title = 'Quitar fila';
+        btnQuitar.addEventListener('click', () => fila.remove());
+        fila.appendChild(btnQuitar);
+        return fila;
+    }
+
+    function reconstruirEncabezados() {
+        const numCols = parseInt(document.getElementById('faqTablaNumCols').value, 10);
+        const conEnc = document.getElementById('faqTablaConEncabezados').checked;
+        const cont = document.getElementById('faqTablaEncabezados');
+        const valoresPrevios = Array.from(cont.querySelectorAll('input')).map(i => i.value);
+        cont.innerHTML = '';
+        if (!conEnc) return;
+        for (let c = 0; c < numCols; c++) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'faq-encabezado-texto';
+            input.placeholder = 'Encabezado ' + (c + 1);
+            input.value = valoresPrevios[c] || '';
+            cont.appendChild(input);
+        }
+    }
+
+    function agregarFilaTablaVacia() {
+        const numCols = parseInt(document.getElementById('faqTablaNumCols').value, 10);
+        document.getElementById('faqTablaFilas').appendChild(crearFilaTabla(numCols, null));
+    }
+
+    function reconstruirFilasAlCambiarColumnas() {
+        const numCols = parseInt(document.getElementById('faqTablaNumCols').value, 10);
+        document.querySelectorAll('#faqTablaFilas .faq-tabla-fila-editor').forEach(fila => {
+            const celdasActuales = Array.from(fila.querySelectorAll('.faq-tabla-celda-editor'));
+            if (celdasActuales.length < numCols) {
+                for (let c = celdasActuales.length; c < numCols; c++) {
+                    const grupo = document.createElement('div');
+                    grupo.className = 'faq-tabla-celda-editor';
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'faq-celda-texto';
+                    input.placeholder = 'Columna ' + (c + 1);
+                    grupo.appendChild(input);
+                    grupo.appendChild(crearSelectEstilo('normal'));
+                    fila.insertBefore(grupo, fila.querySelector('.faq-tabla-quitar-fila'));
+                }
+            } else if (celdasActuales.length > numCols) {
+                for (let c = celdasActuales.length - 1; c >= numCols; c--) celdasActuales[c].remove();
+            }
+        });
+        reconstruirEncabezados();
+    }
+
+    function cambiarTipoRespuestaFAQ() {
+        const tipo = document.getElementById('faqTipoRespuesta').value;
+        document.getElementById('faqCamposTexto').style.display = tipo === 'tabla' ? 'none' : 'block';
+        document.getElementById('faqCamposTabla').style.display = tipo === 'tabla' ? 'block' : 'none';
+    }
+
+    function leerTablaDesdeFormulario() {
+        const conEnc = document.getElementById('faqTablaConEncabezados').checked;
+        const columnas = conEnc
+            ? Array.from(document.querySelectorAll('#faqTablaEncabezados .faq-encabezado-texto')).map(i => i.value.trim())
+            : [];
+        const filas = Array.from(document.querySelectorAll('#faqTablaFilas .faq-tabla-fila-editor')).map(fila => {
+            return Array.from(fila.querySelectorAll('.faq-tabla-celda-editor')).map(c => ({
+                texto: c.querySelector('.faq-celda-texto').value,
+                estilo: c.querySelector('.faq-celda-estilo').value
+            }));
+        });
+        return {
+            intro: document.getElementById('faqTablaIntro').value.trim(),
+            columnas,
+            filas,
+            outro: document.getElementById('faqTablaOutro').value.trim()
+        };
+    }
+
+    function poblarTablaEnFormulario(tabla) {
+        const numCols = (tabla.columnas && tabla.columnas.length) || (tabla.filas[0] ? tabla.filas[0].length : 2);
+        document.getElementById('faqTablaNumCols').value = String(Math.min(Math.max(numCols, 2), 4));
+        document.getElementById('faqTablaConEncabezados').checked = !!(tabla.columnas && tabla.columnas.length);
+        document.getElementById('faqTablaIntro').value = tabla.intro || '';
+        document.getElementById('faqTablaOutro').value = tabla.outro || '';
+        reconstruirEncabezados();
+        if (tabla.columnas && tabla.columnas.length) {
+            document.querySelectorAll('#faqTablaEncabezados .faq-encabezado-texto').forEach((input, i) => {
+                input.value = tabla.columnas[i] || '';
+            });
+        }
+        const cont = document.getElementById('faqTablaFilas');
+        cont.innerHTML = '';
+        (tabla.filas || []).forEach(celdas => cont.appendChild(crearFilaTabla(numCols, celdas)));
+    }
+
+    function limpiarFormularioTabla() {
+        document.getElementById('faqTablaNumCols').value = '3';
+        document.getElementById('faqTablaConEncabezados').checked = false;
+        document.getElementById('faqTablaIntro').value = '';
+        document.getElementById('faqTablaOutro').value = '';
+        document.getElementById('faqTablaEncabezados').innerHTML = '';
+        document.getElementById('faqTablaFilas').innerHTML = '';
+        agregarFilaTablaVacia();
+    }
+
+    // ── Abrir / cerrar / guardar ─────────────────────────────────
     function abrirModalFAQ(item) {
         faqEditId = item ? item.id : null;
         document.getElementById('faqModalTitulo').textContent = item ? 'Editar pregunta' : 'Agregar pregunta';
         document.getElementById('faqInputSeccion').value = item ? item.seccion : '';
         document.getElementById('faqInputPregunta').value = item ? item.pregunta : '';
-        document.getElementById('faqInputRespuesta').value = item ? item.respuesta : '';
+
+        const tipo = item && item.tipo === 'tabla' ? 'tabla' : 'texto';
+        document.getElementById('faqTipoRespuesta').value = tipo;
+        cambiarTipoRespuestaFAQ();
+
+        if (tipo === 'tabla') {
+            try {
+                poblarTablaEnFormulario(JSON.parse(item.respuesta));
+            } catch (e) {
+                limpiarFormularioTabla();
+            }
+            document.getElementById('faqInputRespuesta').value = '';
+        } else {
+            document.getElementById('faqInputRespuesta').value = item ? item.respuesta : '';
+            limpiarFormularioTabla();
+        }
+
         document.getElementById('faqModalOverlay').classList.add('show');
     }
 
@@ -748,14 +989,24 @@
     }
 
     async function guardarFAQForm() {
-        const seccion   = document.getElementById('faqInputSeccion').value.trim();
-        const pregunta  = document.getElementById('faqInputPregunta').value.trim();
-        const respuesta = document.getElementById('faqInputRespuesta').value.trim();
+        const seccion  = document.getElementById('faqInputSeccion').value.trim();
+        const pregunta = document.getElementById('faqInputPregunta').value.trim();
+        const tipo     = document.getElementById('faqTipoRespuesta').value;
+
+        let respuesta;
+        if (tipo === 'tabla') {
+            const tabla = leerTablaDesdeFormulario();
+            if (!tabla.filas.length) { alert('Agrega al menos una fila a la tabla.'); return; }
+            respuesta = JSON.stringify(tabla);
+        } else {
+            respuesta = document.getElementById('faqInputRespuesta').value.trim();
+        }
+
         if (!seccion || !pregunta || !respuesta) {
             alert('Completa sección, pregunta y respuesta.');
             return;
         }
-        const body = { action: 'guardarFAQ', seccion, pregunta, respuesta };
+        const body = { action: 'guardarFAQ', seccion, pregunta, respuesta, tipo };
         if (faqEditId) body.id = faqEditId;
         try {
             const r = await gasPostFAQ(body);
