@@ -12,6 +12,7 @@
   <script src="../shared/js/auspiciantes.js"></script>
   <script src="../shared/js/load-components.js"></script>
   <script src="../shared/js/auth.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
     :root {
@@ -209,8 +210,9 @@
     </div>
 
     <div id="contenido-staff" style="display:none;">
-      <div id="autoRotateBar" style="display:flex;justify-content:center;margin:0 0 10px;">
+      <div id="autoRotateBar" style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;">
         <button id="btnAutoRotate" onclick="toggleAutoRotate()" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;padding:6px 16px;border-radius:20px;border:1.5px solid #cbd5e1;background:#fff;color:#64748b;cursor:pointer;transition:all .2s;">🔄 Rotación automática (3 min): OFF</button>
+        <button id="btnDescargarPodios" onclick="descargarTodosPodios()" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;padding:6px 16px;border-radius:20px;border:1.5px solid #cbd5e1;background:#fff;color:#64748b;cursor:pointer;transition:all .2s;">📊 Descargar todos los podios (Excel)</button>
       </div>
       <div class="page-header">
         <div class="page-header-left">
@@ -405,6 +407,96 @@
         await pollPodios();
       } catch(e) {
         alert('No se pudo quitar el podio: ' + e.message);
+      }
+    }
+
+    // ── EXCEL — TODOS LOS PODIOS (todas las categorías publicadas) ──
+    // Orden fijo igual a CATEGORIA_MAP en Code.gs, para que el Excel salga
+    // siempre en el mismo orden sin importar en qué orden se fueron publicando.
+    const ORDEN_CATS = ['ins','trp_a','sl_a','sl_p','ms_a','ms_rc','bai','bat','dev','trp_p','soc','cr','lk'];
+
+    async function descargarTodosPodios() {
+      const btn = document.getElementById('btnDescargarPodios');
+      const textoOriginal = btn.textContent;
+      if (!publicados.length) { alert('Todavía no hay ningún podio publicado.'); return; }
+      btn.disabled = true;
+      btn.textContent = '⏳ Generando...';
+      try {
+        // institución no viene en podio_manual (solo guarda equipo_id/equipo_nombre),
+        // así que se arma un lookup contra participantes: por id (ms_a/ms_rc/bat) y
+        // por categoria+equipo (soccer, cuyo equipo_id es sintético 'eq-'+nombre equipo).
+        const todosPart = await fetchJSON('getParticipantes');
+        const listaPart = Array.isArray(todosPart) ? todosPart : (todosPart.participantes || []);
+        const porId = {};
+        const porEquipo = {};
+        listaPart.forEach(p => {
+          porId[p.id] = p.institucion || '';
+          const eq = String(p.equipo || '').trim();
+          if (eq) porEquipo[p.categoria + '||' + eq] = p.institucion || '';
+        });
+
+        const categoriasOrdenadas = publicados.map(p => p.categoria)
+          .sort((a, b) => ORDEN_CATS.indexOf(a) - ORDEN_CATS.indexOf(b));
+
+        const filas = [];
+        for (const cat of categoriasOrdenadas) {
+          const nombreCat = RUTAS_NOMBRE[cat] || cat;
+          let cardsData = [];
+          try {
+            if (CATS_CALIFICACION.includes(cat)) {
+              const data = await fetchJSON('getResultadosPublicados', { categoria: cat });
+              const ranking = (data && data.ranking) || [];
+              cardsData = ranking.slice(0, 3).map((r, i) => ({ posicion: i + 1, nombre: r.robot || r.nombre, institucion: r.institucion || '' }));
+            } else {
+              const data = await fetchJSON('getPodioManual', { categoria: cat });
+              const podio = (data && data.podio) || [];
+              cardsData = podio.filter(p => p.posicion >= 1 && p.posicion <= 3).sort((a, b) => a.posicion - b.posicion)
+                .map(p => {
+                  let institucion = porId[p.equipo_id] || '';
+                  if (!institucion && cat === 'soc') institucion = porEquipo[nombreCat + '||' + String(p.equipo_nombre || '').trim()] || '';
+                  return { posicion: p.posicion, nombre: p.equipo_nombre, institucion };
+                });
+            }
+          } catch(e) { console.error('Error al cargar podio de ' + cat + ':', e); }
+          const medalla = { 1: '🥇 1er lugar', 2: '🥈 2do lugar', 3: '🥉 3er lugar' };
+          cardsData.forEach(c => {
+            filas.push({
+              'Categoría': nombreCat,
+              'Posición': medalla[c.posicion] || c.posicion,
+              'Robot / Equipo': c.nombre || '',
+              'Institución / Club': c.institucion || ''
+            });
+          });
+        }
+
+        if (!filas.length) { alert('No se encontraron datos de podio para exportar.'); return; }
+
+        const wb = XLSX.utils.book_new();
+        const wsPodios = XLSX.utils.json_to_sheet(filas);
+        wsPodios['!cols'] = [{wch:26},{wch:14},{wch:30},{wch:30}];
+        XLSX.utils.book_append_sheet(wb, wsPodios, 'Podios');
+
+        try {
+          const dataInst = await fetchJSON('getRankingInstituciones');
+          const rankingInst = (dataInst && dataInst.ranking) || [];
+          if (rankingInst.length) {
+            const filasInst = rankingInst.map((r, i) => ({
+              '#': i + 1, 'Institución / Club': r.institucion,
+              'Puntos': r.puntos, 'Oros': r.oros, 'Platas': r.platas, 'Bronces': r.bronces
+            }));
+            const wsInst = XLSX.utils.json_to_sheet(filasInst);
+            wsInst['!cols'] = [{wch:4},{wch:32},{wch:10},{wch:8},{wch:8},{wch:8}];
+            XLSX.utils.book_append_sheet(wb, wsInst, 'Ranking Instituciones');
+          }
+        } catch(e) { console.error('Error al cargar ranking de instituciones:', e); }
+
+        const fecha = new Date().toLocaleDateString('es-EC').replace(/\//g, '-');
+        XLSX.writeFile(wb, 'SucreBot2026_Podios_Todas_Categorias_' + fecha + '.xlsx');
+      } catch(e) {
+        alert('No se pudo generar el Excel: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
       }
     }
 
