@@ -101,6 +101,17 @@
     .btn-quitar-podio { display: inline-flex; align-items: center; gap: 8px; font-family: 'Exo 2', sans-serif; font-size: 0.9rem; font-weight: 700; color: #b91c1c; background: #fff; border: 1.5px solid #fca5a5; padding: 11px 20px; border-radius: 10px; cursor: pointer; transition: all .2s; }
     .btn-quitar-podio:hover { background: #fef2f2; border-color: #b91c1c; }
 
+    .res-toolbar { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 10px; }
+    .btn-toolbar { font-family: 'Exo 2', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em; padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: all .2s; border: 1.5px solid transparent; }
+    .btn-toolbar:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-rotar { background: #eef4fb; border-color: #bcd6f0; color: #1a5ca8; }
+    .btn-rotar:hover { background: #dbe9f8; }
+    .btn-rotar.activo { background: linear-gradient(135deg, #1a5ca8, #2474cc); border-color: #1a5ca8; color: #fff; box-shadow: 0 3px 10px rgba(26,92,168,0.3); }
+    .btn-excel-podios { background: #1e8c3a; border-color: #1e8c3a; color: #fff; box-shadow: 0 3px 10px rgba(30,140,58,0.25); }
+    .btn-excel-podios:hover { background: #166d2c; }
+    .btn-limpiar-podios { background: #fff; border-color: #fca5a5; color: #b91c1c; }
+    .btn-limpiar-podios:hover { background: #fef2f2; border-color: #b91c1c; }
+
     .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; gap: 16px; }
     .empty-icon { font-size: 4rem; opacity: 0.2; filter: grayscale(1); }
     .empty-text { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.18em; color: #6a7a94; font-weight: 600; }
@@ -210,9 +221,10 @@
     </div>
 
     <div id="contenido-staff" style="display:none;">
-      <div id="autoRotateBar" style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;">
-        <button id="btnAutoRotate" onclick="toggleAutoRotate()" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;padding:6px 16px;border-radius:20px;border:1.5px solid #cbd5e1;background:#fff;color:#64748b;cursor:pointer;transition:all .2s;">🔄 Rotación automática (3 min): OFF</button>
-        <button id="btnDescargarPodios" onclick="descargarTodosPodios()" style="font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;padding:6px 16px;border-radius:20px;border:1.5px solid #cbd5e1;background:#fff;color:#64748b;cursor:pointer;transition:all .2s;">📊 Descargar todos los podios (Excel)</button>
+      <div id="autoRotateBar" class="res-toolbar">
+        <button id="btnAutoRotate" class="btn-toolbar btn-rotar" onclick="toggleAutoRotate()">🔄 Rotación automática (3 min): OFF</button>
+        <button id="btnDescargarPodios" class="btn-toolbar btn-excel-podios" onclick="descargarTodosPodios()">📊 Descargar todos los podios (Excel)</button>
+        <button id="btnLimpiarPodios" class="btn-toolbar btn-limpiar-podios" onclick="limpiarTodosPodios()">🧹 Limpiar todos los podios</button>
       </div>
       <div class="page-header">
         <div class="page-header-left">
@@ -410,6 +422,36 @@
       }
     }
 
+    // Igual que despublicarPodio(), pero para TODAS las categorías publicadas
+    // a la vez — no toca brackets/calificaciones/certificados, cada categoría
+    // se puede volver a publicar guardando su podio de nuevo.
+    async function limpiarTodosPodios() {
+      if (!publicados.length) { alert('No hay ningún podio publicado para limpiar.'); return; }
+      const listaTexto = publicados.map(p => '  • ' + (RUTAS_NOMBRE[p.categoria] || p.categoria)).join('\n');
+      const ok = confirm(`¿Quitar de Resultados TODOS los podios publicados (${publicados.length})?\n\n${listaTexto}\n\nEsto NO borra brackets, calificaciones ni certificados ya generados — solo dejan de mostrarse acá.`);
+      if (!ok) return;
+      const btn = document.getElementById('btnLimpiarPodios');
+      const textoOriginal = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '⏳ Limpiando...';
+      try {
+        const categorias = publicados.map(p => p.categoria);
+        let errores = 0;
+        for (const cat of categorias) {
+          try {
+            const r = await postJSON({ action: 'despublicarPodio', categoria: cat });
+            if (!r.ok) errores++;
+          } catch(e) { errores++; }
+        }
+        ultimoPublicadosKey = '';
+        await pollPodios();
+        if (errores) alert('Se limpiaron algunos podios, pero ' + errores + ' fallaron. Revisá la conexión y volvé a intentar con los que quedaron.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
+    }
+
     // ── EXCEL — TODOS LOS PODIOS (todas las categorías publicadas) ──
     // Orden fijo igual a CATEGORIA_MAP en Code.gs, para que el Excel salga
     // siempre en el mismo orden sin importar en qué orden se fueron publicando.
@@ -564,17 +606,8 @@
     function actualizarBotonAutoRotate() {
       const btn = document.getElementById('btnAutoRotate');
       if (!btn) return;
-      if (autoRotateOn) {
-        btn.textContent = '🔄 Rotación automática (3 min): ON';
-        btn.style.background = '#1a5ca8';
-        btn.style.borderColor = '#1a5ca8';
-        btn.style.color = '#fff';
-      } else {
-        btn.textContent = '🔄 Rotación automática (3 min): OFF';
-        btn.style.background = '#fff';
-        btn.style.borderColor = '#cbd5e1';
-        btn.style.color = '#64748b';
-      }
+      btn.textContent = autoRotateOn ? '🔄 Rotación automática (3 min): ON' : '🔄 Rotación automática (3 min): OFF';
+      btn.classList.toggle('activo', autoRotateOn);
     }
     function iniciarAutoRotate() {
       if (autoRotateInterval) clearInterval(autoRotateInterval);
