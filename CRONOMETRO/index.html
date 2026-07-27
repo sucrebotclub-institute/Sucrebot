@@ -1123,7 +1123,7 @@ async function guardarPodioCrono(){
     try{
       const rutaCorta=getRuta();
       if(rutaCorta){
-        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo})),staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
+        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo,institucion:p.institucion||''})),staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
         const d=await r.json();
         if(!d.ok){console.warn('publicarPodioCalificacion rechazado:',d.error);showToast('⚠️ Certificados guardados, pero el podio NO se pudo publicar en RESULTADOS: '+(d.error||'error desconocido'),true);}
       }
