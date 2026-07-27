@@ -211,6 +211,22 @@
         .btn-reg-editar:hover { background: rgba(255,255,255,0.28); }
         body.staff-mode .btn-reg-editar { display: inline-flex; }
 
+        .reg-add-wrap { display: none; margin-top: 20px; }
+        body.staff-mode .reg-add-wrap { display: block; }
+        .reg-btn-add {
+            background: #1a5ca8;
+            color: #ffffff;
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 700;
+            font-size: .9rem;
+            cursor: pointer;
+            width: 100%;
+        }
+        .reg-btn-add:hover { background: #1e6ec0; }
+
         .reg-modal-overlay {
             display: none;
             position: fixed; inset: 0;
@@ -234,6 +250,19 @@
             display: flex; align-items: center; gap: 8px;
             font-family: 'Exo 2', sans-serif; font-size: .9rem; color: #1a1c28;
             margin-bottom: 20px; cursor: pointer;
+        }
+        .reg-modal > label {
+            display: block;
+            font-family: 'Orbitron', monospace; font-size: .62rem;
+            letter-spacing: 1.5px; color: #1a5ca8; text-transform: uppercase;
+            margin: 14px 0 6px;
+        }
+        .reg-modal > input[type="text"],
+        .reg-modal > select {
+            display: block; width: 100%; box-sizing: border-box;
+            border: 1px solid #d5dae5; border-radius: 8px;
+            padding: 10px 12px; font-family: 'Exo 2', sans-serif;
+            font-size: .92rem; color: #1a1c28; background: #fff;
         }
         .reg-modal-seccion {
             border-top: 1px solid #eef1f7;
@@ -270,6 +299,9 @@
             font-size: .88rem; cursor: pointer;
         }
         .reg-modal-cerrar:hover { background: #1a5ca8; color: #ffffff; }
+
+        .reg-modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+        .reg-modal-actions button { width: auto; flex: 1; margin-top: 0; }
 
         .reg-modal-fecha-fila { display: flex; gap: 8px; align-items: center; }
         .reg-modal-fecha-fila input[type="date"] {
@@ -366,7 +398,39 @@
             </div>
         </div>
 
+        <div class="reg-modal-seccion" id="regModalZonaPeligro" style="display:none;">
+            <label>Zona de peligro</label>
+            <button class="reg-btn-quitar" style="width:100%;" onclick="eliminarCategoriaModal()">🗑️ Eliminar esta categoría</button>
+        </div>
+
         <button class="reg-modal-cerrar" onclick="cerrarModalReglamento()">Cerrar</button>
+    </div>
+</div>
+
+<div class="reg-modal-overlay" id="regNuevaCatOverlay">
+    <div class="reg-modal">
+        <h4>Agregar categoría</h4>
+
+        <label for="regNuevaCatNivel">Nivel</label>
+        <select id="regNuevaCatNivel">
+            <option value="🏅 Amateur">🏅 Amateur</option>
+            <option value="🏆 Pro">🏆 Pro</option>
+            <option value="🌟 Open">🌟 Open</option>
+        </select>
+
+        <label for="regNuevaCatEmoji">Emoji</label>
+        <input type="text" id="regNuevaCatEmoji" placeholder="Ej: 🤖" maxlength="8">
+
+        <label for="regNuevaCatNombre">Nombre</label>
+        <input type="text" id="regNuevaCatNombre" placeholder="Nombre de la categoría">
+
+        <label for="regNuevaCatDesc">Descripción</label>
+        <input type="text" id="regNuevaCatDesc" placeholder="Descripción breve">
+
+        <div class="reg-modal-actions">
+            <button class="reg-modal-cerrar" onclick="cerrarModalNuevaCategoria()">Cancelar</button>
+            <button class="reg-btn-subir" style="width:100%;" onclick="crearCategoriaModal()">➕ Crear categoría</button>
+        </div>
     </div>
 </div>
 
@@ -426,17 +490,18 @@ function buscarCategoriaBase(nombre) {
 }
 
 function categoriaCompleta(nombre) {
-  const base = buscarCategoriaBase(nombre) || {};
+  const base = buscarCategoriaBase(nombre); // null si es una categoría personalizada (no vive en el array CATEGORIAS)
   const cfg  = REGLAMENTOS_CONFIG[nombre] || {};
   return {
     nombre,
-    emoji: base.emoji || '',
-    desc: base.desc || '',
+    emoji: (base && base.emoji) || cfg.emoji || '📄',
+    desc: (base && base.desc) || cfg.desc || '',
     driveId: cfg.driveId || '',
     audioId: cfg.audioId || '',
     pistaId: cfg.pistaId || '',
     disponible: cfg.disponible === true,
-    actualizado: cfg.actualizado || ''
+    actualizado: cfg.actualizado || '',
+    personalizada: !base && cfg.personalizada === true
   };
 }
 
@@ -472,10 +537,26 @@ function renderReglamentos() {
   }
   let html = '';
 
+  // Categorías personalizadas (creadas desde "➕ Agregar categoría") agrupadas
+  // por su propio campo 'nivel' -- se agregan al final de la sección que
+  // corresponda, junto a las 13 categorías fijas de ese mismo nivel.
+  const nombresFijos = new Set();
+  CATEGORIAS.forEach(g => g.items.forEach(i => nombresFijos.add(i.nombre)));
+  const personalizadasPorNivel = {};
+  Object.keys(REGLAMENTOS_CONFIG).forEach(nombre => {
+    const cfg = REGLAMENTOS_CONFIG[nombre];
+    if (!nombresFijos.has(nombre) && cfg.personalizada) {
+      const niv = cfg.nivel || '🌟 Open';
+      if (!personalizadasPorNivel[niv]) personalizadasPorNivel[niv] = [];
+      personalizadasPorNivel[niv].push(nombre);
+    }
+  });
+
   CATEGORIAS.forEach(grupo => {
     html += `<div class="nivel-label">${grupo.nivel}</div>`;
-    grupo.items.forEach((catBase, i) => {
-      const cat = categoriaCompleta(catBase.nombre);
+    const nombresDelGrupo = grupo.items.map(i => i.nombre).concat(personalizadasPorNivel[grupo.nivel] || []);
+    nombresDelGrupo.forEach((nombreCat, i) => {
+      const cat = categoriaCompleta(nombreCat);
       const id = `reg-${grupo.nivel.replace(/\s/g,'-')}-${i}`;
       const iframeId = `iframe-${id}`;
       const imgWrapId = `img-${id}`;
@@ -542,6 +623,11 @@ function renderReglamentos() {
       </div>`;
     });
   });
+
+  html += `
+  <div class="reg-add-wrap">
+    <button class="reg-btn-add" onclick="abrirModalNuevaCategoria()">➕ Agregar categoría</button>
+  </div>`;
 
   container.innerHTML = html;
 }
@@ -643,6 +729,7 @@ function abrirModalReglamento(nombre) {
   document.getElementById('regModalPdfInput').value = '';
   document.getElementById('regModalAudioInput').value = '';
   document.getElementById('regModalPistaInput').value = '';
+  document.getElementById('regModalZonaPeligro').style.display = cat.personalizada ? 'block' : 'none';
   document.getElementById('regModalOverlay').classList.add('show');
 }
 
@@ -720,6 +807,46 @@ async function quitarArchivoModal(tipo) {
     await cargarReglamentosConfig(true);
   } catch (e) {
     alert('Error al quitar: ' + e.message);
+  }
+}
+
+async function eliminarCategoriaModal() {
+  if (!confirm('¿Eliminar la categoría "' + regEditCategoria + '" y todos sus archivos? Esta acción no se puede deshacer.')) return;
+  try {
+    const r = await gasPostReglamento({ action: 'eliminarCategoriaReglamento', categoria: regEditCategoria });
+    if (!r || !r.ok) { alert('Error al eliminar: ' + (r && r.error || 'desconocido')); return; }
+    cerrarModalReglamento();
+    await cargarReglamentosConfig(true);
+  } catch (e) {
+    alert('Error al eliminar: ' + e.message);
+  }
+}
+
+function abrirModalNuevaCategoria() {
+  document.getElementById('regNuevaCatNivel').value = '🏅 Amateur';
+  document.getElementById('regNuevaCatEmoji').value = '';
+  document.getElementById('regNuevaCatNombre').value = '';
+  document.getElementById('regNuevaCatDesc').value = '';
+  document.getElementById('regNuevaCatOverlay').classList.add('show');
+}
+
+function cerrarModalNuevaCategoria() {
+  document.getElementById('regNuevaCatOverlay').classList.remove('show');
+}
+
+async function crearCategoriaModal() {
+  const nivel  = document.getElementById('regNuevaCatNivel').value;
+  const emoji  = document.getElementById('regNuevaCatEmoji').value.trim();
+  const nombre = document.getElementById('regNuevaCatNombre').value.trim();
+  const desc   = document.getElementById('regNuevaCatDesc').value.trim();
+  if (!nombre) { alert('El nombre es obligatorio.'); return; }
+  try {
+    const r = await gasPostReglamento({ action: 'crearCategoriaReglamento', nombre, emoji, desc, nivel });
+    if (!r || !r.ok) { alert('Error al crear: ' + (r && r.error || 'desconocido')); return; }
+    cerrarModalNuevaCategoria();
+    await cargarReglamentosConfig(true);
+  } catch (e) {
+    alert('Error al crear: ' + e.message);
   }
 }
 
