@@ -320,6 +320,30 @@
         .reg-modal-actions { display: flex; gap: 10px; margin-top: 22px; }
         .reg-modal-actions button { width: auto; flex: 1; margin-top: 0; }
 
+        .reg-modal-guardar-wrap {
+            border-top: 1px solid #eef1f7;
+            padding-top: 18px; margin-top: 18px;
+        }
+        .reg-btn-guardar-todo {
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #1a5ca8, #2472c8);
+            color: #fff; font-family: 'Exo 2', sans-serif; font-weight: 800;
+            font-size: .95rem; letter-spacing: .3px; cursor: pointer;
+            box-shadow: 0 6px 16px rgba(26,92,168,0.35);
+            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+        }
+        .reg-btn-guardar-todo:hover {
+            background: linear-gradient(135deg, #1e6ec0, #2d8bf0);
+            box-shadow: 0 8px 20px rgba(26,92,168,0.45);
+            transform: translateY(-1px);
+        }
+        .reg-btn-guardar-todo:active { transform: translateY(0); box-shadow: 0 4px 10px rgba(26,92,168,0.35); }
+        .reg-btn-guardar-todo:disabled { opacity: .6; cursor: default; transform: none; box-shadow: none; }
+        .reg-btn-guardar-todo.reg-btn-guardado {
+            background: linear-gradient(135deg, #1e9e5a, #27ae60);
+            box-shadow: 0 6px 16px rgba(39,174,96,0.4);
+        }
+
         .reg-modal-fecha-fila { display: flex; gap: 8px; align-items: center; }
         .reg-modal-fecha-fila input[type="date"] {
             flex: 1; border: 1px solid #d5dae5; border-radius: 8px;
@@ -388,16 +412,12 @@
         <label for="regModalFecha">Fecha de "Actualizado"</label>
         <div class="reg-modal-fecha-fila">
             <input type="date" id="regModalFecha">
-            <button class="reg-btn-subir" id="regModalFechaBtn" onclick="guardarFechaModal()">💾 Guardar fecha</button>
         </div>
 
         <div class="reg-modal-seccion">
             <label>PDF del reglamento</label>
             <div class="reg-modal-archivo-actual" id="regModalPdfActual"></div>
             <input type="file" id="regModalPdfInput" accept="application/pdf">
-            <div class="reg-modal-botones">
-                <button class="reg-btn-subir" id="regModalPdfBtn" onclick="subirArchivoModal('pdf')">📤 Subir / Reemplazar</button>
-            </div>
         </div>
 
         <div class="reg-modal-seccion">
@@ -405,7 +425,6 @@
             <div class="reg-modal-archivo-actual" id="regModalAudioActual"></div>
             <input type="file" id="regModalAudioInput" accept="audio/*">
             <div class="reg-modal-botones">
-                <button class="reg-btn-subir" id="regModalAudioBtn" onclick="subirArchivoModal('audio')">📤 Subir / Reemplazar</button>
                 <button class="reg-btn-quitar" id="regModalAudioQuitar" onclick="quitarArchivoModal('audio')">🗑️ Quitar música</button>
             </div>
         </div>
@@ -415,9 +434,12 @@
             <div class="reg-modal-archivo-actual" id="regModalPistaActual"></div>
             <input type="file" id="regModalPistaInput" accept="image/*">
             <div class="reg-modal-botones">
-                <button class="reg-btn-subir" id="regModalPistaBtn" onclick="subirArchivoModal('pista')">📤 Subir / Reemplazar</button>
                 <button class="reg-btn-quitar" id="regModalPistaQuitar" onclick="quitarArchivoModal('pista')">🗑️ Quitar pista</button>
             </div>
+        </div>
+
+        <div class="reg-modal-guardar-wrap">
+            <button class="reg-btn-guardar-todo" id="regModalGuardarBtn" onclick="guardarTodoModal()">💾 Guardar cambios</button>
         </div>
 
         <div class="reg-modal-seccion" id="regModalZonaPeligro" style="display:none;">
@@ -796,49 +818,73 @@ async function cambiarOcultaReglamento() {
   checkbox.disabled = false;
 }
 
-async function guardarFechaModal() {
-  const input = document.getElementById('regModalFecha');
-  const fecha = input.value;
-  if (!fecha) { alert('Selecciona una fecha primero.'); return; }
-  const btn = document.getElementById('regModalFechaBtn');
-  btn.disabled = true;
-  try {
-    const r = await gasPostReglamento({ action: 'setFechaReglamento', categoria: regEditCategoria, fecha });
-    if (!r || !r.ok) { alert('Error: ' + (r && r.error || 'desconocido')); return; }
-    await cargarReglamentosConfig(true);
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
-  btn.disabled = false;
-}
+// Guarda de una sola vez todo lo pendiente en el modal: fecha (si se tocó) +
+// cualquier archivo seleccionado (PDF/música/imagen de pista) — antes cada
+// campo tenía su propio botón de guardado por separado, lo que hacía parecer
+// que faltaba un botón "guardar" real cuando en realidad había 4 distintos.
+async function guardarTodoModal() {
+  const fecha = document.getElementById('regModalFecha').value;
+  const archivos = {
+    pdf:   document.getElementById('regModalPdfInput').files[0],
+    audio: document.getElementById('regModalAudioInput').files[0],
+    pista: document.getElementById('regModalPistaInput').files[0]
+  };
 
-async function subirArchivoModal(tipo) {
-  const input = document.getElementById('regModal' + capitalizar(tipo) + 'Input');
-  const file = input.files[0];
-  if (!file) { alert('Selecciona un archivo primero.'); return; }
-  const btn = document.getElementById('regModal' + capitalizar(tipo) + 'Btn');
-  btn.disabled = true;
-  const textoOriginal = btn.textContent;
-  btn.textContent = 'Subiendo...';
-  try {
-    const base64 = await fileToBase64(file);
-    const r = await gasPostReglamento({
-      action: 'subirArchivoReglamento',
-      categoria: regEditCategoria,
-      tipo,
-      fileName: file.name,
-      mimeType: file.type,
-      base64
-    });
-    if (!r || !r.ok) { alert('Error al subir: ' + (r && r.error || 'desconocido')); return; }
-    actualizarEstadoArchivoModal(tipo, r.driveId);
-    input.value = '';
-    await cargarReglamentosConfig(true);
-  } catch (e) {
-    alert('Error al subir: ' + e.message);
+  if (!fecha && !archivos.pdf && !archivos.audio && !archivos.pista) {
+    alert('No hay cambios para guardar. Selecciona un archivo o cambia la fecha primero.');
+    return;
   }
+
+  const btn = document.getElementById('regModalGuardarBtn');
+  const textoOriginal = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  const errores = [];
+
+  if (fecha) {
+    try {
+      const r = await gasPostReglamento({ action: 'setFechaReglamento', categoria: regEditCategoria, fecha });
+      if (!r || !r.ok) errores.push('Fecha: ' + (r && r.error || 'error desconocido'));
+    } catch (e) {
+      errores.push('Fecha: ' + e.message);
+    }
+  }
+
+  for (const tipo of ['pdf', 'audio', 'pista']) {
+    const file = archivos[tipo];
+    if (!file) continue;
+    try {
+      const base64 = await fileToBase64(file);
+      const r = await gasPostReglamento({
+        action: 'subirArchivoReglamento',
+        categoria: regEditCategoria,
+        tipo,
+        fileName: file.name,
+        mimeType: file.type,
+        base64
+      });
+      if (!r || !r.ok) { errores.push(capitalizar(tipo) + ': ' + (r && r.error || 'error desconocido')); continue; }
+      actualizarEstadoArchivoModal(tipo, r.driveId);
+      document.getElementById('regModal' + capitalizar(tipo) + 'Input').value = '';
+    } catch (e) {
+      errores.push(capitalizar(tipo) + ': ' + e.message);
+    }
+  }
+
+  await cargarReglamentosConfig(true);
   btn.disabled = false;
-  btn.textContent = textoOriginal;
+
+  if (errores.length) {
+    btn.textContent = textoOriginal;
+    alert('Algunos cambios no se guardaron:\n' + errores.join('\n'));
+  } else {
+    btn.textContent = '✅ Guardado';
+    btn.classList.add('reg-btn-guardado');
+    setTimeout(() => {
+      btn.textContent = textoOriginal;
+      btn.classList.remove('reg-btn-guardado');
+    }, 1500);
+  }
 }
 
 async function quitarArchivoModal(tipo) {
