@@ -47,6 +47,12 @@
 
     .aviso { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-family: 'Exo 2'; font-size: 13px; color: #92400e; display: flex; align-items: center; gap: 10px; }
 
+    .subir-firmados-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: #fff; border: 1px solid #e0e8f4; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; flex-wrap: wrap; }
+    .subir-firmados-info { display: flex; flex-direction: column; gap: 4px; font-family: 'Exo 2'; }
+    .subir-firmados-info strong { font-size: 13px; color: #1a3a6e; }
+    .subir-firmados-info span { font-size: 11.5px; color: #7a7a8c; max-width: 620px; }
+    .subir-firmados-info code { background: #eef3fb; color: #1a5ca8; padding: 1px 5px; border-radius: 4px; font-family: 'DM Mono'; }
+
     .progreso-wrap { display: none; background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #c5d8ff; }
     .progreso-wrap.visible { display: block; }
     .progreso-label { font-family: 'Orbitron'; font-size: 10px; color: #1a5ca8; margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
@@ -153,6 +159,15 @@
 
     <div class="aviso" id="aviso-vacio" style="display:none;">
       ⚠️ No hay competidores registrados aún. Ve a <strong>Panel de Calificación → Guardar todos los competidores</strong> primero.
+    </div>
+
+    <div class="subir-firmados-bar">
+      <div class="subir-firmados-info">
+        <strong>📤 Subir certificados ya firmados</strong>
+        <span>Seleccioná de una todos los PDF firmados — cada archivo se identifica solo por el código de verificación que ya trae en el nombre (ej. <code>Diploma_Nombre_CERT-2026-123.pdf</code>) y reemplaza al certificado actual.</span>
+      </div>
+      <input type="file" id="input-subir-firmados" accept="application/pdf" multiple style="display:none" onchange="subirFirmadosMasivo(this.files)">
+      <button class="btn btn-gen" onclick="document.getElementById('input-subir-firmados').click()">📤 Elegir PDFs firmados</button>
     </div>
 
     <div class="progreso-wrap" id="progreso-wrap">
@@ -474,6 +489,98 @@ async function procesarItem(item, catNombre) {
 
   const driveUrl = await generarYSubirPDF(pFake, tipoInterno, fechaEvento, item.codigo, item.nombre);
   item.archivoUrl = driveUrl;
+}
+
+// ── SUBIDA MASIVA DE CERTIFICADOS YA FIRMADOS ────────────────────
+// Reemplaza en Drive el PDF de cada certificado ya generado por una versión
+// firmada digitalmente (descargada, firmada externamente, y vuelta a subir
+// acá). Cada archivo se empareja con su certificado leyendo el código de
+// verificación (CERT-2026-NNN) que ya viene incluido en el nombre del
+// archivo desde que se generó originalmente -- no hace falta subir de a uno.
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function construirMapaCodigos() {
+  const mapa = {};
+  Object.values(estado).flat().forEach(item => {
+    if (item.codigo) mapa[item.codigo] = item;
+  });
+  return mapa;
+}
+
+async function subirFirmadosMasivo(fileList) {
+  const archivos = Array.from(fileList).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (!archivos.length) { showToast('⚠️ No se seleccionaron archivos PDF', 'err'); return; }
+
+  const mapa = construirMapaCodigos();
+  const validos = [];
+  const sinCodigo = [];
+  archivos.forEach(f => {
+    const m = f.name.match(/CERT-\d{4}-\d+/);
+    const item = m ? mapa[m[0]] : null;
+    if (item) validos.push({ file: f, codigo: m[0], item });
+    else sinCodigo.push(f.name);
+  });
+
+  if (!validos.length) {
+    showToast('❌ Ningún archivo coincide con un código de certificado conocido', 'err');
+    document.getElementById('input-subir-firmados').value = '';
+    return;
+  }
+
+  let aviso = `Se identificaron ${validos.length} certificado(s) para re-subir.`;
+  if (sinCodigo.length) aviso += `\n${sinCodigo.length} archivo(s) no coinciden con ningún código y se van a omitir.`;
+  aviso += '\n\nEsto REEMPLAZA el PDF actual de cada uno en Drive (el link cambia). ¿Continuar?';
+  if (!confirm(aviso)) { document.getElementById('input-subir-firmados').value = ''; return; }
+
+  mostrarProgreso(true);
+  let ok = 0;
+  const fallos = [];
+
+  for (let i = 0; i < validos.length; i++) {
+    const { file, codigo, item } = validos[i];
+    actualizarProgreso(item.nombre + ' (' + codigo + ')', i, validos.length);
+    try {
+      const base64 = await fileToBase64(file);
+      const r = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'uploadDiploma',
+          base64,
+          fileName: file.name,
+          codigo,
+          staffToken: localStorage.getItem('sucrebot_staff_token') || ''
+        })
+      });
+      const d = await r.json();
+      if (!d || !d.ok || !d.url) throw new Error((d && d.error) || 'Respuesta inválida del servidor');
+      item.archivoUrl = d.url;
+      ok++;
+    } catch(e) {
+      console.error(e);
+      fallos.push(item.nombre + ' (' + codigo + '): ' + e.message);
+    }
+  }
+
+  actualizarProgreso('¡Completado!', validos.length, validos.length);
+  actualizarStats();
+  renderTodo();
+
+  if (fallos.length) {
+    console.error('Certificados que fallaron:\n' + fallos.join('\n'));
+    showToast(`⚠️ ${ok} re-subidos, ${fallos.length} fallaron (ver consola)`, 'err');
+  } else {
+    showToast(`✅ ${ok} certificado(s) re-subidos con firma` + (sinCodigo.length ? ` · ${sinCodigo.length} omitido(s)` : ''), 'ok');
+  }
+  setTimeout(() => mostrarProgreso(false), 3000);
+  document.getElementById('input-subir-firmados').value = '';
 }
 
 function previewItem(catKey, i) {
