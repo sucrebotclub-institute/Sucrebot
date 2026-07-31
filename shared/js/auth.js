@@ -57,6 +57,22 @@ function resolverRol(correo) {
   return _rolFetchPromise;
 }
 
+// Arranca a resolver el rol ni bien este script termina de cargar, sin
+// esperar al evento 'componentsLoaded' -- el fetch a GAS es lo más lento de
+// toda la secuencia de carga inicial (SDK de Google + HTML de nav/header),
+// así que conviene que corra superpuesto con el resto en vez de arrancar
+// recién cuando ya se cargó todo lo demás. resolverRol() memoiza la promesa
+// en curso (_rolFetchPromise), así que cuando activarSesion() la pida de
+// nuevo más tarde reusa este mismo fetch en vez de arrancar uno nuevo.
+window.prefetchRol = function() {
+  const s = localStorage.getItem('sucrebot_user');
+  if (!s) return;
+  try {
+    const u = JSON.parse(s);
+    resolverRol(u.email);
+  } catch (e) {}
+};
+
 // ── Helper global: esperar a que el rol del usuario logueado esté
 // resuelto (fresco o desde caché) antes de chequear esStaffCompleto()/
 // esJuez()/esAdmin(). Las páginas que gatean acceso al cargar DEBEN

@@ -124,34 +124,46 @@ async function loadComponents() {
   try {
     // 0. Insertar favicon
     insertFavicon();
-    
-    // 1. Cargar Google OAuth SDK (async)
-    console.log('📦 Cargando Google OAuth SDK...');
-    await loadScript('https://accounts.google.com/gsi/client', true, true);
-    
-    // 2. Esperar a que el SDK esté realmente disponible
-    await waitForGoogleSDK();
-    console.log('✅ Google OAuth SDK cargado y listo');
-    
-    // 3. Cargar componentes HTML
-    console.log('📦 Cargando componentes HTML...');
-    await loadHTMLComponents();
-    console.log('✅ Componentes HTML cargados');
-    
-    // 4. Cargar auth.js
+
     // Todas las páginas SucreBot viven en subcarpetas → siempre ../shared/
     // Solo usar ./shared/ si estamos en la raíz del sitio (ej: /Sucrebot/)
-    console.log('📦 Cargando auth.js...');
     const segmentos = window.location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
     const enRaiz = segmentos.length <= 1; // e.g. /Sucrebot/ → 1 segmento
     const authPath = enRaiz ? './shared/js/auth.js' : '../shared/js/auth.js';
-    await loadScript(authPath, false, false);
-    console.log('✅ auth.js cargado');
-    
-    // 5. Disparar evento cuando TODO esté listo
+
+    // 1. SDK de Google, auth.js y los componentes HTML se cargan todos en
+    // PARALELO -- son independientes entre sí (auth.js solo usa `google`
+    // adentro de handlers que corren después de 'componentsLoaded', no al
+    // parsear el archivo). Antes se cargaban en secuencia estricta y el
+    // fetch de rol a GAS (lo más lento de toda esta cadena) recién arrancaba
+    // al final, en activarSesion() -- por eso los menús de staff/admin
+    // tardaban en aparecer. Ahora, apenas termina de cargar auth.js se
+    // dispara prefetchRol(), que arranca ese mismo fetch pero superpuesto
+    // con el resto de la carga en vez de después.
+    console.log('📦 Cargando Google OAuth SDK, auth.js y componentes HTML...');
+    const sdkPromise = loadScript('https://accounts.google.com/gsi/client', true, true);
+    const authPromise = loadScript(authPath, false, false).then((r) => {
+      console.log('✅ auth.js cargado');
+      if (typeof window.prefetchRol === 'function') window.prefetchRol();
+      return r;
+    });
+    const htmlPromise = loadHTMLComponents().then((r) => {
+      console.log('✅ Componentes HTML cargados');
+      return r;
+    });
+
+    // 2. Esperar a que el SDK esté realmente disponible
+    await sdkPromise;
+    await waitForGoogleSDK();
+    console.log('✅ Google OAuth SDK cargado y listo');
+
+    // 3. Esperar a que terminen auth.js y los componentes HTML
+    await Promise.all([authPromise, htmlPromise]);
+
+    // 4. Disparar evento cuando TODO esté listo
     document.dispatchEvent(new CustomEvent('componentsLoaded'));
     console.log('🎉 Sistema completamente inicializado');
-    
+
   } catch (error) {
     console.error('❌ Error durante la inicialización:', error);
   }
