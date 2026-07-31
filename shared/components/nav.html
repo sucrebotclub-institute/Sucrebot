@@ -131,6 +131,19 @@
     });
   }
 
+  // El CSS trae un top:165px de respaldo (position:fixed en móvil), pero esa
+  // altura no es la misma en todas las páginas (topbar, ancho de pantalla,
+  // etc.) -- por eso el dropdown quedaba con un hueco o pisando el nav según
+  // la página. Acá se mide el alto REAL del header sticky en el momento de
+  // abrir y se pisa el CSS con setProperty(...,'important') porque el valor
+  // de respaldo usa !important y una inline style normal no le gana.
+  function posicionarDropdownMovil(menu) {
+    var header = document.querySelector('.sticky-header');
+    var top = header ? Math.round(header.getBoundingClientRect().bottom) : 165;
+    menu.style.setProperty('top', top + 'px', 'important');
+    menu.style.setProperty('max-height', 'calc(100vh - ' + top + 'px)', 'important');
+  }
+
   function initDropdown(triggerId, menuId) {
     var trigger = document.getElementById(triggerId);
     var menu    = document.getElementById(menuId);
@@ -163,7 +176,10 @@
       e.stopPropagation();
       var estaAbierto = menu.classList.contains('open');
       cerrarTodosLosDropdowns(null);
-      if (!estaAbierto) menu.classList.add('open');
+      if (!estaAbierto) {
+        posicionarDropdownMovil(menu);
+        menu.classList.add('open');
+      }
     });
   }
 
