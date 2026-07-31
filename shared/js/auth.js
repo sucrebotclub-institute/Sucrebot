@@ -358,12 +358,37 @@ function inicializarMenus() {
   }
 }
 
+// ── FUNCIÓN: Inicializar Google Sign-In (idempotente) ──────────────
+// Separada del listener de 'componentsLoaded' porque ese evento ya no
+// espera al SDK de Google (ver load-components.js) -- puede que `google`
+// todavía no exista en ese momento. Se reintenta cuando llega
+// 'googleSDKReady', sin duplicar la inicialización si ya se hizo antes.
+let _googleSignInListo = false;
+function inicializarGoogleSignIn() {
+  if (_googleSignInListo) return;
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+    google.accounts.id.initialize({
+      client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
+      callback: window.handleCredentialResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      context: 'signin',
+      ux_mode: 'popup',
+      itp_support: true
+    });
+    _googleSignInListo = true;
+    console.log('✅ Google OAuth inicializado con selector de cuentas');
+  } else {
+    console.warn('⏳ SDK de Google no disponible aún');
+  }
+}
+
 // ── INICIALIZACIÓN: Restaurar sesión si existe
 document.addEventListener('componentsLoaded', function() {
   console.log('📦 Componentes cargados, inicializando autenticación...');
-  
+
   inicializarMenus();
-  
+
   const savedUser = localStorage.getItem('sucrebot_user');
   if (savedUser) {
     try {
@@ -376,19 +401,8 @@ document.addEventListener('componentsLoaded', function() {
       localStorage.removeItem(ROL_CACHE_KEY);
     }
   }
-  
-  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-    google.accounts.id.initialize({
-      client_id: '14154960360-fofn56epv2rsiq882sni5ku0q1idemg4.apps.googleusercontent.com',
-      callback: window.handleCredentialResponse,
-      auto_select: false,
-      cancel_on_tap_outside: true,
-      context: 'signin',
-      ux_mode: 'popup',
-      itp_support: true
-    });
-    console.log('✅ Google OAuth inicializado con selector de cuentas');
-  } else {
-    console.warn('⏳ SDK de Google no disponible aún');
-  }
+
+  inicializarGoogleSignIn();
 });
+
+document.addEventListener('googleSDKReady', inicializarGoogleSignIn);

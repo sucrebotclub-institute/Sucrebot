@@ -152,17 +152,27 @@ async function loadComponents() {
       return r;
     });
 
-    // 2. Esperar a que el SDK esté realmente disponible
-    await sdkPromise;
-    await waitForGoogleSDK();
-    console.log('✅ Google OAuth SDK cargado y listo');
-
-    // 3. Esperar a que terminen auth.js y los componentes HTML
+    // 2. 'componentsLoaded' (restaura sesión, pinta el badge de usuario,
+    // muestra menús de nav) SOLO depende de auth.js + los componentes HTML
+    // -- ya NO espera al SDK de Google acá. accounts.google.com es un
+    // recurso externo que puede tardar varios segundos (o fallar) en redes
+    // lentas, y antes esa espera bloqueaba toda la sesión/menú visible aunque
+    // nada de eso lo necesite (solo lo usa el botón de login, que ya
+    // chequea `typeof google !== 'undefined'` antes de usarlo).
     await Promise.all([authPromise, htmlPromise]);
-
-    // 4. Disparar evento cuando TODO esté listo
     document.dispatchEvent(new CustomEvent('componentsLoaded'));
     console.log('🎉 Sistema completamente inicializado');
+
+    // 3. El SDK de Google se resuelve aparte, sin bloquear nada de lo
+    // anterior. Cuando esté listo, dispara 'googleSDKReady' para que
+    // auth.js pueda inicializar el botón de login si no llegó a tiempo
+    // para el chequeo síncrono de arriba.
+    sdkPromise
+      .then(() => waitForGoogleSDK())
+      .then(() => {
+        console.log('✅ Google OAuth SDK cargado y listo');
+        document.dispatchEvent(new CustomEvent('googleSDKReady'));
+      });
 
   } catch (error) {
     console.error('❌ Error durante la inicialización:', error);
