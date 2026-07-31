@@ -182,6 +182,43 @@
     .sb-modal-btn.primary:hover{box-shadow:0 6px 16px rgba(42,142,200,0.4)}
     .sb-modal-btn.ghost{background:rgba(255,255,255,0.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18)}
     .sb-modal-btn.ghost:hover{background:rgba(255,255,255,0.14)}
+
+    /* MODAL — corregir intento (mismo patrón que CRONOMETRO) */
+    .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal.show{display:flex}
+    .modal-box{background:#fff;border-radius:16px;padding:28px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+    .modal-title{font-family:'Bebas Neue';font-size:1.6rem;color:var(--blue-dd);margin-bottom:12px}
+    .modal-text{color:#5a6478;font-size:.92rem;margin-bottom:22px;line-height:1.5}
+    .modal-btns{display:flex;gap:10px;justify-content:flex-end}
+    .modal-btn{padding:10px 20px;border-radius:10px;font-family:'Exo 2';font-weight:700;font-size:.88rem;cursor:pointer;border:2px solid;transition:all .2s;text-transform:uppercase}
+    .modal-btn.cancel{background:#fff;border-color:#cbd5e1;color:#5a6478}
+    .modal-btn.cancel:hover{background:#f1f5f9}
+    .modal-btn.confirm{background:var(--cyan);border-color:var(--cyan);color:#071e45}
+    .modal-btn.confirm:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(91,200,240,.4)}
+    .modal-input{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;font-family:'DM Mono';font-size:.95rem;color:var(--blue-dd)}
+    .rank-row.has-tags{border-radius:8px 8px 0 0;margin-bottom:0}
+    .rank-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:#0d2040;border-radius:0 0 8px 8px;margin:0 0 6px 0;padding:3px 12px 8px 46px}
+    .tag-intento{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono';font-size:.7rem;color:var(--muted)}
+    .tag-val{color:var(--cyan)}
+    .tag-val.dnf{color:var(--red)}
+    .btn-editar-intento{background:rgba(91,200,240,.12);border:1px solid var(--border2);color:var(--cyan);font-size:.65rem;width:18px;height:18px;padding:0;border-radius:5px;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
+    .btn-editar-intento:hover{background:var(--cyan);color:#071e45;transform:translateY(-1px)}
+    .edit-intento-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .edit-intento-grid .modal-btn{width:100%;margin:0}
+    .edit-intento-grid .full{grid-column:1 / -1}
+    .edit-intento-grid .modal-btn.cancel{background:#1a5ca8;border-color:#1a5ca8;color:#fff}
+    .edit-intento-grid .modal-btn.cancel:hover{background:#154a87;border-color:#154a87}
+    .edit-intento-grid .btn-manual{background:#d97706;border-color:#d97706;color:#fff}
+    .edit-intento-grid .btn-manual:hover{background:#b45309;border-color:#b45309;box-shadow:0 4px 12px rgba(217,119,6,.4)}
+    .edit-intento-grid .btn-marcar-dnf{background:#334155;border-color:#334155;color:#fff}
+    .edit-intento-grid .btn-marcar-dnf:hover{background:#1e293b;border-color:#1e293b;box-shadow:0 4px 12px rgba(51,65,85,.4)}
+    .edit-intento-grid .btn-rodar{background:#15803d;border-color:#15803d;color:#fff}
+    .edit-intento-grid .btn-rodar:hover{background:#166534;border-color:#166534;box-shadow:0 4px 12px rgba(21,128,61,.4)}
+    .edit-intento-grid .btn-borrar{background:#b91c1c;border-color:#b91c1c;color:#fff}
+    .edit-intento-grid .btn-borrar:hover{background:#991b1b;border-color:#991b1b;box-shadow:0 4px 12px rgba(185,28,28,.4)}
+    .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,var(--panel) 0%,var(--panel2) 100%);border:2px solid var(--green);color:var(--text);font-family:'Exo 2';font-size:.9rem;font-weight:600;padding:14px 28px;border-radius:30px;transition:transform .3s;z-index:9999;box-shadow:0 8px 32px rgba(13,40,71,.5)}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.error{border-color:var(--red)}
   </style>
 </head>
 <body>
@@ -412,6 +449,18 @@
     </div><!-- /ins-wrap -->
   </main>
 
+  <div class="modal" id="modal-editar-intento">
+    <div class="modal-box">
+      <div class="modal-title">Corregir intento</div>
+      <div class="modal-text" id="edit-intento-info"></div>
+      <div id="edit-intento-manual-wrap" style="display:none;margin-bottom:16px;">
+        <input type="text" id="edit-intento-manual-input" class="modal-input" placeholder="MM:SS:CS (ej. 00:04:32)" maxlength="8">
+      </div>
+      <div class="modal-btns edit-intento-grid" id="edit-intento-btns"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
   <div data-include="../shared/components/footer.html"></div>
   <script src="../shared/js/load-components.js"></script>
   <script src="../shared/js/auth.js"></script>
@@ -445,6 +494,113 @@
     }
     if (list.length >= MAX_INTENTOS_FINAL) return { tiempo: null, dnf: true, cruzaMeta: false };
     return undefined; // aún no completa los 2 intentos y no tiene tiempo válido
+  }
+
+  // ── CORRECCIÓN DE INTENTOS YA REGISTRADOS (clasificatoria y final) ──
+  // Mismo patrón que CRONOMETRO (Borrar/DNF/Tiempo manual/Volver a correr),
+  // adaptado a que acá los intentos no se numeran secuencialmente sino que
+  // se identifican por turno (+grupo en clasificatoria), y no hay que avisar
+  // a GAS porque INSECTOS no persiste cada intento en vivo — solo el podio
+  // final vía guardarPodioManual.
+  let editorIntentoCtx = null;
+
+  function abrirEditorIntento(fase, id, turno) {
+    const pool = fase === 'clas' ? presentes : clasificados;
+    const p = pool.find(x => x.id === id);
+    if (!p) return;
+    const lista = fase === 'clas' ? (intentos[id] || []) : (intentosFinal[id] || []);
+    const entry = lista.find(x => x.turno === turno);
+    if (!entry) { showToast('⚠️ Este intento ya no existe', true); return; }
+    editorIntentoCtx = { fase, id, turno, robot: p.robot, grupo: entry.grupo };
+    document.getElementById('edit-intento-info').textContent =
+      p.robot + ' — ' + (fase === 'clas' ? 'Clasificatoria, turno ' + (turno + 1) : 'Final, intento ' + (turno + 1)) +
+      ' (actual: ' + (entry.dnf ? 'DNF' : fmtMs(entry.tiempo)) + ')';
+    document.getElementById('edit-intento-manual-wrap').style.display = 'none';
+    document.getElementById('edit-intento-manual-input').value = '';
+    mostrarBotonesEditorIntento();
+    document.getElementById('modal-editar-intento').classList.add('show');
+  }
+
+  function mostrarBotonesEditorIntento() {
+    document.getElementById('edit-intento-btns').className = 'modal-btns edit-intento-grid';
+    document.getElementById('edit-intento-btns').innerHTML =
+      '<button class="modal-btn cancel full" onclick="cerrarModal(\'modal-editar-intento\')">Cancelar</button>' +
+      '<button class="modal-btn confirm btn-manual" onclick="mostrarManualIntento()">✏️ Tiempo manual</button>' +
+      '<button class="modal-btn confirm btn-marcar-dnf" onclick="confirmarEditorIntento(\'dnf\')">⛔ Marcar DNF</button>' +
+      '<button class="modal-btn confirm btn-rodar" onclick="confirmarEditorIntento(\'rodar\')">🔁 Volver a correr</button>' +
+      '<button class="modal-btn confirm btn-borrar" onclick="confirmarEditorIntento(\'borrar\')">🗑️ Borrar</button>';
+  }
+
+  function mostrarManualIntento() {
+    document.getElementById('edit-intento-manual-wrap').style.display = 'block';
+    document.getElementById('edit-intento-btns').className = 'modal-btns edit-intento-grid';
+    document.getElementById('edit-intento-btns').innerHTML =
+      '<button class="modal-btn cancel" onclick="mostrarBotonesEditorIntento()">← Volver</button>' +
+      '<button class="modal-btn confirm btn-manual" onclick="confirmarEditorIntento(\'manual\')">💾 Guardar tiempo</button>';
+    document.getElementById('edit-intento-manual-input').focus();
+  }
+
+  function recomputarMejorClas(id) {
+    const validos = (intentos[id] || []).filter(x => !x.dnf);
+    if (validos.length) {
+      const m = validos.reduce((a, b) => b.tiempo < a.tiempo ? b : a);
+      mejores[id] = { tiempo: m.tiempo, turno: m.turno, grupo: m.grupo };
+    } else {
+      delete mejores[id];
+    }
+  }
+
+  function confirmarEditorIntento(modo) {
+    if (!editorIntentoCtx) return;
+    const { fase, id, turno, robot, grupo } = editorIntentoCtx;
+    const lista = fase === 'clas' ? intentos[id] : intentosFinal[id];
+    const idx = lista ? lista.findIndex(x => x.turno === turno) : -1;
+    if (idx === -1) { cerrarModal('modal-editar-intento'); editorIntentoCtx = null; return; }
+
+    if (modo === 'manual') {
+      const val = document.getElementById('edit-intento-manual-input').value.trim();
+      const m = val.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+      if (!m) { showToast('⚠️ Formato inválido — usa MM:SS:CS (ej. 00:04:32)', true); return; }
+      lista[idx].tiempo = parseInt(m[1]) * 60000 + parseInt(m[2]) * 1000 + parseInt(m[3]) * 10;
+      lista[idx].dnf = false;
+    } else if (modo === 'dnf') {
+      lista[idx].tiempo = null;
+      lista[idx].dnf = true;
+    } else if (modo === 'borrar' || modo === 'rodar') {
+      lista.splice(idx, 1);
+    }
+
+    if (fase === 'clas') recomputarMejorClas(id);
+    else tiemposFinal[id] = mejorFinalDe(id);
+
+    cerrarModal('modal-editar-intento');
+    editorIntentoCtx = null;
+
+    // Solo "Volver a correr" reconstruye la grilla en vivo (y resetea el
+    // cronómetro de ese grupo/intento) — Borrar/DNF/Manual solo refrescan el
+    // ranking, para no cortarle el cronómetro a un grupo que esté corriendo
+    // ahora mismo si la corrección es sobre un intento de otro turno/grupo.
+    if (fase === 'clas') {
+      if (modo === 'rodar') { grupoActual = grupo; turnoActual = turno; renderGrupoActual(); }
+      renderRankingParcial();
+    } else {
+      if (modo === 'rodar') { turnoFinalActual = turno; resetCronF(); renderCarrilesFinal(); actualizarLabelsFinal(); }
+      renderRankingFinal();
+    }
+
+    showToast(modo === 'borrar' ? '🗑 Intento borrado — ' + robot
+      : modo === 'dnf' ? '⛔ Marcado como DNF — ' + robot
+      : modo === 'rodar' ? '🔁 Listo para volver a correr — ' + robot
+      : '✏️ Tiempo corregido — ' + robot);
+  }
+
+  function cerrarModal(id) { document.getElementById(id).classList.remove('show'); }
+  function showToast(msg, error) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (error ? ' error' : '');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
 
   // Cronómetro clasificatoria
@@ -984,16 +1140,29 @@
     });
   }
 
+  function tagsIntentosClas(p) {
+    const lista = (intentos[p.id] || []).slice().sort((a, b) => a.turno - b.turno);
+    if (!lista.length) return '';
+    const mejor = mejores[p.id];
+    return `<div class="rank-tags">${lista.map(x => {
+      const esMejor = !x.dnf && mejor && x.tiempo === mejor.tiempo;
+      const txt = x.dnf ? 'DNF' : fmtMs(x.tiempo);
+      return `<span class="tag-intento">T${x.turno + 1}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="btn-editar-intento" title="Corregir turno ${x.turno + 1} de ${p.robot}" onclick="abrirEditorIntento('clas','${p.id}',${x.turno})">🔧</button></span>`;
+    }).join('')}</div>`;
+  }
+
   function renderRankingParcial() {
     const el = document.getElementById('rankingParcial');
     const ranked = rankingClas();
     el.innerHTML = `<div class="ranking-mini"><h4>🏆 RANKING PARCIAL (MEJOR TIEMPO)</h4>
-      ${ranked.map((r, i) => `
-        <div class="rank-row">
-          <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
-          <div class="rank-robot">${r.p.robot}<span style="font-size:.7rem;color:var(--muted);margin-left:6px">${r.p.nombre}</span></div>
-          <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo !== null ? fmtMs(r.tiempo) : (r.intentado ? 'DNF' : '—')}</div>
-        </div>`).join('')}
+      ${ranked.map((r, i) => {
+        const tieneTags = (intentos[r.p.id] || []).length > 0;
+        return `<div class="rank-row${tieneTags ? ' has-tags' : ''}">
+            <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+            <div class="rank-robot">${r.p.robot}<span style="font-size:.7rem;color:var(--muted);margin-left:6px">${r.p.nombre}</span></div>
+            <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo !== null ? fmtMs(r.tiempo) : (r.intentado ? 'DNF' : '—')}</div>
+          </div>${tagsIntentosClas(r.p)}`;
+      }).join('')}
     </div>`;
   }
 
@@ -1167,6 +1336,17 @@
   // ============================================================
   // REGISTRAR TIEMPO / DNF FINAL
   // ============================================================
+  function tagsIntentosFinal(p) {
+    const lista = (intentosFinal[p.id] || []).slice().sort((a, b) => a.turno - b.turno);
+    if (!lista.length) return '';
+    const mejor = tiemposFinal[p.id];
+    return `<div class="rank-tags">${lista.map(x => {
+      const esMejor = !x.dnf && mejor && !mejor.dnf && x.tiempo === mejor.tiempo;
+      const txt = x.dnf ? 'DNF' : fmtMs(x.tiempo);
+      return `<span class="tag-intento">Int.${x.turno + 1}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="btn-editar-intento" title="Corregir intento ${x.turno + 1} de ${p.robot}" onclick="abrirEditorIntento('final','${p.id}',${x.turno})">🔧</button></span>`;
+    }).join('')}</div>`;
+  }
+
   function renderRankingFinal() {
     const el = document.getElementById('rankingParcialFinal');
     if (!el) return;
@@ -1182,13 +1362,16 @@
       return a.tiempo - b.tiempo;
     });
     el.innerHTML = `<div class="ranking-mini"><h4>🏁 RANKING FINAL</h4>` +
-      lista.map((r, i) => `<div class="rank-row">
-        <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
-        <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
-        <div class="rank-tiempo ${r.dnf?'rank-dnf':''}" style="${!r.registrado?'color:var(--muted)':''}">
-          ${r.dnf ? 'DNF' : r.tiempo !== null ? fmtMs(r.tiempo) : '–'}
-        </div>
-      </div>`).join('') + '</div>';
+      lista.map((r, i) => {
+        const tieneTags = (intentosFinal[r.p.id] || []).length > 0;
+        return `<div class="rank-row${tieneTags ? ' has-tags' : ''}">
+          <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+          <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
+          <div class="rank-tiempo ${r.dnf?'rank-dnf':''}" style="${!r.registrado?'color:var(--muted)':''}">
+            ${r.dnf ? 'DNF' : r.tiempo !== null ? fmtMs(r.tiempo) : '–'}
+          </div>
+        </div>${tagsIntentosFinal(r.p)}`;
+      }).join('') + '</div>';
   }
 
   function registrarTiempoFinalCarril(ci, msOverride) {
