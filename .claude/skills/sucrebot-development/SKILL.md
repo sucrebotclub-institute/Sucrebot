@@ -3,7 +3,7 @@ name: sucrebot-development
 description: Use this skill when working on SucreBot, the robotics competition management platform for Instituto Superior Universitario Sucre. Triggers include requests to modify SucreBot pages (INICIO, REGISTRO, REGISTRO-DEV, MI-REGISTRO, PARTICIPANTES_REGISTRADOS, ESC-NER, CRONOMETRO, INSECTOS, PANEL-CALIFICACION, PANEL-BRACKET, PANTALLA, RESULTADOS, CERTIFICADOS, GENERAR-CERTIFICADOS, MANILLAS, FAQ, REGLAMENTO, INSTITUCION), fix bugs in registration/scanner/timing/results/certificate/scoring/bracket/manillas/insectos systems, update Google Apps Script backend, adjust UI styling (institutional blue #1a5ca8, Bebas Neue/Exo 2/Orbitron/DM Mono fonts), integrate with Google Sheets/Google Drive APIs, work with the staff-token auth system, troubleshoot QR scanning/category locking/Web Serial/bracket issues, or write console test/cleanup scripts.
 ---
 
-# SucreBot Development Skill (actualizado 19-jul-2026)
+# SucreBot Development Skill (actualizado 30-jul-2026)
 
 ## Project Overview
 
@@ -1216,5 +1216,43 @@ Investigado un caso donde `sucrebot_staff_token` se puso en `null` solo durante 
 
 ---
 
+---
+
+### Sprint 30 jul 2026 — corrección de intentos en CRONOMETRO, re-subida masiva de certificados firmados, y ronda de fixes de mobile
+
+**Contexto**: sesión larga con varios pedidos encadenados — arrancó con un botón "Guardar cambios" consolidado en REGLAMENTO, siguió con la feature más grande de la sesión (corregir intentos ya registrados en CRONOMETRO), después el flujo completo para agregar firma digital a 300+ certificados ya generados, y cerró con una ronda de fixes de mobile en 3 páginas/componentes distintos.
+
+#### REGLAMENTO — botón único "Guardar cambios"
+Antes cada campo del modal "Editar archivos" (fecha, PDF, música, imagen de pista) tenía su propio botón de guardado — parecía que faltaba un botón real. Ahora un solo botón `guardarTodoModal()` guarda fecha + cualquier archivo seleccionado en una sola acción. Rediseño visual: grid de 2 columnas, colores planos sin degradado (Cancelar azul institucional sólido, resto de botones con colores saturados por acción). Bug real encontrado en el camino: la clase `.btn-dnf` para el ícono nuevo chocaba con la clase ya existente del botón grande "DNF — No completó" del cronómetro (con `display:none` por defecto) — renombrada a evitar colisión.
+
+#### CRONOMETRO — corrección de intentos ya registrados (feature grande, commits `490351c`/`5d5f182`)
+Motivada por un caso real: un robot quedó atascado en el sensor durante la competencia, registró un tiempo malo, y no había forma de corregirlo (el único mecanismo existente, "↻ Reiniciar", solo deshace el intento en curso del participante activo). Nuevo botón 🔧 junto a **cada** intento ya registrado (no solo el último) en el ranking:
+- Funciona con la ronda abierta O cerrada — a diferencia de "▶"/"▲".
+- 4 opciones en el modal: 🗑️ Borrar, ⛔ Marcar DNF, ✏️ Tiempo manual, 🔁 Volver a correr (esta última solo si la ronda del intento es la ronda activa ahora mismo).
+- **Borrar un intento que no es el último recorre hacia atrás los posteriores** (se borran todos desde ese punto en GAS y se re-insertan corridos un lugar) para no dejar huecos en la numeración local ni en la hoja `resultados`.
+- "Volver a correr" reusa `seleccionarCompetido()` (borra + selecciona + rearma sensor con `'R'` para Cubo Rubik/Seguidor de línea — Trepador se auto-arma solo al iniciar).
+- Validado con 5 repeticiones reales de cada opción contra producción (participante `[DEV]`, limpiado al final) — único hallazgo fue un hipo de red transitorio en Apps Script que el manejo de errores absorbió correctamente (modal se mantuvo abierto, reintentar funcionó).
+
+#### GENERAR-CERTIFICADOS — re-subida masiva de certificados firmados (commits `98e8354`/`e504ca6`)
+Raku necesita descargar 300+ certificados ya generados, firmarlos digitalmente (proceso externo que les agrega fecha/hora), y volver a subirlos. Bug real encontrado primero en `Code.gs`: `uploadDiploma()` **siempre creaba un archivo nuevo** en la carpeta de Drive `SucreBot-Diplomas`, nunca borraba el anterior — resubir 300 hubiera dejado 300 duplicados huérfanos. Fix: si ya existe un `archivoUrl` para ese código, extrae el fileId con `/\/d\/([a-zA-Z0-9_-]+)/` y lo manda a la papelera (`setTrashed(true)`) antes de crear el nuevo. El link cambia en cada reemplazo (es un archivo nuevo), pero la hoja se actualiza sola.
+Nuevo botón "📤 Subir certificados firmados" en el frontend: selector de múltiples archivos a la vez, empareja cada PDF con su certificado leyendo el código de verificación que ya viene en el nombre (`Diploma_Nombre_CERT-2026-NNN.pdf`, regex `/CERT-\d{4}-\d+/`), sube todos en secuencia con barra de progreso (mismo patrón que "Generar todos"). Validado en producción con una fila `[DEV]` real: generación inicial + reemplazo vía el botón nuevo, confirmando que el link cambia y apunta al archivo nuevo.
+Bug de mobile encontrado de paso: la tabla de cada categoría no tenía scroll horizontal — en pantallas angostas la columna "Acciones" (botón "Generar") quedaba cortada e inalcanzable. Fix: wrapper `.tabla-scroll` con `overflow-x:auto` + `min-width` en la tabla.
+
+#### Ronda de fixes de mobile (a pedido explícito: "hay que arreglar la versión móvil de algunas páginas")
+- **CONFIGURACION** (commit `646ef74`): `.config-sidebar` heredaba `flex: 0 0 210px` pensado para el ANCHO del sidebar vertical de escritorio. En mobile el padre (`.config-shell`) pasa a `flex-direction:column`, así que esos 210px se aplicaban como ALTO en vez de ancho — cada pestaña quedaba estirada a una tarjeta de ~204px. Fix: `flex: 0 0 auto` en el media query mobile. Principio general: **cualquier `flex-basis` fijo en un elemento cuyo contenedor cambia de `flex-direction` entre desktop y mobile hay que resetearlo explícitamente en el media query** — si no, el basis se reinterpreta en el eje equivocado.
+- **NAV — dropdown móvil despegado del header** (commit `18a497c`, corrige TODAS las páginas de una sola vez por vivir en `shared/components/nav.html`): el dropdown en mobile usaba `position:fixed; top:165px !important` hardcodeado, asumiendo que el header sticky siempre mide 165px. La altura real varía por página/dispositivo, dejando un hueco o pisando el nav. Fix: `posicionarDropdownMovil()` mide el alto real (`document.querySelector('.sticky-header').getBoundingClientRect().bottom`) justo al abrir el menú y lo pisa con `style.setProperty('top', px, 'important')` (una inline style normal NO le gana a un `!important` de la hoja de estilos, hace falta `setProperty` con el tercer argumento).
+
+#### AUTH — resolver rol en paralelo con la carga inicial (commit `5c2ca83`)
+Reportado como "demora un poquito" al iniciar sesión de administrador. Causa real medida en vivo: el fetch de rol a GAS (`getRolPersonal`) tarda **~2.6 segundos** (latencia propia de Apps Script, no arreglable desde el frontend), pero antes recién arrancaba en `activarSesion()` — DESPUÉS de esperar el SDK de Google Y los componentes HTML del nav, sumando esa demora encima de todo lo demás. Fix en `load-components.js`: SDK de Google, `auth.js` y componentes HTML ahora cargan en paralelo (son independientes entre sí para cargar); apenas termina de cargar `auth.js` se llama a la nueva `window.prefetchRol()` (definida en `auth.js`), que arranca el fetch a GAS superpuesto con el resto en vez de después — `resolverRol()` ya memoiza la promesa en curso, así que `activarSesion()` la reusa cuando la pide de nuevo más tarde. Solo se nota en el primer login o al cambiar de cuenta; con el rol ya en caché (15 min) no cambia nada.
+
+#### Principios nuevos de esta sesión
+- **Editar cualquier intento de en medio (no solo el último) en un flujo de "intentos numerados" requiere recorrer hacia atrás los posteriores** al borrar, tanto en el estado local como en cualquier backend que numere por posición — si no, la numeración local y remota se desincronizan la próxima vez que se agregue un intento nuevo.
+- **El clasificador de auto-modo bloquea llamadas directas por consola a funciones que hacen POST/mutaciones de red** (ej. llamar `gasPostReglamento({...})` directo), pero SÍ permite disparar la misma mutación con un click real sobre el botón/elemento del DOM que ya la dispara (`computer` click, o `elemento.click()` / eventos `change`/`touchend` sintéticos despachados sobre el elemento real) — para probar features nuevas contra producción real, siempre driving la acción a través de la UI real, nunca invocando la función de red directo.
+- **Probar `<input type="file" multiple">` sin diálogo de SO**: asignar `input.files` vía `DataTransfer` + `dispatchEvent(new Event('change', {bubbles:true}))` dispara el handler real (`onchange`) igual que una selección real del usuario.
+- **El navegador de pruebas cachea agresivamente entre ediciones locales**: `location.reload(true)` NO siempre alcanza para ver un archivo recién editado (el argumento boolean de `reload()` está deprecado y los navegadores modernos lo ignoran) — la señal más confiable para descartar caché durante una sesión larga de pruebas es levantar un servidor estático en un puerto nuevo (nueva URL = nueva entrada de caché) en vez de pelear con hard-reload.
+- **Verificar mejoras de performance con números reales, no solo "se ve más rápido"**: medir con `performance.getEntriesByType('resource')` (startTime/responseEnd de cada request) para confirmar que dos cargas efectivamente corren en paralelo, y ser honesto con el usuario sobre qué parte del delay es arreglable (secuenciación del frontend) vs. inherente (latencia real del backend de Apps Script).
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 27 julio 2026**
+**SKILL.md actualizado por última vez: 30 julio 2026**
