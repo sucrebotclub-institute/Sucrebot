@@ -27,8 +27,13 @@
 
     @media (max-width: 760px) {
       .config-shell { flex-direction: column; }
-      .config-sidebar { flex-direction: row; overflow-x: auto; gap: 8px; position: static; width: 100%; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
-      .config-nav-item { flex: 0 0 auto; white-space: nowrap; width: auto; }
+      /* flex:0 0 210px del bloque de arriba está pensado para el ANCHO del
+         sidebar vertical de escritorio -- al pasar el padre (.config-shell)
+         a columna, esos 210px pasan a aplicarse como ALTO en vez de ancho,
+         estirando cada pestaña a una tarjeta gigante. flex-basis:auto lo
+         resetea para que el alto salga solo del contenido (padding real). */
+      .config-sidebar { flex: 0 0 auto; flex-direction: row; align-items: center; overflow-x: auto; gap: 8px; position: static; width: 100%; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+      .config-nav-item { flex: 0 0 auto; white-space: nowrap; width: auto; padding: 10px 16px; }
     }
 
     .page-hero { padding: 28px 0 20px; }
