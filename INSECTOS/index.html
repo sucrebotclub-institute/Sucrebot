@@ -154,7 +154,6 @@
     .serial-status{font-size:.8rem;color:var(--muted);flex:1}
     /* EMPTY STATE */
     .empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-family:'Orbitron';font-size:.7rem;letter-spacing:2px}
-    .serial-warn{display:none;background:#1a5ca8;border:1px solid #2a7ad8;border-radius:8px;padding:10px 14px;font-size:.8rem;color:#fff;margin-bottom:16px}
     body.fs-activo .sticky-header{display:none !important}
     body.fs-activo [data-include*="footer"]{display:none !important}
     body.fs-activo main{padding-top:14px !important}
@@ -234,7 +233,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
       </div>
       <div class="sb-modal-title">Sensor no conectado</div>
-      <div class="sb-modal-desc">No se detecta el Arduino (sensor IR) conectado por Web Serial. Puedes conectarlo ahora, o continuar e ingresar los tiempos manualmente.</div>
+      <div class="sb-modal-desc">No se detecta el dispositivo conectado por Web Serial. Puedes conectarlo ahora, o continuar e ingresar los tiempos manualmente.</div>
       <div class="sb-modal-actions">
         <button class="sb-modal-btn ghost" id="btnModalCancelar">Cancelar</button>
         <button class="sb-modal-btn primary" id="btnModalContinuar">Continuar sin sensor</button>
@@ -330,15 +329,13 @@
         <div class="serial-bar">
           <div class="serial-dot" id="serialDot"></div>
           <div class="serial-status" id="serialStatus">Web Serial desconectado</div>
-          <button class="btn btn-outline btn-sm" id="btnConectar">🔌 Conectar Arduino</button>
+          <button class="btn btn-outline btn-sm" id="btnConectar">🔌 Conectar dispositivo</button>
           <button class="btn btn-outline btn-sm" id="btnDesconectar" style="display:none">⏏ Desconectar</button>
           <div style="margin-left:auto;display:flex;gap:8px">
             <button class="btn btn-sm btn-anterior" id="btnVolverPresentes">← Presentes</button>
             <button class="btn btn-sm" style="background:#7b1fa2;color:#fff" id="btnCerrarCat">✕ Cerrar Categoría</button>
           </div>
         </div>
-        <div class="serial-warn" id="serialWarn">⚠️ Conecta el Arduino (sensor IR) para registrar tiempos automáticamente. También puedes registrar manualmente.</div>
-
         <!-- Badge turno — fuera del grid, arriba -->
         <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div class="turno-badge" id="turnoBadge">CLASIFICATORIA · TURNO 1 · INTENTO 1</div>
@@ -388,7 +385,7 @@
         <div class="serial-bar">
           <div class="serial-dot" id="serialDotF"></div>
           <div class="serial-status" id="serialStatusF">Web Serial desconectado</div>
-          <button class="btn btn-outline btn-sm" id="btnConectarF">🔌 Conectar Arduino</button>
+          <button class="btn btn-outline btn-sm" id="btnConectarF">🔌 Conectar dispositivo</button>
           <button class="btn btn-outline btn-sm" id="btnDesconectarF" style="display:none">⏏ Desconectar</button>
           <div style="margin-left:auto">
             <button class="btn btn-sm btn-anterior" id="btnVolverPresentes2">← Presentes</button>
@@ -804,7 +801,6 @@
     stepActivar(1);
     renderGrupoActual();
     renderRankingParcial();
-    document.getElementById('serialWarn').style.display = 'block';
   });
 
   // ============================================================
@@ -1711,7 +1707,7 @@
     try {
       serialPort = await navigator.serial.requestPort();
       await serialPort.open({ baudRate: 115200 });
-      actualizarSerialUIAmbos(true, 'Arduino conectado');
+      actualizarSerialUIAmbos(true, 'Dispositivo conectado');
       serialReading = true;
       leerSerial();
     } catch (e) {
@@ -1749,7 +1745,7 @@
         if (e.name !== 'AbortError') {
           serialReading = false;
           serialPort = null; serialReader = null;
-          actualizarSerialUIAmbos(false, '⚠️ Arduino desconectado — reconecta');
+          actualizarSerialUIAmbos(false, '⚠️ Dispositivo desconectado — reconecta');
         }
         break;
       }
