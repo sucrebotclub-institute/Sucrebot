@@ -73,7 +73,11 @@
     .cat-chip.todos-btn:disabled { opacity: .5; cursor: not-allowed; }
 
     /* ── TABLA con filas alternadas blanco / azul institucional claro ── */
-    .tabla { width: 100%; border-collapse: collapse; }
+    /* En pantallas angostas la tabla no se achica más allá de min-width --
+       en vez de aplastar/cortar la columna de Acciones (el botón "Generar"
+       quedaba inalcanzable), el bloque scrollea horizontal. */
+    .tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tabla { width: 100%; min-width: 560px; border-collapse: collapse; }
     .tabla th {
       font-family: 'Orbitron'; font-size: 9px; font-weight: 700; letter-spacing: 1px;
       color: #fff; padding: 10px 14px; text-align: left; text-transform: uppercase;
@@ -381,10 +385,12 @@ function renderCat(cat) {
         <div class="cat-nombre">${cat}</div>
         <div class="cat-chips">${chipPend}${chipOk}${btnTodos}</div>
       </div>
-      <table class="tabla">
-        <thead><tr><th>Nombre</th><th>Tipo</th><th>Estado / Diploma</th><th>Acciones</th></tr></thead>
-        <tbody>${filas}</tbody>
-      </table>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead><tr><th>Nombre</th><th>Tipo</th><th>Estado / Diploma</th><th>Acciones</th></tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>
     </div>`;
 }
 
