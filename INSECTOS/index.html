@@ -1096,9 +1096,12 @@
     const esUltimoTurno = turnoActual === 1;
 
     if (esUltimoGrupo && esUltimoTurno) {
-      // ir a final
-      prepararFinal();
-      stepActivar(2);
+      // ir a final (o directo al podio si prepararFinal() decide que hay
+      // menos de 2 clasificados con tiempo válido -- en ese caso ya deja
+      // el podio armado y el panel 3 activado, y NO hay que pisarlo con
+      // stepActivar(2) o la pantalla de Final queda vacía por encima)
+      const huboFinal = prepararFinal();
+      if (huboFinal) stepActivar(2);
       return;
     }
     if (esUltimoGrupo) {
@@ -1169,6 +1172,9 @@
   // ============================================================
   // PREPARAR FINAL
   // ============================================================
+  // Devuelve true si de verdad arma la pantalla de Final, false si en vez
+  // de eso saltó directo al podio (para que el llamador sepa si todavía
+  // tiene que activar el panel de Final o no).
   function prepararFinal() {
     const ranked = rankingClas();
     // top 4 con tiempo (cruzaron meta)
@@ -1178,7 +1184,7 @@
       // podio directo
       construirPodioDirecto();
       stepActivar(3);
-      return;
+      return false;
     }
 
     tiemposFinal = {};
@@ -1205,6 +1211,7 @@
           <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo!==null?fmtMs(r.tiempo):(r.intentado?'DNF':'—')}</div>
         </div>`).join('') + '</div>';
     }
+    return true;
   }
 
   function renderCarrilesFinal() {
@@ -1473,6 +1480,10 @@
     if (podioManualOverride) { construirPodio(); return; }
     // <2 robots con tiempo en clas → usar ranking parcial
     const ranked = rankingClas().filter(r => r.tiempo !== null).map(r => r.p);
+    // renderPodio() muestra el tiempo leyendo tiemposFinal (normalmente lo
+    // llena la ronda Final real) -- acá no hay Final, así que hay que
+    // copiar el mejor tiempo de clasificatoria para que no salga "DNF".
+    ranked.forEach(p => { tiemposFinal[p.id] = { tiempo: mejores[p.id].tiempo, dnf: false, cruzaMeta: true }; });
     const sinMeta = presentes.filter(p => !ranked.includes(p));
     renderPodio(ranked, sinMeta, false);
   }
