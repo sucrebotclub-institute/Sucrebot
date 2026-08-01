@@ -258,6 +258,15 @@
   const GAS_URL = CONFIG.GAS_URL();
   let _abiertoActual = null;
 
+  // Cuentas institucionales que el backend (guardarPersonal/eliminarPersonal
+  // en Code.gs) siempre fuerza a rol Admin -- acá se bloquean los controles
+  // desde el vamos (sin opción de tocarlos) en vez de dejar que el usuario
+  // intente cambiarlos y recién ahí se entere del error del servidor.
+  const CORREOS_PROTEGIDOS = [
+    'sucrebotclub@tecnologicosucre.edu.ec',
+    'electronica@tecnologicosucre.edu.ec'
+  ];
+
   function gasGet(params) {
     const qs = new URLSearchParams({ ...params, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }).toString();
     return fetch(GAS_URL + '?' + qs).then(r => r.json());
@@ -412,9 +421,11 @@
       const row = document.createElement('div');
       row.className = 'pers-row';
 
+      const protegido = CORREOS_PROTEGIDOS.includes(String(p.correo).toLowerCase());
+
       const info = document.createElement('div');
       info.className = 'pers-info';
-      info.innerHTML = '<span class="pers-correo">' + p.correo + '</span>' +
+      info.innerHTML = '<span class="pers-correo">' + p.correo + (protegido ? ' 🔒' : '') + '</span>' +
         (p.nombre ? '<span class="pers-nombre">' + p.nombre + '</span>' : '');
 
       const acciones = document.createElement('div');
@@ -428,14 +439,20 @@
         if (rol === p.rol) opt.selected = true;
         sel.appendChild(opt);
       });
-      sel.addEventListener('change', () => cambiarRolPersonal(p.correo, p.nombre, p.rol, sel.value, sel));
+      if (protegido) {
+        sel.disabled = true;
+        sel.title = 'Cuenta protegida — siempre Administrador';
+      } else {
+        sel.addEventListener('change', () => cambiarRolPersonal(p.correo, p.nombre, p.rol, sel.value, sel));
+      }
 
       const btnDel = document.createElement('button');
       btnDel.className = 'btn-pers-del';
       btnDel.textContent = '🗑️';
       btnDel.title = 'Quitar acceso';
-      if (p.correo === yo) { btnDel.disabled = true; btnDel.title = 'No podés eliminarte a vos mismo'; }
-      btnDel.addEventListener('click', () => eliminarPersonal(p.correo, row));
+      if (protegido) { btnDel.disabled = true; btnDel.title = 'Cuenta protegida — no se puede eliminar'; }
+      else if (p.correo === yo) { btnDel.disabled = true; btnDel.title = 'No podés eliminarte a vos mismo'; }
+      else { btnDel.addEventListener('click', () => eliminarPersonal(p.correo, row)); }
 
       acciones.appendChild(sel);
       acciones.appendChild(btnDel);
