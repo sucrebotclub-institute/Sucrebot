@@ -544,10 +544,10 @@
       <!-- STEP 1: PRESENTES -->
       <div class="step-panel ins-step-panel active" id="panel0">
         <div class="ins-card" style="margin-bottom:16px;">
-          <div class="ins-card-title">⚙️ Turnos e intentos</div>
-          <div class="config-row"><label>Turnos en Clasificatoria:</label><input type="number" class="config-input" id="insCfgTurnosClas" value="2" min="1" max="5" /></div>
+          <div class="ins-card-title">⚙️ Rondas e intentos</div>
+          <div class="config-row"><label>Rondas:</label><input type="number" class="config-input" id="insCfgTurnosClas" value="2" min="1" max="5" /></div>
           <div style="height:10px"></div>
-          <div class="config-row"><label>Intentos en Final:</label><input type="number" class="config-input" id="insCfgIntentosFinal" value="2" min="1" max="5" /></div>
+          <div class="config-row"><label>Intentos:</label><input type="number" class="config-input" id="insCfgIntentosFinal" value="2" min="1" max="5" /></div>
         </div>
         <div class="ins-card">
           <div class="ins-card-title">Seleccionar participantes presentes</div>
@@ -1969,9 +1969,13 @@ document.addEventListener('componentsLoaded',async function(){
   async function cargarParticipantes() {
     loading(true, 'Cargando participantes...');
     try {
-      const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' }),{cache:'no-store'}).then(r => r.json());
-      const todos = Array.isArray(res) ? res : (res.participantes || []);
-      participantes = todos.filter(p => p.categoria === 'Insectos' && p.aprobado === 'APROBADO');
+      if (window.OfflineExcel && OfflineExcel.estaActivo()) {
+        participantes = OfflineExcel.getParticipantes('Insectos');
+      } else {
+        const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' }),{cache:'no-store'}).then(r => r.json());
+        const todos = Array.isArray(res) ? res : (res.participantes || []);
+        participantes = todos.filter(p => p.categoria === 'Insectos' && p.aprobado === 'APROBADO');
+      }
       renderLista();
     } catch (e) {
       document.getElementById('listaParticipantes').innerHTML = `<div class="empty-state" style="color:var(--ins-red)">Error cargando participantes: ${e.message}</div>`;
@@ -2799,6 +2803,10 @@ document.addEventListener('componentsLoaded',async function(){
     stepActivar(3);
     construirPodio();
 
+    if (window.OfflineExcel && OfflineExcel.estaActivo()) {
+      alert('✏️ El ajuste manual del podio quedó aplicado en esta pantalla, pero no se puede publicar en RESULTADOS mientras estés en modo offline (requiere internet).');
+      return;
+    }
     const pool = poolPodioManual();
     const posiciones = podioManualOverride.map((id, i) => {
       if (!id) return null;
@@ -2814,6 +2822,10 @@ document.addEventListener('componentsLoaded',async function(){
     if (!confirm('¿Quitar el ajuste manual y volver al orden automático por tiempo?')) return;
     podioManualOverride = null;
     construirPodio();
+    if (window.OfflineExcel && OfflineExcel.estaActivo()) {
+      alert('✏️ El ajuste se quitó en esta pantalla, pero no se puede sincronizar con RESULTADOS mientras estés en modo offline (requiere internet).');
+      return;
+    }
     try { await gasPost({ action: 'guardarPodioManual', categoria: 'ins', posiciones: [] }); }
     catch(e) { console.error('No se pudo limpiar podio manual en backend', e); }
   });
@@ -2825,6 +2837,7 @@ document.addEventListener('componentsLoaded',async function(){
     const btn = document.getElementById('btnGuardarPodio');
     btn.disabled = true;
     btn.textContent = 'Guardando…';
+    const modoOffline = window.OfflineExcel && OfflineExcel.estaActivo();
 
     const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
     let conMeta, sinMeta;
@@ -2853,39 +2866,68 @@ document.addEventListener('componentsLoaded',async function(){
     for (const entry of todos) {
       const p = entry.p;
       try {
-        await gasPost({
-          action: 'guardarCertificado',
-          correo: p.correo || '',
-          nombre_completo: p.nombre || '',
-          categoria: 'Insectos',
-          institucion: p.institucion || '',
-          evento: 'SucreBot 2026',
-          fecha_evento: '16 de julio de 2026',
-          tipo_certificado: entry.tipo,
-        });
-        await gasPost({
-          action: 'pushResultado',
-          participanteId: p.id || '',
-          nombre: p.nombre || '',
-          robot: p.robot || '',
-          institucion: p.institucion || '',
-          tiempo: entry.tiempo,
-          ronda: 'FINAL',
-          intento: 1,
-          ruta: 'ins',
-          fecha: new Date().toISOString(),
-        });
+        if (modoOffline) {
+          await OfflineExcel.guardarPodio([{
+            action: 'guardarCertificado',
+            id_participante: p.id || '',
+            correo: p.correo || '',
+            nombre: p.nombre || '',
+            nombre_completo: p.nombre || '',
+            categoria: 'Insectos',
+            institucion: p.institucion || '',
+            evento: 'SucreBot 2026',
+            fecha_evento: '16 de julio de 2026',
+            tipo_certificado: entry.tipo,
+          }]);
+          await OfflineExcel.guardarResultado({
+            participanteId: p.id || '',
+            nombre: p.nombre || '',
+            robot: p.robot || '',
+            institucion: p.institucion || '',
+            categoria: 'Insectos',
+            tiempo: entry.tiempo,
+            ronda: 'FINAL',
+            intento: 1,
+            ruta: 'ins',
+            fecha: new Date().toISOString(),
+          });
+        } else {
+          await gasPost({
+            action: 'guardarCertificado',
+            correo: p.correo || '',
+            nombre_completo: p.nombre || '',
+            categoria: 'Insectos',
+            institucion: p.institucion || '',
+            evento: 'SucreBot 2026',
+            fecha_evento: '16 de julio de 2026',
+            tipo_certificado: entry.tipo,
+          });
+          await gasPost({
+            action: 'pushResultado',
+            participanteId: p.id || '',
+            nombre: p.nombre || '',
+            robot: p.robot || '',
+            institucion: p.institucion || '',
+            tiempo: entry.tiempo,
+            ronda: 'FINAL',
+            intento: 1,
+            ruta: 'ins',
+            fecha: new Date().toISOString(),
+          });
+        }
         ok++;
       } catch(e) { errores++; console.error('Error guardando', p.nombre, e); }
     }
 
     if (errores === 0) {
-      btn.textContent = `✓ Guardado (${ok})`;
+      btn.textContent = modoOffline ? `💾 Guardado en Excel local (${ok})` : `✓ Guardado (${ok})`;
       btn.className = 'ins-btn ins-btn-green';
     } else {
       btn.textContent = `${ok} ok · ${errores} errores`;
       btn.disabled = false;
     }
+
+    if (modoOffline) { actualizarBadgeOffline(); return; }
 
     try {
       await gasPost({
