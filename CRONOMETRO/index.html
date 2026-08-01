@@ -599,6 +599,7 @@
 
           <div>
             <div class="carriles-grid" id="carrilesGrid" style="grid-template-columns:repeat(2,1fr);display:grid;margin-bottom:10px"></div>
+            <div class="participantes-list" id="armadorPendientesWrap" style="margin-bottom:10px"></div>
             <div style="display:flex;justify-content:space-between;gap:8px">
               <button class="ins-btn ins-btn-anterior" id="btnGrupoAnterior" style="flex:1">← Anterior</button>
               <button class="ins-btn ins-btn-cyan" id="btnGrupoSiguiente" style="flex:1">Siguiente →</button>
@@ -1741,6 +1742,13 @@ document.addEventListener('componentsLoaded',async function(){
 
   let podioManualOverride = null; // [id1,id2,id3]|null — ajuste manual del podio
 
+  // Armado MANUAL de grupos — reemplaza el sorteo aleatorio. El staff elige
+  // de la lista de pendientes y el sistema los va poniendo en los carriles
+  // 1, 2, 3 y 4 en ese orden. Se arma un grupo a la vez y se confirma antes
+  // de pasar al siguiente, hasta ubicar a todos los participantes de la ronda.
+  let poolPendienteAsignar = []; // participantes de esta ronda aún sin carril asignado
+  let grupoEnArmado = [null, null, null, null]; // carriles del grupo que se está armando ahora
+
   function poolPodioManual() { return poolRonda.length ? poolRonda : presentes; }
 
   // ── CORRECCIÓN DE INTENTOS YA REGISTRADOS ──
@@ -2084,24 +2092,94 @@ document.addEventListener('componentsLoaded',async function(){
   // GRUPOS (se re-arman al iniciar cada ronda, con quienes avanzaron)
   // ============================================================
   function formarGruposRonda() {
-    const arr = [...poolRonda].sort(() => Math.random() - .5);
     gruposRonda = [];
-    for (let i = 0; i < arr.length; i += 4) {
-      gruposRonda.push(arr.slice(i, i + 4));
-    }
     grupoActual = 0;
     intentoActual = 1;
     mejores = {};
     avanzaSet = new Set();
     gruposRepeticionIdx = new Set();
     gruposRepeticionIntento = {};
+    poolPendienteAsignar = [...poolRonda];
+    grupoEnArmado = [null, null, null, null];
     poolRonda.forEach(p => { if (!intentos[p.id]) intentos[p.id] = []; });
   }
 
   // ============================================================
   // RENDER GRUPO ACTUAL
   // ============================================================
+  function hayArmadoPendiente() {
+    return poolPendienteAsignar.length > 0 || grupoEnArmado.some(Boolean);
+  }
+
+  function renderArmadorGrupo() {
+    const numGrupoMostrado = gruposRonda.length + 1;
+    document.getElementById('cronLabel').textContent = `RONDA ${rondaActual} DE ${numRondas} · Armando grupo ${numGrupoMostrado}`;
+    document.getElementById('grupoNumLabel').textContent = numGrupoMostrado;
+    document.getElementById('grupoInfo').textContent = `${poolPendienteAsignar.length} participante${poolPendienteAsignar.length!==1?'s':''} sin asignar`;
+
+    const btnAnt = document.getElementById('btnGrupoAnterior');
+    btnAnt.disabled = true;
+    btnAnt.style.opacity = '0.3';
+    btnAnt.style.cursor = 'not-allowed';
+    const btnSig = document.getElementById('btnGrupoSiguiente');
+    btnSig.textContent = poolPendienteAsignar.length === 0 ? 'Confirmar grupo y empezar →' : 'Confirmar grupo →';
+    btnSig.className = 'ins-btn ins-btn-green';
+
+    const grid = document.getElementById('carrilesGrid');
+    grid.innerHTML = '';
+    [0,1,2,3].forEach(ci => {
+      const p = grupoEnArmado[ci];
+      const div = document.createElement('div');
+      div.className = 'carril-card' + (p ? ' registrado' : '');
+      div.id = `car${ci}`;
+      div.innerHTML = p
+        ? `<div class="carril-num">CARRIL ${ci+1}</div><div class="carril-robot">${p.robot}</div><div class="carril-equipo">${p.nombre}</div><button class="ins-btn-sm rojo" onclick="quitarDeArmado(${ci})" style="margin-top:8px;width:100%">✕ Quitar</button>`
+        : `<div class="carril-num">CARRIL ${ci+1}</div><div class="carril-vacante">— Elegí de la lista —</div>`;
+      grid.appendChild(div);
+    });
+
+    const wrap = document.getElementById('armadorPendientesWrap');
+    wrap.innerHTML = poolPendienteAsignar.map(p => `
+      <div class="part-item" onclick="asignarAlArmado('${p.id}')">
+        <div class="part-info">
+          <div class="part-name">${p.robot}</div>
+          <div class="part-robot">${p.nombre}</div>
+        </div>
+      </div>`).join('');
+
+    actualizarBotonCerrarRonda();
+  }
+
+  function asignarAlArmado(id) {
+    const idx = poolPendienteAsignar.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    const slot = grupoEnArmado.findIndex(x => !x);
+    if (slot === -1) { alert('Este grupo ya tiene 4 participantes — confirmalo para armar el siguiente.'); return; }
+    grupoEnArmado[slot] = poolPendienteAsignar[idx];
+    poolPendienteAsignar.splice(idx, 1);
+    renderGrupoActual();
+  }
+
+  function quitarDeArmado(slot) {
+    const p = grupoEnArmado[slot];
+    if (!p) return;
+    grupoEnArmado[slot] = null;
+    poolPendienteAsignar.push(p);
+    renderGrupoActual();
+  }
+
+  function confirmarGrupoArmado() {
+    const asignados = grupoEnArmado.filter(Boolean);
+    if (asignados.length === 0) { alert('⚠️ Elegí al menos un participante para este grupo.'); return; }
+    gruposRonda.push(grupoEnArmado);
+    grupoEnArmado = [null, null, null, null];
+    grupoActual = poolPendienteAsignar.length === 0 ? 0 : gruposRonda.length;
+    renderGrupoActual();
+    renderRankingParcial();
+  }
+
   function renderGrupoActual() {
+    if (hayArmadoPendiente()) { renderArmadorGrupo(); return; }
     const g = gruposRonda[grupoActual];
     const totalGrupos = gruposRonda.length;
     const intentosDeRonda = (rondasConfig[rondaActual] && rondasConfig[rondaActual].intentos) || 1;
@@ -2166,6 +2244,13 @@ document.addEventListener('componentsLoaded',async function(){
   // BOTÓN "CERRAR RONDA" — vive en la caja del reloj
   // ============================================================
   function actualizarBotonCerrarRonda() {
+    const btnArmado = document.getElementById('btnCerrarRonda');
+    if (hayArmadoPendiente()) {
+      btnArmado.disabled = true;
+      btnArmado.style.opacity = '0.4';
+      btnArmado.style.cursor = 'not-allowed';
+      return;
+    }
     const g = gruposRonda[grupoActual] || [];
     const intentosDeRonda = (rondasConfig[rondaActual] && rondasConfig[rondaActual].intentos) || 1;
     const esUltimoGrupo = grupoActual === gruposRonda.length - 1;
@@ -2378,6 +2463,7 @@ document.addEventListener('componentsLoaded',async function(){
   // NAVEGACION GRUPOS / INTENTOS (dentro de la ronda actual)
   // ============================================================
   document.getElementById('btnGrupoSiguiente').addEventListener('click', () => {
+    if (hayArmadoPendiente()) { confirmarGrupoArmado(); return; }
     const intentosDeRonda = (rondasConfig[rondaActual] && rondasConfig[rondaActual].intentos) || 1;
     const esUltimoGrupo = grupoActual === gruposRonda.length - 1;
     const esUltimoIntento = intentoActual === intentosDeRonda;
@@ -2397,6 +2483,7 @@ document.addEventListener('componentsLoaded',async function(){
   });
 
   document.getElementById('btnGrupoAnterior').addEventListener('click', () => {
+    if (hayArmadoPendiente()) return;
     if (grupoActual === 0 && intentoActual === 1) return;
     if (grupoActual === 0) {
       intentoActual--;
@@ -2906,6 +2993,8 @@ document.addEventListener('componentsLoaded',async function(){
   window.insMostrarManualIntento = insMostrarManualIntento;
   window.insConfirmarEditorIntento = insConfirmarEditorIntento;
   window.insToggleAvanzaFinal = insToggleAvanzaFinal;
+  window.asignarAlArmado = asignarAlArmado;
+  window.quitarDeArmado = quitarDeArmado;
 
   // Punto de entrada llamado por abrirInsectosCrono() en el script principal
   window.InsectosCrono = {
