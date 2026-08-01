@@ -3,7 +3,7 @@ name: sucrebot-development
 description: Use this skill when working on SucreBot, the robotics competition management platform for Instituto Superior Universitario Sucre. Triggers include requests to modify SucreBot pages (INICIO, REGISTRO, REGISTRO-DEV, MI-REGISTRO, PARTICIPANTES_REGISTRADOS, ESC-NER, CRONOMETRO, INSECTOS, PANEL-CALIFICACION, PANEL-BRACKET, PANTALLA, RESULTADOS, CERTIFICADOS, GENERAR-CERTIFICADOS, MANILLAS, FAQ, REGLAMENTO, INSTITUCION), fix bugs in registration/scanner/timing/results/certificate/scoring/bracket/manillas/insectos systems, update Google Apps Script backend, adjust UI styling (institutional blue #1a5ca8, Bebas Neue/Exo 2/Orbitron/DM Mono fonts), integrate with Google Sheets/Google Drive APIs, work with the staff-token auth system, troubleshoot QR scanning/category locking/Web Serial/bracket issues, or write console test/cleanup scripts.
 ---
 
-# SucreBot Development Skill (actualizado 30-jul-2026)
+# SucreBot Development Skill (actualizado 1-ago-2026)
 
 ## Project Overview
 
@@ -1296,6 +1296,56 @@ Ambos bugs son preexistentes (no introducidos por el port de "Corregir intento")
 - **Un componente compartido (`load-components.js`/`auth.js`) que bloquea su evento principal en una dependencia que no todos sus listeners necesitan** es un patrón de bug fácil de introducir sin darse cuenta al ir agregando features en paralelo (SDK de Google, fetch de rol) — cada espera debe examinarse por separado: ¿quién de los que escuchan el evento realmente la necesita?
 - **Un bug de "pantalla en blanco" en un camino raro (pocos clasificados) puede pasar desapercibido durante meses si nadie prueba ese caso borde específico** — probar a gran escala con DNF masivo (fácil de generar con datos `[DEV]` + "DNF TODOS") destapó 2 bugs reales que no habían aparecido en sesiones de prueba más "normales".
 - **El screenshot del Browser pane de pruebas puede quedar un frame atrás tras una interacción rápida** (ej. abrir un modal) — cuando un screenshot no muestra el cambio esperado inmediatamente después de un click, no asumir que falló: volver a tomar el screenshot o verificar el estado real vía `getComputedStyle`/`classList`/JS antes de concluir que algo no funcionó.
+
+---
+
+### Sprint 31 jul - 1 ago 2026 — chequeo general de Raku, protección de cuentas institucionales, regresión de tabla de Soccer, edición de puntaje en PANEL-BRACKET, advertencia de tiempo en INSECTOS
+
+**Contexto**: Raku hizo un chequeo manual completo de toda la página en producción y trajo una lista de 6 pendientes nuevos (roles, carpetas/selector de edición, Soccer, Minisumo, INSECTOS) más una captura de un bug real que encontró probando Soccer en vivo. Se completaron 5 de los 6; el de carpetas/edición quedó reservado para otra sesión (ver Pendientes abajo).
+
+#### Repo local `sucrebot-gas-local` — recordatorio de flujo
+`Code.gs` vive en un repo git **privado separado** en `C:\Users\raku\sucrebot-gas-local` (nunca en GitHub) — ver su propio `CLAUDE.md` interno. Flujo: editar ahí → commitear → Raku pega el archivo completo en script.google.com → Raku pasa el Deployment ID nuevo → Claude verifica contra el endpoint real. Esta sesión se agregó `VERSIONS.md` en ese repo (registro de qué versión numerada está realmente LIVE en producción, distinto de `git log` que solo trackea ediciones locales — ver el incidente de la tabla de Soccer abajo, que es exactamente el tipo de pérdida que este archivo busca evitar detectar más rápido la próxima vez).
+
+#### Roles — cuentas institucionales protegidas (`sucrebotclub@`/`electronica@tecnologicosucre.edu.ec`)
+Pedido: que ambas cuentas queden fijas como Admin, sin poder degradarse ni eliminarse. `sucrebotclub@` ya era Admin; `electronica@` no existía en la hoja `personal` — se agregó. Protección en 2 capas:
+- **Backend** (`Code.gs`, array `CORREOS_PROTEGIDOS`): `guardarPersonal` rechaza el cambio si el correo está protegido y el rol nuevo no es `admin`; `eliminarPersonal` rechaza directamente si el correo está protegido.
+- **Frontend** (`CONFIGURACION/index.html`): mismo array duplicado en JS — las cuentas protegidas aparecen primero en la lista (orden fijo: club, luego electrónica), con 🔒 junto al correo, el selector de rol deshabilitado y el botón "Quitar acceso" deshabilitado — sin opción de tocarlas desde la UI, no solo un error al intentarlo.
+Verificado con pruebas reales contra producción (intentos de degradar/eliminar rechazados; cuenta de prueba no protegida sigue funcionando normal).
+
+#### Bug real (regresión): tabla de posiciones de Soccer y "¿quiénes avanzan?" nunca se mostraban
+Raku adjuntó una captura de PANEL-BRACKET → Robot Soccer: la llave L1 mostraba los 6 partidos pero **ninguna tabla de posiciones**, y por lo tanto tampoco la caja de "¿quiénes avanzan?" (que depende de esa tabla). Reportado como "esto ya se había arreglado".
+**Causa raíz encontrada por historial de git**: `calcularTablaSoccer()` en `Code.gs` indexaba el resultado solo por `llave` (ej. `"L1"`), pero el frontend siempre buscó `torneo.tabla[ronda+'|'+llave]` (ej. `"1|L1"`) — el frontend incluso tiene un comentario que menciona una función `claveTablaSoccer` en `Code.gs` que nunca existió en el repo local. **Reconstrucción exacta de cómo se perdió**: el 23-jul (commit `b992326` en `Sucrebot`) se encontró y arregló este mismo bug — el commit dice explícitamente "requiere el cambio en Code.gs" y quedó probado ese día — pero ese arreglo de `Code.gs` se pegó directo en script.google.com **sin volver a traerlo a este chat para guardarlo en el repo local**. Al día siguiente, la migración a un Sheet/proyecto de Apps Script nuevo (sprint 23-24 jul) copió `Code.gs` desde ese mismo backup local, que nunca tuvo el fix — perdiéndolo en silencio durante más de una semana hasta que Raku lo volvió a notar hoy.
+**Fix**: `calcularTablaSoccer` ahora agrupa por `p.ronda + '|' + p.llave`. Verificado contra el torneo `[DEV]` real de la captura (las claves pasaron de `"L1"`/`"L2"` a `"1|L1"`/`"1|L2"`) y con la interfaz real en el navegador (tabla de L1/L2 renderizando bien, 4/3 equipos con puntos correctos).
+**Principio nuevo — el más importante de esta sesión**: cualquier fix aplicado directo en script.google.com que no se vuelva a pegar en el chat para guardarlo en `sucrebot-gas-local` es invisible para `git log` y puede perderse sin dejar rastro en el próximo paste completo del archivo (migración, u otro fix que reemplace todo el archivo). `VERSIONS.md` (agregado hoy) ayuda a detectar esto más rápido, pero no lo previene — la única prevención real es nunca dejar un fix "solo en producción" sin sincronizarlo de vuelta al repo local en la misma sesión.
+
+#### PANEL-BRACKET — editar resultado ahora también permite corregir el puntaje (ms_a/ms_rc/bat)
+Antes "✏️ Editar resultado" (sobre un combate ya `FINALIZADO`) solo dejaba corregir **quién ganó**, vía un `confirm()` binario — el marcador quedaba intacto aunque el ganador cambiara, pudiendo quedar inconsistente. Nuevo modal (`editarResultadoModal`, mismo patrón visual que el modal de Podio Manual) con selector de ganador + **2 inputs numéricos** (puntaje por equipo — a pedido explícito de Raku, "que no sea escrito sino solo poner los números", no texto libre). El marcador se guarda como `"N-M"` (sin sufijo de texto tipo "asaltos"), consistente con el formato que ya usa Batalla. Probado con clicks reales inyectando un partido de prueba en memoria (sin tocar el Sheet): el modal precarga bien los valores actuales, el guardado arma el payload correcto y el error/éxito se maneja bien.
+
+#### PANEL-BRACKET Soccer — rediseño de la caja de avance manual de llave
+Mientras Raku probaba el fix de la tabla en vivo, pidió 3 cambios a la caja "¿quiénes avanzan de esta llave?":
+1. El botón "Confirmar avance" pasa a decir **"Seleccionar equipos para la siguiente ronda"** (y "Corregir avance" → "Corregir equipos para la siguiente ronda") — término más técnico/claro.
+2. Se elimina el campo de texto libre "¿Quién confirma?" — ya no se pide ni se manda (el backend sigue aceptando `usuario` vacío sin problema).
+3. Los equipos pasan de checkboxes+label sueltos a **tarjetas clickeables** (mismo componente visual `.part-item`/`.part-check` que ya usa la selección de participantes del paso 2 — cero CSS nuevo), con posición y puntos más legibles.
+Probado con clicks reales contra producción con un torneo de prueba inyectado — **dejó una fila huérfana e inofensiva en `soccer_avance_manual`** con `torneo_id='TEST-soc-1'` (ningún torneo real tiene ese ID, invisible para la app). No se limpió, queda en la lista de data de prueba pendiente de barrido manual junto con el resto de `[DEV]`.
+
+#### INSECTOS — advertencia si el tiempo manual supera los 2 minutos reglamentarios
+Aplica a los 2 lugares donde se puede tipear un tiempo a mano: el `prompt()` de la ronda Final (cuando el cronómetro no arrancó) y el botón "✏️ Tiempo manual" del editor de corrección de intentos (clasificatoria y final, portado de CRONOMETRO en el sprint 31-jul anterior). No bloquea — es un `confirm()` que el staff puede aceptar si el tiempo real superó el límite. Constante `TIEMPO_MAX_REGLAMENTARIO_MS = 120000`. Probado interceptando `window.confirm`/`window.prompt` con clicks reales sobre el modal real: cancelar no guarda nada, aceptar guarda el valor correcto, y el límite exacto (2:00:00 pasa, 2:00:01 avisa) se respeta.
+
+#### Falso positivo descartado
+Durante la revisión del punto anterior se reportó (por error de lectura propio) un tag mal cerrado (`<\span>` en vez de `</span>`) en el marcador de partidos de Soccer (`renderSocPartido`). Al ir a corregirlo se confirmó contra el código real y el historial de git que **nunca estuvo roto** — probable confusión con un `\/` (barra escapada, válida e inofensiva en un template literal JS). No se tocó nada. Principio: antes de aplicar un fix "encontrado antes", releer el código actual en el momento de aplicarlo, no confiar en la nota previa.
+
+#### Principios nuevos
+- **Un fix de `Code.gs` que solo se pega en script.google.com, sin volver a traerlo al chat en la misma sesión para guardarlo en `sucrebot-gas-local`, no existe para ningún propósito de respaldo** — puede perderse sin rastro en la próxima vez que se pegue el archivo completo (migración, otro fix). Ver el incidente de la tabla de Soccer arriba: pasó exactamente así el 23/24-jul y no se detectó hasta un mes después.
+- **Cuando un pedido de UI dice "que no sea texto libre, que sean solo números"**, la solución es inputs `type="number"` separados por campo, no una regex de validación sobre un input de texto — evita que el operador tenga que recordar un formato.
+- **Antes de "corregir" algo que uno mismo señaló en un mensaje anterior de la misma sesión, releer el código actual primero** — una nota propia de hace unos minutos puede ser un error de lectura, no un hecho verificado.
+- Ver también [[feedback-testing-produccion-clicks-reales-30jul]] y [[feedback-screenshot-lag-testing-31jul]] — ambos principios se reconfirmaron esta sesión (clicks reales sobre elementos del DOM real en vez de invocar funciones de red directo; re-verificar por JS/DOM cuando un screenshot no muestra lo esperado, en vez de asumir que falló).
+
+#### Pendiente — carpetas por edición + selector de edición (sin empezar, decisiones ya tomadas)
+Quedan 2 ítems de la lista original de hoy sin tocar. **Ya se acordó el enfoque con Raku, así que la próxima sesión puede arrancar directo sin volver a preguntar**:
+- **Objetivo confirmado**: evitar que se mezclen los datos entre ediciones (IV, V, VI... — numeración de edición, independiente del año calendario). NO es un archivo público navegable por ahora.
+- **Enfoque técnico elegido**: mismo patrón que la migración del 23-24 jul — al cerrar una edición, la siguiente arranca en un **Google Sheet + Apps Script deployment nuevos y vacíos**; la edición anterior queda de archivo intacto, sin tocar código de filtrado. Se descartó agregar una columna `edicion` a cada hoja + filtrar las ~40 acciones de `Code.gs` por ser mucho más trabajo y riesgo para el mismo resultado.
+- **Selector de edición**: NO es un dropdown que cambie qué datos ve/escribe cada página — quedó sin definir si es solo una etiqueta visible ("IV Edición") o un dropdown con 1 sola opción por ahora, ya que Raku cerró la pregunta sin responder. **Falta retomar esa pregunta puntual** antes de escribir código.
+- Falta definir además: si "carpetas" incluye reorganizar las carpetas de Drive (`SucreBot-Comprobantes`, `SucreBot-Logos`, `SucreBot-Diplomas`, `SucreBot-Reglamentos-*`, hoy compartidas sin distinción de edición) con el mismo patrón de deployment nuevo, o si es una tarea aparte.
 
 ---
 
