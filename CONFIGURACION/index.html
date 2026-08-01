@@ -417,7 +417,17 @@
     const cont = document.getElementById('pers-lista');
     cont.innerHTML = '';
     const yo = miCorreo();
-    lista.slice().sort((a, b) => a.correo.localeCompare(b.correo)).forEach(p => {
+    lista.slice().sort((a, b) => {
+      // Las cuentas protegidas van primero, en el orden de CORREOS_PROTEGIDOS
+      // (club, luego electrónica) -- el resto sigue alfabético como antes.
+      const idxA = CORREOS_PROTEGIDOS.indexOf(String(a.correo).toLowerCase());
+      const idxB = CORREOS_PROTEGIDOS.indexOf(String(b.correo).toLowerCase());
+      if (idxA >= 0 || idxB >= 0) {
+        if (idxA >= 0 && idxB >= 0) return idxA - idxB;
+        return idxA >= 0 ? -1 : 1;
+      }
+      return a.correo.localeCompare(b.correo);
+    }).forEach(p => {
       const row = document.createElement('div');
       row.className = 'pers-row';
 
