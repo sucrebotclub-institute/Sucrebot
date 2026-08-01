@@ -634,7 +634,6 @@
             <button class="ins-btn ins-btn-outline" id="btnAjustarPodio">✏️ Ajustar Podio</button>
             <button class="ins-btn ins-btn-outline" id="btnQuitarAjustePodio" style="display:none">↩️ Quitar ajuste manual</button>
             <button class="ins-btn ins-btn-cyan" id="btnGuardarPodio">💾 Guardar en certificados</button>
-            <button class="ins-btn ins-btn-green" id="btnExportarExcel">📊 Exportar Excel</button>
             <button class="ins-btn ins-btn-outline" id="btnReiniciar">↺ Nueva competencia</button>
           </div>
         </div>
@@ -1728,6 +1727,7 @@ document.addEventListener('componentsLoaded',async function(){
   let mejores = {};          // mejor tiempo de cada participante EN LA RONDA ACTUAL — id → {tiempo, ronda, intento, grupo}
   let intentos = {};         // log completo: id → [{ronda, intento, grupo, tiempo, dnf}]
   let avanzaSet = new Set(); // marcados con ▲ (para pasar a la siguiente ronda, o al podio si es la última)
+  let historialRondas = {};  // n → {pool:[ids], avanzaron:[ids]} — una foto por cada ronda ya cerrada, para el Excel
 
   let podioManualOverride = null; // [id1,id2,id3]|null — ajuste manual del podio
 
@@ -2025,6 +2025,7 @@ document.addEventListener('componentsLoaded',async function(){
     rondaActual = 1;
     poolRonda = [...presentes];
     intentos = {};
+    historialRondas = {};
     presentes.forEach(p => { intentos[p.id] = []; });
     podioManualOverride = null;
     formarGruposRonda();
@@ -2132,6 +2133,10 @@ document.addEventListener('componentsLoaded',async function(){
     if (marcados.length === 0) { alert('⚠️ Marca con ▲ a quienes avanzan antes de cerrar la ronda.'); return; }
     const destino = rondaActual < numRondas ? ('a la Ronda ' + (rondaActual + 1)) : 'al Podio';
     if (!confirm(`${marcados.length} marcado(s) con ▲ pasarán ${destino}:\n${marcados.map(p=>p.robot).join(', ')}\n\n¿Confirmar?`)) return;
+
+    // Guarda una foto de esta ronda (quiénes compitieron y quiénes avanzaron)
+    // para poder armar el Excel con una página por ronda al final.
+    historialRondas[rondaActual] = { pool: poolRonda.map(p => p.id), avanzaron: marcados.map(p => p.id) };
 
     if (rondaActual < numRondas) {
       poolRonda = marcados;
@@ -2465,17 +2470,40 @@ document.addEventListener('componentsLoaded',async function(){
     nota.innerHTML = notaHtml;
   }
 
-  function abrirModalPodioManual() {
-    const pool = poolPodioManual();
-    const auto = [...avanzaSet].map(id => poolRonda.find(p => p.id === id)).filter(p => p && mejores[p.id])
-      .sort((a, b) => mejores[a.id].tiempo - mejores[b.id].tiempo);
+  // Cada select de posición excluye a quien ya está elegido en las OTRAS
+  // dos posiciones (no puede ser el mismo participante en dos lugares del
+  // podio a la vez). Se recalcula al abrir el modal y cada vez que cambia
+  // cualquiera de los 3 selects.
+  function renderPodioManualSelects(pool, valores) {
     const selects = ['selPodio1','selPodio2','selPodio3'].map(id => document.getElementById(id));
     selects.forEach((sel, i) => {
+      const elegidosEnOtros = valores.filter((v, j) => j !== i && v);
       sel.innerHTML = '<option value="">— (vacío) —</option>' +
-        pool.map(p => `<option value="${p.id}">${p.robot} — ${p.nombre}</option>`).join('');
-      const preset = podioManualOverride ? (podioManualOverride[i] || '') : (auto[i] ? auto[i].id : '');
-      sel.value = preset;
+        pool.filter(p => p.id === valores[i] || !elegidosEnOtros.includes(p.id))
+          .map(p => `<option value="${p.id}">${p.robot} — ${p.nombre}</option>`).join('');
+      sel.value = valores[i];
     });
+  }
+
+  ['selPodio1','selPodio2','selPodio3'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => {
+      const pool = poolPodioManual();
+      const valores = ['selPodio1','selPodio2','selPodio3'].map(i => document.getElementById(i).value);
+      renderPodioManualSelects(pool, valores);
+    });
+  });
+
+  function abrirModalPodioManual() {
+    const pool = poolPodioManual();
+    let valores;
+    if (podioManualOverride) {
+      valores = [0,1,2].map(i => podioManualOverride[i] || '');
+    } else {
+      const auto = [...avanzaSet].map(id => poolRonda.find(p => p.id === id)).filter(p => p && mejores[p.id])
+        .sort((a, b) => mejores[a.id].tiempo - mejores[b.id].tiempo);
+      valores = [0,1,2].map(i => auto[i] ? auto[i].id : '');
+    }
+    renderPodioManualSelects(pool, valores);
     document.getElementById('modalPodioManual').classList.add('show');
   }
 
@@ -2623,6 +2651,8 @@ document.addEventListener('componentsLoaded',async function(){
       btn.disabled = false;
     }
 
+    exportarExcelInsectos();
+
     if (modoOffline) { actualizarBadgeOffline(); return; }
 
     try {
@@ -2640,7 +2670,7 @@ document.addEventListener('componentsLoaded',async function(){
 
   document.getElementById('btnReiniciar').addEventListener('click', () => {
     if (!confirm('¿Reiniciar la competencia de Insectos? Se perderán todos los datos del torneo actual.')) return;
-    presentes = []; poolRonda = []; gruposRonda = []; mejores = {}; intentos = {};
+    presentes = []; poolRonda = []; gruposRonda = []; mejores = {}; intentos = {}; historialRondas = {};
     rondaActual = 1; grupoActual = 0; intentoActual = 1; avanzaSet = new Set(); podioManualOverride = null;
     clearInterval(cronInterval);
     reiniciarConfigRondas();
@@ -2719,7 +2749,7 @@ document.addEventListener('componentsLoaded',async function(){
   document.getElementById('btnVolverPresentes').addEventListener('click', () => {
     if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
     clearInterval(cronInterval);
-    poolRonda = []; gruposRonda = []; mejores = {}; intentos = {};
+    poolRonda = []; gruposRonda = []; mejores = {}; intentos = {}; historialRondas = {};
     rondaActual = 1; grupoActual = 0; intentoActual = 1; avanzaSet = new Set();
     reiniciarConfigRondas();
     stepActivar(0);
@@ -2728,7 +2758,7 @@ document.addEventListener('componentsLoaded',async function(){
   // CERRAR CATEGORÍA
   document.getElementById('btnCerrarCat').addEventListener('click', () => {
     if (!confirm('¿Cerrar la categoría Insectos? Esto reiniciará la competencia.')) return;
-    presentes = []; poolRonda = []; gruposRonda = []; mejores = {}; intentos = {};
+    presentes = []; poolRonda = []; gruposRonda = []; mejores = {}; intentos = {}; historialRondas = {};
     rondaActual = 1; grupoActual = 0; intentoActual = 1; avanzaSet = new Set(); podioManualOverride = null;
     clearInterval(cronInterval);
     reiniciarConfigRondas();
@@ -2736,36 +2766,73 @@ document.addEventListener('componentsLoaded',async function(){
     cargarParticipantes();
   });
 
-  // EXPORTAR EXCEL (CSV con BOM y separador ; para Excel español)
-  document.getElementById('btnExportarExcel').addEventListener('click', () => {
+  // EXPORTAR EXCEL — .xlsx real con una hoja "Podio" (página 1) y una hoja
+  // "Ronda N" por cada ronda que se llegó a cerrar (con el detalle de cada
+  // intento y quién avanzó). Se descarga solo automáticamente al guardar el
+  // podio (ver btnGuardarPodio) — no hay botón aparte para disparrarlo a mano.
+  function exportarExcelInsectos() {
+    const wb = XLSX.utils.book_new();
+
+    // ---- Página 1: Podio ----
     const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
-    const marcadosObjs = [...avanzaSet].map(id => poolRonda.find(p => p.id === id)).filter(Boolean);
-    const conMeta = marcadosObjs.filter(p => mejores[p.id]).sort((a,b) => mejores[a.id].tiempo - mejores[b.id].tiempo);
-    const sinMeta = marcadosObjs.filter(p => !mejores[p.id]);
+    let conMeta, sinMeta;
+    if (podioManualOverride) {
+      const pool = poolPodioManual();
+      conMeta = podioManualOverride.map(id => id ? pool.find(p => p.id === id) : null).filter(Boolean);
+      const idsEnPodio = conMeta.map(p => p.id);
+      sinMeta = poolRonda.filter(p => !idsEnPodio.includes(p.id));
+    } else {
+      const marcadosObjs = [...avanzaSet].map(id => poolRonda.find(p => p.id === id)).filter(Boolean);
+      conMeta = marcadosObjs.filter(p => mejores[p.id]).sort((a,b) => mejores[a.id].tiempo - mejores[b.id].tiempo);
+      sinMeta = marcadosObjs.filter(p => !mejores[p.id]);
+    }
     const idsCubiertos = [...conMeta, ...sinMeta].map(p=>p.id);
     const noFinal = presentes.filter(p => !idsCubiertos.includes(p.id));
 
-    const todos = [
-      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i]||'PARTICIPACIÓN', tiempo: fmtMs(mejores[p.id].tiempo) })),
+    const todosPodio = [
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i]||'PARTICIPACIÓN', tiempo: mejores[p.id] ? fmtMs(mejores[p.id].tiempo) : '—' })),
       ...sinMeta.map(p => ({ p, tipo:'PARTICIPACIÓN', tiempo:'DNF' })),
       ...noFinal.map(p => ({ p, tipo:'PARTICIPACIÓN', tiempo:'DNF' })),
     ];
+    const aoaPodio = [['#','Robot','Participante','Institución','Tiempo Final','Posición']];
+    todosPodio.forEach((entry, i) => aoaPodio.push([i+1, entry.p.robot||'', entry.p.nombre||'', entry.p.institucion||'', entry.tiempo, entry.tipo]));
+    const wsPodio = XLSX.utils.aoa_to_sheet(aoaPodio);
+    wsPodio['!cols'] = [{wch:4},{wch:18},{wch:22},{wch:24},{wch:14},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsPodio, 'Podio');
 
-    const rows = [['#','Robot','Participante','Institución','Tiempo Final','Posición']];
-    todos.forEach((entry, i) => {
-      rows.push([i+1, entry.p.robot||'', entry.p.nombre||'', entry.p.institucion||'', entry.tiempo, entry.tipo]);
+    // ---- Una página por cada ronda ya cerrada ----
+    Object.keys(historialRondas).map(Number).sort((a,b) => a-b).forEach(n => {
+      const { pool, avanzaron } = historialRondas[n];
+      const maxIntentos = Math.max(1, ...pool.map(id => (intentos[id]||[]).filter(x=>x.ronda===n).length));
+      const filas = pool.map(id => {
+        const p = presentes.find(x=>x.id===id) || {};
+        const lista = (intentos[id]||[]).filter(x=>x.ronda===n).sort((a,b)=>a.intento-b.intento);
+        const validos = lista.filter(x=>!x.dnf);
+        const mejor = validos.length ? validos.reduce((a,b)=>b.tiempo<a.tiempo?b:a).tiempo : null;
+        return { p, mejor, avanzo: avanzaron.includes(id), lista };
+      }).sort((a,b) => {
+        if (a.mejor === null && b.mejor === null) return 0;
+        if (a.mejor === null) return 1;
+        if (b.mejor === null) return -1;
+        return a.mejor - b.mejor;
+      });
+      const header = ['#','Robot','Participante','Institución','Mejor tiempo','¿Avanzó?', ...Array.from({length:maxIntentos},(_,i)=>'Intento '+(i+1))];
+      const aoa = [header];
+      filas.forEach((f, i) => {
+        const intentosTxt = Array.from({length:maxIntentos}, (_, ii) => {
+          const e = f.lista.find(x => x.intento === ii+1);
+          if (!e) return '';
+          return e.dnf ? 'DNF' : fmtMs(e.tiempo);
+        });
+        aoa.push([i+1, f.p.robot||'', f.p.nombre||'', f.p.institucion||'', f.mejor!==null?fmtMs(f.mejor):'DNF', f.avanzo?'Sí':'No', ...intentosTxt]);
+      });
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = [{wch:4},{wch:18},{wch:22},{wch:24},{wch:14},{wch:10},...Array(maxIntentos).fill({wch:12})];
+      XLSX.utils.book_append_sheet(wb, ws, 'Ronda '+n);
     });
 
-    const bom = '﻿';
-    const csv = bom + rows.map(r => r.map(c => String(c).replace(/;/g,',')).join(';')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Insectos_Resultados_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
+    XLSX.writeFile(wb, `SucreBot2026_Insectos_${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
 
   // VOLVER A CLASIFICATORIA desde podio
   document.getElementById('btnVolverFinal').addEventListener('click', () => {
@@ -2792,7 +2859,7 @@ document.addEventListener('componentsLoaded',async function(){
   // Punto de entrada llamado por abrirInsectosCrono() en el script principal
   window.InsectosCrono = {
     abrir() {
-      presentes = []; poolRonda = []; gruposRonda = []; mejores = {}; intentos = {};
+      presentes = []; poolRonda = []; gruposRonda = []; mejores = {}; intentos = {}; historialRondas = {};
       rondaActual = 1; grupoActual = 0; intentoActual = 1; avanzaSet = new Set(); podioManualOverride = null;
       clearInterval(cronInterval);
       reiniciarConfigRondas();
