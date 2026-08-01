@@ -406,6 +406,29 @@
   </div>
 </div>
 
+<!-- MODAL EDITAR RESULTADO (ganador + puntaje) -->
+<div class="modal-overlay" id="editarResultadoModal">
+  <div class="modal-box" style="max-width:420px;text-align:left;">
+    <div class="modal-icon" style="text-align:center;">✏️</div>
+    <div class="modal-title" style="text-align:center;">EDITAR RESULTADO</div>
+    <div class="modal-msg" style="text-align:center;">Corrige quién ganó el combate y/o el puntaje registrado.</div>
+    <div class="podio-manual-campos">
+      <label class="pm-label">🏆 Ganador</label>
+      <select id="erGanador" class="pm-select"></select>
+      <label class="pm-label">📊 Puntaje</label>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <input type="number" id="erPuntajeA" class="pm-select" min="0" step="1" style="text-align:center;">
+        <span style="color:var(--muted);font-family:'Orbitron';">—</span>
+        <input type="number" id="erPuntajeB" class="pm-select" min="0" step="1" style="text-align:center;">
+      </div>
+    </div>
+    <div class="modal-btns" style="margin-top:20px;">
+      <button class="btn btn-outline btn-sm" onclick="cerrarEditarResultado()">Cancelar</button>
+      <button class="btn btn-green btn-sm" onclick="guardarEditarResultadoUI()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- CRONÓMETRO SOCCER -->
 <div class="cronometro-overlay" id="cronOverlay">
   <div class="cron-box">
@@ -1087,24 +1110,47 @@ function renderPartido(p,editable) {
     else if(state.tipo==='batalla') btns=`<button class="btn-jugar-soccer" onclick='abrirCombateBatalla(${JSON.stringify(p)})'>🥊 Iniciar combate</button>`;
     else btns=`<button class="btn-jugar-soccer" onclick='abrirMinisumo(${JSON.stringify(p)})'>🤖 Iniciar combate</button>`;
   } else if(esFin&&editable&&p.equipo_a_id&&p.equipo_b_id){
-    btns=`<button class="btn-editar-resultado" onclick='editarResultadoPartido(${JSON.stringify(p)})'>✏️ Editar resultado</button>`;
+    btns=`<button class="btn-editar-resultado" onclick='abrirEditarResultado(${JSON.stringify(p)})'>✏️ Editar resultado</button>`;
   }
   const estLabel=esFin?'FINALIZADO':bloq?'EN ESPERA':'PENDIENTE';
   const estCl=esFin?'estado-finalizado':bloq?'estado-bloqueado':'estado-pendiente';
   return`<div class="partido-card ${claseCard}" data-pid="${p.partido_id}"><div class="partido-estado ${estCl}">${estLabel}</div><div class="partido-equipos"><div class="partido-eq ${clA}"><span class="partido-eq-nombre">${nombreA}</span>${sA?`<span class="partido-eq-score">${sA}</span>`:''}</div><div class="partido-eq ${clB}"><span class="partido-eq-nombre">${nombreB}</span>${sB?`<span class="partido-eq-score">${sB}</span>`:''}</div></div>${btns}</div>`;
 }
 
-async function editarResultadoPartido(p) {
+let _erPartido=null;
+function abrirEditarResultado(p) {
+  _erPartido=p;
   const nombreA=p.equipo_a_nombre||'A', nombreB=p.equipo_b_nombre||'B';
-  const eligioA=confirm('Corregir resultado — ¿quién ganó en realidad?\nOK = '+nombreA+'\nCancelar = '+nombreB);
-  const ganadorId=eligioA?p.equipo_a_id:p.equipo_b_id;
-  const ganadorNombre=eligioA?nombreA:nombreB;
-  if(ganadorId===p.ganador_id){ toast('El ganador ya era '+ganadorNombre+' — sin cambios','error'); return; }
-  loading(true,'CORRIGIENDO...');
+  document.getElementById('erGanador').innerHTML=
+    `<option value="${p.equipo_a_id}">${nombreA}</option><option value="${p.equipo_b_id}">${nombreB}</option>`;
+  document.getElementById('erGanador').value=p.ganador_id;
+  // El marcador guardado es "N-M" (con posible sufijo de texto, ej. "2-1 asaltos") --
+  // se parsean solo los 2 números iniciales para los inputs numéricos.
+  const m=String(p.marcador||'').match(/^(\d+)\s*-\s*(\d+)/);
+  document.getElementById('erPuntajeA').value=m?m[1]:0;
+  document.getElementById('erPuntajeB').value=m?m[2]:0;
+  document.getElementById('editarResultadoModal').classList.add('show');
+}
+function cerrarEditarResultado() { document.getElementById('editarResultadoModal').classList.remove('show'); _erPartido=null; }
+
+async function guardarEditarResultadoUI() {
+  const p=_erPartido;
+  if(!p) return;
+  const ganadorId=document.getElementById('erGanador').value;
+  const puntajeA=document.getElementById('erPuntajeA').value.trim();
+  const puntajeB=document.getElementById('erPuntajeB').value.trim();
+  if(puntajeA===''||puntajeB===''||Number(puntajeA)<0||Number(puntajeB)<0){ toast('Ingresa un puntaje válido para ambos equipos','error'); return; }
+  const marcador=`${Number(puntajeA)}-${Number(puntajeB)}`;
+  const ganadorNombre=ganadorId===p.equipo_a_id?(p.equipo_a_nombre||'A'):(p.equipo_b_nombre||'B');
+  const mOriginal=String(p.marcador||'').match(/^(\d+)\s*-\s*(\d+)/);
+  const marcadorOriginal=mOriginal?`${Number(mOriginal[1])}-${Number(mOriginal[2])}`:null;
+  if(ganadorId===p.ganador_id&&marcador===marcadorOriginal){ toast('Sin cambios','error'); return; }
+  loading(true,'GUARDANDO...');
   try{
-    const res=await gasPost({action:'registrarResultadoGeneral',partido_id:p.partido_id,ganador_id:ganadorId,marcador:p.marcador||'—',categoria:state.categoria});
+    const res=await gasPost({action:'registrarResultadoGeneral',partido_id:p.partido_id,ganador_id:ganadorId,marcador,categoria:state.categoria});
     if(!res.ok)throw new Error(res.error||'Error');
     state.bracket=res.bracket;
+    cerrarEditarResultado();
     toast('✏️ Resultado corregido — ganó '+ganadorNombre,'success');
     renderBracket();
   }catch(e){toast('Error: '+e.message,'error');}
