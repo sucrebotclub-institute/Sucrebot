@@ -397,6 +397,10 @@
     .tag-val.dnf{color:var(--ins-red)}
     .ins-btn-editar-intento{background:rgba(91,200,240,.12);border:1px solid var(--ins-border2);color:var(--ins-cyan);font-size:.65rem;width:18px;height:18px;padding:0;border-radius:5px;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
     .ins-btn-editar-intento:hover{background:var(--ins-cyan);color:#071e45;transform:translateY(-1px)}
+    .ins-btn-avanza{background:transparent;border:1.5px solid var(--ins-green);color:var(--ins-green);font-size:.72rem;padding:4px 8px;border-radius:6px;cursor:pointer;transition:all .2s;font-weight:700;flex-shrink:0}
+    .ins-btn-avanza:hover{background:rgba(46,204,113,.12)}
+    .ins-btn-avanza.marcado{background:var(--ins-green);border-color:var(--ins-green);color:#071e45}
+    .rank-row.avanza-marcado{background:rgba(46,204,113,.14);border-left:3px solid var(--ins-green)}
   </style>
 </head>
 <body>
@@ -451,12 +455,12 @@
       <div class="pb-card-title">Seleccionar Categoría</div>
       <div class="cat-grid" id="catGrid">
         
-        <div class="cat-btn" onclick="elegirCategoria('Trepador (Amateur)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Amateur</div><div class="cat-btn-desc">Sensor E18-D80NK</div><div class="cat-btn-tipo">🔌 SENSOR</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Trepador (Pro)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Pro</div><div class="cat-btn-desc">Sensor E18-D80NK</div><div class="cat-btn-tipo">🔌 SENSOR</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Seguidor de línea ST (Amateur)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Amateur</div><div class="cat-btn-desc">Sensor toggle</div><div class="cat-btn-tipo">🔌 SENSOR</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Seguidor de línea ST (Pro)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Pro</div><div class="cat-btn-desc">Sensor toggle</div><div class="cat-btn-tipo">🔌 SENSOR</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Cubo Rubik', event)"><div class="cat-btn-icon">🧩</div><div class="cat-btn-nombre">Cubo Rubik</div><div class="cat-btn-desc">Pulsador manual</div><div class="cat-btn-tipo">🔘 PULSADOR</div></div>
-        <div class="cat-btn" onclick="abrirInsectosCrono(event)"><div class="cat-btn-icon">🐜</div><div class="cat-btn-nombre">Insectos</div><div class="cat-btn-desc">4 carriles · Sensor IR ESP32</div><div class="cat-btn-tipo">🔌 SENSOR x4</div></div>
+        <div class="cat-btn" onclick="elegirCategoria('Trepador (Amateur)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Amateur</div></div>
+        <div class="cat-btn" onclick="elegirCategoria('Trepador (Pro)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Pro</div></div>
+        <div class="cat-btn" onclick="elegirCategoria('Seguidor de línea ST (Amateur)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Amateur</div></div>
+        <div class="cat-btn" onclick="elegirCategoria('Seguidor de línea ST (Pro)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Pro</div></div>
+        <div class="cat-btn" onclick="elegirCategoria('Cubo Rubik', event)"><div class="cat-btn-icon">🧩</div><div class="cat-btn-nombre">Cubo Rubik</div></div>
+        <div class="cat-btn" onclick="abrirInsectosCrono(event)"><div class="cat-btn-icon">🐜</div><div class="cat-btn-nombre">Insectos</div></div>
       </div>
     </div>
   </div>
@@ -588,6 +592,7 @@
         <div class="panel-3col">
           <div class="panel-lateral" style="padding-top:0">
             <div class="ranking-mini" id="rankingParcial" style="margin-top:0"></div>
+            <button class="ins-btn ins-btn-green" id="btnCerrarClasificatoria" style="width:100%;margin-top:12px">🏁 Cerrar Clasificatoria y pasar a Final</button>
           </div>
 
           <div>
@@ -1756,6 +1761,10 @@ document.addEventListener('componentsLoaded',async function(){
   // bloquean recién al presionar "INICIAR" (leerConfigTurnosIntentos()).
   let numTurnosClas = 2;
   let numIntentosFinal = 2;
+  // Quiénes avanzan de Clasificatoria a Final ahora lo decide el staff a mano
+  // (▲ en el ranking parcial), no un corte automático por tiempo — la Final
+  // sigue limitada a 4 por los carriles físicos, ver insToggleAvanzaFinal().
+  let avanzaFinalSet = new Set();
   const TIEMPO_MAX_REGLAMENTARIO_MS = 120000;
   function mejorFinalDe(id) {
     const list = intentosFinal[id] || [];
@@ -2012,16 +2021,7 @@ document.addEventListener('componentsLoaded',async function(){
   function actualizarCuentaSel() {
     const n = presentes.length;
     document.getElementById('cntSel').textContent = n;
-    const btn = document.getElementById('btnIniciarClas');
-    const nota = document.getElementById('reglamentoNote');
-    if (n <= 4 && n >= 2) {
-      btn.textContent = 'IR A FINAL DIRECTO →';
-      nota.textContent = `⚡ ${n} participantes → Final directa (reglamento)`;
-      nota.style.display = 'block';
-    } else {
-      btn.textContent = 'INICIAR CLASIFICATORIA →';
-      nota.style.display = 'none';
-    }
+    document.getElementById('btnIniciarClas').textContent = 'INICIAR CLASIFICATORIA →';
   }
 
   document.getElementById('btnTodos').addEventListener('click', () => {
@@ -2044,24 +2044,6 @@ document.addEventListener('componentsLoaded',async function(){
   document.getElementById('btnIniciarClas').addEventListener('click', () => {
     if (presentes.length < 2) { alert('Selecciona al menos 2 participantes'); return; }
     leerConfigTurnosIntentos();
-
-    if (presentes.length <= 4) {
-      if (!confirm(`Solo hay ${presentes.length} participantes. Según el reglamento van directo a la Final. ¿Continuar?`)) return;
-      mejores = {}; intentos = {}; grupos = [];
-      presentes.forEach(p => { intentos[p.id] = []; });
-      clasificados = [...presentes];
-      tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0;
-      stepActivar(2);
-      resetCronF();
-      actualizarLabelsFinal();
-      const fi = document.getElementById('finalInfo');
-      if (fi) fi.innerHTML = `<b>${clasificados.length} participantes directos a la final:</b> ` +
-        clasificados.map(p => `<span style="color:var(--ins-cyan)">${p.robot}</span>`).join(', ');
-      renderCarrilesFinal();
-      renderRankingFinal();
-      return;
-    }
-
     formarGrupos();
     stepActivar(1);
     renderGrupoActual();
@@ -2081,6 +2063,7 @@ document.addEventListener('componentsLoaded',async function(){
     grupoActual = 0;
     mejores = {};
     intentos = {};
+    avanzaFinalSet = new Set();
     presentes.forEach(p => {
       intentos[p.id] = [];
     });
@@ -2107,8 +2090,8 @@ document.addEventListener('componentsLoaded',async function(){
     const esUltimoTurno = turnoActual === numTurnosClas - 1;
     const btnSig = document.getElementById('btnGrupoSiguiente');
     if (esUltimoGrupoTurno && esUltimoTurno) {
-      btnSig.textContent = 'IR A FINAL →';
-      btnSig.className = 'ins-btn ins-btn-green';
+      btnSig.textContent = '✓ Turnos completados';
+      btnSig.className = 'ins-btn ins-btn-gray';
     } else if (esUltimoGrupoTurno) {
       btnSig.textContent = `Iniciar Turno ${turnoActual + 2} →`;
       btnSig.className = 'ins-btn ins-btn-turno';
@@ -2340,8 +2323,7 @@ document.addEventListener('componentsLoaded',async function(){
     const esUltimoTurno = turnoActual === numTurnosClas - 1;
 
     if (esUltimoGrupo && esUltimoTurno) {
-      const huboFinal = prepararFinal();
-      if (huboFinal) stepActivar(2);
+      showToast('✓ Ya completaste todos los turnos — marca con ▲ a quienes avanzan y usa "Cerrar Clasificatoria"', true);
       return;
     }
     if (esUltimoGrupo) {
@@ -2399,28 +2381,42 @@ document.addEventListener('componentsLoaded',async function(){
     el.innerHTML = `<div class="ranking-mini"><h4>🏆 RANKING PARCIAL (MEJOR TIEMPO)</h4>
       ${ranked.map((r, i) => {
         const tieneTags = (intentos[r.p.id] || []).length > 0;
-        return `<div class="rank-row${tieneTags ? ' has-tags' : ''}">
+        const marcado = avanzaFinalSet.has(r.p.id);
+        return `<div class="rank-row${tieneTags ? ' has-tags' : ''}${marcado?' avanza-marcado':''}">
             <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
             <div class="rank-robot">${r.p.robot}<span style="font-size:.7rem;color:var(--ins-muted);margin-left:6px">${r.p.nombre}</span></div>
             <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo !== null ? fmtMs(r.tiempo) : (r.intentado ? 'DNF' : '—')}</div>
+            <button class="ins-btn-avanza${marcado?' marcado':''}" title="Marcar/desmarcar para pasar a la Final" onclick="insToggleAvanzaFinal('${r.p.id}')">▲</button>
           </div>${tagsIntentosClas(r.p)}`;
       }).join('')}
     </div>`;
   }
 
-  // ============================================================
-  // PREPARAR FINAL
-  // ============================================================
-  function prepararFinal() {
-    const ranked = rankingClas();
-    clasificados = ranked.filter(r => r.tiempo !== null).slice(0, 4).map(r => r.p);
-
-    if (clasificados.length < 2) {
-      construirPodioDirecto();
-      stepActivar(3);
-      return false;
+  // Marca/desmarca un participante para que avance de Clasificatoria a Final —
+  // decisión manual del staff, no un corte automático por tiempo. Tope de 4
+  // porque la Final solo tiene 4 carriles físicos.
+  function insToggleAvanzaFinal(id) {
+    if (avanzaFinalSet.has(id)) {
+      avanzaFinalSet.delete(id);
+    } else {
+      if (avanzaFinalSet.size >= 4) { alert('⚠️ Máximo 4 pueden avanzar a la Final — la pista solo tiene 4 carriles.'); return; }
+      avanzaFinalSet.add(id);
     }
+    renderRankingParcial();
+  }
 
+  document.getElementById('btnCerrarClasificatoria').addEventListener('click', () => {
+    const marcados = [...avanzaFinalSet].map(id => presentes.find(p => p.id === id)).filter(Boolean);
+    if (marcados.length === 0) { alert('⚠️ Marca con ▲ a quienes avanzan a la Final antes de cerrar la clasificatoria.'); return; }
+    if (!confirm(`${marcados.length} marcado(s) con ▲ pasarán a la Final:\n${marcados.map(p=>p.robot).join(', ')}\n\n¿Confirmar?`)) return;
+    avanzarAFinal(marcados);
+  });
+
+  // ============================================================
+  // AVANZAR A FINAL (con la lista de finalistas ya decidida por el staff)
+  // ============================================================
+  function avanzarAFinal(lista) {
+    clasificados = lista;
     tiemposFinal = {};
     intentosFinal = {};
     turnoFinalActual = 0;
@@ -2442,7 +2438,7 @@ document.addEventListener('componentsLoaded',async function(){
           <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo!==null?fmtMs(r.tiempo):(r.intentado?'DNF':'—')}</div>
         </div>`).join('') + '</div>';
     }
-    return true;
+    stepActivar(2);
   }
 
   function renderCarrilesFinal() {
@@ -2707,14 +2703,6 @@ document.addEventListener('componentsLoaded',async function(){
     renderPodio(conMeta, sinMeta, false);
   }
 
-  function construirPodioDirecto() {
-    if (podioManualOverride) { construirPodio(); return; }
-    const ranked = rankingClas().filter(r => r.tiempo !== null).map(r => r.p);
-    ranked.forEach(p => { tiemposFinal[p.id] = { tiempo: mejores[p.id].tiempo, dnf: false, cruzaMeta: true }; });
-    const sinMeta = presentes.filter(p => !ranked.includes(p));
-    renderPodio(ranked, sinMeta, false);
-  }
-
   function renderPodio(conMeta, sinMeta, manual) {
     const wrap = document.getElementById('podioWrap');
     const nota = document.getElementById('podioNota');
@@ -2894,7 +2882,7 @@ document.addEventListener('componentsLoaded',async function(){
     if (!confirm('¿Reiniciar la competencia de Insectos? Se perderán todos los datos del torneo actual.')) return;
     presentes = []; grupos = []; mejores = {}; intentos = {};
     clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
-    turnoActual = 0; grupoActual = 0;
+    turnoActual = 0; grupoActual = 0; avanzaFinalSet = new Set();
     clearInterval(cronInterval); clearInterval(cronFInterval);
     reiniciarConfigTurnosIntentos();
     stepActivar(0);
@@ -2990,7 +2978,7 @@ document.addEventListener('componentsLoaded',async function(){
     clearInterval(cronFInterval);
     clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
     grupos = []; mejores = {}; intentos = {};
-    turnoActual = 0; grupoActual = 0;
+    turnoActual = 0; grupoActual = 0; avanzaFinalSet = new Set();
     reiniciarConfigTurnosIntentos();
     stepActivar(0);
   });
@@ -3000,7 +2988,7 @@ document.addEventListener('componentsLoaded',async function(){
     if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
     clearInterval(cronInterval);
     grupos = []; mejores = {}; intentos = {};
-    turnoActual = 0; grupoActual = 0;
+    turnoActual = 0; grupoActual = 0; avanzaFinalSet = new Set();
     reiniciarConfigTurnosIntentos();
     stepActivar(0);
   });
@@ -3010,7 +2998,7 @@ document.addEventListener('componentsLoaded',async function(){
     if (!confirm('¿Cerrar la categoría Insectos? Esto reiniciará la competencia.')) return;
     presentes = []; grupos = []; mejores = {}; intentos = {};
     clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
-    turnoActual = 0; grupoActual = 0;
+    turnoActual = 0; grupoActual = 0; avanzaFinalSet = new Set();
     clearInterval(cronInterval); clearInterval(cronFInterval);
     reiniciarConfigTurnosIntentos();
     stepActivar(0);
@@ -3066,13 +3054,14 @@ document.addEventListener('componentsLoaded',async function(){
   window.insMostrarBotonesEditorIntento = insMostrarBotonesEditorIntento;
   window.insMostrarManualIntento = insMostrarManualIntento;
   window.insConfirmarEditorIntento = insConfirmarEditorIntento;
+  window.insToggleAvanzaFinal = insToggleAvanzaFinal;
 
   // Punto de entrada llamado por abrirInsectosCrono() en el script principal
   window.InsectosCrono = {
     abrir() {
       presentes = []; grupos = []; mejores = {}; intentos = {};
       clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
-      turnoActual = 0; grupoActual = 0;
+      turnoActual = 0; grupoActual = 0; avanzaFinalSet = new Set();
       clearInterval(cronInterval); clearInterval(cronFInterval);
       reiniciarConfigTurnosIntentos();
       stepActivar(0);
