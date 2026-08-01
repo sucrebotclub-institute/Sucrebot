@@ -269,6 +269,134 @@
     @keyframes spin { to { transform:rotate(360deg); } }
     .loading-logo { width:72px; height:auto; margin-bottom:2px; filter:drop-shadow(0 0 14px rgba(91,200,240,0.5)); }
     .loading-txt { font-family:'Orbitron'; font-size:.7rem; color:#ffffff; letter-spacing:2px; }
+
+    /* ===================================================================
+       INSECTOS (submódulo dentro de CRONOMETRO) — variables e ins-* propios
+       para no pisar los del resto de la página (mismo :root que ya tenía
+       INSECTOS/index.html standalone, escopeado a #panel-ins).
+       Clases genéricas que colisionaban con las de CRONOMETRO (.btn, .btn-sm,
+       .btn-editar-intento) se renombraron con prefijo ins-. Las que ya eran
+       idénticas en ambas páginas (.modal, .toast, .loading-overlay, .edit-intento-grid,
+       .participantes-list, .part-item, #fsHint, etc.) se reusan tal cual, sin duplicar.
+       =================================================================== */
+    #panel-ins{--ins-cyan:#5bc8f0;--ins-blue:#1a5ca8;--ins-blue-d:#0a2a5a;--ins-blue-dd:#071e45;--ins-green:#2ecc71;--ins-red:#e74c3c;--ins-orange:#f39c12;--ins-yellow:#f9d423;--ins-text:#e8eaf2;--ins-muted:#8a90a8;--ins-border:rgba(91,200,240,0.15);--ins-border2:rgba(91,200,240,0.28);}
+    .ins-hero{text-align:center;padding:48px 20px 32px}
+    .ins-badge{display:inline-flex;align-items:center;gap:8px;background:var(--ins-blue);color:#fff;font-family:'Orbitron';font-size:9px;letter-spacing:3px;padding:6px 16px;border-radius:20px;margin-bottom:16px}
+    .ins-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--ins-cyan);animation:blink 1.5s infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .ins-title{font-family:'Bebas Neue';font-size:2.8rem;letter-spacing:3px;color:#1a3a6e;position:relative;padding-bottom:8px;margin-bottom:8px}
+    .ins-title span{color:var(--ins-blue)}
+    .ins-title::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,#5bc8f0,transparent)}
+    .ins-sub{color:#5a7a9a;font-size:.95rem;margin-top:10px}
+    .ins-wrap{width:100%;margin:0 auto;padding:0 4px 40px}
+    .panel-3col{display:grid;grid-template-columns:240px 1fr 280px;gap:14px;align-items:start;width:100%}
+    .panel-3col>div:nth-child(2),.panel-3col>div:nth-child(3){position:sticky;top:174px}
+    body.fs-activo .panel-3col>div:nth-child(2),body.fs-activo .panel-3col>div:nth-child(3){top:10px}
+    @media(max-width:1100px){
+      .panel-3col{grid-template-columns:1fr}
+      .panel-3col>div:nth-child(2),.panel-3col>div:nth-child(3){position:static}
+    }
+    .ins-card{background:#0a1e3a;border:1px solid #1e3a6e;border-radius:14px;padding:24px;color:var(--ins-text)}
+    .ins-card-title{font-family:'Orbitron';font-size:.75rem;letter-spacing:2px;color:var(--ins-cyan);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+    .ins-card-title::before{content:'';width:3px;height:16px;background:var(--ins-cyan);border-radius:2px}
+    .part-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .part-robot{font-family:'DM Mono';font-size:.75rem;color:var(--ins-cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .ins-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'Exo 2';font-size:.85rem;font-weight:600;transition:all .2s}
+    .ins-btn-cyan{background:var(--ins-cyan);color:#071e45}
+    .ins-btn-cyan:hover{filter:brightness(1.1)}
+    .ins-btn-turno{background:#1a5ca8;color:#000;font-weight:700}
+    .ins-btn-turno:hover{background:#2a7ad8;color:#000}
+    .ins-btn-anterior{background:#2a3a5a;color:#fff;border:1.5px solid #4a6a9a}
+    .ins-btn-anterior:hover{background:#3a4a6a}
+    .ins-btn-outline{background:transparent;border:1.5px solid var(--ins-border2);color:var(--ins-text)}
+    .ins-btn-outline:hover{border-color:var(--ins-cyan);color:var(--ins-cyan)}
+    .ins-btn-green{background:var(--ins-green);color:#071e45}
+    .ins-btn-green:hover{filter:brightness(1.1)}
+    .ins-btn-red{background:var(--ins-red);color:#fff}
+    .ins-btn-red:hover{filter:brightness(1.1)}
+    .ins-btn-orange{background:var(--ins-orange);color:#fff}
+    .ins-btn-gray{background:#2a3a5a;color:var(--ins-muted);cursor:not-allowed}
+    .ins-btn:disabled{opacity:.5;cursor:not-allowed}
+    .cron-central{background:var(--ins-blue-dd);border:1px solid var(--ins-border);border-radius:16px;padding:28px;text-align:center;margin-bottom:24px}
+    .cron-label{font-family:'Orbitron';font-size:.65rem;letter-spacing:2px;color:var(--ins-muted);margin-bottom:10px}
+    .cron-num{font-family:'Orbitron';font-size:4rem;font-weight:900;color:var(--ins-cyan);line-height:1;letter-spacing:4px;transition:color .3s}
+    .cron-num.warn{color:var(--ins-orange)}
+    .cron-num.danger{color:var(--ins-red)}
+    .cron-bar-wrap{height:8px;background:#0d2040;border-radius:4px;margin:14px 0;overflow:hidden}
+    .cron-bar{height:100%;width:100%;border-radius:4px;background:var(--ins-green);transition:width .1s linear,background .3s}
+    .cron-btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+    .turno-badge{display:inline-flex;align-items:center;gap:8px;background:#1a5ca8;border:1px solid #2a7ad8;border-radius:8px;padding:8px 18px;font-family:'Orbitron';font-size:.7rem;letter-spacing:2px;color:#fff;margin-bottom:16px}
+    .grupo-badge{font-family:'Orbitron';font-size:.75rem;letter-spacing:2px;color:var(--ins-text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .grupo-num{background:var(--ins-blue);color:#fff;padding:3px 12px;border-radius:6px}
+    .carriles-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+    .carril-card{background:#0d2040;border:2px solid #1e3a6e;border-radius:12px;padding:16px;text-align:center;position:relative;transition:all .3s}
+    .carril-card.registrado{border-color:#27ae60;background:#0a2a18}
+    .carril-card.dnf{border-color:#c0392b;background:#2a0a0a}
+    .carril-num{font-family:'Orbitron';font-size:.6rem;letter-spacing:2px;color:var(--ins-muted);margin-bottom:6px}
+    .carril-robot{font-family:'Orbitron';font-size:.78rem;font-weight:700;color:var(--ins-cyan);margin-bottom:3px}
+    .carril-equipo{font-size:.75rem;color:var(--ins-muted);margin-bottom:10px}
+    .carril-tiempo{font-family:'DM Mono';font-size:1.5rem;font-weight:700;color:var(--ins-text);margin-bottom:8px;min-height:2rem}
+    .carril-mejor{font-family:'DM Mono';font-size:.7rem;color:var(--ins-muted)}
+    .carril-mejor span{color:var(--ins-yellow)}
+    .carril-vacante{font-family:'Orbitron';font-size:.65rem;color:var(--ins-muted);opacity:.5;padding:12px 0}
+    .carril-btns{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+    .ins-btn-sm{padding:5px 12px;font-size:.75rem;border-radius:6px;border:none;cursor:pointer;font-family:'Exo 2';font-weight:600;transition:all .2s}
+    .ins-btn-sm.verde{background:var(--ins-green);color:#071e45}
+    .ins-btn-sm.rojo{background:var(--ins-red);color:#fff}
+    .ins-btn-sm:disabled{opacity:.4;cursor:not-allowed}
+    .ranking-mini{margin-top:0}
+    .ranking-mini h4{font-family:'Orbitron';font-size:.65rem;letter-spacing:2px;color:var(--ins-cyan);margin-bottom:10px;margin-top:0}
+    .rank-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;background:#0d2040;margin-bottom:6px;font-size:.82rem}
+    .rank-pos{font-family:'Orbitron';font-size:.65rem;font-weight:700;width:24px;text-align:center;color:var(--ins-muted)}
+    .rank-pos.p1{color:#ffd700}
+    .rank-pos.p2{color:#c0c0c0}
+    .rank-pos.p3{color:#cd7f32}
+    .rank-robot{flex:1;font-weight:600}
+    .rank-tiempo{font-family:'DM Mono';font-size:.8rem;color:var(--ins-cyan)}
+    .rank-dnf{color:var(--ins-red)}
+    .final-info{background:#0a2a4a;border:1px solid #1e5a8e;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.85rem;color:var(--ins-text)}
+    .final-info b{color:var(--ins-cyan)}
+    .podio-wrap{display:flex;justify-content:center;align-items:flex-end;gap:16px;margin:32px 0}
+    .podio-col{display:flex;flex-direction:column;align-items:center;gap:8px}
+    .podio-plat{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:12px 28px;border-radius:10px 10px 0 0;font-family:'Orbitron';font-size:1.5rem;font-weight:900;color:#fff;min-width:120px}
+    .podio-plat.p1{background:linear-gradient(180deg,#f9c713,#d4900a);height:110px}
+    .podio-plat.p2{background:linear-gradient(180deg,#b0bec5,#607d8b);height:80px}
+    .podio-plat.p3{background:linear-gradient(180deg,#cd8b3a,#8d5a1a);height:60px}
+    .podio-plat.vacio{background:#1a2a4a;border:1px dashed var(--ins-border2);opacity:.5}
+    .podio-robot{font-family:'Orbitron';font-size:.72rem;font-weight:700;color:var(--ins-text);text-align:center;max-width:120px}
+    .podio-tiempo{font-family:'DM Mono';font-size:.78rem;color:var(--ins-cyan);text-align:center}
+    .podio-nota{font-size:.75rem;color:var(--ins-muted);margin-top:8px;text-align:center}
+    .alert-box{background:#2a0a0a;border:1px solid var(--ins-red);border-radius:8px;padding:12px 16px;font-size:.82rem;color:#f5a9a0;margin-bottom:16px}
+    .alert-box b{color:var(--ins-red)}
+    .info-box{background:#0a2a4a;border:1px solid #1e5a8e;border-radius:8px;padding:10px 14px;font-size:.8rem;color:var(--ins-muted);margin-bottom:16px}
+    .serial-bar{display:flex;align-items:center;gap:10px;background:#071e45;border:1px solid #1e3a6e;border-radius:10px;padding:10px 16px;margin-bottom:20px;flex-wrap:wrap}
+    .serial-dot{width:10px;height:10px;border-radius:50%;background:var(--ins-red);flex-shrink:0}
+    .serial-dot.on{background:var(--ins-green);box-shadow:0 0 6px var(--ins-green)}
+    .serial-status{font-size:.8rem;color:var(--ins-muted);flex:1}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--ins-muted);font-family:'Orbitron';font-size:.7rem;letter-spacing:2px}
+    .sb-modal-overlay{display:none;position:fixed;inset:0;background:rgba(8,12,24,0.75);backdrop-filter:blur(3px);align-items:center;justify-content:center;z-index:9500;padding:16px}
+    .sb-modal-overlay.show{display:flex}
+    .sb-modal-card{background:linear-gradient(160deg,#14213f 0%,#0e2a5a 60%,#0c1a38 100%);border:1px solid rgba(251,191,36,0.35);border-top:3px solid #fbbf24;border-radius:14px;padding:24px 22px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.55);font-family:'Exo 2',sans-serif;animation:sbModalIn .3s cubic-bezier(0.34,1.56,0.64,1)}
+    @keyframes sbModalIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+    .sb-modal-icon{width:40px;height:40px;border-radius:10px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+    .sb-modal-icon svg{width:22px;height:22px;stroke:#fbbf24}
+    .sb-modal-title{font-family:'Orbitron',monospace;font-size:15px;font-weight:900;color:#fff;letter-spacing:.5px;line-height:1.3;margin-bottom:10px}
+    .sb-modal-desc{font-size:13px;color:rgba(255,255,255,.78);line-height:1.5;margin-bottom:18px}
+    .sb-modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .sb-modal-btn{flex:1;min-width:130px;text-align:center;padding:10px 12px;border-radius:6px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,transform .15s}
+    .sb-modal-btn:hover{transform:translateY(-1px)}
+    .sb-modal-btn.primary{background:linear-gradient(135deg,#1a5ca8,#2a8ec8);color:#fff}
+    .sb-modal-btn.primary:hover{box-shadow:0 6px 16px rgba(42,142,200,0.4)}
+    .sb-modal-btn.ghost{background:rgba(255,255,255,0.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18)}
+    .sb-modal-btn.ghost:hover{background:rgba(255,255,255,0.14)}
+    .rank-row.has-tags{border-radius:8px 8px 0 0;margin-bottom:0}
+    .rank-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:#0d2040;border-radius:0 0 8px 8px;margin:0 0 6px 0;padding:3px 12px 8px 46px}
+    .tag-intento{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono';font-size:.7rem;color:var(--ins-muted)}
+    .tag-val{color:var(--ins-cyan)}
+    .tag-val.dnf{color:var(--ins-red)}
+    .ins-btn-editar-intento{background:rgba(91,200,240,.12);border:1px solid var(--ins-border2);color:var(--ins-cyan);font-size:.65rem;width:18px;height:18px;padding:0;border-radius:5px;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
+    .ins-btn-editar-intento:hover{background:var(--ins-cyan);color:#071e45;transform:translateY(-1px)}
   </style>
 </head>
 <body>
@@ -294,7 +422,7 @@
     <h2 class="pb-title">CRONÓ<span>METRO</span></h2>
   </div>
 
-  <div class="stepper-wrap">
+  <div class="stepper-wrap" id="outerStepper">
     <div class="step-item active" id="step-dot-1"><div class="step-dot">1</div><div class="step-label">Categoría</div></div>
     <div class="step-item" id="step-dot-2"><div class="step-dot">2</div><div class="step-label">Presentes</div></div>
     <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label">Cronómetro</div></div>
@@ -328,7 +456,7 @@
         <div class="cat-btn" onclick="elegirCategoria('Seguidor de línea ST (Amateur)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Amateur</div><div class="cat-btn-desc">Sensor toggle</div><div class="cat-btn-tipo">🔌 SENSOR</div></div>
         <div class="cat-btn" onclick="elegirCategoria('Seguidor de línea ST (Pro)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Pro</div><div class="cat-btn-desc">Sensor toggle</div><div class="cat-btn-tipo">🔌 SENSOR</div></div>
         <div class="cat-btn" onclick="elegirCategoria('Cubo Rubik', event)"><div class="cat-btn-icon">🧩</div><div class="cat-btn-nombre">Cubo Rubik</div><div class="cat-btn-desc">Pulsador manual</div><div class="cat-btn-tipo">🔘 PULSADOR</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Categoría Nueva', event)"><div class="cat-btn-icon">🆕</div><div class="cat-btn-nombre">Categoría Nueva</div><div class="cat-btn-desc">2 sensores: inicio + meta</div><div class="cat-btn-tipo">🔌 SENSOR x2</div></div>
+        <div class="cat-btn" onclick="abrirInsectosCrono(event)"><div class="cat-btn-icon">🐜</div><div class="cat-btn-nombre">Insectos</div><div class="cat-btn-desc">4 carriles · Sensor IR ESP32</div><div class="cat-btn-tipo">🔌 SENSOR x4</div></div>
       </div>
     </div>
   </div>
@@ -391,8 +519,217 @@
     </div>
   </div>
 
+  <!-- PANEL INSECTOS (submódulo, 6ta categoría) -->
+  <div class="step-panel" id="panel-ins">
+    <div class="ins-hero" style="padding:20px 20px 24px">
+      <button class="ins-btn ins-btn-outline btn-sm" onclick="volverAPaso1DesdeInsectos()" style="margin-bottom:14px">← Cambiar categoría</button>
+      <div class="ins-badge"><span class="ins-badge-dot"></span>STAFF · INSECTOS</div>
+      <div class="ins-title">CARRERA DE <span>INSECTOS</span></div>
+      <div class="ins-sub">Clasificatoria por turnos · Final · 2 min por intento · Sensor IR + Web Serial</div>
+    </div>
+
+    <div class="stepper-wrap" id="insStepper">
+      <div class="step-item ins-step-item active" id="si0"><div class="step-dot">01</div><div class="step-label">PRESENTES</div></div>
+      <div class="step-item ins-step-item" id="si1"><div class="step-dot">02</div><div class="step-label">CLASIFICATORIA</div></div>
+      <div class="step-item ins-step-item" id="si2"><div class="step-dot">03</div><div class="step-label">FINAL</div></div>
+      <div class="step-item ins-step-item" id="si3"><div class="step-dot">04</div><div class="step-label">PODIO</div></div>
+    </div>
+
+    <div class="ins-wrap">
+
+      <!-- STEP 1: PRESENTES -->
+      <div class="step-panel ins-step-panel active" id="panel0">
+        <div class="ins-card" style="margin-bottom:16px;">
+          <div class="ins-card-title">⚙️ Turnos e intentos</div>
+          <div class="config-row"><label>Turnos en Clasificatoria:</label><input type="number" class="config-input" id="insCfgTurnosClas" value="2" min="1" max="5" /></div>
+          <div style="height:10px"></div>
+          <div class="config-row"><label>Intentos en Final:</label><input type="number" class="config-input" id="insCfgIntentosFinal" value="2" min="1" max="5" /></div>
+        </div>
+        <div class="ins-card">
+          <div class="ins-card-title">Seleccionar participantes presentes</div>
+          <div class="sel-header">
+            <div class="sel-counts">Seleccionados: <span id="cntSel">0</span> / <span id="cntTotal">0</span></div>
+            <div class="btn-row" style="margin:0">
+              <button class="ins-btn ins-btn-outline" id="btnTodos">✓ Todos</button>
+              <button class="ins-btn ins-btn-outline" id="btnNinguno">✗ Ninguno</button>
+            </div>
+          </div>
+          <div class="participantes-list" id="listaParticipantes">
+            <div class="empty-state">Cargando participantes…</div>
+          </div>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap">
+            <div id="reglamentoNote" style="font-family:'Orbitron';font-size:.6rem;color:var(--ins-muted);display:none"></div>
+            <button class="ins-btn ins-btn-outline" id="btnPodioManualDirecto">🏆 Podio Manual (sin cronometrar)</button>
+            <button class="ins-btn ins-btn-cyan" id="btnIniciarClas">INICIAR →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: CLASIFICATORIA -->
+      <div class="step-panel ins-step-panel" id="panel1">
+        <div class="serial-bar">
+          <div class="serial-dot" id="serialDot"></div>
+          <div class="serial-status" id="serialStatus">Web Serial desconectado</div>
+          <button class="ins-btn ins-btn-outline btn-sm" id="btnConectar">🔌 Conectar dispositivo</button>
+          <button class="ins-btn ins-btn-outline btn-sm" id="btnDesconectar" style="display:none">⏏ Desconectar</button>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="ins-btn btn-sm ins-btn-anterior" id="btnVolverPresentes">← Presentes</button>
+            <button class="ins-btn btn-sm" style="background:#7b1fa2;color:#fff" id="btnCerrarCat">✕ Cerrar Categoría</button>
+          </div>
+        </div>
+        <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div class="turno-badge" id="turnoBadge">CLASIFICATORIA · TURNO 1 · INTENTO 1</div>
+          <div class="grupo-badge" style="margin-bottom:0">
+            Grupo <span class="grupo-num" id="grupoNumLabel">1</span>
+            <span style="font-size:.7rem;color:var(--ins-muted)" id="grupoInfo"></span>
+          </div>
+        </div>
+
+        <div class="panel-3col">
+          <div class="panel-lateral" style="padding-top:0">
+            <div class="ranking-mini" id="rankingParcial" style="margin-top:0"></div>
+          </div>
+
+          <div>
+            <div class="carriles-grid" id="carrilesGrid" style="grid-template-columns:repeat(2,1fr);display:grid;margin-bottom:10px"></div>
+            <div style="display:flex;justify-content:space-between;gap:8px">
+              <button class="ins-btn ins-btn-anterior" id="btnGrupoAnterior" style="flex:1">← Anterior</button>
+              <button class="ins-btn ins-btn-cyan" id="btnGrupoSiguiente" style="flex:1">Siguiente →</button>
+            </div>
+          </div>
+
+          <div class="panel-lateral">
+            <div class="cron-central" style="margin-bottom:0">
+              <div class="cron-label" id="cronLabel">TURNO 1 · GRUPO 1</div>
+              <div class="cron-num" id="cronNum">02:00</div>
+              <div class="cron-bar-wrap"><div class="cron-bar" id="cronFill"></div></div>
+              <div class="cron-btn-row">
+                <button class="ins-btn ins-btn-green" id="btnCronStart">▶ INICIAR</button>
+                <button class="ins-btn ins-btn-orange" id="btnCronPause" disabled>⏸ PAUSAR</button>
+                <button class="ins-btn ins-btn-red" id="btnCronStop" disabled>⏹ DETENER</button>
+              </div>
+              <button class="ins-btn ins-btn-outline" id="btnCronReset" style="width:100%;margin-top:8px">↻ Reiniciar tiempo</button>
+              <button class="ins-btn ins-btn-outline" id="btnDNFAll" style="width:100%;margin-top:8px">DNF TODOS</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: FINAL -->
+      <div class="step-panel ins-step-panel" id="panel2">
+        <div class="serial-bar">
+          <div class="serial-dot" id="serialDotF"></div>
+          <div class="serial-status" id="serialStatusF">Web Serial desconectado</div>
+          <button class="ins-btn ins-btn-outline btn-sm" id="btnConectarF">🔌 Conectar dispositivo</button>
+          <button class="ins-btn ins-btn-outline btn-sm" id="btnDesconectarF" style="display:none">⏏ Desconectar</button>
+          <div style="margin-left:auto">
+            <button class="ins-btn btn-sm ins-btn-anterior" id="btnVolverPresentes2">← Presentes</button>
+          </div>
+        </div>
+
+        <div class="turno-badge" style="margin-bottom:12px" id="finalTurnoBadge">⭐ RONDA FINAL · INTENTO 1 DE 2</div>
+        <div class="final-info" id="finalInfo" style="margin-bottom:12px"></div>
+
+        <div class="panel-3col">
+          <div class="panel-lateral">
+            <div class="ranking-mini" id="rankingParcialFinal"></div>
+          </div>
+
+          <div>
+            <div class="carriles-grid" id="carrilesGridFinal" style="grid-template-columns:repeat(2,1fr);display:grid"></div>
+            <div style="margin-top:10px;display:flex;justify-content:flex-end">
+              <button class="ins-btn ins-btn-cyan" id="btnVerPodio">Siguiente intento →</button>
+            </div>
+          </div>
+
+          <div class="panel-lateral">
+            <div class="cron-central">
+              <div class="cron-label" id="finalCronLabel">FINAL · INTENTO 1 DE 2</div>
+              <div class="cron-num" id="cronNumF">02:00</div>
+              <div class="cron-bar-wrap"><div class="cron-bar" id="cronFillF"></div></div>
+              <div class="cron-btn-row">
+                <button class="ins-btn ins-btn-green" id="btnCronStartF">▶ INICIAR</button>
+                <button class="ins-btn ins-btn-orange" id="btnCronPauseF" disabled>⏸ PAUSAR</button>
+                <button class="ins-btn ins-btn-red" id="btnCronStopF" disabled>⏹ DETENER</button>
+              </div>
+              <button class="ins-btn ins-btn-outline" id="btnDNFAllF" style="width:100%;margin-top:8px">DNF TODOS</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: PODIO -->
+      <div class="step-panel ins-step-panel" id="panel3">
+        <div class="ins-card">
+          <div class="ins-card-title">Podio Final — Carrera de Insectos</div>
+          <div class="podio-wrap" id="podioWrap"></div>
+          <div id="podioNota"></div>
+          <div style="margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <button class="ins-btn ins-btn-anterior" id="btnVolverFinal">← Volver a Final</button>
+            <button class="ins-btn ins-btn-outline" id="btnAjustarPodio">✏️ Ajustar Podio</button>
+            <button class="ins-btn ins-btn-outline" id="btnQuitarAjustePodio" style="display:none">↩️ Quitar ajuste manual</button>
+            <button class="ins-btn ins-btn-cyan" id="btnGuardarPodio">💾 Guardar en certificados</button>
+            <button class="ins-btn ins-btn-green" id="btnExportarExcel">📊 Exportar Excel</button>
+            <button class="ins-btn ins-btn-outline" id="btnReiniciar">↺ Nueva competencia</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /ins-wrap -->
+  </div><!-- /panel-ins -->
+
 </div>
 </main>
+
+<div class="sb-modal-overlay" id="modalSensorDesconectado">
+  <div class="sb-modal-card">
+    <div class="sb-modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+    </div>
+    <div class="sb-modal-title">Sensor no conectado</div>
+    <div class="sb-modal-desc">No se detecta el dispositivo conectado por Web Serial. Puedes conectarlo ahora, o continuar e ingresar los tiempos manualmente.</div>
+    <div class="sb-modal-actions">
+      <button class="sb-modal-btn ghost" id="btnModalCancelar">Cancelar</button>
+      <button class="sb-modal-btn primary" id="btnModalContinuar">Continuar sin sensor</button>
+    </div>
+  </div>
+</div>
+
+<div class="sb-modal-overlay" id="modalPodioManual">
+  <div class="sb-modal-card" style="max-width:460px">
+    <div class="sb-modal-title">✏️ Ajustar podio manualmente</div>
+    <div class="sb-modal-desc">Elige el orden real si el cálculo automático por tiempo no corresponde (ej. tiempo mal registrado, descalificación tras la carrera). Esto reemplaza el orden 1°-2°-3° al guardar certificados.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div>
+        <label style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:1px">🥇 1er lugar</label>
+        <select id="selPodio1" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+      </div>
+      <div>
+        <label style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:1px">🥈 2do lugar</label>
+        <select id="selPodio2" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+      </div>
+      <div>
+        <label style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:1px">🥉 3er lugar</label>
+        <select id="selPodio3" style="width:100%;padding:8px;border-radius:6px;margin-top:4px"></select>
+      </div>
+    </div>
+    <div class="sb-modal-actions">
+      <button class="sb-modal-btn ghost" id="btnPodioManualCancelar">Cancelar</button>
+      <button class="sb-modal-btn primary" id="btnPodioManualConfirmar">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="ins-modal-editar-intento">
+  <div class="modal-box">
+    <div class="modal-title">Corregir intento</div>
+    <div class="modal-text" id="ins-edit-intento-info"></div>
+    <div id="ins-edit-intento-manual-wrap" style="display:none;margin-bottom:16px;">
+      <input type="text" id="ins-edit-intento-manual-input" class="modal-input" placeholder="MM:SS:CS (ej. 00:04:32)" maxlength="8">
+    </div>
+    <div class="modal-btns edit-intento-grid" id="ins-edit-intento-btns"></div>
+  </div>
+</div>
 
 <div class="modal" id="modal-ronda"><div class="modal-box"><div class="modal-title">Cerrar <span id="modal-ronda-nom">Ronda 1</span></div><div class="modal-text" id="modal-ronda-text">Solo los marcados con ▲ pasan a la siguiente ronda. ¿Confirmar?</div><div class="modal-btns"><button class="modal-btn cancel" onclick="cerrarModal('modal-ronda')">Cancelar</button><button class="modal-btn confirm" onclick="confirmarCerrarRonda()">Sí, cerrar</button></div></div></div>
 <div class="modal" id="modal-cat"><div class="modal-box"><div class="modal-title">Cerrar Categoría</div><div class="modal-text">¿Cerrar "<span id="modal-cat-nom"></span>"? Se liberará la categoría y se borrará el progreso local.</div><div class="modal-btns"><button class="modal-btn cancel" onclick="cerrarModal('modal-cat')">Cancelar</button><button class="modal-btn confirm" onclick="confirmarCerrarCategoria()">Sí, cerrar</button></div></div></div>
@@ -413,22 +750,17 @@
 <script src="../shared/js/auth.js"></script>
 <script>
 const GAS_URL = CONFIG.GAS_URL();
-const RUTAS = { 'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr','Categoría Nueva':'cat_n' };
-const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)','Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)','Categoría Nueva'];
+const RUTAS = { 'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr' };
+const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)','Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
 const CATS_PULSADOR = ['Cubo Rubik'];
-// Categorías con DOS sensores independientes (uno de inicio, uno de meta) — mismo
-// protocolo serial que "Seguidor" (mensajes START/STOP por la misma conexión),
-// solo que cada mensaje lo dispara un sensor físico distinto en vez de un único
-// sensor toggle. Ver "CATEGORÍA NUEVA — pendiente de nombre" más abajo (IIFE serial).
-const CATS_SEG      = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)','Categoría Nueva'];
+const CATS_SEG      = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
 const CATS_SERIAL   = [...CATS_SENSOR,...CATS_PULSADOR];
 const AVISO_SENSOR  = {
   'Trepador (Amateur)':             {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
   'Trepador (Pro)':                 {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
   'Seguidor de línea ST (Amateur)': {titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},
   'Seguidor de línea ST (Pro)':     {titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},
-  'Cubo Rubik':                     {titulo:'PULSADORES REQUERIDOS (x2)',desc:'Conecta el Arduino. Suelta ambos pulsadores para iniciar. Presiona ambos para detener.'},
-  'Categoría Nueva':                {titulo:'2 SENSORES REQUERIDOS (INICIO + META)',desc:'Conecta el dispositivo. El sensor de inicio arranca el tiempo y el sensor de meta lo detiene automáticamente.'}
+  'Cubo Rubik':                     {titulo:'PULSADORES REQUERIDOS (x2)',desc:'Conecta el Arduino. Suelta ambos pulsadores para iniciar. Presiona ambos para detener.'}
 };
 
 let categoriaActual=null,participanteActual=null,pollingInterval=null,cronoInterval=null,cronoInicio=null;
@@ -605,6 +937,26 @@ function actualizarContadorSel(){document.getElementById('selCount').textContent
 function seleccionarTodos(){presentes.forEach(p=>seleccionados.add(p.id));renderSeleccion();}
 function deseleccionarTodos(){seleccionados.clear();renderSeleccion();}
 function volverPaso1(){presentes=[];seleccionados=new Set();document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);}
+
+// ── Insectos (6ta categoría) — vive en su propio panel-ins con stepper interno ──
+function abrirInsectosCrono(ev){
+  if(ev&&ev.currentTarget){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));ev.currentTarget.classList.add('selected');}
+  document.getElementById('outerStepper').style.display='none';
+  document.getElementById('panel-1').classList.remove('active');
+  document.getElementById('panel-2').classList.remove('active');
+  document.getElementById('panel-3').classList.remove('active');
+  document.getElementById('panel-ins').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  window.InsectosCrono.abrir();
+}
+function volverAPaso1DesdeInsectos(){
+  document.getElementById('panel-ins').classList.remove('active');
+  document.getElementById('outerStepper').style.display='';
+  document.getElementById('panel-1').classList.add('active');
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  [1,2,3].forEach(i=>document.getElementById('step-dot-'+i).className='step-item'+(i===1?' active':''));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
 async function confirmarIniciarCrono(){
   if(seleccionados.size===0){showToast('⚠️ Selecciona al menos un participante',true);return;}
@@ -1378,18 +1730,1365 @@ document.addEventListener('componentsLoaded',async function(){
 });
 </script>
 
+<!-- INSECTOS (submódulo, 6ta categoría) — IIFE con estado propio, protocolo
+     serial multicanal (C1-C4) independiente de la conexión single-channel de
+     arriba. Reusa showToast/loading/cerrarModal globales (idénticos a los que
+     ya tenía standalone) en vez de duplicarlos. -->
+<script>
+(function(){
+  const TIEMPO_LIMITE_MS = 120000; // 2 minutos
+  let participantes = [];
+  let presentes = [];
+  let grupos = [];
+  let turnoActual = 0;
+  let grupoActual = 0;
+  let mejores = {};
+  let intentos = {};
+  let clasificados = [];
+  let tiemposFinal = {};
+  let podioManualOverride = null;
+
+  function poolPodioManual() { return clasificados.length ? clasificados : presentes; }
+  let intentosFinal = {};
+  let turnoFinalActual = 0;
+  // Configurables desde el paso "Presentes" (panel #insCfgTurnosClas/#insCfgIntentosFinal),
+  // igual que el panel CONFIG del resto de categorías de CRONOMETRO. Se leen y se
+  // bloquean recién al presionar "INICIAR" (leerConfigTurnosIntentos()).
+  let numTurnosClas = 2;
+  let numIntentosFinal = 2;
+  const TIEMPO_MAX_REGLAMENTARIO_MS = 120000;
+  function mejorFinalDe(id) {
+    const list = intentosFinal[id] || [];
+    const validos = list.filter(x => !x.dnf);
+    if (validos.length) {
+      const m = validos.reduce((a, b) => b.tiempo < a.tiempo ? b : a);
+      return { tiempo: m.tiempo, dnf: false, cruzaMeta: true };
+    }
+    if (list.length >= numIntentosFinal) return { tiempo: null, dnf: true, cruzaMeta: false };
+    return undefined;
+  }
+
+  function leerConfigTurnosIntentos() {
+    const elT = document.getElementById('insCfgTurnosClas');
+    const elI = document.getElementById('insCfgIntentosFinal');
+    numTurnosClas = Math.max(1, parseInt(elT && elT.value) || 2);
+    numIntentosFinal = Math.max(1, parseInt(elI && elI.value) || 2);
+    if (elT) elT.disabled = true;
+    if (elI) elI.disabled = true;
+  }
+  function reiniciarConfigTurnosIntentos() {
+    numTurnosClas = 2;
+    numIntentosFinal = 2;
+    const elT = document.getElementById('insCfgTurnosClas');
+    const elI = document.getElementById('insCfgIntentosFinal');
+    if (elT) { elT.value = 2; elT.disabled = false; }
+    if (elI) { elI.value = 2; elI.disabled = false; }
+  }
+
+  // ── CORRECCIÓN DE INTENTOS YA REGISTRADOS (clasificatoria y final) ──
+  let editorIntentoCtx = null;
+
+  function insAbrirEditorIntento(fase, id, turno) {
+    const pool = fase === 'clas' ? presentes : clasificados;
+    const p = pool.find(x => x.id === id);
+    if (!p) return;
+    const lista = fase === 'clas' ? (intentos[id] || []) : (intentosFinal[id] || []);
+    const entry = lista.find(x => x.turno === turno);
+    if (!entry) { showToast('⚠️ Este intento ya no existe', true); return; }
+    editorIntentoCtx = { fase, id, turno, robot: p.robot, grupo: entry.grupo };
+    document.getElementById('ins-edit-intento-info').textContent =
+      p.robot + ' — ' + (fase === 'clas' ? 'Clasificatoria, turno ' + (turno + 1) : 'Final, intento ' + (turno + 1)) +
+      ' (actual: ' + (entry.dnf ? 'DNF' : fmtMs(entry.tiempo)) + ')';
+    document.getElementById('ins-edit-intento-manual-wrap').style.display = 'none';
+    document.getElementById('ins-edit-intento-manual-input').value = '';
+    insMostrarBotonesEditorIntento();
+    document.getElementById('ins-modal-editar-intento').classList.add('show');
+  }
+
+  function insMostrarBotonesEditorIntento() {
+    document.getElementById('ins-edit-intento-btns').className = 'modal-btns edit-intento-grid';
+    document.getElementById('ins-edit-intento-btns').innerHTML =
+      '<button class="modal-btn cancel full" onclick="cerrarModal(\'ins-modal-editar-intento\')">Cancelar</button>' +
+      '<button class="modal-btn confirm btn-manual" onclick="insMostrarManualIntento()">✏️ Tiempo manual</button>' +
+      '<button class="modal-btn confirm btn-marcar-dnf" onclick="insConfirmarEditorIntento(\'dnf\')">⛔ Marcar DNF</button>' +
+      '<button class="modal-btn confirm btn-rodar" onclick="insConfirmarEditorIntento(\'rodar\')">🔁 Volver a correr</button>' +
+      '<button class="modal-btn confirm btn-borrar" onclick="insConfirmarEditorIntento(\'borrar\')">🗑️ Borrar</button>';
+  }
+
+  function insMostrarManualIntento() {
+    document.getElementById('ins-edit-intento-manual-wrap').style.display = 'block';
+    document.getElementById('ins-edit-intento-btns').className = 'modal-btns edit-intento-grid';
+    document.getElementById('ins-edit-intento-btns').innerHTML =
+      '<button class="modal-btn cancel" onclick="insMostrarBotonesEditorIntento()">← Volver</button>' +
+      '<button class="modal-btn confirm btn-manual" onclick="insConfirmarEditorIntento(\'manual\')">💾 Guardar tiempo</button>';
+    document.getElementById('ins-edit-intento-manual-input').focus();
+  }
+
+  function recomputarMejorClas(id) {
+    const validos = (intentos[id] || []).filter(x => !x.dnf);
+    if (validos.length) {
+      const m = validos.reduce((a, b) => b.tiempo < a.tiempo ? b : a);
+      mejores[id] = { tiempo: m.tiempo, turno: m.turno, grupo: m.grupo };
+    } else {
+      delete mejores[id];
+    }
+  }
+
+  function insConfirmarEditorIntento(modo) {
+    if (!editorIntentoCtx) return;
+    const { fase, id, turno, robot, grupo } = editorIntentoCtx;
+    const lista = fase === 'clas' ? intentos[id] : intentosFinal[id];
+    const idx = lista ? lista.findIndex(x => x.turno === turno) : -1;
+    if (idx === -1) { cerrarModal('ins-modal-editar-intento'); editorIntentoCtx = null; return; }
+
+    if (modo === 'manual') {
+      const val = document.getElementById('ins-edit-intento-manual-input').value.trim();
+      const m = val.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+      if (!m) { showToast('⚠️ Formato inválido — usa MM:SS:CS (ej. 00:04:32)', true); return; }
+      const msManual = parseInt(m[1]) * 60000 + parseInt(m[2]) * 1000 + parseInt(m[3]) * 10;
+      if (msManual > TIEMPO_MAX_REGLAMENTARIO_MS && !confirm(`⚠️ El tiempo ingresado (${fmtMs(msManual)}) supera los 2 minutos reglamentarios.\n\n¿Registrarlo de todas formas?`)) return;
+      lista[idx].tiempo = msManual;
+      lista[idx].dnf = false;
+    } else if (modo === 'dnf') {
+      lista[idx].tiempo = null;
+      lista[idx].dnf = true;
+    } else if (modo === 'borrar' || modo === 'rodar') {
+      lista.splice(idx, 1);
+    }
+
+    if (fase === 'clas') recomputarMejorClas(id);
+    else tiemposFinal[id] = mejorFinalDe(id);
+
+    cerrarModal('ins-modal-editar-intento');
+    editorIntentoCtx = null;
+
+    if (fase === 'clas') {
+      if (modo === 'rodar') { grupoActual = grupo; turnoActual = turno; renderGrupoActual(); }
+      renderRankingParcial();
+    } else {
+      if (modo === 'rodar') { turnoFinalActual = turno; resetCronF(); renderCarrilesFinal(); actualizarLabelsFinal(); }
+      renderRankingFinal();
+    }
+
+    showToast(modo === 'borrar' ? '🗑 Intento borrado — ' + robot
+      : modo === 'dnf' ? '⛔ Marcado como DNF — ' + robot
+      : modo === 'rodar' ? '🔁 Listo para volver a correr — ' + robot
+      : '✏️ Tiempo corregido — ' + robot);
+  }
+
+  // Cronómetro clasificatoria
+  let cronInterval = null;
+  let cronMs = TIEMPO_LIMITE_MS;
+  let cronIniciado = false;
+  let cronPausado = false;
+  let cronLast = 0;
+
+  // Cronómetro final
+  let cronFInterval = null;
+  let cronFMs = TIEMPO_LIMITE_MS;
+  let cronFIniciado = false;
+  let cronFPausado = false;
+  let cronFLast = 0;
+
+  // Web Serial (independiente de la conexión single-channel de CRONOMETRO)
+  let serialPort = null, serialReader = null, serialReading = false;
+
+  let modalSensorEsFinal = false;
+  function mostrarModalSensor(esFinal) {
+    modalSensorEsFinal = esFinal;
+    document.getElementById('modalSensorDesconectado').classList.add('show');
+  }
+  function cerrarModalSensor() {
+    document.getElementById('modalSensorDesconectado').classList.remove('show');
+  }
+  document.getElementById('btnModalCancelar').addEventListener('click', cerrarModalSensor);
+  document.getElementById('btnModalContinuar').addEventListener('click', () => {
+    cerrarModalSensor();
+    if (modalSensorEsFinal) iniciarCronFReal();
+    else iniciarCronReal();
+  });
+
+  function fmtMs(ms) {
+    if (ms === null || ms === undefined) return '–';
+    const total = Math.max(0, Math.round(ms));
+    const m = Math.floor(total / 60000);
+    const s = Math.floor((total % 60000) / 1000);
+    const cs = Math.floor((total % 1000) / 10);
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}:${String(cs).padStart(2,'0')}`;
+  }
+  function fmtMsGAS(ms) {
+    if (ms === null || ms === undefined) return 'DNF';
+    const total = Math.max(0, Math.round(ms));
+    const m = Math.floor(total / 60000);
+    const s = Math.floor((total % 60000) / 1000);
+    return `00:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function fmtCD(ms) {
+    const total = Math.max(0, Math.ceil(ms / 1000)) * 1000;
+    const m = Math.floor(total / 60000);
+    const s = Math.floor((total % 60000) / 1000);
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function gasPost(data) {
+    return fetch(CONFIG.GAS_URL(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ ...data, staffToken: staffToken() }),
+      keepalive: true
+    }).then(r => r.json()).then(d => {
+      if (!d.ok) throw new Error(d.error || 'Rechazado por el backend');
+      return d;
+    });
+  }
+  function staffToken() {
+    return localStorage.getItem('sucrebot_staff_token') || '';
+  }
+  function stepActivar(n) {
+    document.querySelectorAll('.ins-step-item').forEach((el, i) => {
+      el.classList.remove('active','done');
+      if (i < n) el.classList.add('done');
+      if (i === n) el.classList.add('active');
+    });
+    document.querySelectorAll('.ins-step-panel').forEach((el, i) => {
+      el.classList.toggle('active', i === n);
+    });
+  }
+
+  // ============================================================
+  // PASO 1: CARGAR Y SELECCIONAR PRESENTES
+  // ============================================================
+  async function cargarParticipantes() {
+    loading(true, 'Cargando participantes...');
+    try {
+      const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' }),{cache:'no-store'}).then(r => r.json());
+      const todos = Array.isArray(res) ? res : (res.participantes || []);
+      participantes = todos.filter(p => p.categoria === 'Insectos' && p.aprobado === 'APROBADO');
+      renderLista();
+    } catch (e) {
+      document.getElementById('listaParticipantes').innerHTML = `<div class="empty-state" style="color:var(--ins-red)">Error cargando participantes: ${e.message}</div>`;
+    } finally {
+      loading(false);
+    }
+  }
+
+  function renderLista() {
+    const el = document.getElementById('listaParticipantes');
+    document.getElementById('cntTotal').textContent = participantes.length;
+    if (!participantes.length) {
+      el.innerHTML = '<div class="empty-state">No hay participantes aprobados en Insectos</div>';
+      return;
+    }
+    el.innerHTML = participantes.map((p, i) => `
+      <div class="part-item" id="pi${i}">
+        <div class="part-check" id="pc${i}"></div>
+        <div class="part-info">
+          <div class="part-name">${p.nombre}</div>
+          <div class="part-robot">${p.robot}</div>
+        </div>
+      </div>`).join('');
+    participantes.forEach((_, i) => {
+      const row = document.getElementById(`pi${i}`);
+      row.addEventListener('click', () => togglePresente(i));
+    });
+    actualizarCuentaSel();
+  }
+
+  function togglePresente(i) {
+    const row = document.getElementById(`pi${i}`);
+    const chk = document.getElementById(`pc${i}`);
+    const idx = presentes.indexOf(participantes[i]);
+    if (idx === -1) {
+      presentes.push(participantes[i]);
+      row.classList.add('checked');
+      chk.textContent = '✓';
+    } else {
+      presentes.splice(idx, 1);
+      row.classList.remove('checked');
+      chk.textContent = '';
+    }
+    actualizarCuentaSel();
+  }
+
+  function actualizarCuentaSel() {
+    const n = presentes.length;
+    document.getElementById('cntSel').textContent = n;
+    const btn = document.getElementById('btnIniciarClas');
+    const nota = document.getElementById('reglamentoNote');
+    if (n <= 4 && n >= 2) {
+      btn.textContent = 'IR A FINAL DIRECTO →';
+      nota.textContent = `⚡ ${n} participantes → Final directa (reglamento)`;
+      nota.style.display = 'block';
+    } else {
+      btn.textContent = 'INICIAR CLASIFICATORIA →';
+      nota.style.display = 'none';
+    }
+  }
+
+  document.getElementById('btnTodos').addEventListener('click', () => {
+    presentes = [...participantes];
+    participantes.forEach((_, i) => {
+      document.getElementById(`pi${i}`).classList.add('checked');
+      document.getElementById(`pc${i}`).textContent = '✓';
+    });
+    actualizarCuentaSel();
+  });
+  document.getElementById('btnNinguno').addEventListener('click', () => {
+    presentes = [];
+    participantes.forEach((_, i) => {
+      document.getElementById(`pi${i}`).classList.remove('checked');
+      document.getElementById(`pc${i}`).textContent = '';
+    });
+    actualizarCuentaSel();
+  });
+
+  document.getElementById('btnIniciarClas').addEventListener('click', () => {
+    if (presentes.length < 2) { alert('Selecciona al menos 2 participantes'); return; }
+    leerConfigTurnosIntentos();
+
+    if (presentes.length <= 4) {
+      if (!confirm(`Solo hay ${presentes.length} participantes. Según el reglamento van directo a la Final. ¿Continuar?`)) return;
+      mejores = {}; intentos = {}; grupos = [];
+      presentes.forEach(p => { intentos[p.id] = []; });
+      clasificados = [...presentes];
+      tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0;
+      stepActivar(2);
+      resetCronF();
+      actualizarLabelsFinal();
+      const fi = document.getElementById('finalInfo');
+      if (fi) fi.innerHTML = `<b>${clasificados.length} participantes directos a la final:</b> ` +
+        clasificados.map(p => `<span style="color:var(--ins-cyan)">${p.robot}</span>`).join(', ');
+      renderCarrilesFinal();
+      renderRankingFinal();
+      return;
+    }
+
+    formarGrupos();
+    stepActivar(1);
+    renderGrupoActual();
+    renderRankingParcial();
+  });
+
+  // ============================================================
+  // GRUPOS
+  // ============================================================
+  function formarGrupos() {
+    const arr = [...presentes].sort(() => Math.random() - .5);
+    grupos = [];
+    for (let i = 0; i < arr.length; i += 4) {
+      grupos.push(arr.slice(i, i + 4));
+    }
+    turnoActual = 0;
+    grupoActual = 0;
+    mejores = {};
+    intentos = {};
+    presentes.forEach(p => {
+      intentos[p.id] = [];
+    });
+  }
+
+  // ============================================================
+  // RENDER GRUPO ACTUAL (CLASIFICATORIA)
+  // ============================================================
+  function renderGrupoActual() {
+    const g = grupos[grupoActual];
+    const totalGrupos = grupos.length;
+    const turnoLabel = `TURNO ${turnoActual + 1} DE ${numTurnosClas} · INTENTO ${turnoActual + 1}`;
+    document.getElementById('turnoBadge').textContent = `CLASIFICATORIA · ${turnoLabel}`;
+    document.getElementById('cronLabel').textContent = `${turnoLabel} · GRUPO ${grupoActual + 1}`;
+    document.getElementById('grupoNumLabel').textContent = grupoActual + 1;
+    document.getElementById('grupoInfo').textContent = `${totalGrupos} grupos en total · ${g.length} robot${g.length > 1 ? 's' : ''}`;
+
+    const esElPrimero = (grupoActual === 0 && turnoActual === 0);
+    const btnAnt = document.getElementById('btnGrupoAnterior');
+    btnAnt.disabled = esElPrimero;
+    btnAnt.style.opacity = esElPrimero ? '0.3' : '1';
+    btnAnt.style.cursor = esElPrimero ? 'not-allowed' : 'pointer';
+    const esUltimoGrupoTurno = grupoActual === grupos.length - 1;
+    const esUltimoTurno = turnoActual === numTurnosClas - 1;
+    const btnSig = document.getElementById('btnGrupoSiguiente');
+    if (esUltimoGrupoTurno && esUltimoTurno) {
+      btnSig.textContent = 'IR A FINAL →';
+      btnSig.className = 'ins-btn ins-btn-green';
+    } else if (esUltimoGrupoTurno) {
+      btnSig.textContent = `Iniciar Turno ${turnoActual + 2} →`;
+      btnSig.className = 'ins-btn ins-btn-turno';
+    } else {
+      btnSig.textContent = 'Siguiente grupo →';
+      btnSig.className = 'ins-btn ins-btn-cyan';
+    }
+
+    resetCron();
+
+    const grid = document.getElementById('carrilesGrid');
+    grid.innerHTML = '';
+    [0,1,2,3].forEach(ci => {
+      const p = g[ci];
+      const div = document.createElement('div');
+      div.className = 'carril-card' + (p ? '' : ' vacio');
+      div.id = `car${ci}`;
+      if (!p) {
+        div.innerHTML = `<div class="carril-num">CARRIL ${ci+1}</div><div class="carril-vacante">— VACANTE —</div>`;
+      } else {
+        const mejor = mejores[p.id];
+        div.innerHTML = `
+          <div class="carril-num">CARRIL ${ci+1}</div>
+          <div class="carril-robot">${p.robot}</div>
+          <div class="carril-equipo">${p.nombre}</div>
+          <div class="carril-tiempo" id="ct${ci}">–</div>
+          <div class="carril-mejor">${mejor ? 'MEJOR: <span>' + fmtMs(mejor.tiempo) + '</span>' : '<span style="opacity:.4">sin tiempo aún</span>'}</div>
+          <div class="carril-btns">
+            <button class="ins-btn-sm verde" id="cbv${ci}" onclick="registrarTiempoCarril(${ci})">✓ TIEMPO</button>
+            <button class="ins-btn-sm rojo" id="cbd${ci}" onclick="registrarDNFCarril(${ci})">DNF</button>
+          </div>`;
+      }
+      grid.appendChild(div);
+    });
+  }
+
+  // ============================================================
+  // CRONOMETRO CLASIFICATORIA
+  // ============================================================
+  function resetCron() {
+    clearInterval(cronInterval);
+    cronInterval = null;
+    cronMs = TIEMPO_LIMITE_MS;
+    cronIniciado = false;
+    cronPausado = false;
+    document.getElementById('cronNum').textContent = fmtCD(cronMs);
+    document.getElementById('cronNum').className = 'cron-num';
+    document.getElementById('cronFill').style.width = '100%';
+    document.getElementById('cronFill').style.background = 'var(--ins-green)';
+    document.getElementById('btnCronStart').disabled = false;
+    document.getElementById('btnCronPause').disabled = true;
+    document.getElementById('btnCronStop').disabled = true;
+    const g = grupos[grupoActual];
+    [0,1,2,3].forEach(ci => {
+      const p = g[ci];
+      const yaReg = p && (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
+      const bv = document.getElementById(`cbv${ci}`);
+      const bd = document.getElementById(`cbd${ci}`);
+      if (bv) bv.disabled = !!yaReg;
+      if (bd) bd.disabled = !!yaReg;
+    });
+  }
+
+  function iniciarCronReal() {
+    if (cronIniciado && !cronPausado) return;
+    if (cronPausado) { cronPausado = false; cronLast = performance.now(); }
+    else { cronIniciado = true; cronLast = performance.now(); }
+    document.getElementById('btnCronStart').disabled = true;
+    document.getElementById('btnCronPause').disabled = false;
+    document.getElementById('btnCronStop').disabled = false;
+    cronInterval = setInterval(tickCron, 50);
+  }
+  document.getElementById('btnCronStart').addEventListener('click', () => {
+    if (!serialReading) { mostrarModalSensor(false); return; }
+    iniciarCronReal();
+  });
+  document.getElementById('btnCronPause').addEventListener('click', () => {
+    if (!cronIniciado || cronPausado) return;
+    clearInterval(cronInterval);
+    cronPausado = true;
+    document.getElementById('btnCronStart').disabled = false;
+    document.getElementById('btnCronPause').disabled = true;
+  });
+  document.getElementById('btnCronStop').addEventListener('click', () => {
+    clearInterval(cronInterval); cronInterval = null;
+    cronIniciado = false; cronPausado = false;
+    document.getElementById('btnCronStart').disabled = false;
+    document.getElementById('btnCronPause').disabled = true;
+    document.getElementById('btnCronStop').disabled = true;
+  });
+  document.getElementById('btnCronReset').addEventListener('click', () => {
+    if (!confirm('¿Reiniciar este grupo?\n\nSe borrarán los tiempos/DNF ya registrados de este grupo en este intento, y el cronómetro volverá a 02:00.')) return;
+    const g = grupos[grupoActual];
+    g.forEach(p => {
+      if (!p) return;
+      if (intentos[p.id]) {
+        intentos[p.id] = intentos[p.id].filter(x => !(x.turno === turnoActual && x.grupo === grupoActual));
+      }
+      const validos = (intentos[p.id] || []).filter(x => !x.dnf);
+      if (validos.length) {
+        const m = validos.reduce((a, b) => b.tiempo < a.tiempo ? b : a);
+        mejores[p.id] = { tiempo: m.tiempo, turno: m.turno, grupo: m.grupo };
+      } else {
+        delete mejores[p.id];
+      }
+    });
+    renderGrupoActual();
+    renderRankingParcial();
+  });
+
+  function tickCron() {
+    const now = performance.now();
+    const dt = now - cronLast;
+    cronLast = now;
+    cronMs -= dt;
+    if (cronMs <= 0) {
+      cronMs = 0;
+      clearInterval(cronInterval); cronInterval = null;
+      autoDNFResto(false);
+    }
+    actualizarVistaCD(cronMs, 'cronNum', 'cronFill');
+  }
+
+  function actualizarVistaCD(ms, idNum, idFill) {
+    const el = document.getElementById(idNum);
+    const fill = document.getElementById(idFill);
+    el.textContent = fmtCD(ms);
+    const pct = ms / TIEMPO_LIMITE_MS * 100;
+    fill.style.width = pct + '%';
+    el.className = 'cron-num' + (ms < 30000 ? ' danger' : ms < 60000 ? ' warn' : '');
+    fill.style.background = ms < 30000 ? 'var(--ins-red)' : ms < 60000 ? 'var(--ins-orange)' : 'var(--ins-green)';
+  }
+
+  function tiempoTranscurrido() { return TIEMPO_LIMITE_MS - cronMs; }
+  function tiempoTranscurridoF() { return TIEMPO_LIMITE_MS - cronFMs; }
+
+  function autoDNFResto(esFinal) {
+    const g = esFinal ? clasificados : grupos[grupoActual];
+    g.forEach((p, ci) => {
+      if (!p) return;
+      const registrado = esFinal
+        ? (intentosFinal[p.id] || []).some(x => x.turno === turnoFinalActual)
+        : (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
+      if (!registrado) {
+        if (esFinal) {
+          if (!intentosFinal[p.id]) intentosFinal[p.id] = [];
+          intentosFinal[p.id].push({ turno: turnoFinalActual, tiempo: null, dnf: true });
+          tiemposFinal[p.id] = mejorFinalDe(p.id);
+        } else {
+          registrarDNFCarril(ci, true);
+        }
+      }
+    });
+    if (esFinal) actualizarCarrilesFinal();
+    else renderRankingParcial();
+  }
+
+  document.getElementById('btnDNFAll').addEventListener('click', () => {
+    clearInterval(cronInterval); cronInterval = null; cronIniciado = false;
+    autoDNFResto(false);
+  });
+
+  // ============================================================
+  // REGISTRAR TIEMPO / DNF CARRILES CLASIFICATORIA
+  // ============================================================
+  function registrarTiempoCarril(ci, msOverride) {
+    const g = grupos[grupoActual];
+    const p = g[ci];
+    if (!p) return;
+    const yaReg = (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
+    if (yaReg) return;
+    let ms;
+    if (msOverride !== undefined) {
+      if (!cronIniciado) {
+        console.warn('Señal de carril '+(ci+1)+' ignorada: el cronómetro del grupo no se ha iniciado.');
+        return;
+      }
+      ms = msOverride;
+    } else if (cronIniciado) {
+      ms = tiempoTranscurrido();
+    } else {
+      alert('⚠️ El cronómetro de este grupo no se ha iniciado.\n\nPresiona "▶ Iniciar" antes de registrar un tiempo.');
+      return;
+    }
+    if (!intentos[p.id]) intentos[p.id] = [];
+    intentos[p.id].push({ turno: turnoActual, grupo: grupoActual, tiempo: ms, dnf: false });
+    if (!mejores[p.id] || ms < mejores[p.id].tiempo) {
+      mejores[p.id] = { tiempo: ms, turno: turnoActual, grupo: grupoActual };
+    }
+    const card = document.getElementById(`car${ci}`);
+    card.classList.add('registrado');
+    const ct = document.getElementById(`ct${ci}`);
+    if (ct) ct.innerHTML = `<span style="color:var(--ins-green)">${fmtMs(ms)}</span>`;
+    const bv = document.getElementById(`cbv${ci}`);
+    const bd = document.getElementById(`cbd${ci}`);
+    if (bv) bv.disabled = true;
+    if (bd) bd.disabled = true;
+    renderRankingParcial();
+  }
+
+  function registrarDNFCarril(ci, auto) {
+    const g = grupos[grupoActual];
+    const p = g[ci];
+    if (!p) return;
+    const yaReg = (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual);
+    if (yaReg) return;
+    if (!auto && !cronIniciado) {
+      alert('⚠️ El cronómetro de este grupo no se ha iniciado.\n\nPresiona "▶ Iniciar" antes de marcar DNF (o usa "DNF TODOS" si quieres saltar el grupo completo).');
+      return;
+    }
+    if (!intentos[p.id]) intentos[p.id] = [];
+    intentos[p.id].push({ turno: turnoActual, grupo: grupoActual, tiempo: null, dnf: true });
+    const card = document.getElementById(`car${ci}`);
+    card.classList.add('dnf');
+    const ct = document.getElementById(`ct${ci}`);
+    if (ct) ct.innerHTML = `<span style="color:var(--ins-red)">DNF</span>`;
+    const bv = document.getElementById(`cbv${ci}`);
+    const bd = document.getElementById(`cbd${ci}`);
+    if (bv) bv.disabled = true;
+    if (bd) bd.disabled = true;
+    renderRankingParcial();
+  }
+
+  // ============================================================
+  // NAVEGACION GRUPOS
+  // ============================================================
+  document.getElementById('btnGrupoSiguiente').addEventListener('click', () => {
+    const esUltimoGrupo = grupoActual === grupos.length - 1;
+    const esUltimoTurno = turnoActual === numTurnosClas - 1;
+
+    if (esUltimoGrupo && esUltimoTurno) {
+      const huboFinal = prepararFinal();
+      if (huboFinal) stepActivar(2);
+      return;
+    }
+    if (esUltimoGrupo) {
+      turnoActual++;
+      grupoActual = 0;
+    } else {
+      grupoActual++;
+    }
+    renderGrupoActual();
+    renderRankingParcial();
+  });
+
+  document.getElementById('btnGrupoAnterior').addEventListener('click', () => {
+    if (grupoActual === 0 && turnoActual === 0) return;
+    if (grupoActual === 0) {
+      turnoActual--;
+      grupoActual = grupos.length - 1;
+    } else {
+      grupoActual--;
+    }
+    renderGrupoActual();
+    renderRankingParcial();
+  });
+
+  // ============================================================
+  // RANKING PARCIAL
+  // ============================================================
+  function rankingClas() {
+    return presentes.map(p => {
+      const m = mejores[p.id];
+      const intentado = (intentos[p.id] || []).length > 0;
+      return { p, tiempo: m ? m.tiempo : null, intentado };
+    }).sort((a, b) => {
+      if (a.tiempo === null && b.tiempo === null) return 0;
+      if (a.tiempo === null) return 1;
+      if (b.tiempo === null) return -1;
+      return a.tiempo - b.tiempo;
+    });
+  }
+
+  function tagsIntentosClas(p) {
+    const lista = (intentos[p.id] || []).slice().sort((a, b) => a.turno - b.turno);
+    if (!lista.length) return '';
+    const mejor = mejores[p.id];
+    return `<div class="rank-tags">${lista.map(x => {
+      const esMejor = !x.dnf && mejor && x.tiempo === mejor.tiempo;
+      const txt = x.dnf ? 'DNF' : fmtMs(x.tiempo);
+      return `<span class="tag-intento">T${x.turno + 1}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="ins-btn-editar-intento" title="Corregir turno ${x.turno + 1} de ${p.robot}" onclick="insAbrirEditorIntento('clas','${p.id}',${x.turno})">🔧</button></span>`;
+    }).join('')}</div>`;
+  }
+
+  function renderRankingParcial() {
+    const el = document.getElementById('rankingParcial');
+    const ranked = rankingClas();
+    el.innerHTML = `<div class="ranking-mini"><h4>🏆 RANKING PARCIAL (MEJOR TIEMPO)</h4>
+      ${ranked.map((r, i) => {
+        const tieneTags = (intentos[r.p.id] || []).length > 0;
+        return `<div class="rank-row${tieneTags ? ' has-tags' : ''}">
+            <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+            <div class="rank-robot">${r.p.robot}<span style="font-size:.7rem;color:var(--ins-muted);margin-left:6px">${r.p.nombre}</span></div>
+            <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo !== null ? fmtMs(r.tiempo) : (r.intentado ? 'DNF' : '—')}</div>
+          </div>${tagsIntentosClas(r.p)}`;
+      }).join('')}
+    </div>`;
+  }
+
+  // ============================================================
+  // PREPARAR FINAL
+  // ============================================================
+  function prepararFinal() {
+    const ranked = rankingClas();
+    clasificados = ranked.filter(r => r.tiempo !== null).slice(0, 4).map(r => r.p);
+
+    if (clasificados.length < 2) {
+      construirPodioDirecto();
+      stepActivar(3);
+      return false;
+    }
+
+    tiemposFinal = {};
+    intentosFinal = {};
+    turnoFinalActual = 0;
+    resetCronF();
+
+    const info = document.getElementById('finalInfo');
+    info.innerHTML = `<b>${clasificados.length} clasificados a la final:</b> ${clasificados.map(p=>`<span style="color:var(--ins-cyan)">${p.robot}</span>`).join(', ')}`;
+
+    renderCarrilesFinal();
+    renderRankingFinal();
+    actualizarLabelsFinal();
+    const rpf = document.getElementById('rankingParcialFinal');
+    if (rpf && Object.keys(mejores).length > 0) {
+      const rk = rankingClas();
+      rpf.innerHTML = `<div class="ranking-mini"><h4>📊 RANKING CLAS.</h4>` +
+        rk.map((r,i) => `<div class="rank-row">
+          <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+          <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
+          <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo!==null?fmtMs(r.tiempo):(r.intentado?'DNF':'—')}</div>
+        </div>`).join('') + '</div>';
+    }
+    return true;
+  }
+
+  function renderCarrilesFinal() {
+    const grid = document.getElementById('carrilesGridFinal');
+    grid.innerHTML = '';
+    [0,1,2,3].forEach(ci => {
+      const p = clasificados[ci];
+      const div = document.createElement('div');
+      div.className = 'carril-card' + (p ? '' : '');
+      div.id = `carF${ci}`;
+      if (!p) {
+        div.innerHTML = `<div class="carril-num">CARRIL ${ci+1}</div><div class="carril-vacante">— VACANTE —</div>`;
+      } else {
+        const mej = mejores[p.id];
+        const mejF = tiemposFinal[p.id];
+        const misIntentos = intentosFinal[p.id] || [];
+        const esteTurno = misIntentos.find(x => x.turno === turnoFinalActual);
+        const tdHtml = esteTurno
+          ? (esteTurno.dnf ? '<span style="color:var(--ins-red)">DNF</span>' : `<span style="color:var(--ins-green)">${fmtMs(esteTurno.tiempo)}</span>`)
+          : '–';
+        div.innerHTML = `
+          <div class="carril-num">CARRIL ${ci+1}</div>
+          <div class="carril-robot">${p.robot}</div>
+          <div class="carril-equipo">${p.nombre}</div>
+          <div class="carril-tiempo" id="tdF-c${ci}">${tdHtml}</div>
+          <div class="carril-mejor">${mej ? 'MEJOR CLAS: <span style="color:var(--ins-yellow)">' + fmtMs(mej.tiempo) + '</span>' : ''}</div>
+          <div class="carril-mejor" id="mjF-c${ci}">${mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--ins-yellow)">' + fmtMs(mejF.tiempo) + '</span>') : ''}</div>
+          <div class="carril-btns">
+            <button class="ins-btn-sm verde" id="cfbv${ci}" onclick="registrarTiempoFinalCarril(${ci})" ${esteTurno?'disabled':''}>✓ TIEMPO</button>
+            <button class="ins-btn-sm rojo" id="cfbd${ci}" onclick="registrarDNFFinalCarril(${ci})" ${esteTurno?'disabled':''}>DNF</button>
+          </div>`;
+        if (esteTurno) div.classList.add(esteTurno.dnf ? 'dnf' : 'registrado');
+      }
+      grid.appendChild(div);
+    });
+  }
+
+  function actualizarLabelsFinal() {
+    const n = turnoFinalActual + 1;
+    const badge = document.getElementById('finalTurnoBadge');
+    if (badge) badge.textContent = `⭐ RONDA FINAL · INTENTO ${n} DE ${numIntentosFinal}`;
+    const label = document.getElementById('finalCronLabel');
+    if (label) label.textContent = `FINAL · INTENTO ${n} DE ${numIntentosFinal}`;
+    const btn = document.getElementById('btnVerPodio');
+    if (btn) btn.textContent = turnoFinalActual < numIntentosFinal - 1 ? 'Siguiente intento →' : 'VER PODIO →';
+  }
+
+  function actualizarCarrilesFinal() {
+    clasificados.forEach((p, ci) => {
+      if (!p) return;
+      const misIntentos = intentosFinal[p.id] || [];
+      const esteTurno = misIntentos.find(x => x.turno === turnoFinalActual);
+      if (!esteTurno) return;
+      const td = document.getElementById(`tdF-c${ci}`);
+      const card = document.getElementById(`carF${ci}`);
+      if (td) td.innerHTML = esteTurno.dnf ? '<span style="color:var(--ins-red)">DNF</span>' : `<span style="color:var(--ins-green)">${fmtMs(esteTurno.tiempo)}</span>`;
+      if (card) card.classList.add(esteTurno.dnf ? 'dnf' : 'registrado');
+      const bv = document.getElementById(`cfbv${ci}`);
+      const bd = document.getElementById(`cfbd${ci}`);
+      if (bv) bv.disabled = true;
+      if (bd) bd.disabled = true;
+      const mejF = tiemposFinal[p.id];
+      const mejorEl = document.getElementById(`mjF-c${ci}`);
+      if (mejorEl) mejorEl.innerHTML = mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--ins-yellow)">' + fmtMs(mejF.tiempo) + '</span>') : '';
+    });
+  }
+
+  // ============================================================
+  // CRONOMETRO FINAL
+  // ============================================================
+  function resetCronF() {
+    clearInterval(cronFInterval); cronFInterval = null;
+    cronFMs = TIEMPO_LIMITE_MS;
+    cronFIniciado = false; cronFPausado = false;
+    document.getElementById('cronNumF').textContent = fmtCD(cronFMs);
+    document.getElementById('cronNumF').className = 'cron-num';
+    document.getElementById('cronFillF').style.width = '100%';
+    document.getElementById('cronFillF').style.background = 'var(--ins-green)';
+    document.getElementById('btnCronStartF').disabled = false;
+    document.getElementById('btnCronPauseF').disabled = true;
+    document.getElementById('btnCronStopF').disabled = true;
+  }
+
+  function iniciarCronFReal() {
+    if (cronFIniciado && !cronFPausado) return;
+    if (cronFPausado) { cronFPausado = false; cronFLast = performance.now(); }
+    else { cronFIniciado = true; cronFLast = performance.now(); }
+    document.getElementById('btnCronStartF').disabled = true;
+    document.getElementById('btnCronPauseF').disabled = false;
+    document.getElementById('btnCronStopF').disabled = false;
+    cronFInterval = setInterval(tickCronF, 50);
+  }
+  document.getElementById('btnCronStartF').addEventListener('click', () => {
+    if (!serialReading) { mostrarModalSensor(true); return; }
+    iniciarCronFReal();
+  });
+  document.getElementById('btnCronPauseF').addEventListener('click', () => {
+    if (!cronFIniciado || cronFPausado) return;
+    clearInterval(cronFInterval); cronFPausado = true;
+    document.getElementById('btnCronStartF').disabled = false;
+    document.getElementById('btnCronPauseF').disabled = true;
+  });
+  document.getElementById('btnCronStopF').addEventListener('click', () => {
+    clearInterval(cronFInterval); cronFInterval = null;
+    cronFIniciado = false; cronFPausado = false;
+    document.getElementById('btnCronStartF').disabled = false;
+    document.getElementById('btnCronPauseF').disabled = true;
+    document.getElementById('btnCronStopF').disabled = true;
+  });
+
+  function tickCronF() {
+    const now = performance.now();
+    const dt = now - cronFLast;
+    cronFLast = now;
+    cronFMs -= dt;
+    if (cronFMs <= 0) {
+      cronFMs = 0;
+      clearInterval(cronFInterval); cronFInterval = null;
+      autoDNFResto(true);
+    }
+    actualizarVistaCD(cronFMs, 'cronNumF', 'cronFillF');
+  }
+
+  document.getElementById('btnDNFAllF').addEventListener('click', () => {
+    clearInterval(cronFInterval); cronFInterval = null; cronFIniciado = false;
+    autoDNFResto(true);
+  });
+
+  // ============================================================
+  // REGISTRAR TIEMPO / DNF FINAL
+  // ============================================================
+  function tagsIntentosFinal(p) {
+    const lista = (intentosFinal[p.id] || []).slice().sort((a, b) => a.turno - b.turno);
+    if (!lista.length) return '';
+    const mejor = tiemposFinal[p.id];
+    return `<div class="rank-tags">${lista.map(x => {
+      const esMejor = !x.dnf && mejor && !mejor.dnf && x.tiempo === mejor.tiempo;
+      const txt = x.dnf ? 'DNF' : fmtMs(x.tiempo);
+      return `<span class="tag-intento">Int.${x.turno + 1}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="ins-btn-editar-intento" title="Corregir intento ${x.turno + 1} de ${p.robot}" onclick="insAbrirEditorIntento('final','${p.id}',${x.turno})">🔧</button></span>`;
+    }).join('')}</div>`;
+  }
+
+  function renderRankingFinal() {
+    const el = document.getElementById('rankingParcialFinal');
+    if (!el) return;
+    const lista = clasificados.map(p => {
+      const tf = tiemposFinal[p.id];
+      return { p, tiempo: tf && !tf.dnf ? tf.tiempo : null, dnf: tf?.dnf || false, registrado: !!tf };
+    }).sort((a, b) => {
+      if (!a.registrado && !b.registrado) return 0;
+      if (!a.registrado) return 1;
+      if (!b.registrado) return -1;
+      if (a.dnf && !b.dnf) return 1;
+      if (!a.dnf && b.dnf) return -1;
+      return a.tiempo - b.tiempo;
+    });
+    el.innerHTML = `<div class="ranking-mini"><h4>🏁 RANKING FINAL</h4>` +
+      lista.map((r, i) => {
+        const tieneTags = (intentosFinal[r.p.id] || []).length > 0;
+        return `<div class="rank-row${tieneTags ? ' has-tags' : ''}">
+          <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+          <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
+          <div class="rank-tiempo ${r.dnf?'rank-dnf':''}" style="${!r.registrado?'color:var(--ins-muted)':''}">
+            ${r.dnf ? 'DNF' : r.tiempo !== null ? fmtMs(r.tiempo) : '–'}
+          </div>
+        </div>${tagsIntentosFinal(r.p)}`;
+      }).join('') + '</div>';
+  }
+
+  function registrarTiempoFinalCarril(ci, msOverride) {
+    const p = clasificados[ci];
+    if (!p) return;
+    const yaTurno = (intentosFinal[p.id] || []).some(x => x.turno === turnoFinalActual);
+    if (yaTurno) return;
+    let ms;
+    if (msOverride !== undefined) {
+      ms = msOverride;
+    } else if (cronFIniciado) {
+      ms = tiempoTranscurridoF();
+    } else {
+      const input = prompt(`Ingresa el tiempo para ${p.robot} (formato MM:SS o MM:SS:CC):`);
+      if (!input) return;
+      const parts = input.trim().split(':').map(Number);
+      if (parts.length === 2) ms = (parts[0]*60 + parts[1]) * 1000;
+      else if (parts.length === 3) ms = (parts[0]*60 + parts[1]) * 1000 + parts[2]*10;
+      else { alert('Formato inválido. Usa MM:SS o MM:SS:CC'); return; }
+      if (ms > TIEMPO_MAX_REGLAMENTARIO_MS && !confirm(`⚠️ El tiempo ingresado (${fmtMs(ms)}) supera los 2 minutos reglamentarios.\n\n¿Registrarlo de todas formas?`)) return;
+    }
+    if (!intentosFinal[p.id]) intentosFinal[p.id] = [];
+    intentosFinal[p.id].push({ turno: turnoFinalActual, tiempo: ms, dnf: false });
+    tiemposFinal[p.id] = mejorFinalDe(p.id);
+    const td = document.getElementById(`tdF-c${ci}`);
+    if (td) td.innerHTML = `<span style="color:var(--ins-green)">${fmtMs(ms)}</span>`;
+    const card = document.getElementById(`carF${ci}`);
+    if (card) card.classList.add('registrado');
+    const bv = document.getElementById(`cfbv${ci}`);
+    const bd = document.getElementById(`cfbd${ci}`);
+    if (bv) bv.disabled = true;
+    if (bd) bd.disabled = true;
+    const mejF = tiemposFinal[p.id];
+    const mejorEl = document.getElementById(`mjF-c${ci}`);
+    if (mejorEl) mejorEl.innerHTML = mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--ins-yellow)">' + fmtMs(mejF.tiempo) + '</span>') : '';
+    renderRankingFinal();
+  }
+
+  function registrarDNFFinalCarril(ci) {
+    const p = clasificados[ci];
+    if (!p) return;
+    const yaTurno = (intentosFinal[p.id] || []).some(x => x.turno === turnoFinalActual);
+    if (yaTurno) return;
+    if (!intentosFinal[p.id]) intentosFinal[p.id] = [];
+    intentosFinal[p.id].push({ turno: turnoFinalActual, tiempo: null, dnf: true });
+    tiemposFinal[p.id] = mejorFinalDe(p.id);
+    const td = document.getElementById(`tdF-c${ci}`);
+    if (td) td.innerHTML = `<span style="color:var(--ins-red)">DNF</span>`;
+    const card = document.getElementById(`carF${ci}`);
+    if (card) card.classList.add('dnf');
+    const bv = document.getElementById(`cfbv${ci}`);
+    const bd = document.getElementById(`cfbd${ci}`);
+    if (bv) bv.disabled = true;
+    if (bd) bd.disabled = true;
+    const mejF = tiemposFinal[p.id];
+    const mejorEl = document.getElementById(`mjF-c${ci}`);
+    if (mejorEl) mejorEl.innerHTML = mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--ins-yellow)">' + fmtMs(mejF.tiempo) + '</span>') : '';
+    renderRankingFinal();
+  }
+
+  document.getElementById('btnVerPodio').addEventListener('click', () => {
+    const turnoCompleto = clasificados.every(p => (intentosFinal[p.id] || []).some(x => x.turno === turnoFinalActual));
+    if (turnoFinalActual < numIntentosFinal - 1) {
+      if (!turnoCompleto && !confirm(`Aún hay robots sin tiempo/DNF en el intento ${turnoFinalActual + 1}. ¿Pasar al intento ${turnoFinalActual + 2} de todas formas?`)) return;
+      turnoFinalActual++;
+      resetCronF();
+      renderCarrilesFinal();
+      actualizarLabelsFinal();
+      renderRankingFinal();
+    } else {
+      if (!turnoCompleto && !confirm('Aún hay robots sin tiempo/DNF en el último intento. ¿Continuar con el podio?')) return;
+      construirPodio();
+      stepActivar(3);
+    }
+  });
+
+  // ============================================================
+  // PODIO
+  // ============================================================
+  function construirPodio() {
+    if (podioManualOverride) {
+      const pool = poolPodioManual();
+      const conMeta = podioManualOverride.map(id => id ? pool.find(p => p.id === id) : null).filter(Boolean);
+      const idsEnPodio = conMeta.map(p => p.id);
+      const sinMeta = clasificados.filter(p => !idsEnPodio.includes(p.id));
+      renderPodio(conMeta, sinMeta, true);
+      return;
+    }
+    const conMeta = clasificados
+      .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
+      .sort((a, b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
+    const sinMeta = clasificados
+      .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
+
+    renderPodio(conMeta, sinMeta, false);
+  }
+
+  function construirPodioDirecto() {
+    if (podioManualOverride) { construirPodio(); return; }
+    const ranked = rankingClas().filter(r => r.tiempo !== null).map(r => r.p);
+    ranked.forEach(p => { tiemposFinal[p.id] = { tiempo: mejores[p.id].tiempo, dnf: false, cruzaMeta: true }; });
+    const sinMeta = presentes.filter(p => !ranked.includes(p));
+    renderPodio(ranked, sinMeta, false);
+  }
+
+  function renderPodio(conMeta, sinMeta, manual) {
+    const wrap = document.getElementById('podioWrap');
+    const nota = document.getElementById('podioNota');
+    const btnQuitar = document.getElementById('btnQuitarAjustePodio');
+    if (btnQuitar) btnQuitar.style.display = manual ? 'inline-flex' : 'none';
+
+    const pos = [
+      { pos: 1, label: '🥇', cls: 'p1', order: 1 },
+      { pos: 2, label: '🥈', cls: 'p2', order: 0 },
+      { pos: 3, label: '🥉', cls: 'p3', order: 2 },
+    ];
+
+    const orden = [1, 0, 2];
+    wrap.innerHTML = orden.map(oi => {
+      const { pos: n, label, cls } = pos[oi];
+      const p = conMeta[n - 1];
+      const tf = p ? tiemposFinal[p.id] : null;
+      const tiempoTxt = !p ? '' : (tf && tf.cruzaMeta ? fmtMs(tf.tiempo) : 'DNF');
+      return `<div class="podio-col">
+        <div class="podio-robot">${p ? p.robot : '—'}</div>
+        <div class="podio-tiempo">${tiempoTxt}</div>
+        <div class="podio-plat ${cls} ${p ? '' : 'vacio'}">${label}</div>
+      </div>`;
+    }).join('');
+
+    let notaHtml = '';
+    if (manual) {
+      notaHtml += `<div class="info-box">✏️ <b>Podio ajustado manualmente</b> por el staff — no refleja necesariamente el orden automático por tiempo.</div>`;
+    }
+    if (sinMeta.length) {
+      notaHtml += `<div class="alert-box"><b>Reglamento 4.6:</b> Los siguientes robots no cruzaron la meta y no califican para 2do/3er lugar: ${sinMeta.map(p=>`<b>${p.robot}</b>`).join(', ')}</div>`;
+    }
+    if (conMeta.length < 2 && !manual) {
+      notaHtml += `<div class="info-box">⚠️ Solo ${conMeta.length} robot${conMeta.length!==1?'s':''} cruzó la meta. Posiciones 2do/3er lugar quedan vacantes.</div>`;
+    }
+    nota.innerHTML = notaHtml;
+  }
+
+  function abrirModalPodioManual() {
+    const pool = poolPodioManual();
+    const auto = clasificados
+      .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
+      .sort((a, b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
+    const selects = ['selPodio1','selPodio2','selPodio3'].map(id => document.getElementById(id));
+    selects.forEach((sel, i) => {
+      sel.innerHTML = '<option value="">— (vacío) —</option>' +
+        pool.map(p => `<option value="${p.id}">${p.robot} — ${p.nombre}</option>`).join('');
+      const preset = podioManualOverride ? (podioManualOverride[i] || '') : (auto[i] ? auto[i].id : '');
+      sel.value = preset;
+    });
+    document.getElementById('modalPodioManual').classList.add('show');
+  }
+
+  document.getElementById('btnPodioManualDirecto').addEventListener('click', () => {
+    if (presentes.length < 1) { alert('Selecciona al menos 1 participante presente.'); return; }
+    abrirModalPodioManual();
+  });
+
+  document.getElementById('btnAjustarPodio').addEventListener('click', abrirModalPodioManual);
+  document.getElementById('btnPodioManualCancelar').addEventListener('click', () => {
+    document.getElementById('modalPodioManual').classList.remove('show');
+  });
+  document.getElementById('btnPodioManualConfirmar').addEventListener('click', async () => {
+    const ids = ['selPodio1','selPodio2','selPodio3'].map(id => document.getElementById(id).value);
+    const llenos = ids.filter(Boolean);
+    if (new Set(llenos).size !== llenos.length) {
+      alert('No puedes repetir el mismo robot en más de una posición.');
+      return;
+    }
+    podioManualOverride = ids.map(id => id || null);
+    document.getElementById('modalPodioManual').classList.remove('show');
+    stepActivar(3);
+    construirPodio();
+
+    const pool = poolPodioManual();
+    const posiciones = podioManualOverride.map((id, i) => {
+      if (!id) return null;
+      const p = pool.find(x => x.id === id);
+      if (!p) return null;
+      const tf = tiemposFinal[id];
+      return { posicion: i + 1, equipo_id: p.id, equipo_nombre: p.robot, total: (tf && tf.cruzaMeta) ? tf.tiempo : 0 };
+    }).filter(Boolean);
+    try { await gasPost({ action: 'guardarPodioManual', categoria: 'ins', posiciones }); }
+    catch(e) { console.error('No se pudo guardar podio manual en backend', e); }
+  });
+  document.getElementById('btnQuitarAjustePodio').addEventListener('click', async () => {
+    if (!confirm('¿Quitar el ajuste manual y volver al orden automático por tiempo?')) return;
+    podioManualOverride = null;
+    construirPodio();
+    try { await gasPost({ action: 'guardarPodioManual', categoria: 'ins', posiciones: [] }); }
+    catch(e) { console.error('No se pudo limpiar podio manual en backend', e); }
+  });
+
+  // ============================================================
+  // GUARDAR PODIO
+  // ============================================================
+  document.getElementById('btnGuardarPodio').addEventListener('click', async () => {
+    const btn = document.getElementById('btnGuardarPodio');
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+
+    const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
+    let conMeta, sinMeta;
+    if (podioManualOverride) {
+      const pool = poolPodioManual();
+      conMeta = podioManualOverride.map(id => id ? pool.find(p => p.id === id) : null).filter(Boolean);
+      const idsEnPodio = conMeta.map(p => p.id);
+      sinMeta = clasificados.filter(p => !idsEnPodio.includes(p.id));
+    } else {
+      conMeta = clasificados
+        .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
+        .sort((a,b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
+      sinMeta = clasificados
+        .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
+    }
+    const idsEnConMeta = conMeta.map(p => p.id);
+    const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id) && !idsEnConMeta.includes(p.id));
+
+    const todos = [
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i] || 'PARTICIPACIÓN', tiempo: (tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta) ? fmtMsGAS(tiemposFinal[p.id].tiempo) : (tiemposFinal[p.id] ? 'DNF' : fmtMsGAS((i+1)*1000)) })),
+      ...sinMeta.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
+      ...noFinal.map(p => ({ p, tipo: 'PARTICIPACIÓN', tiempo: 'DNF' })),
+    ];
+
+    let ok = 0, errores = 0;
+    for (const entry of todos) {
+      const p = entry.p;
+      try {
+        await gasPost({
+          action: 'guardarCertificado',
+          correo: p.correo || '',
+          nombre_completo: p.nombre || '',
+          categoria: 'Insectos',
+          institucion: p.institucion || '',
+          evento: 'SucreBot 2026',
+          fecha_evento: '16 de julio de 2026',
+          tipo_certificado: entry.tipo,
+        });
+        await gasPost({
+          action: 'pushResultado',
+          participanteId: p.id || '',
+          nombre: p.nombre || '',
+          robot: p.robot || '',
+          institucion: p.institucion || '',
+          tiempo: entry.tiempo,
+          ronda: 'FINAL',
+          intento: 1,
+          ruta: 'ins',
+          fecha: new Date().toISOString(),
+        });
+        ok++;
+      } catch(e) { errores++; console.error('Error guardando', p.nombre, e); }
+    }
+
+    if (errores === 0) {
+      btn.textContent = `✓ Guardado (${ok})`;
+      btn.className = 'ins-btn ins-btn-green';
+    } else {
+      btn.textContent = `${ok} ok · ${errores} errores`;
+      btn.disabled = false;
+    }
+
+    try {
+      await gasPost({
+        action: 'publicarPodioCalificacion',
+        categoria: 'ins',
+        ranking: todos.map(entry => ({ robot: entry.p.robot, nombre: entry.p.nombre, tiempo: entry.tiempo, institucion: entry.p.institucion || '' }))
+      });
+    } catch(e) {
+      console.warn('No se pudo publicar el podio en RESULTADOS:', e);
+      btn.textContent += ' · ⚠️ no se publicó en RESULTADOS';
+      btn.className = 'ins-btn';
+    }
+  });
+
+  document.getElementById('btnReiniciar').addEventListener('click', () => {
+    if (!confirm('¿Reiniciar la competencia de Insectos? Se perderán todos los datos del torneo actual.')) return;
+    presentes = []; grupos = []; mejores = {}; intentos = {};
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
+    turnoActual = 0; grupoActual = 0;
+    clearInterval(cronInterval); clearInterval(cronFInterval);
+    reiniciarConfigTurnosIntentos();
+    stepActivar(0);
+    cargarParticipantes();
+  });
+
+  // ============================================================
+  // WEB SERIAL — CLASIFICATORIA + FINAL (misma conexión C1-C4)
+  // ============================================================
+  function actualizarSerialUIAmbos(conectado, mensaje) {
+    ['serialDot', 'serialDotF'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('on', conectado);
+    });
+    ['serialStatus', 'serialStatusF'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = mensaje;
+    });
+    ['btnConectar', 'btnConectarF'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = conectado ? 'none' : '';
+    });
+    ['btnDesconectar', 'btnDesconectarF'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = conectado ? '' : 'none';
+    });
+  }
+
+  async function conectarSerial() {
+    try {
+      serialPort = await navigator.serial.requestPort();
+      await serialPort.open({ baudRate: 115200 });
+      actualizarSerialUIAmbos(true, 'Dispositivo conectado');
+      serialReading = true;
+      leerSerial();
+    } catch (e) {
+      console.warn('Serial:', e.message);
+    }
+  }
+  document.getElementById('btnConectar').addEventListener('click', conectarSerial);
+  document.getElementById('btnDesconectar').addEventListener('click', async () => {
+    serialReading = false;
+    try { if (serialReader) { await serialReader.cancel(); serialReader = null; } } catch {}
+    try { if (serialPort) { await serialPort.close(); serialPort = null; } } catch {}
+    actualizarSerialUIAmbos(false, 'Web Serial desconectado');
+  });
+  document.getElementById('btnConectarF').addEventListener('click', conectarSerial);
+  document.getElementById('btnDesconectarF').addEventListener('click', () => document.getElementById('btnDesconectar').click());
+
+  async function leerSerial() {
+    const decoder = new TextDecoderStream();
+    serialPort.readable.pipeTo(decoder.writable).catch(()=>{});
+    const reader = decoder.readable.getReader();
+    serialReader = reader;
+    let buf = '';
+    while (serialReading) {
+      try {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += value.replace(/\r/g, '');
+        const lines = buf.split('\n');
+        buf = lines.pop();
+        const panelFinal = document.getElementById('panel2');
+        const esFinalActivo = !!(panelFinal && panelFinal.classList.contains('active'));
+        lines.forEach(l => procesarLineaSerial(l.trim(), esFinalActivo));
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          serialReading = false;
+          serialPort = null; serialReader = null;
+          actualizarSerialUIAmbos(false, '⚠️ Dispositivo desconectado — reconecta');
+        }
+        break;
+      }
+    }
+  }
+
+  function procesarLineaSerial(line, esFinal) {
+    if (!line) return;
+    const m = line.match(/^C(\d+)(?::(\d+))?$/i);
+    if (!m) return;
+    const ci = parseInt(m[1]) - 1;
+    const ms = m[2] ? parseInt(m[2]) : null;
+    if (esFinal) {
+      registrarTiempoFinalCarril(ci, ms !== null ? ms : tiempoTranscurridoF());
+    } else {
+      registrarTiempoCarril(ci, ms !== null ? ms : tiempoTranscurrido());
+    }
+  }
+
+  // VOLVER A PRESENTES (desde final)
+  document.getElementById('btnVolverPresentes2').addEventListener('click', () => {
+    if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
+    clearInterval(cronFInterval);
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
+    grupos = []; mejores = {}; intentos = {};
+    turnoActual = 0; grupoActual = 0;
+    reiniciarConfigTurnosIntentos();
+    stepActivar(0);
+  });
+
+  // VOLVER A PRESENTES (desde clasificatoria)
+  document.getElementById('btnVolverPresentes').addEventListener('click', () => {
+    if (!confirm('¿Volver a la selección de presentes? Se perderá el progreso actual.')) return;
+    clearInterval(cronInterval);
+    grupos = []; mejores = {}; intentos = {};
+    turnoActual = 0; grupoActual = 0;
+    reiniciarConfigTurnosIntentos();
+    stepActivar(0);
+  });
+
+  // CERRAR CATEGORÍA
+  document.getElementById('btnCerrarCat').addEventListener('click', () => {
+    if (!confirm('¿Cerrar la categoría Insectos? Esto reiniciará la competencia.')) return;
+    presentes = []; grupos = []; mejores = {}; intentos = {};
+    clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
+    turnoActual = 0; grupoActual = 0;
+    clearInterval(cronInterval); clearInterval(cronFInterval);
+    reiniciarConfigTurnosIntentos();
+    stepActivar(0);
+    cargarParticipantes();
+  });
+
+  // EXPORTAR EXCEL (CSV con BOM y separador ; para Excel español)
+  document.getElementById('btnExportarExcel').addEventListener('click', () => {
+    const tipoMap = { 0:'GANADOR', 1:'SUBCAMPEÓN', 2:'TERCER LUGAR' };
+    const conMeta = clasificados
+      .filter(p => tiemposFinal[p.id] && tiemposFinal[p.id].cruzaMeta)
+      .sort((a,b) => tiemposFinal[a.id].tiempo - tiemposFinal[b.id].tiempo);
+    const sinMeta = clasificados
+      .filter(p => !tiemposFinal[p.id] || !tiemposFinal[p.id].cruzaMeta);
+    const noFinal = presentes.filter(p => !clasificados.find(c => c.id === p.id));
+
+    const todos = [
+      ...conMeta.map((p,i) => ({ p, tipo: tipoMap[i]||'PARTICIPACIÓN', tiempo: fmtMs(tiemposFinal[p.id].tiempo) })),
+      ...sinMeta.map(p => ({ p, tipo:'PARTICIPACIÓN', tiempo:'DNF' })),
+      ...noFinal.map(p => ({ p, tipo:'PARTICIPACIÓN', tiempo:'DNF' })),
+    ];
+
+    const rows = [['#','Robot','Participante','Institución','Tiempo Final','Posición']];
+    todos.forEach((entry, i) => {
+      rows.push([i+1, entry.p.robot||'', entry.p.nombre||'', entry.p.institucion||'', entry.tiempo, entry.tipo]);
+    });
+
+    const bom = '﻿';
+    const csv = bom + rows.map(r => r.map(c => String(c).replace(/;/g,',')).join(';')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Insectos_Resultados_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // VOLVER A FINAL desde podio
+  document.getElementById('btnVolverFinal').addEventListener('click', () => {
+    stepActivar(2);
+    renderCarrilesFinal();
+    renderRankingFinal();
+  });
+
+  // Funciones llamadas desde onclick en HTML generado dinámicamente — deben
+  // quedar expuestas en window (los atributos onclick se resuelven en scope global).
+  window.registrarTiempoCarril = registrarTiempoCarril;
+  window.registrarDNFCarril = registrarDNFCarril;
+  window.registrarTiempoFinalCarril = registrarTiempoFinalCarril;
+  window.registrarDNFFinalCarril = registrarDNFFinalCarril;
+  window.insAbrirEditorIntento = insAbrirEditorIntento;
+  window.insMostrarBotonesEditorIntento = insMostrarBotonesEditorIntento;
+  window.insMostrarManualIntento = insMostrarManualIntento;
+  window.insConfirmarEditorIntento = insConfirmarEditorIntento;
+
+  // Punto de entrada llamado por abrirInsectosCrono() en el script principal
+  window.InsectosCrono = {
+    abrir() {
+      presentes = []; grupos = []; mejores = {}; intentos = {};
+      clasificados = []; tiemposFinal = {}; intentosFinal = {}; turnoFinalActual = 0; podioManualOverride = null;
+      turnoActual = 0; grupoActual = 0;
+      clearInterval(cronInterval); clearInterval(cronFInterval);
+      reiniciarConfigTurnosIntentos();
+      stepActivar(0);
+      cargarParticipantes();
+    }
+  };
+})();
+</script>
+
 <!-- WEB SERIAL -->
 <script>
 (function(){
   let puerto=null,writer=null,buffer='';
   let armadoResolvers=[];
   const CATS_SENSOR=['Trepador (Amateur)','Trepador (Pro)'];
-  // CATEGORÍA NUEVA — pendiente de nombre definitivo. Usa 2 sensores físicos
-  // independientes (uno de inicio, uno de meta) pero el mismo protocolo serial
-  // que Seguidor: una sola conexión, mensajes START (sensor de inicio) y STOP
-  // (sensor de meta). El frontend no distingue cuántos sensores físicos hay,
-  // solo reacciona a los mensajes START/STOP — por eso comparte esta lista.
-  const CATS_SEGUIDOR=['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)','Categoría Nueva'];
+  const CATS_SEGUIDOR=['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
   const CATS_PULSADOR=['Cubo Rubik'];
   const CATS_SERIAL=[...CATS_SENSOR,...CATS_SEGUIDOR,...CATS_PULSADOR];
 
