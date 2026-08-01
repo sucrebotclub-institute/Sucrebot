@@ -592,7 +592,7 @@
         <div class="panel-3col">
           <div class="panel-lateral" style="padding-top:0">
             <div class="ranking-mini" id="rankingParcial" style="margin-top:0"></div>
-            <button class="ins-btn ins-btn-green" id="btnCerrarClasificatoria" style="width:100%;margin-top:12px">🏁 Cerrar Clasificatoria y pasar a Final</button>
+            <button class="ins-btn ins-btn-green" id="btnCerrarClasificatoria" disabled style="width:100%;margin-top:12px;opacity:.4;cursor:not-allowed">🏁 Cerrar Clasificatoria y pasar a Final</button>
           </div>
 
           <div>
@@ -2069,6 +2069,24 @@ document.addEventListener('componentsLoaded',async function(){
     });
   }
 
+  // "Cerrar Clasificatoria y pasar a Final" solo se habilita al llegar al
+  // último grupo del último turno configurado, y con ese grupo/turno ya
+  // completo (todos los carriles con tiempo o DNF) — no se puede saltar
+  // antes de que todos los robots completen los turnos que el staff
+  // configuró. Se recalcula tanto al navegar de grupo como al registrar
+  // cada tiempo/DNF (para habilitarse en vivo sin tener que navegar).
+  function actualizarBotonCerrarClasificatoria() {
+    const g = grupos[grupoActual] || [];
+    const esUltimoGrupoTurno = grupoActual === grupos.length - 1;
+    const esUltimoTurno = turnoActual === numTurnosClas - 1;
+    const grupoActualCompleto = g.every(p => !p || (intentos[p.id] || []).some(x => x.turno === turnoActual && x.grupo === grupoActual));
+    const puedeCerrarClas = esUltimoGrupoTurno && esUltimoTurno && grupoActualCompleto;
+    const btnCerrarClas = document.getElementById('btnCerrarClasificatoria');
+    btnCerrarClas.disabled = !puedeCerrarClas;
+    btnCerrarClas.style.opacity = puedeCerrarClas ? '1' : '0.4';
+    btnCerrarClas.style.cursor = puedeCerrarClas ? 'pointer' : 'not-allowed';
+  }
+
   // ============================================================
   // RENDER GRUPO ACTUAL (CLASIFICATORIA)
   // ============================================================
@@ -2099,6 +2117,8 @@ document.addEventListener('componentsLoaded',async function(){
       btnSig.textContent = 'Siguiente grupo →';
       btnSig.className = 'ins-btn ins-btn-cyan';
     }
+
+    actualizarBotonCerrarClasificatoria();
 
     resetCron();
 
@@ -2246,7 +2266,7 @@ document.addEventListener('componentsLoaded',async function(){
       }
     });
     if (esFinal) actualizarCarrilesFinal();
-    else renderRankingParcial();
+    else { renderRankingParcial(); actualizarBotonCerrarClasificatoria(); }
   }
 
   document.getElementById('btnDNFAll').addEventListener('click', () => {
@@ -2290,6 +2310,7 @@ document.addEventListener('componentsLoaded',async function(){
     if (bv) bv.disabled = true;
     if (bd) bd.disabled = true;
     renderRankingParcial();
+    actualizarBotonCerrarClasificatoria();
   }
 
   function registrarDNFCarril(ci, auto) {
@@ -2313,6 +2334,7 @@ document.addEventListener('componentsLoaded',async function(){
     if (bv) bv.disabled = true;
     if (bd) bd.disabled = true;
     renderRankingParcial();
+    actualizarBotonCerrarClasificatoria();
   }
 
   // ============================================================
