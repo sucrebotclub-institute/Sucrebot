@@ -1667,31 +1667,40 @@ function renderAvanceLlaveSoccer(torneo, ronda, llave, tablaLl) {
   const avanceExistente=(torneo.avances||[]).filter(a=>String(a.ronda)===String(ronda)&&a.llave===llave);
   const yaConfirmado=avanceExistente.length>0;
   const idsAvanzan=new Set(avanceExistente.map(a=>a.equipo_id));
+  const boxId=`avanceBox_${ronda}_${llave}`;
   const filas=tablaLl.map((t,i)=>{
     const checked=yaConfirmado?idsAvanzan.has(t.id):i<2;
-    return `<label style="display:flex;align-items:center;gap:6px;font-size:.75rem;padding:3px 0;"><input type="checkbox" data-avance-check="${llave}|${ronda}" value="${t.id}" data-nombre="${t.nombre.replace(/"/g,'&quot;')}" ${checked?'checked':''}> ${i+1}º ${t.nombre} (${t.puntos} pts)</label>`;
+    return `<div class="part-item${checked?' checked':''}" data-avance-id="${t.id}" data-avance-nombre="${t.nombre.replace(/"/g,'&quot;')}" onclick="toggleAvanceItem(this)">
+      <div class="part-check">${checked?'✓':''}</div>
+      <div class="part-info"><div class="part-nombre">${i+1}º ${t.nombre}</div><div class="part-sub">${t.puntos} pts</div></div>
+    </div>`;
   }).join('');
-  return `<div class="soc-avance-box" style="margin-top:8px;padding:10px;border:1px dashed var(--border);border-radius:8px;">
-    <div style="font-size:.68rem;color:var(--muted);margin-bottom:6px;">${yaConfirmado?'✓ Avance confirmado de esta llave — podés corregirlo mientras no generes la siguiente ronda:':'¿Quiénes avanzan de esta llave?'}</div>
-    ${filas}
-    <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap;">
-      <input type="text" id="soc_usuario_${ronda}_${llave}" placeholder="¿Quién confirma?" style="flex:1;min-width:120px;background:var(--bg2,#1a1f30);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:.72rem;">
-      <button class="btn btn-outline btn-sm" onclick="marcarAvanceLlaveUI('${ronda}','${llave}')">${yaConfirmado?'✏️ Corregir avance':'✅ Confirmar avance'}</button>
+  return `<div class="soc-avance-box" id="${boxId}" style="margin-top:8px;padding:10px;border:1px dashed var(--border);border-radius:8px;">
+    <div style="font-size:.68rem;color:var(--muted);margin-bottom:6px;">${yaConfirmado?'✓ Ya confirmado — podés corregirlo mientras no generes la siguiente ronda:':'Equipos que avanzan a la siguiente ronda:'}</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">${filas}</div>
+    <div style="margin-top:10px;">
+      <button class="btn btn-outline btn-sm" onclick="marcarAvanceLlaveUI('${ronda}','${llave}')">${yaConfirmado?'Corregir equipos para la siguiente ronda':'Seleccionar equipos para la siguiente ronda'}</button>
     </div>
   </div>`;
 }
 
+function toggleAvanceItem(el) {
+  const sel=!el.classList.contains('checked');
+  el.classList.toggle('checked',sel);
+  el.querySelector('.part-check').textContent=sel?'✓':'';
+}
+
 async function marcarAvanceLlaveUI(ronda, llave) {
-  const checks=[...document.querySelectorAll(`input[data-avance-check="${llave}|${ronda}"]:checked`)];
-  if(!checks.length){ toast('Selecciona al menos un equipo que avance','error'); return; }
-  const equipos=checks.map(c=>({id:c.value,nombre:c.dataset.nombre}));
-  const usuario=document.getElementById(`soc_usuario_${ronda}_${llave}`)?.value||'';
-  loading(true,'GUARDANDO AVANCE...');
+  const box=document.getElementById(`avanceBox_${ronda}_${llave}`);
+  const items=[...box.querySelectorAll('.part-item.checked')];
+  if(!items.length){ toast('Selecciona al menos un equipo que avance','error'); return; }
+  const equipos=items.map(el=>({id:el.dataset.avanceId,nombre:el.dataset.avanceNombre}));
+  loading(true,'GUARDANDO...');
   try{
-    const res=await gasPost({action:'marcarAvanceLlave',torneo_id:state.torneoSoc.torneo_id,ronda,llave,equipos,usuario});
+    const res=await gasPost({action:'marcarAvanceLlave',torneo_id:state.torneoSoc.torneo_id,ronda,llave,equipos,usuario:''});
     if(!res.ok)throw new Error(res.error||'Error');
     state.torneoSoc=res.torneo;
-    toast('✅ Avance de '+llave+' confirmado','success');
+    toast('✅ Equipos de '+llave+' confirmados para la siguiente ronda','success');
     renderTorneoSoccer();
   }catch(e){toast('Error: '+e.message,'error');}
   loading(false);
