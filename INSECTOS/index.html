@@ -482,6 +482,7 @@
   let intentosFinal = {};  // id → [{ turno, tiempo, dnf }, ...] (hasta 2 intentos)
   let turnoFinalActual = 0; // 0 = intento 1, 1 = intento 2
   const MAX_INTENTOS_FINAL = 2;
+  const TIEMPO_MAX_REGLAMENTARIO_MS = 120000; // 2 minutos — tope del reglamento para completar la pista
   function mejorFinalDe(id) {
     const list = intentosFinal[id] || [];
     const validos = list.filter(x => !x.dnf);
@@ -558,7 +559,9 @@
       const val = document.getElementById('edit-intento-manual-input').value.trim();
       const m = val.match(/^(\d{2}):(\d{2}):(\d{2})$/);
       if (!m) { showToast('⚠️ Formato inválido — usa MM:SS:CS (ej. 00:04:32)', true); return; }
-      lista[idx].tiempo = parseInt(m[1]) * 60000 + parseInt(m[2]) * 1000 + parseInt(m[3]) * 10;
+      const msManual = parseInt(m[1]) * 60000 + parseInt(m[2]) * 1000 + parseInt(m[3]) * 10;
+      if (msManual > TIEMPO_MAX_REGLAMENTARIO_MS && !confirm(`⚠️ El tiempo ingresado (${fmtMs(msManual)}) supera los 2 minutos reglamentarios.\n\n¿Registrarlo de todas formas?`)) return;
+      lista[idx].tiempo = msManual;
       lista[idx].dnf = false;
     } else if (modo === 'dnf') {
       lista[idx].tiempo = null;
@@ -1395,6 +1398,7 @@
       if (parts.length === 2) ms = (parts[0]*60 + parts[1]) * 1000;
       else if (parts.length === 3) ms = (parts[0]*60 + parts[1]) * 1000 + parts[2]*10;
       else { alert('Formato inválido. Usa MM:SS o MM:SS:CC'); return; }
+      if (ms > TIEMPO_MAX_REGLAMENTARIO_MS && !confirm(`⚠️ El tiempo ingresado (${fmtMs(ms)}) supera los 2 minutos reglamentarios.\n\n¿Registrarlo de todas formas?`)) return;
     }
     if (!intentosFinal[p.id]) intentosFinal[p.id] = [];
     intentosFinal[p.id].push({ turno: turnoFinalActual, tiempo: ms, dnf: false });
