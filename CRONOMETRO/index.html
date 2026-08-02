@@ -2133,28 +2133,10 @@ document.addEventListener('componentsLoaded',async function(){
     btnSig.className = 'ins-btn ins-btn-cyan';
 
     document.getElementById('carrilesGrid').innerHTML = '';
-
-    const asignadosHtml = grupoEnArmado.filter(Boolean).map(p => `
-      <div class="part-item checked">
-        <div class="part-info">
-          <div class="part-name">${p.robot}</div>
-          <div class="part-robot">${p.nombre}</div>
-        </div>
-        <button class="ins-btn-circ rojo" title="Quitar del carril" onclick="quitarDeArmadoPorId('${p.id}')">✕</button>
-      </div>`).join('');
-    const pendientesHtml = poolPendienteAsignar.map(p => `
-      <div class="part-item">
-        <div class="part-info">
-          <div class="part-name">${p.robot}</div>
-          <div class="part-robot">${p.nombre}</div>
-        </div>
-        <button class="ins-btn-circ azul" title="Meter al carril" onclick="asignarAlArmado('${p.id}')">▶</button>
-      </div>`).join('');
-
-    const wrap = document.getElementById('armadorPendientesWrap');
-    wrap.innerHTML = asignadosHtml + pendientesHtml;
+    document.getElementById('armadorPendientesWrap').innerHTML = '';
 
     actualizarBotonCerrarRonda();
+    renderRankingParcial();
   }
 
   function asignarAlArmado(id) {
@@ -2550,14 +2532,25 @@ document.addEventListener('componentsLoaded',async function(){
   function renderRankingParcial() {
     const el = document.getElementById('rankingParcial');
     const ranked = rankingClas();
+    const armando = hayArmadoPendiente();
     el.innerHTML = `<div class="ranking-mini">
       ${ranked.map((r, i) => {
         const tieneTags = (intentos[r.p.id] || []).some(x => x.ronda === rondaActual);
         const marcado = avanzaSet.has(r.p.id);
+        let accionBtn;
+        if (armando) {
+          const enArmado = grupoEnArmado.some(x => x && x.id === r.p.id);
+          const pendiente = poolPendienteAsignar.some(x => x.id === r.p.id);
+          if (enArmado) accionBtn = `<button class="ins-btn-circ rojo" title="Quitar del carril" onclick="quitarDeArmadoPorId('${r.p.id}')">✕</button>`;
+          else if (pendiente) accionBtn = `<button class="ins-btn-circ azul" title="Meter al carril" onclick="asignarAlArmado('${r.p.id}')">▶</button>`;
+          else accionBtn = '';
+        } else {
+          accionBtn = `<button class="ins-btn-avanza${marcado?' marcado':''}" title="Marcar/desmarcar para avanzar" onclick="insToggleAvanzaFinal('${r.p.id}')">▲</button>`;
+        }
         return `<div class="rank-row clas${tieneTags ? ' has-tags' : ''}${marcado?' avanza-marcado':''}">
             <div class="rank-row-top">
               <div class="rank-robot">${r.p.robot}</div>
-              <button class="ins-btn-avanza${marcado?' marcado':''}" title="Marcar/desmarcar para avanzar" onclick="insToggleAvanzaFinal('${r.p.id}')">▲</button>
+              ${accionBtn}
             </div>
             <div class="rank-row-bottom">
               <div class="rank-inst">${r.p.nombre}</div>
