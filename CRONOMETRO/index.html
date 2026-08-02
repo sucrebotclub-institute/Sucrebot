@@ -300,6 +300,7 @@
     .ins-card-title{font-family:'Orbitron';font-size:.75rem;letter-spacing:2px;color:var(--ins-cyan);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
     .ins-card-title::before{content:'';width:3px;height:16px;background:var(--ins-cyan);border-radius:2px}
     .part-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #panel-ins .part-name{color:var(--ins-text)}
     .part-robot{font-family:'DM Mono';font-size:.75rem;color:var(--ins-cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
     .ins-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'Exo 2';font-size:.85rem;font-weight:600;transition:all .2s}
@@ -357,7 +358,7 @@
     .rank-pos.p1{color:#ffd700}
     .rank-pos.p2{color:#c0c0c0}
     .rank-pos.p3{color:#cd7f32}
-    .rank-robot{flex:1;font-weight:600}
+    .rank-robot{flex:1;font-weight:600;color:var(--ins-text)}
     .rank-tiempo{font-family:'DM Mono';font-size:.8rem;color:var(--ins-cyan)}
     .rank-dnf{color:var(--ins-red)}
     .final-info{background:#0a2a4a;border:1px solid #1e5a8e;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.85rem;color:var(--ins-text)}
@@ -2113,9 +2114,10 @@ document.addEventListener('componentsLoaded',async function(){
 
   function renderArmadorGrupo() {
     const numGrupoMostrado = gruposRonda.length + 1;
+    const asignadosCount = grupoEnArmado.filter(Boolean).length;
     document.getElementById('cronLabel').textContent = `RONDA ${rondaActual} DE ${numRondas} · Armando grupo ${numGrupoMostrado}`;
     document.getElementById('grupoNumLabel').textContent = numGrupoMostrado;
-    document.getElementById('grupoInfo').textContent = `${poolPendienteAsignar.length} participante${poolPendienteAsignar.length!==1?'s':''} sin asignar`;
+    document.getElementById('grupoInfo').textContent = `${asignadosCount}/4 carriles asignados · ${poolPendienteAsignar.length} sin asignar`;
 
     const btnAnt = document.getElementById('btnGrupoAnterior');
     btnAnt.disabled = true;
@@ -2125,27 +2127,30 @@ document.addEventListener('componentsLoaded',async function(){
     btnSig.textContent = 'Confirmar grupo y empezar →';
     btnSig.className = 'ins-btn ins-btn-green';
 
-    const grid = document.getElementById('carrilesGrid');
-    grid.innerHTML = '';
-    [0,1,2,3].forEach(ci => {
-      const p = grupoEnArmado[ci];
-      const div = document.createElement('div');
-      div.className = 'carril-card' + (p ? ' registrado' : '');
-      div.id = `car${ci}`;
-      div.innerHTML = p
-        ? `<div class="carril-num">CARRIL ${ci+1}</div><div class="carril-robot">${p.robot}</div><div class="carril-equipo">${p.nombre}</div><button class="ins-btn-sm rojo" onclick="quitarDeArmado(${ci})" style="margin-top:8px;width:100%">✕ Quitar</button>`
-        : `<div class="carril-num">CARRIL ${ci+1}</div><div class="carril-vacante">— Elegí de la lista —</div>`;
-      grid.appendChild(div);
-    });
+    document.getElementById('carrilesGrid').innerHTML = '';
 
-    const wrap = document.getElementById('armadorPendientesWrap');
-    wrap.innerHTML = poolPendienteAsignar.map(p => `
-      <div class="part-item" onclick="asignarAlArmado('${p.id}')">
+    const asignadosHtml = grupoEnArmado.map((p, ci) => !p ? '' : `
+      <div class="part-item checked">
         <div class="part-info">
           <div class="part-name">${p.robot}</div>
           <div class="part-robot">${p.nombre}</div>
         </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:.65rem;color:var(--ins-green);font-weight:700;margin-bottom:4px">CARRIL ${ci+1}</div>
+          <button class="ins-btn-sm rojo" onclick="quitarDeArmado(${ci})">✕ Quitar</button>
+        </div>
       </div>`).join('');
+    const pendientesHtml = poolPendienteAsignar.map(p => `
+      <div class="part-item">
+        <div class="part-info">
+          <div class="part-name">${p.robot}</div>
+          <div class="part-robot">${p.nombre}</div>
+        </div>
+        <button class="ins-btn-sm verde" onclick="asignarAlArmado('${p.id}')" style="flex-shrink:0">→ Carril</button>
+      </div>`).join('');
+
+    const wrap = document.getElementById('armadorPendientesWrap');
+    wrap.innerHTML = asignadosHtml + pendientesHtml;
 
     actualizarBotonCerrarRonda();
   }
@@ -2543,7 +2548,6 @@ document.addEventListener('componentsLoaded',async function(){
         const marcado = avanzaSet.has(r.p.id);
         return `<div class="rank-row clas${tieneTags ? ' has-tags' : ''}${marcado?' avanza-marcado':''}">
             <div class="rank-row-top">
-              <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
               <div class="rank-robot">${r.p.robot}</div>
               <button class="ins-btn-avanza${marcado?' marcado':''}" title="Marcar/desmarcar para avanzar" onclick="insToggleAvanzaFinal('${r.p.id}')">▲</button>
             </div>
