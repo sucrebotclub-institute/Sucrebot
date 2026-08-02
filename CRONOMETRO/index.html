@@ -2221,7 +2221,7 @@ document.addEventListener('componentsLoaded',async function(){
     btn.disabled = !puede;
     btn.style.opacity = puede ? '1' : '0.4';
     btn.style.cursor = puede ? 'pointer' : 'not-allowed';
-    btn.textContent = rondaActual < numRondas ? `Cerrar Ronda ${rondaActual}` : `Cerrar Ronda ${rondaActual} y pasar a Podio`;
+    btn.textContent = rondaActual < numRondas ? `Cerrar Ronda ${rondaActual}` : `Cerrar Ronda ${rondaActual} y guardar Podio`;
   }
 
   document.getElementById('btnCerrarRonda').addEventListener('click', () => {
@@ -2243,6 +2243,7 @@ document.addEventListener('componentsLoaded',async function(){
     } else {
       construirPodio();
       stepActivar(2);
+      exportarExcelInsectos();
     }
   });
 
@@ -2761,8 +2762,6 @@ document.addEventListener('componentsLoaded',async function(){
       btn.disabled = false;
     }
 
-    exportarExcelInsectos();
-
     if (modoOffline) { actualizarBadgeOffline(); return; }
 
     try {
@@ -2877,9 +2876,9 @@ document.addEventListener('componentsLoaded',async function(){
   });
 
   // EXPORTAR EXCEL — .xlsx real con una hoja "Podio" (página 1) y una hoja
-  // "Ronda N" por cada ronda que se llegó a cerrar (con el detalle de cada
-  // intento y quién avanzó). Se descarga solo automáticamente al guardar el
-  // podio (ver btnGuardarPodio) — no hay botón aparte para disparrarlo a mano.
+  // "Ronda N - Intento M" por cada intento que se llegó a correr en cada
+  // ronda cerrada. Se descarga solo automáticamente al cerrar la última
+  // ronda (ver btnCerrarRonda) — no hay botón aparte para disparrarlo a mano.
   function exportarExcelInsectos() {
     const wb = XLSX.utils.book_new();
 
@@ -2910,35 +2909,28 @@ document.addEventListener('componentsLoaded',async function(){
     wsPodio['!cols'] = [{wch:4},{wch:18},{wch:22},{wch:24},{wch:14},{wch:16}];
     XLSX.utils.book_append_sheet(wb, wsPodio, 'Podio');
 
-    // ---- Una página por cada ronda ya cerrada ----
+    // ---- Una página por cada intento de cada ronda ya cerrada ----
     Object.keys(historialRondas).map(Number).sort((a,b) => a-b).forEach(n => {
-      const { pool, avanzaron } = historialRondas[n];
-      const maxIntentos = Math.max(1, ...pool.map(id => (intentos[id]||[]).filter(x=>x.ronda===n).length));
-      const filas = pool.map(id => {
-        const p = presentes.find(x=>x.id===id) || {};
-        const lista = (intentos[id]||[]).filter(x=>x.ronda===n).sort((a,b)=>a.intento-b.intento);
-        const validos = lista.filter(x=>!x.dnf);
-        const mejor = validos.length ? validos.reduce((a,b)=>b.tiempo<a.tiempo?b:a).tiempo : null;
-        return { p, mejor, avanzo: avanzaron.includes(id), lista };
-      }).sort((a,b) => {
-        if (a.mejor === null && b.mejor === null) return 0;
-        if (a.mejor === null) return 1;
-        if (b.mejor === null) return -1;
-        return a.mejor - b.mejor;
-      });
-      const header = ['#','Robot','Participante','Institución','Mejor tiempo','¿Avanzó?', ...Array.from({length:maxIntentos},(_,i)=>'Intento '+(i+1))];
-      const aoa = [header];
-      filas.forEach((f, i) => {
-        const intentosTxt = Array.from({length:maxIntentos}, (_, ii) => {
-          const e = f.lista.find(x => x.intento === ii+1);
-          if (!e) return '';
-          return e.dnf ? 'DNF' : fmtMs(e.tiempo);
+      const { pool } = historialRondas[n];
+      const intentosDeRonda = new Set();
+      pool.forEach(id => (intentos[id]||[]).filter(x=>x.ronda===n).forEach(x=>intentosDeRonda.add(x.intento)));
+
+      Array.from(intentosDeRonda).sort((a,b) => a-b).forEach(numIntento => {
+        const filas = pool.map(id => {
+          const p = presentes.find(x=>x.id===id) || {};
+          const entry = (intentos[id]||[]).find(x => x.ronda===n && x.intento===numIntento);
+          return { p, entry };
+        }).filter(f => f.entry).sort((a,b) => {
+          const at = a.entry.dnf ? Infinity : a.entry.tiempo;
+          const bt = b.entry.dnf ? Infinity : b.entry.tiempo;
+          return at - bt;
         });
-        aoa.push([i+1, f.p.robot||'', f.p.nombre||'', f.p.institucion||'', f.mejor!==null?fmtMs(f.mejor):'DNF', f.avanzo?'Sí':'No', ...intentosTxt]);
+        const aoa = [['#','Robot','Participante','Institución','Carril','Tiempo']];
+        filas.forEach((f, i) => aoa.push([i+1, f.p.robot||'', f.p.nombre||'', f.p.institucion||'', f.entry.grupo+1, f.entry.dnf?'DNF':fmtMs(f.entry.tiempo)]));
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws['!cols'] = [{wch:4},{wch:18},{wch:22},{wch:24},{wch:8},{wch:14}];
+        XLSX.utils.book_append_sheet(wb, ws, `Ronda ${n} - Intento ${numIntento}`);
       });
-      const ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws['!cols'] = [{wch:4},{wch:18},{wch:22},{wch:24},{wch:14},{wch:10},...Array(maxIntentos).fill({wch:12})];
-      XLSX.utils.book_append_sheet(wb, ws, 'Ronda '+n);
     });
 
     XLSX.writeFile(wb, `SucreBot2026_Insectos_${new Date().toISOString().slice(0,10)}.xlsx`);
