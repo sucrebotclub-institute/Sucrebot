@@ -346,6 +346,11 @@
     .ins-btn-sm.verde{background:var(--ins-green);color:#071e45}
     .ins-btn-sm.rojo{background:var(--ins-red);color:#fff}
     .ins-btn-sm:disabled{opacity:.4;cursor:not-allowed}
+    .ins-btn-circ{width:36px;height:36px;min-width:36px;border-radius:50%;border:none;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+    .ins-btn-circ.azul{background:var(--ins-blue);color:#fff}
+    .ins-btn-circ.azul:hover{background:var(--ins-cyan);color:#071e45}
+    .ins-btn-circ.rojo{background:var(--ins-red);color:#fff}
+    .ins-btn-circ.rojo:hover{filter:brightness(1.15)}
     .ranking-mini{margin-top:0}
     .ranking-mini h4{font-family:'Orbitron';font-size:.65rem;letter-spacing:2px;color:var(--ins-cyan);margin-bottom:10px;margin-top:0}
     .rank-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;background:#0d2040;margin-bottom:6px;font-size:.82rem}
@@ -2125,20 +2130,17 @@ document.addEventListener('componentsLoaded',async function(){
     btnAnt.style.cursor = 'not-allowed';
     const btnSig = document.getElementById('btnGrupoSiguiente');
     btnSig.textContent = 'Confirmar grupo y empezar →';
-    btnSig.className = 'ins-btn ins-btn-green';
+    btnSig.className = 'ins-btn ins-btn-cyan';
 
     document.getElementById('carrilesGrid').innerHTML = '';
 
-    const asignadosHtml = grupoEnArmado.map((p, ci) => !p ? '' : `
+    const asignadosHtml = grupoEnArmado.filter(Boolean).map(p => `
       <div class="part-item checked">
         <div class="part-info">
           <div class="part-name">${p.robot}</div>
           <div class="part-robot">${p.nombre}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:.65rem;color:var(--ins-green);font-weight:700;margin-bottom:4px">CARRIL ${ci+1}</div>
-          <button class="ins-btn-sm rojo" onclick="quitarDeArmado(${ci})">✕ Quitar</button>
-        </div>
+        <button class="ins-btn-circ rojo" title="Quitar del carril" onclick="quitarDeArmadoPorId('${p.id}')">✕</button>
       </div>`).join('');
     const pendientesHtml = poolPendienteAsignar.map(p => `
       <div class="part-item">
@@ -2146,7 +2148,7 @@ document.addEventListener('componentsLoaded',async function(){
           <div class="part-name">${p.robot}</div>
           <div class="part-robot">${p.nombre}</div>
         </div>
-        <button class="ins-btn-sm verde" onclick="asignarAlArmado('${p.id}')" style="flex-shrink:0">→ Carril</button>
+        <button class="ins-btn-circ azul" title="Meter al carril" onclick="asignarAlArmado('${p.id}')">▶</button>
       </div>`).join('');
 
     const wrap = document.getElementById('armadorPendientesWrap');
@@ -2163,6 +2165,12 @@ document.addEventListener('componentsLoaded',async function(){
     grupoEnArmado[slot] = poolPendienteAsignar[idx];
     poolPendienteAsignar.splice(idx, 1);
     renderGrupoActual();
+  }
+
+  function quitarDeArmadoPorId(id) {
+    const slot = grupoEnArmado.findIndex(p => p && p.id === id);
+    if (slot === -1) return;
+    quitarDeArmado(slot);
   }
 
   function quitarDeArmado(slot) {
@@ -3005,6 +3013,7 @@ document.addEventListener('componentsLoaded',async function(){
   window.insToggleAvanzaFinal = insToggleAvanzaFinal;
   window.asignarAlArmado = asignarAlArmado;
   window.quitarDeArmado = quitarDeArmado;
+  window.quitarDeArmadoPorId = quitarDeArmadoPorId;
 
   // Punto de entrada llamado por abrirInsectosCrono() en el script principal
   window.InsectosCrono = {
