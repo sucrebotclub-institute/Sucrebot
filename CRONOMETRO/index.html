@@ -2108,7 +2108,7 @@ document.addEventListener('componentsLoaded',async function(){
   // RENDER GRUPO ACTUAL
   // ============================================================
   function hayArmadoPendiente() {
-    return poolPendienteAsignar.length > 0 || grupoEnArmado.some(Boolean);
+    return grupoActual >= gruposRonda.length;
   }
 
   function renderArmadorGrupo() {
@@ -2122,7 +2122,7 @@ document.addEventListener('componentsLoaded',async function(){
     btnAnt.style.opacity = '0.3';
     btnAnt.style.cursor = 'not-allowed';
     const btnSig = document.getElementById('btnGrupoSiguiente');
-    btnSig.textContent = poolPendienteAsignar.length === 0 ? 'Confirmar grupo y empezar →' : 'Confirmar grupo →';
+    btnSig.textContent = 'Confirmar grupo y empezar →';
     btnSig.className = 'ins-btn ins-btn-green';
 
     const grid = document.getElementById('carrilesGrid');
@@ -2173,7 +2173,7 @@ document.addEventListener('componentsLoaded',async function(){
     if (asignados.length === 0) { alert('⚠️ Elegí al menos un participante para este grupo.'); return; }
     gruposRonda.push(grupoEnArmado);
     grupoEnArmado = [null, null, null, null];
-    grupoActual = poolPendienteAsignar.length === 0 ? 0 : gruposRonda.length;
+    grupoActual = gruposRonda.length - 1;
     renderGrupoActual();
     renderRankingParcial();
   }
@@ -2196,7 +2196,8 @@ document.addEventListener('componentsLoaded',async function(){
     btnAnt.disabled = esElPrimero;
     btnAnt.style.opacity = esElPrimero ? '0.3' : '1';
     btnAnt.style.cursor = esElPrimero ? 'not-allowed' : 'pointer';
-    const esUltimoGrupo = grupoActual === gruposRonda.length - 1;
+    const todosFormados = poolPendienteAsignar.length === 0;
+    const esUltimoGrupo = todosFormados && grupoActual === gruposRonda.length - 1;
     const esUltimoIntento = intentoActual === intentosDeRonda;
     const btnSig = document.getElementById('btnGrupoSiguiente');
     if (esUltimoGrupo && esUltimoIntento) {
@@ -2225,15 +2226,18 @@ document.addEventListener('componentsLoaded',async function(){
         div.innerHTML = `<div class="carril-num">CARRIL ${ci+1}</div><div class="carril-vacante">— VACANTE —</div>`;
       } else {
         const mejor = mejores[p.id];
+        const regActual = (intentos[p.id] || []).find(x => x.ronda === rondaActual && x.intento === intentoActual && x.grupo === grupoActual);
+        const tiempoHtml = !regActual ? '–' : (regActual.dnf ? '<span style="color:var(--ins-red)">DNF</span>' : `<span style="color:var(--ins-green)">${fmtMs(regActual.tiempo)}</span>`);
+        div.className += regActual ? (regActual.dnf ? ' dnf' : ' registrado') : '';
         div.innerHTML = `
           <div class="carril-num">CARRIL ${ci+1}</div>
           <div class="carril-robot">${p.robot}</div>
           <div class="carril-equipo">${p.nombre}</div>
-          <div class="carril-tiempo" id="ct${ci}">–</div>
+          <div class="carril-tiempo" id="ct${ci}">${tiempoHtml}</div>
           <div class="carril-mejor">${mejor ? 'MEJOR: <span>' + fmtMs(mejor.tiempo) + '</span>' : '<span style="opacity:.4">sin tiempo aún</span>'}</div>
           <div class="carril-btns">
-            <button class="ins-btn-sm verde" id="cbv${ci}" onclick="registrarTiempoCarril(${ci})">✓ TIEMPO</button>
-            <button class="ins-btn-sm rojo" id="cbd${ci}" onclick="registrarDNFCarril(${ci})">DNF</button>
+            <button class="ins-btn-sm verde" id="cbv${ci}" onclick="registrarTiempoCarril(${ci})" ${regActual ? 'disabled' : ''}>✓ TIEMPO</button>
+            <button class="ins-btn-sm rojo" id="cbd${ci}" onclick="registrarDNFCarril(${ci})" ${regActual ? 'disabled' : ''}>DNF</button>
           </div>`;
       }
       grid.appendChild(div);
@@ -2253,7 +2257,8 @@ document.addEventListener('componentsLoaded',async function(){
     }
     const g = gruposRonda[grupoActual] || [];
     const intentosDeRonda = (rondasConfig[rondaActual] && rondasConfig[rondaActual].intentos) || 1;
-    const esUltimoGrupo = grupoActual === gruposRonda.length - 1;
+    const todosFormados = poolPendienteAsignar.length === 0;
+    const esUltimoGrupo = todosFormados && grupoActual === gruposRonda.length - 1;
     const esUltimoIntento = intentoActual === intentosDeRonda;
     const grupoCompleto = g.every(p => !p || (intentos[p.id] || []).some(x => x.ronda === rondaActual && x.intento === intentoActual && x.grupo === grupoActual));
     const puede = esUltimoGrupo && esUltimoIntento && grupoCompleto;
@@ -2465,7 +2470,8 @@ document.addEventListener('componentsLoaded',async function(){
   document.getElementById('btnGrupoSiguiente').addEventListener('click', () => {
     if (hayArmadoPendiente()) { confirmarGrupoArmado(); return; }
     const intentosDeRonda = (rondasConfig[rondaActual] && rondasConfig[rondaActual].intentos) || 1;
-    const esUltimoGrupo = grupoActual === gruposRonda.length - 1;
+    const todosFormados = poolPendienteAsignar.length === 0;
+    const esUltimoGrupo = todosFormados && grupoActual === gruposRonda.length - 1;
     const esUltimoIntento = intentoActual === intentosDeRonda;
 
     if (esUltimoGrupo && esUltimoIntento) {
