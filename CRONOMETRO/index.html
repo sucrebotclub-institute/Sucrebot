@@ -1736,16 +1736,6 @@ document.addEventListener('componentsLoaded',async function(){
   let avanzaSet = new Set(); // marcados con ▲ (para pasar a la siguiente ronda, o al podio si es la última)
   let historialRondas = {};  // n → {pool:[ids], avanzaron:[ids]} — una foto por cada ronda ya cerrada, para el Excel
 
-  // "Volver a correr" ya no reabre el grupo original de 4 (con los otros 3 ya
-  // resueltos ocupando lugar) — al participante se lo saca de ahí y se lo
-  // agrega a un grupo de repetición aparte (junto con otros que también estén
-  // repitiendo el mismo intento), o corre individual si es el único. Estos
-  // grupos se agregan al final de gruposRonda, así toda la navegación
-  // (Anterior/Siguiente, gating de Cerrar Ronda) los trata igual que a
-  // cualquier otro grupo, sin lógica nueva en esas partes.
-  let gruposRepeticionIdx = new Set();      // índices dentro de gruposRonda que son grupos de repetición
-  let gruposRepeticionIntento = {};         // idx → número de intento que ese grupo de repetición representa
-
   let podioManualOverride = null; // [id1,id2,id3]|null — ajuste manual del podio
 
   // Armado MANUAL de grupos — reemplaza el sorteo aleatorio. El staff elige
@@ -1794,31 +1784,6 @@ document.addEventListener('componentsLoaded',async function(){
     document.getElementById('ins-edit-intento-manual-input').focus();
   }
 
-  // Saca a `p` de donde estaba y lo agrega al primer grupo de repetición del
-  // MISMO intento que tenga un carril libre — si ninguno tiene lugar (o
-  // ninguno existe todavía), crea un grupo de repetición nuevo al final de
-  // gruposRonda. Deja al staff parado justo ahí, listo para correrlo.
-  function agregarARepeticionYNavegar(p, intentoOriginal) {
-    let idxDestino = -1;
-    for (const idx of gruposRepeticionIdx) {
-      if (gruposRepeticionIntento[idx] !== intentoOriginal) continue;
-      if (gruposRonda[idx].some(x => !x)) { idxDestino = idx; break; }
-    }
-    if (idxDestino === -1) {
-      gruposRonda.push([null, null, null, null]);
-      idxDestino = gruposRonda.length - 1;
-      gruposRepeticionIdx.add(idxDestino);
-      gruposRepeticionIntento[idxDestino] = intentoOriginal;
-    }
-    const g = gruposRonda[idxDestino];
-    const slot = g.findIndex(x => !x);
-    g[slot] = p;
-
-    grupoActual = idxDestino;
-    intentoActual = intentoOriginal;
-    renderGrupoActual();
-  }
-
   function recomputarMejorClas(id) {
     const validos = (intentos[id] || []).filter(x => x.ronda === rondaActual && !x.dnf);
     if (validos.length) {
@@ -1857,11 +1822,11 @@ document.addEventListener('componentsLoaded',async function(){
     editorIntentoCtx = null;
 
     // "Volver a correr" saca al participante de su carril original (queda
-    // vacante ahí) y lo agrega a un grupo de repetición aparte, junto a
-    // quienes también estén repitiendo ese mismo intento (o individual si es
-    // el único) — no hace falta ir a buscar en qué grupo estaba.
-    // Borrar/DNF/Manual solo refrescan el ranking, para no cortarle el
-    // cronómetro a un grupo que esté corriendo ahora mismo.
+    // vacante ahí) y lo devuelve a la lista de pendientes por asignar — el
+    // staff lo vuelve a meter a un carril manualmente con el mismo botón ▶
+    // que usa para armar cualquier grupo (no hace falta ir a buscar en qué
+    // grupo estaba). Borrar/DNF/Manual solo refrescan el ranking, para no
+    // cortarle el cronómetro a un grupo que esté corriendo ahora mismo.
     if (modo === 'rodar') {
       const gOriginal = gruposRonda[grupo];
       if (gOriginal) {
@@ -1869,8 +1834,8 @@ document.addEventListener('componentsLoaded',async function(){
         if (slotOriginal !== -1) gOriginal[slotOriginal] = null;
       }
       const p = presentes.find(x => x.id === id) || poolRonda.find(x => x.id === id);
-      if (p) agregarARepeticionYNavegar(p, intento);
-      else renderGrupoActual();
+      if (p && !poolPendienteAsignar.some(x => x.id === p.id)) poolPendienteAsignar.push(p);
+      renderGrupoActual();
     }
     renderRankingParcial();
     actualizarBotonCerrarRonda();
@@ -2103,8 +2068,6 @@ document.addEventListener('componentsLoaded',async function(){
     intentoActual = 1;
     mejores = {};
     avanzaSet = new Set();
-    gruposRepeticionIdx = new Set();
-    gruposRepeticionIntento = {};
     poolPendienteAsignar = [...poolRonda];
     grupoEnArmado = [null, null, null, null];
     poolRonda.forEach(p => { if (!intentos[p.id]) intentos[p.id] = []; });
@@ -2179,12 +2142,9 @@ document.addEventListener('componentsLoaded',async function(){
     const totalGrupos = gruposRonda.length;
     const intentosDeRonda = (rondasConfig[rondaActual] && rondasConfig[rondaActual].intentos) || 1;
     const label = `RONDA ${rondaActual} DE ${numRondas} · INTENTO ${intentoActual} DE ${intentosDeRonda}`;
-    const esRepeticion = gruposRepeticionIdx.has(grupoActual);
-    document.getElementById('cronLabel').textContent = `${label} · GRUPO ${grupoActual + 1}${esRepeticion ? ' · 🔁 REPETICIÓN' : ''}`;
+    document.getElementById('cronLabel').textContent = `${label} · GRUPO ${grupoActual + 1}`;
     document.getElementById('grupoNumLabel').textContent = grupoActual + 1;
-    document.getElementById('grupoInfo').textContent = esRepeticion
-      ? `Grupo de repetición · ${g.filter(Boolean).length} robot${g.filter(Boolean).length!==1?'s':''}`
-      : `${totalGrupos} grupos en total · ${g.length} robot${g.length > 1 ? 's' : ''}`;
+    document.getElementById('grupoInfo').textContent = `${totalGrupos} grupos en total · ${g.length} robot${g.length > 1 ? 's' : ''}`;
 
     const esElPrimero = (grupoActual === 0 && intentoActual === 1);
     const btnAnt = document.getElementById('btnGrupoAnterior');
