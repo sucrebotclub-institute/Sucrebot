@@ -2146,7 +2146,7 @@ document.addEventListener('componentsLoaded',async function(){
     document.getElementById('grupoNumLabel').textContent = grupoActual + 1;
     document.getElementById('grupoInfo').textContent = `${totalGrupos} grupos en total · ${g.length} robot${g.length > 1 ? 's' : ''}`;
 
-    const esElPrimero = (grupoActual === 0 && intentoActual === 1);
+    const esElPrimero = (grupoActual === 0);
     const btnAnt = document.getElementById('btnGrupoAnterior');
     btnAnt.disabled = esElPrimero;
     btnAnt.style.opacity = esElPrimero ? '0.3' : '1';
@@ -2434,8 +2434,14 @@ document.addEventListener('componentsLoaded',async function(){
       return;
     }
     if (esUltimoGrupo) {
+      // Cada intento se arma de nuevo desde cero (el staff vuelve a elegir
+      // quién corre en cada grupo con el botón ▶ de Ranking Parcial) —
+      // no se reutilizan los mismos grupos del intento anterior.
       intentoActual++;
+      gruposRonda = [];
       grupoActual = 0;
+      poolPendienteAsignar = [...poolRonda];
+      grupoEnArmado = [null, null, null, null];
     } else {
       grupoActual++;
     }
@@ -2445,13 +2451,8 @@ document.addEventListener('componentsLoaded',async function(){
 
   document.getElementById('btnGrupoAnterior').addEventListener('click', () => {
     if (hayArmadoPendiente()) return;
-    if (grupoActual === 0 && intentoActual === 1) return;
-    if (grupoActual === 0) {
-      intentoActual--;
-      grupoActual = gruposRonda.length - 1;
-    } else {
-      grupoActual--;
-    }
+    if (grupoActual === 0) return;
+    grupoActual--;
     renderGrupoActual();
     renderRankingParcial();
   });
