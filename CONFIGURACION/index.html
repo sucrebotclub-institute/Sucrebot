@@ -371,6 +371,17 @@
     });
     return lista;
   }
+  // Traduce el identificador interno guardado en participantes.categoria
+  // (ej. "Robot soccer [Copia]") al nombre visible que le puso el staff
+  // (ej. "Liga Amistosa") -- para mostrar en confirmaciones/toasts, nunca
+  // el identificador interno crudo. Si no es una copia, o todavía no
+  // tiene nombre asignado, devuelve el nombre tal cual.
+  function resolverNombreParaMostrar(nombreInterno) {
+    const c = CATEGORIAS_COPIA.find(x => (x.base + ' [Copia]') === nombreInterno);
+    if (!c) return nombreInterno;
+    const nombreVisible = _nombresCopiaGlobal && _nombresCopiaGlobal[c.codigo];
+    return nombreVisible ? (nombreVisible + ' (copia)') : nombreInterno;
+  }
 
   // Mismas 13 categorías que CATEGORIA_MAP en Code.gs
   const CATEGORIAS = [
@@ -617,7 +628,7 @@
           '<span class="cambcat-nombre">' + (p.nombre || '—') + (p.robot ? ' · ' + p.robot : '') + '</span>' +
           '<span class="cambcat-sub">' + (p.institucion || '—') + ' · ' + p.id + '</span>' +
         '</div>' +
-        '<span class="cat-estado abierta">' + (p.categoria || '—') + '</span>';
+        '<span class="cat-estado abierta">' + (p.categoria ? resolverNombreParaMostrar(p.categoria) : '—') + '</span>';
       row.addEventListener('click', () => seleccionarParticipanteCambCat(p));
       cont.appendChild(row);
     });
@@ -633,7 +644,7 @@
     panel.innerHTML =
       '<div class="cambcat-panel">' +
         '<div class="cambcat-panel-nombre">' + (p.nombre || '—') + (p.robot ? ' · ' + p.robot : '') + '</div>' +
-        '<div class="cambcat-panel-sub">' + (p.institucion || '—') + ' · ID ' + p.id + ' · categoría actual: <strong>' + (p.categoria || '—') + '</strong></div>' +
+        '<div class="cambcat-panel-sub">' + (p.institucion || '—') + ' · ID ' + p.id + ' · categoría actual: <strong>' + (p.categoria ? resolverNombreParaMostrar(p.categoria) : '—') + '</strong></div>' +
         '<div class="cambcat-panel-row">' +
           '<select id="cambcat-nueva" class="form-control"></select>' +
           '<button class="btn-cambcat-guardar" id="btn-cambcat-guardar">✅ Guardar</button>' +
@@ -662,7 +673,7 @@
     if (!p) return;
     const nuevaCategoria = document.getElementById('cambcat-nueva').value;
     if (nuevaCategoria === p.categoria) { showToast('Esa ya es su categoría actual', true); return; }
-    if (!confirm('¿Cambiar la categoría de ' + (p.nombre || p.id) + ' de "' + (p.categoria || '—') + '" a "' + nuevaCategoria + '"?\n\nEsto no actualiza manillas, certificados ni brackets ya generados con la categoría anterior.')) return;
+    if (!confirm('¿Cambiar la categoría de ' + (p.nombre || p.id) + ' de "' + resolverNombreParaMostrar(p.categoria || '—') + '" a "' + resolverNombreParaMostrar(nuevaCategoria) + '"?\n\nEsto no actualiza manillas, certificados ni brackets ya generados con la categoría anterior.')) return;
 
     const btn = document.getElementById('btn-cambcat-guardar');
     btn.disabled = true;
@@ -672,7 +683,7 @@
       p.categoria = nuevaCategoria;
       const idx = _cambcatParticipantes.findIndex(x => x.id === p.id);
       if (idx >= 0) _cambcatParticipantes[idx].categoria = nuevaCategoria;
-      showToast('✅ Categoría de ' + (p.nombre || p.id) + ' actualizada a ' + nuevaCategoria);
+      showToast('✅ Categoría de ' + (p.nombre || p.id) + ' actualizada a ' + resolverNombreParaMostrar(nuevaCategoria));
       cancelarCambCat();
     } catch(e) {
       showToast('⚠️ Error al cambiar la categoría: ' + e.message, true);

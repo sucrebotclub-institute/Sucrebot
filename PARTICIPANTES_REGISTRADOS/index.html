@@ -286,6 +286,21 @@
                   <option value="Lego Kids">Lego Kids</option>
                   <option value="Impacto Tecnológico">Impacto Tecnológico</option>
                 </optgroup>
+                <optgroup label="🧬 COPIAS" id="optgroupCopiasFiltro" style="display:none;">
+                  <option value="Insectos [Copia]" data-codigo="ins2">Insectos</option>
+                  <option value="Trepador (Amateur) [Copia]" data-codigo="trp_a2">Trepador (Amateur)</option>
+                  <option value="Seguidor de línea ST (Amateur) [Copia]" data-codigo="sl_a2">Seguidor de línea ST (Amateur)</option>
+                  <option value="Seguidor de línea ST (Pro) [Copia]" data-codigo="sl_p2">Seguidor de línea ST (Pro)</option>
+                  <option value="Minisumo Autónomo [Copia]" data-codigo="ms_a2">Minisumo Autónomo</option>
+                  <option value="Minisumo RC [Copia]" data-codigo="ms_rc2">Minisumo RC</option>
+                  <option value="Bailarín [Copia]" data-codigo="bai2">Bailarín</option>
+                  <option value="Batalla [Copia]" data-codigo="bat2">Batalla</option>
+                  <option value="Trepador (Pro) [Copia]" data-codigo="trp_p2">Trepador (Pro)</option>
+                  <option value="Robot soccer [Copia]" data-codigo="soc2">Robot soccer</option>
+                  <option value="Cubo Rubik [Copia]" data-codigo="cr2">Cubo Rubik</option>
+                  <option value="Lego Kids [Copia]" data-codigo="lk2">Lego Kids</option>
+                  <option value="Impacto Tecnológico [Copia]" data-codigo="dev2">Impacto Tecnológico</option>
+                </optgroup>
               </select>
               <input type="text" class="busqueda-input" id="busqueda-input" placeholder="🔍 Buscar nombre, robot, ID...">
               <button class="btn-refrescar" onclick="refrescarDatos()">
@@ -435,14 +450,48 @@
     'Insectos':'cat-ins','Trepador (Amateur)':'cat-trp_a','Seguidor de línea ST (Amateur)':'cat-sl_a',
     'Seguidor de línea ST (Pro)':'cat-sl_p','Minisumo Autónomo':'cat-ms_a','Minisumo RC':'cat-ms_rc',
     'Bailarín':'cat-bai','Batalla':'cat-bat','Trepador (Pro)':'cat-trp_p','Robot soccer':'cat-soc',
-    'Cubo Rubik':'cat-cr','Lego Kids':'cat-lk','Impacto Tecnológico':'cat-dev'
+    'Cubo Rubik':'cat-cr','Lego Kids':'cat-lk','Impacto Tecnológico':'cat-dev',
+    'Insectos [Copia]':'cat-ins','Trepador (Amateur) [Copia]':'cat-trp_a','Seguidor de línea ST (Amateur) [Copia]':'cat-sl_a',
+    'Seguidor de línea ST (Pro) [Copia]':'cat-sl_p','Minisumo Autónomo [Copia]':'cat-ms_a','Minisumo RC [Copia]':'cat-ms_rc',
+    'Bailarín [Copia]':'cat-bai','Batalla [Copia]':'cat-bat','Trepador (Pro) [Copia]':'cat-trp_p','Robot soccer [Copia]':'cat-soc',
+    'Cubo Rubik [Copia]':'cat-cr','Lego Kids [Copia]':'cat-lk','Impacto Tecnológico [Copia]':'cat-dev'
   };
   const CATEGORIAS_NIVEL = {
     'Insectos':'amateur','Trepador (Amateur)':'amateur','Seguidor de línea ST (Amateur)':'amateur',
     'Seguidor de línea ST (Pro)':'pro','Minisumo Autónomo':'pro','Minisumo RC':'pro',
     'Bailarín':'pro','Batalla':'pro','Trepador (Pro)':'pro','Robot soccer':'pro',
-    'Cubo Rubik':'extra','Lego Kids':'extra','Impacto Tecnológico':'extra'
+    'Cubo Rubik':'extra','Lego Kids':'extra','Impacto Tecnológico':'extra',
+    'Insectos [Copia]':'amateur','Trepador (Amateur) [Copia]':'amateur','Seguidor de línea ST (Amateur) [Copia]':'amateur',
+    'Seguidor de línea ST (Pro) [Copia]':'pro','Minisumo Autónomo [Copia]':'pro','Minisumo RC [Copia]':'pro',
+    'Bailarín [Copia]':'pro','Batalla [Copia]':'pro','Trepador (Pro) [Copia]':'pro','Robot soccer [Copia]':'pro',
+    'Cubo Rubik [Copia]':'extra','Lego Kids [Copia]':'extra','Impacto Tecnológico [Copia]':'extra'
   };
+  // Nombre visible de una categoría copia (ver CONFIGURACION → Categorías
+  // copia) -- el identificador interno guardado en p.categoria trae el
+  // sufijo " [Copia]" y no es lo que debe verse en la tabla/modal.
+  let NOMBRES_COPIA = {};
+  const CODIGO_POR_NOMBRE_INTERNO = {
+    'Insectos [Copia]':'ins2','Trepador (Amateur) [Copia]':'trp_a2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2',
+    'Seguidor de línea ST (Pro) [Copia]':'sl_p2','Minisumo Autónomo [Copia]':'ms_a2','Minisumo RC [Copia]':'ms_rc2',
+    'Bailarín [Copia]':'bai2','Batalla [Copia]':'bat2','Impacto Tecnológico [Copia]':'dev2',
+    'Trepador (Pro) [Copia]':'trp_p2','Robot soccer [Copia]':'soc2','Cubo Rubik [Copia]':'cr2','Lego Kids [Copia]':'lk2'
+  };
+  function resolverNombreCategoria(cat) {
+    const codigo = CODIGO_POR_NOMBRE_INTERNO[cat];
+    if (codigo && NOMBRES_COPIA[codigo]) return NOMBRES_COPIA[codigo] + ' (copia)';
+    return cat;
+  }
+  function aplicarNombresCopiaFiltro() {
+    const optgroup = document.getElementById('optgroupCopiasFiltro');
+    if (!optgroup) return;
+    let algunaVisible = false;
+    optgroup.querySelectorAll('option[data-codigo]').forEach(opt => {
+      const nombreVisible = NOMBRES_COPIA && NOMBRES_COPIA[opt.dataset.codigo];
+      if (nombreVisible) { opt.textContent = nombreVisible; opt.style.display = ''; algunaVisible = true; }
+      else { opt.style.display = 'none'; }
+    });
+    optgroup.style.display = algunaVisible ? '' : 'none';
+  }
   const CATS_AMATEUR = ['Insectos','Trepador (Amateur)','Seguidor de línea ST (Amateur)'];
   const CATS_PRO     = ['Seguidor de línea ST (Pro)','Minisumo Autónomo','Minisumo RC','Bailarín','Batalla','Trepador (Pro)','Robot soccer'];
   const CATS_OPEN    = ['Cubo Rubik','Lego Kids','Impacto Tecnológico'];
@@ -458,6 +507,8 @@
   document.addEventListener('componentsLoaded', async function() {
     if (window.esperarRol) await window.esperarRol();
     if (!window.esStaffCompleto || !window.esStaffCompleto()) { window.location.href = '../INICIO/'; return; }
+    try { NOMBRES_COPIA = await fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json()); } catch(e) { NOMBRES_COPIA = {}; }
+    aplicarNombresCopiaFiltro();
     const ahora      = Date.now();
     const tsGuardado = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0');
     const cacheValido = (ahora - tsGuardado) < CACHE_TTL;
@@ -600,7 +651,7 @@
       ).join('');
       return '<tr data-pid="'+p.id.replace(/"/g,'&quot;')+'" class="fila-participante">'+
         '<td>'+(p.robot||'—')+'</td>'+
-        '<td><span class="categoria-badge '+catClass+'">'+(p.categoria||'—')+'</span></td>'+
+        '<td><span class="categoria-badge '+catClass+'">'+(p.categoria?resolverNombreCategoria(p.categoria):'—')+'</span></td>'+
         '<td>'+nombresHtml+'</td>'+
         '<td>'+(p.institucion||'—')+'</td>'+
         '<td><span class="estado-badge '+estadoClass+'">'+estadoTexto+'</span></td>'+
@@ -713,7 +764,7 @@
     document.getElementById('rev-id').textContent=p.id||'—';
     document.getElementById('rev-nombre').textContent=p.nombre||'—';
     document.getElementById('rev-robot').textContent=p.robot||'—';
-    document.getElementById('rev-categoria').textContent=p.categoria||'—';
+    document.getElementById('rev-categoria').textContent=p.categoria?resolverNombreCategoria(p.categoria):'—';
     document.getElementById('rev-institucion').textContent=p.institucion||'—';
     document.getElementById('rev-ciudad').textContent=p.ciudad||'—';
     document.getElementById('rev-correo').textContent=p.correo||'—';
