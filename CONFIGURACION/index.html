@@ -162,6 +162,7 @@
             <button class="config-nav-item" data-section="categorias" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
             <button class="config-nav-item" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
             <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
+            <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
           </div>
 
           <div class="config-panel">
@@ -239,6 +240,22 @@
           <div id="cambcat-resultados"></div>
 
           <div id="cambcat-seleccionado" style="display:none;"></div>
+        </div>
+
+        <div class="config-card config-section" data-section="dupcat">
+          <div class="config-card-title">🧬 Categorías copia</div>
+          <div class="config-card-desc">
+            Las 13 categorías copia ya existen en el sistema (mismo flujo que su
+            categoría base — mismos datos reales, mismo backend, cada una con sus
+            propias inscripciones/podio/certificados). Acá les asignás el nombre que
+            van a mostrar en REGISTRO, CRONOMETRO, PANEL-BRACKET, PANEL-CALIFICACION,
+            RESULTADOS y certificados. Una categoría sin nombre asignado queda oculta
+            en todas esas pantallas. El nombre se guarda en el servidor — lo ve
+            cualquier dispositivo de staff, no solo este navegador.
+          </div>
+
+          <div id="dupcat-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
+          <div id="dupcat-lista" style="display:none;"></div>
         </div>
 
           </div><!-- /config-panel -->
@@ -641,6 +658,107 @@
   }
 
   document.getElementById('cambcat-buscar').addEventListener('input', buscarParticipantesCambCat);
+
+  // ── Categorías copia ──────────────────────────────────────────
+  // Las 13 categorías copia ya existen en Code.gs (CODIGOS_CATEGORIA_COPIA)
+  // -- acá solo se les asigna el nombre visible (getNombresCategorias/
+  // setNombreCategoria), guardado en el servidor. Sin nombre asignado,
+  // quedan ocultas en REGISTRO/CRONOMETRO/PANEL-BRACKET/PANEL-CALIFICACION/
+  // RESULTADOS/certificados.
+  const CATEGORIAS_COPIA = [
+    { codigo: 'trp_a2', base: 'Trepador (Amateur)', paginas: 'CRONOMETRO', listo: true },
+    { codigo: 'trp_p2', base: 'Trepador (Pro)',      paginas: 'CRONOMETRO', listo: true },
+    { codigo: 'sl_a2',  base: 'Seguidor de línea ST (Amateur)', paginas: 'CRONOMETRO', listo: true },
+    { codigo: 'sl_p2',  base: 'Seguidor de línea ST (Pro)',     paginas: 'CRONOMETRO', listo: true },
+    { codigo: 'cr2',    base: 'Cubo Rubik',          paginas: 'CRONOMETRO', listo: true },
+    { codigo: 'ins2',   base: 'Insectos',            paginas: 'CRONOMETRO', listo: true },
+    { codigo: 'ms_a2',  base: 'Minisumo Autónomo',   paginas: 'PANEL-BRACKET', listo: true },
+    { codigo: 'ms_rc2', base: 'Minisumo RC',         paginas: 'PANEL-BRACKET', listo: true },
+    { codigo: 'bat2',   base: 'Batalla',             paginas: 'PANEL-BRACKET', listo: true },
+    { codigo: 'soc2',   base: 'Robot soccer',        paginas: 'PANEL-BRACKET', listo: true },
+    { codigo: 'dev2',   base: 'Impacto Tecnológico', paginas: 'PANEL-CALIFICACION', listo: true },
+    { codigo: 'bai2',   base: 'Bailarín',            paginas: 'PANEL-CALIFICACION', listo: true },
+    { codigo: 'lk2',    base: 'Lego Kids',           paginas: 'PANEL-CALIFICACION', listo: true }
+  ];
+
+  let _nombresCategoriasCopia = {};
+
+  async function cargarCategoriasCopia() {
+    try { _nombresCategoriasCopia = await gasGet({ action: 'getNombresCategorias' }); }
+    catch (e) { _nombresCategoriasCopia = {}; showToast('⚠️ Error al cargar nombres de categorías', true); }
+    renderCategoriasCopia();
+    document.getElementById('dupcat-loading').style.display = 'none';
+    document.getElementById('dupcat-lista').style.display = 'block';
+  }
+
+  function renderCategoriasCopia() {
+    const cont = document.getElementById('dupcat-lista');
+    cont.innerHTML = '';
+    CATEGORIAS_COPIA.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'pers-row';
+
+      const info = document.createElement('div');
+      info.className = 'pers-info';
+      info.style.flex = '1 1 260px';
+
+      const tituloWrap = document.createElement('div');
+      tituloWrap.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;';
+      const titulo = document.createElement('span');
+      titulo.className = 'pers-correo';
+      titulo.textContent = 'Copia de "' + c.base + '"';
+      tituloWrap.appendChild(titulo);
+      if (!c.listo) {
+        const badge = document.createElement('span');
+        badge.className = 'cat-estado cerrada';
+        badge.textContent = 'AÚN NO FUNCIONA';
+        badge.title = 'Esta categoría copia todavía necesita trabajo adicional antes de usarse en un evento real.';
+        tituloWrap.appendChild(badge);
+      }
+      info.appendChild(tituloWrap);
+
+      const input = document.createElement('input');
+      input.type = 'text'; input.className = 'form-control';
+      input.value = _nombresCategoriasCopia[c.codigo] || '';
+      input.placeholder = 'Sin nombre asignado (oculta en el sitio)';
+      info.appendChild(input);
+
+      const sub = document.createElement('span');
+      sub.className = 'pers-nombre';
+      sub.textContent = c.paginas + ' · código interno: ' + c.codigo;
+      info.appendChild(sub);
+
+      const acciones = document.createElement('div');
+      acciones.className = 'pers-acciones';
+      const btnGuardar = document.createElement('button');
+      btnGuardar.className = 'btn-personal-add';
+      btnGuardar.style.height = '38px';
+      btnGuardar.textContent = '💾 Guardar';
+      btnGuardar.addEventListener('click', () => guardarNombreCategoriaCopia(c.codigo, input, btnGuardar));
+
+      acciones.appendChild(btnGuardar);
+      row.appendChild(info);
+      row.appendChild(acciones);
+      cont.appendChild(row);
+    });
+  }
+
+  async function guardarNombreCategoriaCopia(codigo, inputEl, btnEl) {
+    const nombre = inputEl.value.trim();
+    if (!nombre) { showToast('⚠️ Escribí un nombre antes de guardar', true); return; }
+    btnEl.disabled = true;
+    try {
+      const resp = await gasPost({ action: 'setNombreCategoria', codigo, nombre });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      _nombresCategoriasCopia = resp.nombres || _nombresCategoriasCopia;
+      showToast('✅ "' + nombre + '" guardado — ya visible para todo el staff');
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    }
+    btnEl.disabled = false;
+  }
+
+  cargarCategoriasCopia();
   </script>
 </body>
 </html>

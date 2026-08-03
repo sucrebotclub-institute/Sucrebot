@@ -417,6 +417,46 @@
         </div>
       </div>
 
+      <script>
+      // ── Categorías copia (independientes, mismo flujo que su base) ──
+      // Creadas en Code.gs (ver CODIGOS_CATEGORIA_COPIA). El nombre visible
+      // se asigna desde CONFIGURACION — una copia sin nombre asignado
+      // todavía queda oculta. bai2/lk2 reusan las MISMAS variables de
+      // estado de 2 fases que su base (state.baiFase/state.lkFase, etc.)
+      // -- es seguro porque seleccionarCategoria() ya resetea todo el
+      // estado al cambiar de categoría (bai→dev→bai2, etc.), igual que
+      // ya hacía entre bai/dev/lk antes de que existieran las copias.
+      (function(){
+        const CODIGOS_COPIA_CALIF = ['dev2', 'bai2', 'lk2'];
+        const EMOJI = { dev2: '💡', bai2: '🩺', lk2: '🧱' };
+        const DESC = { dev2: 'Innovación · Funcionalidad · Impacto Social', bai2: 'Coreografía · Sincronía · Creatividad', lk2: 'Ensamble · Funcionalidad · Tiempo de carrera' };
+        const BADGE = { dev2: 'CRITERIOS', bai2: 'CRITERIOS', lk2: 'CRITERIOS · 100 PTS' };
+        window.renderCopiasCategoriasCalificacion = async function(){
+          const grid = document.querySelector('.cat-cards-grid');
+          if (!grid || typeof CAT_NOMBRES === 'undefined') return;
+          grid.querySelectorAll('.cat-card.cat-card-copia').forEach(el => el.remove());
+          let nombres = {};
+          try { nombres = await fetch(GAS + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()); } catch (e) { nombres = {}; }
+          CODIGOS_COPIA_CALIF.forEach(codigo => {
+            const nombreVisible = nombres && nombres[codigo];
+            if (!nombreVisible) return;
+            const baseNombre = CAT_NOMBRES[codigo].replace(/\s*\[Copia\]\s*$/, '');
+            const div = document.createElement('div');
+            div.className = 'cat-card cat-card-copia';
+            div.id = 'card-' + codigo;
+            div.title = 'Copia de "' + baseNombre + '"';
+            div.innerHTML =
+              '<span class="cat-card-emoji">' + (EMOJI[codigo] || '🔁') + '</span>' +
+              '<div class="cat-card-nombre">' + nombreVisible + '</div>' +
+              '<div class="cat-card-desc">' + (DESC[codigo] || ('Copia de ' + baseNombre)) + '</div>' +
+              '<div class="cat-card-badge">' + (BADGE[codigo] || 'CRITERIOS') + '</div>';
+            div.addEventListener('click', () => seleccionarCategoria(codigo));
+            grid.appendChild(div);
+          });
+        };
+      })();
+      </script>
+
       <div class="lk-nota" id="lkNota">
         📋 <strong>Lego Kids — 2 fases · 2 jueces:</strong>
         <strong>Fase 1</strong> (45 min): calificar <strong>Ensamble (50 pts)</strong> y <strong>Funcionalidad (20 pts)</strong> a todos.
@@ -757,7 +797,7 @@
 <script>
 const GAS = CONFIG.GAS_URL();
 const ALL_CATS = ['bai','dev','lk'];
-const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico', lk:'Lego Kids' };
+const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico', lk:'Lego Kids', dev2:'Impacto Tecnológico [Copia]', bai2:'Bailarín [Copia]', lk2:'Lego Kids [Copia]' };
 
 // ── CRITERIOS LK ──────────────────────────────────────────────
 const LK_CRITERIOS_F1 = [
@@ -792,9 +832,9 @@ const DEV_CRITERIOS = [
 
 // Categorías con múltiples jueces simultáneos — cantidad configurable por categoría
 // (persistida en GAS vía setEstado/getAllEstados, clave 'panel_cal_num_jueces_<cat>')
-const MULTI_JUEZ_CATS = ['bai', 'dev', 'lk'];
-const JUECES_LABEL = { bai: 'Bai', dev: 'Dev', lk: 'LK' };
-const DEFAULT_NUM_JUECES = { bai: 3, dev: 3, lk: 2 };
+const MULTI_JUEZ_CATS = ['bai', 'dev', 'lk', 'dev2', 'bai2', 'lk2'];
+const JUECES_LABEL = { bai: 'Bai', dev: 'Dev', lk: 'LK', dev2: 'Dev (Copia)', bai2: 'Bai (Copia)', lk2: 'LK (Copia)' };
+const DEFAULT_NUM_JUECES = { bai: 3, dev: 3, lk: 2, dev2: 3, bai2: 3, lk2: 2 };
 
 function getNumJueces(cat) {
   return (state.numJueces && state.numJueces[cat]) || DEFAULT_NUM_JUECES[cat] || 0;
@@ -810,16 +850,21 @@ function esMultiJuez(cat) { return MULTI_JUEZ_CATS.includes(cat); }
 const DEFAULTS_CRITERIOS = {
   bai: BAI_CRITERIOS,
   dev: DEV_CRITERIOS,
-  lk: LK_CRITERIOS_F1
+  lk: LK_CRITERIOS_F1,
+  dev2: DEV_CRITERIOS,
+  bai2: BAI_CRITERIOS,
+  lk2: LK_CRITERIOS_F1
 };
 
 // Categorías con 2 fases
-const CATS_DOS_FASES = { bai: true, lk: true };
+const CATS_DOS_FASES = { bai: true, lk: true, bai2: true, lk2: true };
 
 // Labels de fase por categoría
 const FASE_LABELS = {
   bai: { f1: 'Eliminatoria', f2: 'Final' },
   lk:  { f1: 'Ensamble',    f2: 'Carrera' },
+  bai2: { f1: 'Eliminatoria', f2: 'Final' },
+  lk2:  { f1: 'Ensamble',    f2: 'Carrera' },
 };
 
 let state = {
@@ -941,7 +986,7 @@ let toastTimer;
 function toast(msg, type='info') { const el = document.getElementById('toast'); el.textContent = msg; el.className = `show ${type}`; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3500); }
 function setStep(n) {
   state.step = n;
-  const esBai = state.categoria === 'bai';
+  const esBai = (state.categoria === 'bai' || state.categoria === 'bai2');
   const totalSteps = esBai ? 6 : 4;
 
   // Actualizar labels de paso 3 y 4
@@ -1058,13 +1103,13 @@ document.getElementById('modalConfirmBtn').onclick = () => { const cb = _modalCb
 
 // ── HELPERS: jueces múltiples ─────────────────────────────────
 function getJuezIdx(cat) {
-  if (cat === 'bai') return state.baiJuezIdx;
-  if (cat === 'lk')  return state.lkJuezIdx;
+  if ((cat === 'bai' || cat === 'bai2')) return state.baiJuezIdx;
+  if ((cat === 'lk' || cat === 'lk2'))  return state.lkJuezIdx;
   return state.devJuezIdx;
 }
 function setJuezIdx(cat, idx) {
-  if (cat === 'bai') state.baiJuezIdx = idx;
-  else if (cat === 'lk') state.lkJuezIdx = idx;
+  if ((cat === 'bai' || cat === 'bai2')) state.baiJuezIdx = idx;
+  else if ((cat === 'lk' || cat === 'lk2')) state.lkJuezIdx = idx;
   else state.devJuezIdx = idx;
 }
 function getJuezActivo(cat) { const j = getJueces(cat); return j ? j[getJuezIdx(cat)] : null; }
@@ -1072,15 +1117,15 @@ function getJuezActivo(cat) { const j = getJueces(cat); return j ? j[getJuezIdx(
 // ── HELPERS: ¿tiene dos fases? ─────────────────────────────────
 function esDasFases(cat) { return !!CATS_DOS_FASES[cat]; }
 function getFaseState(cat) {
-  if (cat === 'lk') return { fase: state.lkFase, clasificados: state.lkClasificados };
-  if (cat === 'bai') return { fase: state.baiFase, clasificados: state.baiFinalistas };
+  if ((cat === 'lk' || cat === 'lk2')) return { fase: state.lkFase, clasificados: state.lkClasificados };
+  if ((cat === 'bai' || cat === 'bai2')) return { fase: state.baiFase, clasificados: state.baiFinalistas };
   return { fase: 1, clasificados: [] };
 }
 function getFaseLabel(cat, n) { return (FASE_LABELS[cat] || { f1:'Fase 1', f2:'Fase 2' })['f' + n]; }
 // Para bai: fase 2 usa los mismos criterios (100 pts, misma tabla)
 // Para lk: fase 2 agrega LK_CRITERIO_F2
 function getCriteriosFase(cat, fase) {
-  if (cat === 'lk') return fase === 2 ? [...state.criterios, LK_CRITERIO_F2] : state.criterios;
+  if ((cat === 'lk' || cat === 'lk2')) return fase === 2 ? [...state.criterios, LK_CRITERIO_F2] : state.criterios;
   return state.criterios; // bai: mismos criterios en ambas fases
 }
 
@@ -1113,9 +1158,9 @@ async function seleccionarCategoria(cat) {
   }
 
   ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === cat));
-  document.getElementById('lkNota').classList.toggle('show', cat === 'lk');
-  document.getElementById('devNota').classList.toggle('show', cat === 'dev' || cat === 'bai' || cat === 'lk');
-  const mostrarJuezP1 = cat === 'dev' || cat === 'bai' || cat === 'lk';
+  document.getElementById('lkNota').classList.toggle('show', (cat === 'lk' || cat === 'lk2'));
+  document.getElementById('devNota').classList.toggle('show', esMultiJuez(cat));
+  const mostrarJuezP1 = esMultiJuez(cat);
   document.getElementById('juezSelectorP1').style.display = mostrarJuezP1 ? 'block' : 'none';
   if (mostrarJuezP1) {
     try {
@@ -1230,17 +1275,17 @@ async function iniciarCalificacion() {
   state.criterios = leerCriteriosConfig();
   if (!state.criterios.length) { toast('Define al menos un criterio', 'error'); return; }
 
-  if (cat === 'lk') {
+  if ((cat === 'lk' || cat === 'lk2')) {
     state.lkFase = 1;
-    const juezGuardadoLk = parseInt(localStorage.getItem('sucrebot_lk_juez') || '0');
-    state.lkJuezIdx = (juezGuardadoLk >= 0 && juezGuardadoLk < getNumJueces('lk')) ? juezGuardadoLk : 0;
-  } else if (cat === 'bai') {
+    const juezGuardadoLk = parseInt(localStorage.getItem('sucrebot_' + cat + '_juez') || '0');
+    state.lkJuezIdx = (juezGuardadoLk >= 0 && juezGuardadoLk < getNumJueces(cat)) ? juezGuardadoLk : 0;
+  } else if ((cat === 'bai' || cat === 'bai2')) {
     state.baiFase = 1;
-    const juezGuardadoBai = parseInt(localStorage.getItem('sucrebot_bai_juez') || '0');
-    state.baiJuezIdx = (juezGuardadoBai >= 0 && juezGuardadoBai < getNumJueces('bai')) ? juezGuardadoBai : 0;
-  } else if (cat === 'dev') {
-    const juezGuardado = parseInt(localStorage.getItem('sucrebot_dev_juez') || '0');
-    state.devJuezIdx = (juezGuardado >= 0 && juezGuardado < getNumJueces('dev')) ? juezGuardado : 0;
+    const juezGuardadoBai = parseInt(localStorage.getItem('sucrebot_' + cat + '_juez') || '0');
+    state.baiJuezIdx = (juezGuardadoBai >= 0 && juezGuardadoBai < getNumJueces(cat)) ? juezGuardadoBai : 0;
+  } else if (cat === 'dev' || cat === 'dev2') {
+    const juezGuardado = parseInt(localStorage.getItem('sucrebot_' + cat + '_juez') || '0');
+    state.devJuezIdx = (juezGuardado >= 0 && juezGuardado < getNumJueces(cat)) ? juezGuardado : 0;
   }
 
   gasPost({ action: 'guardarCriterios', categoria: cat, criterios: state.criterios }).catch(() => {});
@@ -1273,16 +1318,16 @@ async function iniciarCalificacionConPresentes() {
         };
         state.rondaActual[p.id_participante] = ronda + 1;
         if (esFase2) {
-          if (cat === 'lk') state.lkClasificados.push(p.id_participante);
-          if (cat === 'bai') state.baiFinalistas.push(p.id_participante);
+          if ((cat === 'lk' || cat === 'lk2')) state.lkClasificados.push(p.id_participante);
+          if ((cat === 'bai' || cat === 'bai2')) state.baiFinalistas.push(p.id_participante);
         }
       }
     });
     state.lkClasificados  = [...new Set(state.lkClasificados)];
     state.baiFinalistas   = [...new Set(state.baiFinalistas)];
     // Restaurar fase según datos guardados
-    if (cat === 'lk' && state.lkClasificados.length) state.lkFase = 2;
-    if (cat === 'bai' && state.baiFinalistas.length) state.baiFase = 2;
+    if ((cat === 'lk' || cat === 'lk2') && state.lkClasificados.length) state.lkFase = 2;
+    if ((cat === 'bai' || cat === 'bai2') && state.baiFinalistas.length) state.baiFase = 2;
     // Para dev/bai: reconstruir info de jueces por participante
     if (esMultiJuez(cat)) {
       state.calificacionesPorJuez = {};
@@ -1357,10 +1402,10 @@ function volverPaso1Cal()   { setStep(1); }
 
 // ── PASO 3: CALIFICAR ─────────────────────────────────────────
 function buildPaso3() {
-  if (state.categoria === 'lk') restaurarCrono();
+  if ((state.categoria === 'lk' || state.categoria === 'lk2')) restaurarCrono();
   const cat = state.categoria;
   document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[cat];
-  const esLk = cat === 'lk';
+  const esLk = (cat === 'lk' || cat === 'lk2');
   document.getElementById('lkCronometroBar').classList.toggle('show', esLk);
   document.getElementById('lkFase2Trigger').style.display = esLk ? 'block' : 'none';
   document.getElementById('juezBar').style.display = esMultiJuez(cat) ? 'flex' : 'none';
@@ -1388,12 +1433,12 @@ function renderListaRobots() {
 
   // Para bai fase 2: solo mostrar finalistas
   let visibles = state.participantes;
-  if (cat === 'bai' && state.baiFase === 2)
+  if ((cat === 'bai' || cat === 'bai2') && state.baiFase === 2)
     visibles = state.participantes.filter(p => state.baiFinalistas.includes(p.id));
 
   const total = visibles.length;
   const _cat = state.categoria;
-  const _esLkF2 = _cat === 'lk' && state.lkFase === 2;
+  const _esLkF2 = (_cat === 'lk' || _cat === 'lk2') && state.lkFase === 2;
   const calificados = _esLkF2
     ? state.lkClasificados.filter(id => state.calificaciones[id]?.fase2).length
     : esMultiJuez(_cat)
@@ -1414,7 +1459,7 @@ function renderListaRobots() {
     const esMulti = esMultiJuez(state.categoria);
     const juezActual = esMulti ? getJuezActivo(state.categoria) : null;
     // Para dev/bai: calificado = este juez específico ya guardó
-    const _lkF2 = state.categoria === 'lk' && state.lkFase === 2;
+    const _lkF2 = (state.categoria === 'lk' || state.categoria === 'lk2') && state.lkFase === 2;
     const esCal = _lkF2
       ? cal?.fase2
       : esMulti
@@ -1446,8 +1491,8 @@ function seleccionarRobot(id) {
   if (!p) return;
 
   const cat  = state.categoria;
-  const esLk = cat === 'lk';
-  const esBai = cat === 'bai';
+  const esLk = (cat === 'lk' || cat === 'lk2');
+  const esBai = (cat === 'bai' || cat === 'bai2');
   const cal  = state.calificaciones[id];
 
   // ── Determinar fase actual ──────────────────────────────────
@@ -1511,7 +1556,7 @@ function seleccionarRobot(id) {
     const esCriterioLkF2 = esLk && c.nombre === LK_CRITERIO_F2.nombre;
     // lk: el tiempo de carrera es un dato objetivo unico, no una nota por
     // juez — solo el Jefe de Jurado lo ingresa (ver principio en guardarCalificacion).
-    const lkF2SoloJefe = esCriterioLkF2 && !esJefeActivo('lk');
+    const lkF2SoloJefe = esCriterioLkF2 && !esJefeActivo(cat);
     // lk: solo lectura en fase 2 para criterios de fase 1
     const soloLectura = esLk && !esCriterioLkF2 && faseActual === 2 && cal?.guardado && !cal?.fase2;
     // bai: en fase 2 todos son editables (mismos criterios, calificación nueva)
@@ -1632,7 +1677,7 @@ function aplicarPermisosJefe(cat) {
   // guarda después de la ronda final (ver guardarPodioFinal). Ocultar acá las
   // acciones de podio sin importar el rol, para no certificar por error el
   // top 3 de la eliminatoria como si fuera el resultado definitivo.
-  if (cat === 'bai') {
+  if ((cat === 'bai' || cat === 'bai2')) {
     ['btnAjustarPodioCal', 'btnGuardarPodioCal', 'btnQuitarPodioManualCal'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
@@ -1641,7 +1686,7 @@ function aplicarPermisosJefe(cat) {
   // Lego Kids: el tiempo de carrera de Fase 2 es un dato objetivo único (no
   // una nota por juez) — solo el Jefe de Jurado decide cuándo clasificar y
   // lo ingresa. Los demás jueces solo califican Fase 1.
-  if (cat === 'lk') {
+  if ((cat === 'lk' || cat === 'lk2')) {
     const trig = document.getElementById('lkFase2Trigger');
     if (trig) trig.style.display = jefe ? 'block' : 'none';
   }
@@ -1719,7 +1764,7 @@ function cambiarJuez(idx) {
   localStorage.setItem('sucrebot_' + cat + '_juez', idx);
   publicarJuezActivo(cat, idx);
 
-  const esFinal = cat === 'bai' && state.baiFase === 2;
+  const esFinal = (cat === 'bai' || cat === 'bai2') && state.baiFase === 2;
   if (esFinal) {
     state.selectedFinalId = null;
     document.getElementById('formCalFinal').style.display = 'none';
@@ -1758,8 +1803,8 @@ async function guardarCalificacion() {
 
   const p      = state.participantes.find(x => x.id === id);
   const cat    = state.categoria;
-  const esLk   = cat === 'lk';
-  const esBai  = cat === 'bai';
+  const esLk   = (cat === 'lk' || cat === 'lk2');
+  const esBai  = (cat === 'bai' || cat === 'bai2');
   const calPrev = state.calificaciones[id];
   const esMulti = esMultiJuez(cat);
   const juezInfo = esMulti ? getJuezActivo(cat) : null;
@@ -1875,8 +1920,8 @@ async function guardarCalificacion() {
 
 function siguienteRobot() {
   const cat  = state.categoria;
-  const esLk = cat === 'lk';
-  const esBai = cat === 'bai';
+  const esLk = (cat === 'lk' || cat === 'lk2');
+  const esBai = (cat === 'bai' || cat === 'bai2');
   const esDev = cat === 'dev';
   let pendientes;
   if (esLk && state.lkFase === 2) {
@@ -1901,8 +1946,8 @@ function siguienteRobot() {
 // ── SELECCIÓN DE CLASIFICADOS / FINALISTAS ────────────────────
 async function abrirClasificados() {
   const cat = state.categoria;
-  const esLk = cat === 'lk';
-  const esBai = cat === 'bai';
+  const esLk = (cat === 'lk' || cat === 'lk2');
+  const esBai = (cat === 'bai' || cat === 'bai2');
   document.getElementById('formCal').style.display = 'none';
   document.getElementById('emptyFormState').style.display = 'none';
   document.getElementById('lkFase2Panel').classList.add('show');
@@ -1952,7 +1997,7 @@ function confirmarClasificados() {
   const sel = [...document.querySelectorAll('.clasificado-item.checked')].map(el => el.dataset.id);
   if (!sel.length) { toast('Selecciona al menos un participante', 'error'); return; }
 
-  if (cat === 'bai') {
+  if ((cat === 'bai' || cat === 'bai2')) {
     if (sel.length > 3) { toast('Máximo 3 finalistas para la Ronda Final', 'error'); return; }
     state.baiFinalistas = sel; state.baiFase = 2;
     toast(`✅ ${sel.length} finalistas seleccionados para la Ronda Final`, 'success');
@@ -1993,7 +2038,7 @@ async function abrirSelectorFinalistas() {
   // promedio real de la eliminatoria.
   let scoreDe = {};
   try {
-    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai' });
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: state.categoria });
     (res.ranking || []).forEach(r => { scoreDe[r.id] = parseFloat(r.total) || 0; });
   } catch(e) {}
 
@@ -2031,8 +2076,8 @@ function irARankingFinal() { cargarRankingFinal(); setStep(6); }
 function volverAConfigurar() {
   confirmar('⚙️','VOLVER A CONFIGURAR','Volverás al paso 1.','Volver','danger', () => {
     ALL_CATS.forEach(k => document.getElementById(`card-${k}`).classList.toggle('selected', k === state.categoria));
-    document.getElementById('lkNota').classList.toggle('show', state.categoria === 'lk');
-    document.getElementById('devNota').classList.toggle('show', state.categoria === 'dev' || state.categoria === 'bai');
+    document.getElementById('lkNota').classList.toggle('show', (state.categoria === 'lk' || state.categoria === 'lk2'));
+    document.getElementById('devNota').classList.toggle('show', esMultiJuez(state.categoria));
     const mostrarJuezV = esMultiJuez(state.categoria);
     document.getElementById('juezSelectorP1').style.display = mostrarJuezV ? 'block' : 'none';
     if (mostrarJuezV) {
@@ -2058,9 +2103,9 @@ function terminarCategoria() {
     async () => {
       loading(true, 'TERMINANDO CATEGORÍA...');
       try {
-        // Para bai: también resetear bai_final (resultados_publicados no se toca)
-        if (state.categoria === 'bai') {
-          await gasPost({ action: 'resetearCalificacionCategoria', categoria: 'bai_final' }).catch(() => {});
+        // Para bai (y bai2): también resetear <cat>_final (resultados_publicados no se toca)
+        if ((state.categoria === 'bai' || state.categoria === 'bai2')) {
+          await gasPost({ action: 'resetearCalificacionCategoria', categoria: state.categoria + '_final' }).catch(() => {});
         }
         await gasPost({ action: 'resetearCalificacionCategoria', categoria: state.categoria });
         await gasPost({ action: 'desbloquearCategoria', categoria: catNombre }).catch(() => {});
@@ -2104,8 +2149,8 @@ function terminarCategoria() {
 async function cargarRanking(soloRerenderizar) {
   loading(true, 'CALCULANDO RANKING...');
   const cat  = state.categoria;
-  const esLk  = cat === 'lk';
-  const esBai = cat === 'bai';
+  const esLk  = (cat === 'lk' || cat === 'lk2');
+  const esBai = (cat === 'bai' || cat === 'bai2');
   const dosFases = esLk || esBai;
 
   const esDev = cat === 'dev';
@@ -2135,10 +2180,10 @@ async function cargarRanking(soloRerenderizar) {
   document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados` + (state.podioManualOverride ? ' · ✏️ Podio ajustado manualmente' : '');
   // Mostrar botón TOP 3 solo para bai
   const btnTop3 = document.getElementById('btnTop3Ranking');
-  if (btnTop3) btnTop3.style.display = (cat === 'bai') ? 'inline-flex' : 'none';
+  if (btnTop3) btnTop3.style.display = ((cat === 'bai' || cat === 'bai2')) ? 'inline-flex' : 'none';
   // Si ya se eligieron finalistas, ofrecer ir directo al Ranking Final sin tener que reabrir el selector
   const btnIrFinal = document.getElementById('btnIrRankingFinalDesdeElim');
-  if (btnIrFinal) btnIrFinal.style.display = (cat === 'bai' && state.baiFinalistas.length) ? 'inline-flex' : 'none';
+  if (btnIrFinal) btnIrFinal.style.display = ((cat === 'bai' || cat === 'bai2') && state.baiFinalistas.length) ? 'inline-flex' : 'none';
   aplicarPermisosJefe(cat);
 
   const tbody = document.getElementById('rankingTbody');
@@ -2267,7 +2312,7 @@ async function abrirModalPodioManualFinal() {
   loading(true, 'CARGANDO...');
   let rankingFinal = [];
   try {
-    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: state.categoria + '_final' });
     rankingFinal = res.ranking || [];
   } catch(e) {}
   loading(false);
@@ -2422,8 +2467,8 @@ async function guardarPodio() {
 
 async function generarExcelPodio(cat) {
   if (!state.rankingData.length) return;
-  const esLk     = cat === 'lk';
-  const esBai    = cat === 'bai';
+  const esLk     = (cat === 'lk' || cat === 'lk2');
+  const esBai    = (cat === 'bai' || cat === 'bai2');
   const dosFases = esLk || esBai;
   const esMulti  = esMultiJuez(cat);
   const jueces   = esMulti ? getJueces(cat) : null;
@@ -2531,7 +2576,7 @@ function renderJuezBarFinal() {
   const container = document.getElementById('juezBarFinalBtns');
   if (!container) return;
   container.innerHTML = '';
-  getJueces('bai').forEach((j, i) => {
+  getJueces(state.categoria).forEach((j, i) => {
     const calificados = state.baiFinalistas.filter(pid => {
       const cal = state.calificacionesFinal?.[pid];
       return (cal?.jueces || []).some(jj => jj.email === j.email);
@@ -2559,7 +2604,7 @@ function renderJuezBarFinal() {
 function renderListaFinal(finalistas) {
   const lista = document.getElementById('robotsListFinal');
   lista.innerHTML = '';
-  const juezActivo = getJueces('bai')[state.baiJuezIdx];
+  const juezActivo = getJueces(state.categoria)[state.baiJuezIdx];
   const calificados = finalistas.filter(p => (state.calificacionesFinal?.[p.id]?.jueces || []).some(j => j.email === juezActivo.email)).length;
   document.getElementById('progCalFinal').textContent = calificados;
   document.getElementById('progTotalFinal').textContent = finalistas.length;
@@ -2586,7 +2631,7 @@ function seleccionarRobotFinal(id) {
   state.selectedFinalId = id;
   const p = state.participantes.find(x => x.id === id);
   if (!p) return;
-  const juezActivo = getJueces('bai')[state.baiJuezIdx];
+  const juezActivo = getJueces(state.categoria)[state.baiJuezIdx];
   const cal = state.calificacionesFinal?.[id];
   const calJuez = (state.calificacionesFinalPorJuez?.[id] || {})[juezActivo.email];
   let notasGuardadas = {};
@@ -2643,7 +2688,7 @@ async function guardarCalificacionFinal() {
   const id = state.selectedFinalId;
   if (!id) return;
   const p = state.participantes.find(x => x.id === id);
-  const juezActivo = getJueces('bai')[state.baiJuezIdx];
+  const juezActivo = getJueces(state.categoria)[state.baiJuezIdx];
   const inputs = document.querySelectorAll('.criterio-nota-input-final');
   let suma = 0, valido = true;
   const notasJson = { fase: 'final' };
@@ -2660,7 +2705,7 @@ async function guardarCalificacionFinal() {
   try {
     const payload = {
       id_participante: p.id, nombre: p.nombre, robot: p.robot || p.nombre,
-      institucion: p.institucion || '', categoria: 'bai_final',
+      institucion: p.institucion || '', categoria: state.categoria + '_final',
       juez_email: juezActivo.email, juez_nombre: juezActivo.nombre,
       criterios: {}, notas: notasJson, total: suma,
       timestamp: new Date().toISOString()
@@ -2687,7 +2732,7 @@ async function guardarCalificacionFinal() {
 }
 
 function siguienteRobotFinal() {
-  const juezActivo = getJueces('bai')[state.baiJuezIdx];
+  const juezActivo = getJueces(state.categoria)[state.baiJuezIdx];
   const finalistas = state.participantes.filter(p => state.baiFinalistas.includes(p.id));
   const pendientes = finalistas.filter(p => !(state.calificacionesFinal?.[p.id]?.jueces || []).some(j => j.email === juezActivo.email));
   const idx = pendientes.findIndex(p => p.id === state.selectedFinalId);
@@ -2699,7 +2744,7 @@ function siguienteRobotFinal() {
 async function cargarRankingFinal() {
   loading(true, 'CALCULANDO RANKING FINAL...');
   try {
-    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: state.categoria + '_final' });
     let rankingFinal = res.ranking || [];
     if (state.podioManualOverrideFinal) {
       const ov = state.podioManualOverrideFinal.filter(Boolean);
@@ -2711,10 +2756,10 @@ async function cargarRankingFinal() {
     document.getElementById('rankingStatsFinal').textContent = `${rankingFinal.length} finalistas evaluados` +
       (state.podioManualOverrideFinal ? ' · ✏️ Podio ajustado manualmente' : '');
     document.getElementById('thJuecesFinalCol').textContent =
-      getJueces('bai').map((j, i) => 'J' + (i + 1)).join(' / ') + ' Final';
+      getJueces(state.categoria).map((j, i) => 'J' + (i + 1)).join(' / ') + ' Final';
     document.getElementById('btnQuitarPodioManualFinalCal').style.display =
-      (state.podioManualOverrideFinal && esJefeActivo('bai')) ? 'inline-flex' : 'none';
-    aplicarPermisosJefe('bai');
+      (state.podioManualOverrideFinal && esJefeActivo(state.categoria)) ? 'inline-flex' : 'none';
+    aplicarPermisosJefe(state.categoria);
     const tbody = document.getElementById('rankingTbodyFinal');
     tbody.innerHTML = '';
     if (!rankingFinal.length) {
@@ -2727,7 +2772,7 @@ async function cargarRankingFinal() {
       const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
       const pct = maxScore > 0 ? (r.total / maxScore) * 100 : 0;
       const jueces = r.jueces || [];
-      const notasJueces = getJueces('bai').map(j => {
+      const notasJueces = getJueces(state.categoria).map(j => {
         const jData = jueces.find(jj => jj.email === j.email);
         return jData ? jData.total.toFixed(1) : '—';
       }).join(' / ');
@@ -2757,7 +2802,7 @@ async function cargarRankingFinal() {
 async function guardarPodioFinal() {
   loading(true, 'CARGANDO RANKING FINAL...');
   try {
-    const res = await gasGet({ action: 'getRankingCalificacion', categoria: 'bai_final' });
+    const res = await gasGet({ action: 'getRankingCalificacion', categoria: state.categoria + '_final' });
     let rankingFinal = res.ranking || [];
     if (state.podioManualOverrideFinal) {
       const ov = state.podioManualOverrideFinal.filter(Boolean);
@@ -2779,14 +2824,14 @@ async function guardarPodioFinal() {
       async () => {
         loading(true, 'GUARDANDO PODIO...');
 
-        // Publicar ranking completo bai en resultados_publicados (permanente)
+        // Publicar ranking completo (bai/bai2) en resultados_publicados (permanente)
         const rankingCompletoFinal = [
           ...rankingFinal.map((r, i) => ({ id: r.id, nombre: r.nombre, robot: r.robot || r.nombre, institucion: r.institucion || '', total: parseFloat(r.total) || 0, posicion: i + 1 })),
           ...participacionElim.map((p, i) => ({ id: p.id, nombre: p.nombre, robot: p.robot || p.nombre, institucion: p.institucion || '', total: 0, posicion: rankingFinal.length + i + 1 }))
         ];
         let podioPublicadoOk = false;
         try {
-          const rPub = await gasPost({ action: 'publicarPodioCalificacion', categoria: 'bai', ranking: rankingCompletoFinal });
+          const rPub = await gasPost({ action: 'publicarPodioCalificacion', categoria: state.categoria, ranking: rankingCompletoFinal });
           podioPublicadoOk = !!rPub.ok;
           if (!rPub.ok) console.warn('publicarPodioCalificacion bai respondió error:', rPub.error);
         } catch(e) { console.warn('publicarPodioCalificacion bai error de red:', e); }
@@ -2802,7 +2847,7 @@ async function guardarPodioFinal() {
           for (const m of miembros) {
             try {
               await gasPost({ action:'guardarCertificado', id_participante:r.id, correo:m.correo,
-                nombre:m.nombre, nombre_completo:m.nombre, categoria:'Bailarín',
+                nombre:m.nombre, nombre_completo:m.nombre, categoria:CAT_NOMBRES[state.categoria]||state.categoria,
                 institucion:p.institucion||r.institucion||'', tipo_certificado:tipo, evento:'SucreBot 2026' });
             } catch(e) {}
           }
@@ -2816,7 +2861,7 @@ async function guardarPodioFinal() {
           for (const m of miembros) {
             try {
               await gasPost({ action:'guardarCertificado', id_participante:p.id, correo:m.correo,
-                nombre:m.nombre, nombre_completo:m.nombre, categoria:'Bailarín',
+                nombre:m.nombre, nombre_completo:m.nombre, categoria:CAT_NOMBRES[state.categoria]||state.categoria,
                 institucion:p.institucion||'', tipo_certificado:'participacion', evento:'SucreBot 2026' });
             } catch(e) {}
           }
@@ -2837,7 +2882,7 @@ async function guardarPodioFinal() {
   } catch(e) { toast('Error', 'error'); loading(false); }
 }
 function generarExcelPodioFinal(rankingFinal) {
-  const juecesBai = getJueces('bai');
+  const juecesBai = getJueces(state.categoria);
   const header = ['#','Robot','Nombre','Institución','Eliminatoria', ...juecesBai.map((j, i) => `J${i + 1} Final`), 'TOTAL FINAL'];
   const rows = [header];
   rankingFinal.forEach((r, i) => {
@@ -2888,6 +2933,7 @@ function generarExcelPodioFinal(rankingFinal) {
 document.addEventListener('componentsLoaded', () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
+  if (typeof renderCopiasCategoriasCalificacion === 'function') renderCopiasCategoriasCalificacion();
   loading(false);
 });
 </script>

@@ -235,7 +235,12 @@ const CATEGORIA_MAP_CORTO = {
   ins: 'Insectos', trp_a: 'Trepador (Amateur)', sl_a: 'Seguidor de línea ST (Amateur)',
   sl_p: 'Seguidor de línea ST (Pro)', ms_a: 'Minisumo Autónomo', ms_rc: 'Minisumo RC',
   bai: 'Bailarín', bat: 'Batalla', dev: 'Impacto Tecnológico', trp_p: 'Trepador (Pro)',
-  soc: 'Robot soccer', cr: 'Cubo Rubik', lk: 'Lego Kids'
+  soc: 'Robot soccer', cr: 'Cubo Rubik', lk: 'Lego Kids',
+  // Categorías copia (independientes, ver CODIGOS_CATEGORIA_COPIA en Code.gs)
+  trp_a2: 'Trepador (Amateur) [Copia]', ms_a2: 'Minisumo Autónomo [Copia]', ms_rc2: 'Minisumo RC [Copia]',
+  bat2: 'Batalla [Copia]', dev2: 'Impacto Tecnológico [Copia]', sl_a2: 'Seguidor de línea ST (Amateur) [Copia]',
+  sl_p2: 'Seguidor de línea ST (Pro) [Copia]', cr2: 'Cubo Rubik [Copia]', trp_p2: 'Trepador (Pro) [Copia]',
+  bai2: 'Bailarín [Copia]', lk2: 'Lego Kids [Copia]', soc2: 'Robot soccer [Copia]', ins2: 'Insectos [Copia]'
 };
 
 document.addEventListener('componentsLoaded', async () => {
@@ -243,6 +248,9 @@ document.addEventListener('componentsLoaded', async () => {
   if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
   show('contenido-staff');
   actualizarBotonToggleCompletados();
+  // Nombre visible de categorías copia -- cache compartida con certificados.js
+  // (mismo mecanismo que usa el propio texto del diploma).
+  await precargarNombresCopiaCert();
   cargarDatos().then(irACategoriaDeUrl);
 });
 
@@ -382,7 +390,7 @@ function renderCat(cat) {
   return `
     <div class="cat-block" id="cat-${catKey}">
       <div class="cat-header">
-        <div class="cat-nombre">${cat}</div>
+        <div class="cat-nombre">${resolverNombreCategoriaCert(cat)}</div>
         <div class="cat-chips">${chipPend}${chipOk}${btnTodos}</div>
       </div>
       <div class="tabla-scroll">

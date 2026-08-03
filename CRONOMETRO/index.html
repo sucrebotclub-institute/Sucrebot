@@ -721,18 +721,68 @@
 <script src="../shared/js/auth.js"></script>
 <script>
 const GAS_URL = CONFIG.GAS_URL();
-const RUTAS = { 'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr' };
-const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)','Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
-const CATS_PULSADOR = ['Cubo Rubik'];
-const CATS_SEG      = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
+const RUTAS = {
+  'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr',
+  // Categorías copia (independientes, mismo hardware/flujo que su base — ver CONFIGURACION → Duplicar categoría)
+  'Trepador (Amateur) [Copia]':'trp_a2','Trepador (Pro) [Copia]':'trp_p2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2','Seguidor de línea ST (Pro) [Copia]':'sl_p2','Cubo Rubik [Copia]':'cr2'
+};
+const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)','Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)','Trepador (Amateur) [Copia]','Trepador (Pro) [Copia]','Seguidor de línea ST (Amateur) [Copia]','Seguidor de línea ST (Pro) [Copia]'];
+const CATS_PULSADOR = ['Cubo Rubik','Cubo Rubik [Copia]'];
+const CATS_SEG      = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)','Seguidor de línea ST (Amateur) [Copia]','Seguidor de línea ST (Pro) [Copia]'];
 const CATS_SERIAL   = [...CATS_SENSOR,...CATS_PULSADOR];
 const AVISO_SENSOR  = {
   'Trepador (Amateur)':             {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
   'Trepador (Pro)':                 {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
   'Seguidor de línea ST (Amateur)': {titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},
   'Seguidor de línea ST (Pro)':     {titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},
-  'Cubo Rubik':                     {titulo:'PULSADORES REQUERIDOS (x2)',desc:'Conecta el Arduino. Suelta ambos pulsadores para iniciar. Presiona ambos para detener.'}
+  'Cubo Rubik':                     {titulo:'PULSADORES REQUERIDOS (x2)',desc:'Conecta el Arduino. Suelta ambos pulsadores para iniciar. Presiona ambos para detener.'},
+  'Trepador (Amateur) [Copia]':             {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
+  'Trepador (Pro) [Copia]':                 {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
+  'Seguidor de línea ST (Amateur) [Copia]': {titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},
+  'Seguidor de línea ST (Pro) [Copia]':     {titulo:'SENSOR REQUERIDO (TOGGLE)',desc:'Conecta el ESP32. El mismo sensor inicia y detiene el tiempo al pasar el robot.'},
+  'Cubo Rubik [Copia]':                     {titulo:'PULSADORES REQUERIDOS (x2)',desc:'Conecta el Arduino. Suelta ambos pulsadores para iniciar. Presiona ambos para detener.'}
 };
+
+// ── Categorías copia (independientes, mismo flujo que su base) ───
+// Creadas en Code.gs (CATEGORIA_MAP, ver CODIGOS_CATEGORIA_COPIA) para
+// futuras ediciones. El nombre visible se asigna desde CONFIGURACION
+// (getNombresCategorias/setNombreCategoria) — una copia sin nombre
+// todavía asignado queda oculta acá, igual que en REGISTRO.
+const COPIAS_CRONOMETRO = [
+  { nombreInterno: 'Trepador (Amateur) [Copia]',               codigo: 'trp_a2', icono: '🧗' },
+  { nombreInterno: 'Trepador (Pro) [Copia]',                   codigo: 'trp_p2', icono: '🧗' },
+  { nombreInterno: 'Seguidor de línea ST (Amateur) [Copia]',   codigo: 'sl_a2',  icono: '〰️' },
+  { nombreInterno: 'Seguidor de línea ST (Pro) [Copia]',       codigo: 'sl_p2',  icono: '〰️' },
+  { nombreInterno: 'Cubo Rubik [Copia]',                       codigo: 'cr2',    icono: '🧩' },
+  { nombreInterno: 'Insectos [Copia]',                         codigo: 'ins2',   icono: '🐜', esInsectos: true }
+];
+async function renderCopiasCategorias(){
+  const grid=document.getElementById('catGrid');
+  if(!grid)return;
+  grid.querySelectorAll('.cat-btn.cat-btn-copia').forEach(el=>el.remove());
+  let nombres={};
+  try{nombres=await fetch(GAS_URL+'?action=getNombresCategorias',{cache:'no-store'}).then(r=>r.json());}catch(e){nombres={};}
+  COPIAS_CRONOMETRO.forEach(c=>{
+    const nombreVisible=nombres&&nombres[c.codigo];
+    if(!nombreVisible)return;
+    const div=document.createElement('div');
+    div.className='cat-btn cat-btn-copia';
+    div.title='Copia de "'+c.nombreInterno.replace(/\s*\[Copia\]\s*$/,'')+'"';
+    div.innerHTML='<div class="cat-btn-icon">'+c.icono+'</div><div class="cat-btn-nombre">'+nombreVisible+'</div>';
+    if(c.esInsectos){
+      // Insectos vive en su propio panel-ins, no en el flujo genérico de
+      // elegirCategoria() — necesita su propio manejador de clic.
+      div.addEventListener('click', ev=>abrirInsectosCrono(ev, c.nombreInterno));
+    }else{
+      // confirmarIniciarCrono() identifica la categoría leyendo el atributo
+      // onclick de la tarjeta seleccionada (Object.keys(RUTAS).find(...)) —
+      // usar el mismo patrón que las tarjetas reales (en vez de
+      // addEventListener) para que ese lookup encuentre esta tarjeta también.
+      div.setAttribute('onclick', "elegirCategoria('" + c.nombreInterno.replace(/'/g,"\\'") + "', event)");
+    }
+    grid.appendChild(div);
+  });
+}
 
 let categoriaActual=null,participanteActual=null,pollingInterval=null,cronoInterval=null,cronoInicio=null;
 let rondaActual=1,intentoActual=1,maxRondas=1,maxIntentos=2;
@@ -910,7 +960,7 @@ function deseleccionarTodos(){seleccionados.clear();renderSeleccion();}
 function volverPaso1(){presentes=[];seleccionados=new Set();document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);}
 
 // ── Insectos (6ta categoría) — vive en su propio panel-ins con stepper interno ──
-function abrirInsectosCrono(ev){
+function abrirInsectosCrono(ev, categoria){
   if(ev&&ev.currentTarget){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));ev.currentTarget.classList.add('selected');}
   document.getElementById('outerStepper').style.display='none';
   document.getElementById('pbHeroCrono').style.display='none';
@@ -919,7 +969,7 @@ function abrirInsectosCrono(ev){
   document.getElementById('panel-3').classList.remove('active');
   document.getElementById('panel-ins').classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
-  window.InsectosCrono.abrir();
+  window.InsectosCrono.abrir(categoria);
 }
 function volverAPaso1DesdeInsectos(){
   document.getElementById('panel-ins').classList.remove('active');
@@ -1026,7 +1076,7 @@ function limpiarParticipante(){
 // Categorías donde el sensor solo detiene (no arranca) el tiempo —
 // aquí es donde existe la ventana de carrera entre el clic de
 // "Iniciar" y el momento real en que el ESP32 arma el sensor.
-const CATS_ARM_ESPERA=['Trepador (Amateur)','Trepador (Pro)'];
+const CATS_ARM_ESPERA=['Trepador (Amateur)','Trepador (Pro)','Trepador (Amateur) [Copia]','Trepador (Pro) [Copia]'];
 
 async function iniciarCrono(){
   if(!competenciaIniciada){showToast('⚠️ Configura e inicia la competencia primero',true);return;}
@@ -1675,6 +1725,7 @@ async function guardarPodioCrono(){
 
 document.addEventListener('componentsLoaded',async function(){
   actualizarBadgeOffline();
+  renderCopiasCategorias();
   const savedUser=localStorage.getItem('sucrebot_user');if(!savedUser){window.location.href='../INICIO/';return;}
   const catGuardada=localStorage.getItem('cronometro_categoria_activa');
   if(catGuardada&&RUTAS[catGuardada]){
@@ -1711,6 +1762,17 @@ document.addEventListener('componentsLoaded',async function(){
 (function(){
   const TIEMPO_LIMITE_MS = 120000; // 2 minutos
   const TIEMPO_MAX_REGLAMENTARIO_MS = 120000;
+  // Categoría real que está corriendo en este panel -- 'Insectos' o
+  // 'Insectos [Copia]' (ins2). Todo el resto del módulo reusa las mismas
+  // variables de estado sin importar cuál esté activa: abrir() resetea
+  // todo desde cero cada vez, así que nunca hay dos categorías corriendo
+  // a la vez en el mismo dispositivo (mismo principio ya usado para
+  // bai2/lk2 en PANEL-CALIFICACION).
+  let categoriaActiva = 'Insectos';
+  // Código corto para pushResultado/publicarPodioCalificacion (ruta en
+  // Sheets) -- 'ins' para la real, 'ins2' para la copia. Ambos ya están
+  // en CATEGORIA_MAP (Code.gs, ver CODIGOS_CATEGORIA_COPIA).
+  function codigoCategoriaActiva() { return categoriaActiva === 'Insectos' ? 'ins' : 'ins2'; }
   let participantes = [];  // todos los de la cat
   let presentes = [];      // seleccionados paso 1
 
@@ -1969,11 +2031,11 @@ document.addEventListener('componentsLoaded',async function(){
     loading(true, 'Cargando participantes...');
     try {
       if (window.OfflineExcel && OfflineExcel.estaActivo()) {
-        participantes = OfflineExcel.getParticipantes('Insectos');
+        participantes = OfflineExcel.getParticipantes(categoriaActiva);
       } else {
         const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' }),{cache:'no-store'}).then(r => r.json());
         const todos = Array.isArray(res) ? res : (res.participantes || []);
-        participantes = todos.filter(p => p.categoria === 'Insectos' && p.aprobado === 'APROBADO');
+        participantes = todos.filter(p => p.categoria === categoriaActiva && p.aprobado === 'APROBADO');
       }
       renderLista();
     } catch (e) {
@@ -2651,7 +2713,7 @@ document.addEventListener('componentsLoaded',async function(){
       const mj = mejores[id];
       return { posicion: i + 1, equipo_id: p.id, equipo_nombre: p.robot, total: mj ? mj.tiempo : 0 };
     }).filter(Boolean);
-    try { await gasPost({ action: 'guardarPodioManual', categoria: 'ins', posiciones }); }
+    try { await gasPost({ action: 'guardarPodioManual', categoria: codigoCategoriaActiva(), posiciones }); }
     catch(e) { console.error('No se pudo guardar podio manual en backend', e); }
   });
   document.getElementById('btnQuitarAjustePodio').addEventListener('click', async () => {
@@ -2662,7 +2724,7 @@ document.addEventListener('componentsLoaded',async function(){
       alert('✏️ El ajuste se quitó en esta pantalla, pero no se puede sincronizar con RESULTADOS mientras estés en modo offline (requiere internet).');
       return;
     }
-    try { await gasPost({ action: 'guardarPodioManual', categoria: 'ins', posiciones: [] }); }
+    try { await gasPost({ action: 'guardarPodioManual', categoria: codigoCategoriaActiva(), posiciones: [] }); }
     catch(e) { console.error('No se pudo limpiar podio manual en backend', e); }
   });
 
@@ -2708,7 +2770,7 @@ document.addEventListener('componentsLoaded',async function(){
             correo: p.correo || '',
             nombre: p.nombre || '',
             nombre_completo: p.nombre || '',
-            categoria: 'Insectos',
+            categoria: categoriaActiva,
             institucion: p.institucion || '',
             evento: 'SucreBot 2026',
             fecha_evento: '16 de julio de 2026',
@@ -2719,11 +2781,11 @@ document.addEventListener('componentsLoaded',async function(){
             nombre: p.nombre || '',
             robot: p.robot || '',
             institucion: p.institucion || '',
-            categoria: 'Insectos',
+            categoria: categoriaActiva,
             tiempo: entry.tiempo,
             ronda: 'FINAL',
             intento: 1,
-            ruta: 'ins',
+            ruta: codigoCategoriaActiva(),
             fecha: new Date().toISOString(),
           });
         } else {
@@ -2731,7 +2793,7 @@ document.addEventListener('componentsLoaded',async function(){
             action: 'guardarCertificado',
             correo: p.correo || '',
             nombre_completo: p.nombre || '',
-            categoria: 'Insectos',
+            categoria: categoriaActiva,
             institucion: p.institucion || '',
             evento: 'SucreBot 2026',
             fecha_evento: '16 de julio de 2026',
@@ -2746,7 +2808,7 @@ document.addEventListener('componentsLoaded',async function(){
             tiempo: entry.tiempo,
             ronda: 'FINAL',
             intento: 1,
-            ruta: 'ins',
+            ruta: codigoCategoriaActiva(),
             fecha: new Date().toISOString(),
           });
         }
@@ -2767,7 +2829,7 @@ document.addEventListener('componentsLoaded',async function(){
     try {
       await gasPost({
         action: 'publicarPodioCalificacion',
-        categoria: 'ins',
+        categoria: codigoCategoriaActiva(),
         ranking: todos.map(entry => ({ robot: entry.p.robot, nombre: entry.p.nombre, tiempo: entry.tiempo, institucion: entry.p.institucion || '' }))
       });
     } catch(e) {
@@ -2963,7 +3025,8 @@ document.addEventListener('componentsLoaded',async function(){
 
   // Punto de entrada llamado por abrirInsectosCrono() en el script principal
   window.InsectosCrono = {
-    abrir() {
+    abrir(categoria) {
+      categoriaActiva = categoria || 'Insectos';
       presentes = []; poolRonda = []; gruposRonda = []; mejores = {}; intentos = {}; historialRondas = {};
       rondaActual = 1; grupoActual = 0; intentoActual = 1; avanzaSet = new Set(); podioManualOverride = null;
       clearInterval(cronInterval);
@@ -2980,9 +3043,9 @@ document.addEventListener('componentsLoaded',async function(){
 (function(){
   let puerto=null,writer=null,buffer='';
   let armadoResolvers=[];
-  const CATS_SENSOR=['Trepador (Amateur)','Trepador (Pro)'];
-  const CATS_SEGUIDOR=['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)'];
-  const CATS_PULSADOR=['Cubo Rubik'];
+  const CATS_SENSOR=['Trepador (Amateur)','Trepador (Pro)','Trepador (Amateur) [Copia]','Trepador (Pro) [Copia]'];
+  const CATS_SEGUIDOR=['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)','Seguidor de línea ST (Amateur) [Copia]','Seguidor de línea ST (Pro) [Copia]'];
+  const CATS_PULSADOR=['Cubo Rubik','Cubo Rubik [Copia]'];
   const CATS_SERIAL=[...CATS_SENSOR,...CATS_SEGUIDOR,...CATS_PULSADOR];
 
   function inyectarBoton(){

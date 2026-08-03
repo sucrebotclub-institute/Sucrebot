@@ -706,6 +706,46 @@
       </div>
     </div>
 
+    <script>
+    // ── Categorías copia (independientes, mismo motor que su base) ──
+    // Creadas en Code.gs (ver CODIGOS_CATEGORIA_COPIA). El nombre visible
+    // se asigna desde CONFIGURACION (getNombresCategorias/setNombreCategoria)
+    // — una copia sin nombre asignado todavía queda oculta, igual que en
+    // REGISTRO/CRONOMETRO. soc2 (copia de Robot Soccer) usa su propio
+    // torneo independiente en soccer_torneo (columna 'categoria' agregada
+    // en Code.gs) — todas las llamadas de Soccer de acá abajo mandan
+    // `categoria: state.categoria` para que el backend sepa cuál torneo
+    // leer/escribir sin mezclarlo con el otro.
+    (function(){
+      const CODIGOS_COPIA_BRACKET = ['ms_a2', 'ms_rc2', 'bat2', 'soc2'];
+      const ICONO = { ms_a2: '🤖', ms_rc2: '🎮', bat2: '🥊', soc2: '⚽' };
+      const TIPO_CLASE = { ms_a2: 'tipo-bracket', ms_rc2: 'tipo-bracket', bat2: 'tipo-batalla', soc2: 'tipo-soccer' };
+      const TIPO_LABEL = { ms_a2: 'BRACKET', ms_rc2: 'BRACKET', bat2: 'BATALLA', soc2: 'SOCCER' };
+      window.renderCopiasCategoriasBracket = async function(){
+        const grid = document.querySelector('#panel-1 .cat-grid');
+        if (!grid || typeof CAT_INFO === 'undefined') return;
+        grid.querySelectorAll('.cat-btn.cat-btn-copia').forEach(el => el.remove());
+        let nombres = {};
+        try { nombres = await fetch(GAS + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()); } catch (e) { nombres = {}; }
+        CODIGOS_COPIA_BRACKET.forEach(codigo => {
+          const nombreVisible = nombres && nombres[codigo];
+          if (!nombreVisible) return;
+          const baseNombre = CAT_INFO[codigo].nombre.replace(/\s*\[Copia\]\s*$/, '');
+          const div = document.createElement('div');
+          div.className = 'cat-btn cat-btn-copia';
+          div.title = 'Copia de "' + baseNombre + '"';
+          div.innerHTML =
+            '<div class="cat-btn-icon">' + (ICONO[codigo] || '🔁') + '</div>' +
+            '<div class="cat-btn-nombre">' + nombreVisible + '</div>' +
+            '<div class="cat-btn-desc">Copia de ' + baseNombre + '</div>' +
+            '<div class="cat-btn-tipo ' + (TIPO_CLASE[codigo] || 'tipo-bracket') + '">' + (TIPO_LABEL[codigo] || '') + '</div>';
+          div.addEventListener('click', () => seleccionarCategoria(codigo));
+          grid.appendChild(div);
+        });
+      };
+    })();
+    </script>
+
     <!-- PASO 2 -->
     <div class="step-panel" id="panel-2">
       <div class="pb-card">
@@ -768,7 +808,13 @@ const CAT_INFO = {
   ms_a:  { nombre: 'Minisumo Autónomo', tipo: 'minisumo', gasNombre: 'Minisumo Autónomo' },
   ms_rc: { nombre: 'Minisumo RC',       tipo: 'minisumo', gasNombre: 'Minisumo RC' },
   soc:   { nombre: 'Robot Soccer',      tipo: 'soccer',   gasNombre: 'Robot soccer' },
-  bat:   { nombre: 'Batalla',           tipo: 'batalla',  gasNombre: 'Batalla' }
+  bat:   { nombre: 'Batalla',           tipo: 'batalla',  gasNombre: 'Batalla' },
+  // Categorías copia (independientes, mismo motor que su base — ver
+  // CONFIGURACION → Duplicar categoría / CODIGOS_CATEGORIA_COPIA en Code.gs)
+  ms_a2:  { nombre: 'Minisumo Autónomo [Copia]', tipo: 'minisumo', gasNombre: 'Minisumo Autónomo [Copia]' },
+  ms_rc2: { nombre: 'Minisumo RC [Copia]',       tipo: 'minisumo', gasNombre: 'Minisumo RC [Copia]' },
+  bat2:   { nombre: 'Batalla [Copia]',           tipo: 'batalla',  gasNombre: 'Batalla [Copia]' },
+  soc2:   { nombre: 'Robot Soccer [Copia]',      tipo: 'soccer',   gasNombre: 'Robot soccer [Copia]' }
 };
 
 let state = {
@@ -826,7 +872,8 @@ async function seleccionarCategoria(cat) {
     const res=await gasGet({action:'getParticipantes'});
     const todos=Array.isArray(res)?res:(res.participantes||[]);
     const gasNombre=CAT_INFO[cat].gasNombre;
-    if (cat==='soc') {
+    const esSoc=(cat==='soc'||cat==='soc2');
+    if (esSoc) {
       // Soccer: agrupar por equipo
       const porEquipo={};
       todos.filter(p=>p.categoria===gasNombre&&p.aprobado==='APROBADO').forEach(p=>{
@@ -842,7 +889,7 @@ async function seleccionarCategoria(cat) {
       }));
     }
     state.seleccionados=new Set(); state.bracket=null; state.bracketBloqueado=false; state.torneoSoc=null; state.socConfigRonda=null;
-    if (cat==='soc') {
+    if (esSoc) {
       await intentarCargarTorneoSoccer();
     } else {
       await intentarCargarBracket(cat);
@@ -865,7 +912,7 @@ async function intentarCargarBracket(cat) {
 // ── Soccer: intentar cargar torneo existente ──
 async function intentarCargarTorneoSoccer() {
   try {
-    const res=await gasGet({action:'getSoccerTorneo'});
+    const res=await gasGet({action:'getSoccerTorneo',categoria:state.categoria});
     if(res.ok&&res.torneo){ state.torneoSoc=res.torneo; state.bracketBloqueado=true; actualizarTitulos(); renderTorneoSoccer(); setStep(3); return; }
   } catch(e) {}
   actualizarTitulos(); renderSeleccion(); setStep(2);
@@ -1341,7 +1388,7 @@ function resetearBracket() {
       loading(true,'RESETEANDO...');
       try{
         let res;
-        if(esSoccer){ res=await gasPost({action:'resetearTorneoSoccer'}); }
+        if(esSoccer){ res=await gasPost({action:'resetearTorneoSoccer',categoria:state.categoria}); }
         else { res=await gasPost({action:'resetearBracketGeneral',categoria:state.categoria}); }
         if(!res.ok)throw new Error(res.error||'Error');
         state.bracket=null; state.bracketBloqueado=false; state.seleccionados=new Set();
@@ -1379,7 +1426,7 @@ async function abrirConfigurarRondaSoccer(pool, ronda) {
     loading(true,'GENERANDO LA FINAL...');
     try{
       const llaves=[{llave_id:'FINAL',equipos:pool}];
-      const res=await gasPost({action:'generarRondaSoccer',torneo_id:state.torneoSoc?.torneo_id||'',ronda,llaves,equipos_pool:pool});
+      const res=await gasPost({action:'generarRondaSoccer',torneo_id:state.torneoSoc?.torneo_id||'',ronda,llaves,equipos_pool:pool,categoria:state.categoria});
       if(!res.ok)throw new Error(res.error||'Error');
       state.torneoSoc=res.torneo; state.bracketBloqueado=true; state.socConfigRonda=null;
       toast('🏆 Final generada','success');
@@ -1536,7 +1583,7 @@ async function confirmarRondaSoccer() {
   }
   loading(true, c.ronda===1?'GENERANDO RONDA 1...':'GENERANDO SIGUIENTE RONDA...');
   try{
-    const res=await gasPost({action:'generarRondaSoccer',torneo_id:state.torneoSoc?.torneo_id||'',ronda:c.ronda,llaves,equipos_pool:c.pool.map(eq=>({id:eq.id,nombre:eq.nombre}))});
+    const res=await gasPost({action:'generarRondaSoccer',torneo_id:state.torneoSoc?.torneo_id||'',ronda:c.ronda,llaves,equipos_pool:c.pool.map(eq=>({id:eq.id,nombre:eq.nombre})),categoria:state.categoria});
     if(!res.ok)throw new Error(res.error||'Error');
     state.torneoSoc=res.torneo; state.bracketBloqueado=true; state.socConfigRonda=null;
     toast('✅ Ronda '+c.ronda+' generada','success');
@@ -1697,7 +1744,7 @@ async function marcarAvanceLlaveUI(ronda, llave) {
   const equipos=items.map(el=>({id:el.dataset.avanceId,nombre:el.dataset.avanceNombre}));
   loading(true,'GUARDANDO...');
   try{
-    const res=await gasPost({action:'marcarAvanceLlave',torneo_id:state.torneoSoc.torneo_id,ronda,llave,equipos,usuario:''});
+    const res=await gasPost({action:'marcarAvanceLlave',torneo_id:state.torneoSoc.torneo_id,ronda,llave,equipos,usuario:'',categoria:state.categoria});
     if(!res.ok)throw new Error(res.error||'Error');
     state.torneoSoc=res.torneo;
     toast('✅ Equipos de '+llave+' confirmados para la siguiente ronda','success');
@@ -1743,7 +1790,7 @@ function renderResumenAvanceSoccer(torneo, rondaActual) {
 // ════════════════════════════════════════
 async function obtenerPodioSoccer() {
   try {
-    const res=await gasGet({action:'getPodioSoccer'});
+    const res=await gasGet({action:'getPodioSoccer',categoria:state.categoria});
     if(res.ok&&Array.isArray(res.podio)&&res.podio.length>=2) return res.podio;
   } catch(e) {}
   return null;
@@ -2303,7 +2350,7 @@ async function descalificarEquipo(equipoInfractor, motivoExterno) {
   const marcador=`${cron.golesA}-${cron.golesB} (desc. ${motivo||'descalificación'})`;
   loading(true,'GUARDANDO RESULTADO...');
   try{
-    const res=await gasPost({action:'registrarResultadoSoccer',partido_id:cron.partido.partido_id,ganador_id:ganadorId,marcador});
+    const res=await gasPost({action:'registrarResultadoSoccer',partido_id:cron.partido.partido_id,ganador_id:ganadorId,marcador,categoria:state.categoria});
     if(!res.ok)throw new Error(res.error||'Error');
     state.torneoSoc=res.torneo; document.getElementById('cronOverlay').classList.remove('show');
     toast(`🏆 Ganó ${nomGan} por descalificación`,'success'); renderTorneoSoccer();
@@ -2329,7 +2376,7 @@ async function terminarPartidoSoccer() {
   if(cron.interval)clearInterval(cron.interval); cron.corriendo=false;
   loading(true,'GUARDANDO RESULTADO...');
   try{
-    const res=await gasPost({action:'registrarResultadoSoccer',partido_id:cron.partido.partido_id,ganador_id:ganadorId,marcador});
+    const res=await gasPost({action:'registrarResultadoSoccer',partido_id:cron.partido.partido_id,ganador_id:ganadorId,marcador,categoria:state.categoria});
     if(!res.ok)throw new Error(res.error||'Error');
     state.torneoSoc=res.torneo; document.getElementById('cronOverlay').classList.remove('show');
     toast(`🏆 Ganó ${ganadorNombre}`,'success'); renderTorneoSoccer();
@@ -2795,7 +2842,7 @@ async function msFinalizarCombate() {
   loading(false);
 }
 
-document.addEventListener('componentsLoaded',()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} });
+document.addEventListener('componentsLoaded',()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} if(typeof renderCopiasCategoriasBracket==='function')renderCopiasCategoriasBracket(); });
 </script>
 
 <!-- PANTALLA COMPLETA (tecla F) -->

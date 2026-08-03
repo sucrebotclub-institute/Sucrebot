@@ -274,6 +274,21 @@
               <option value="Lego Kids">Lego Kids</option>
               <option value="Impacto Tecnológico">Impacto Tecnológico</option>
             </optgroup>
+            <optgroup label="🧬 COPIAS" id="optgroupCopias" style="display:none;">
+              <option value="Insectos [Copia]" data-codigo="ins2">Insectos</option>
+              <option value="Trepador (Amateur) [Copia]" data-codigo="trp_a2">Trepador (Amateur)</option>
+              <option value="Seguidor de línea ST (Amateur) [Copia]" data-codigo="sl_a2">Seguidor de línea ST (Amateur)</option>
+              <option value="Seguidor de línea ST (Pro) [Copia]" data-codigo="sl_p2">Seguidor de línea ST (Pro)</option>
+              <option value="Minisumo Autónomo [Copia]" data-codigo="ms_a2">Minisumo Autónomo</option>
+              <option value="Minisumo RC [Copia]" data-codigo="ms_rc2">Minisumo RC</option>
+              <option value="Bailarín [Copia]" data-codigo="bai2">Bailarín</option>
+              <option value="Batalla [Copia]" data-codigo="bat2">Batalla</option>
+              <option value="Trepador (Pro) [Copia]" data-codigo="trp_p2">Trepador (Pro)</option>
+              <option value="Robot soccer [Copia]" data-codigo="soc2">Robot soccer</option>
+              <option value="Cubo Rubik [Copia]" data-codigo="cr2">Cubo Rubik</option>
+              <option value="Lego Kids [Copia]" data-codigo="lk2">Lego Kids</option>
+              <option value="Impacto Tecnológico [Copia]" data-codigo="dev2">Impacto Tecnológico</option>
+            </optgroup>
           </select>
         </div>
       </div>
@@ -549,12 +564,46 @@
     `;
   }
 
+  // Categorías "copia": mismo flujo que su categoría base (creadas desde
+  // CONFIGURACION → Duplicar categoría), pero con nombre visible editable.
+  // El <option value="..."> es el identificador interno fijo (lo que se
+  // guarda en participantes.categoria) y NUNCA cambia; el texto visible
+  // se completa acá con el nombre real que haya puesto el staff. Una
+  // copia sin nombre asignado todavía queda oculta -- mostrar "Insectos"
+  // duplicado sin explicación confundiría más de lo que ayuda.
+  async function aplicarNombresCategoriasCopia() {
+    try {
+      const nombres = await fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json());
+      const optgroup = document.getElementById('optgroupCopias');
+      let algunaVisible = false;
+      optgroup.querySelectorAll('option[data-codigo]').forEach(opt => {
+        const nombreVisible = nombres && nombres[opt.dataset.codigo];
+        if (nombreVisible) {
+          opt.textContent = nombreVisible;
+          opt.style.display = '';
+          algunaVisible = true;
+        } else {
+          opt.style.display = 'none';
+        }
+      });
+      optgroup.style.display = algunaVisible ? '' : 'none';
+    } catch (e) { /* sin nombres configurados, la sección queda oculta */ }
+  }
+
+  // Nombre "base" de una categoría interna -- quita el sufijo " [Copia]"
+  // para que la lógica de campos condicionales (sin robot, equipo de
+  // soccer, etc.) se comporte igual para una copia que para su original.
+  function nombreBaseCategoria(cat) {
+    return String(cat || '').replace(/\s*\[Copia\]\s*$/, '');
+  }
+
   async function initRegistro() {
     try {
       const cfg = await fetch(GAS_URL + '?action=getConfigRegistro').then(r => r.json());
       if (cfg && cfg.abierto === false) { mostrarRegistroCerrado(); return; }
       if (cfg && Array.isArray(cfg.categoriasCerradas)) CATEGORIAS_CERRADAS = cfg.categoriasCerradas;
     } catch(e) { /* si falla la consulta, no bloquear el registro */ }
+    aplicarNombresCategoriasCopia();
     cargarInstituciones();
   }
   initRegistro();
@@ -610,12 +659,13 @@
 
   function onCategoriaChange() {
     const cat = document.getElementById('f-categoria').value;
+    const catBase = nombreBaseCategoria(cat);
     const wrap = document.getElementById('soccerEquipoWrap');
-    if (cat === 'Robot soccer') wrap.classList.add('show');
+    if (catBase === 'Robot soccer') wrap.classList.add('show');
     else { wrap.classList.remove('show'); document.getElementById('f-equipo').value = ''; }
 
     const robotWrap = document.getElementById('robotSectionWrap');
-    if (CATEGORIAS_SIN_ROBOT.includes(cat)) {
+    if (CATEGORIAS_SIN_ROBOT.includes(catBase)) {
       robotWrap.style.display = 'none';
       document.getElementById('f-robot').value = '';
     } else {
@@ -685,13 +735,13 @@
     if (!nombre)      { showToast('El nombre completo es obligatorio', true); return; }
     if (!institucion) { showToast('La institución es obligatoria', true); return; }
     if (!ciudad)      { showToast('Selecciona una provincia o escribe tu país', true); return; }
-    if (!robot && !CATEGORIAS_SIN_ROBOT.includes(categoria)) { showToast('El nombre del robot es obligatorio', true); return; }
+    if (!robot && !CATEGORIAS_SIN_ROBOT.includes(nombreBaseCategoria(categoria))) { showToast('El nombre del robot es obligatorio', true); return; }
     if (!contacto)    { showToast('El número de contacto es obligatorio', true); return; }
     if (contacto.length < 7) { showToast('El número debe tener al menos 7 dígitos', true); return; }
     if (!correo)      { showToast('El correo electrónico es obligatorio', true); return; }
     if (!categoria)   { showToast('Selecciona una categoría', true); return; }
     if (CATEGORIAS_CERRADAS.includes(categoria)) { showToast('La categoría ' + categoria + ' tiene las inscripciones agotadas', true); return; }
-    if (categoria === 'Robot soccer' && !equipo) { showToast('El nombre del equipo es obligatorio para Robot soccer', true); return; }
+    if (nombreBaseCategoria(categoria) === 'Robot soccer' && !equipo) { showToast('El nombre del equipo es obligatorio para Robot soccer', true); return; }
     if (!comprobante) { showToast('El número de comprobante es obligatorio', true); return; }
     if (!archivo)     { showToast('Debes adjuntar el comprobante de pago', true); return; }
     if (!logoArchivo) { showToast('El logo de tu institución o club es obligatorio', true); return; }

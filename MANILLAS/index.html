@@ -224,18 +224,56 @@
     'Robot soccer':                   '#CC0000',
     'Cubo Rubik':                     '#C0C0C0',
     'Lego Kids':                      '#2980B9',
+    // Categorías copia (independientes, mismo flujo que su base) — mismo
+    // color que su base, ya que no hay un color oficial nuevo asignado.
+    'Trepador (Amateur) [Copia]':               '#16A085',
+    'Seguidor de línea ST (Amateur) [Copia]':   '#00BFFF',
+    'Seguidor de línea ST (Pro) [Copia]':       '#7B2D8B',
+    'Minisumo Autónomo [Copia]':                '#9B59B6',
+    'Minisumo RC [Copia]':                      '#F5A623',
+    'Batalla [Copia]':                          '#E91E8C',
+    'Impacto Tecnológico [Copia]':               '#D4AF37',
+    'Trepador (Pro) [Copia]':                   '#E67E22',
+    'Cubo Rubik [Copia]':                       '#C0C0C0',
+    'Bailarín [Copia]':                         '#27AE60',
+    'Lego Kids [Copia]':                        '#2980B9',
+    'Robot soccer [Copia]':                     '#CC0000',
+    'Insectos [Copia]':                         '#2980B9',
   };
   const NIVEL = {
     'Insectos':'amateur','Trepador (Amateur)':'amateur','Seguidor de línea ST (Amateur)':'amateur',
     'Seguidor de línea ST (Pro)':'pro','Minisumo Autónomo':'pro','Minisumo RC':'pro',
     'Bailarín':'pro','Batalla':'pro','Trepador (Pro)':'pro','Robot soccer':'pro',
-    'Cubo Rubik':'extra','Lego Kids':'extra','Impacto Tecnológico':'extra'
+    'Cubo Rubik':'extra','Lego Kids':'extra','Impacto Tecnológico':'extra',
+    'Trepador (Amateur) [Copia]':'amateur','Seguidor de línea ST (Amateur) [Copia]':'amateur',
+    'Seguidor de línea ST (Pro) [Copia]':'pro','Minisumo Autónomo [Copia]':'pro','Minisumo RC [Copia]':'pro',
+    'Batalla [Copia]':'pro','Trepador (Pro) [Copia]':'pro',
+    'Cubo Rubik [Copia]':'extra','Impacto Tecnológico [Copia]':'extra',
+    'Bailarín [Copia]':'pro','Lego Kids [Copia]':'extra','Robot soccer [Copia]':'pro',
+    'Insectos [Copia]':'amateur'
   };
 
   let participantes = [];
   let listaFiltrada = [];
   let paginaActual  = 1;
   let entregando    = new Set();
+
+  // Nombre visible de una categoría copia (ver CONFIGURACION → Duplicar
+  // categoría) -- el identificador interno guardado en p.categoria trae
+  // el sufijo " [Copia]" y no es lo que debe verse en la tarjeta.
+  let NOMBRES_COPIA = {};
+  function resolverNombreCategoria(cat) {
+    if (!cat) return cat;
+    const codigo = CODIGO_POR_NOMBRE_INTERNO[cat];
+    if (codigo && NOMBRES_COPIA[codigo]) return NOMBRES_COPIA[codigo];
+    return cat;
+  }
+  const CODIGO_POR_NOMBRE_INTERNO = {
+    'Insectos [Copia]':'ins2','Trepador (Amateur) [Copia]':'trp_a2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2',
+    'Seguidor de línea ST (Pro) [Copia]':'sl_p2','Minisumo Autónomo [Copia]':'ms_a2','Minisumo RC [Copia]':'ms_rc2',
+    'Bailarín [Copia]':'bai2','Batalla [Copia]':'bat2','Impacto Tecnológico [Copia]':'dev2',
+    'Trepador (Pro) [Copia]':'trp_p2','Robot soccer [Copia]':'soc2','Cubo Rubik [Copia]':'cr2','Lego Kids [Copia]':'lk2'
+  };
 
   async function gasGet(params) {
     const r = await fetch(GAS_URL + '?' + new URLSearchParams(params), { cache: 'no-store' });
@@ -249,6 +287,7 @@
   document.addEventListener('componentsLoaded', async () => {
     if (window.esperarRol) await window.esperarRol();
     if (!window.esStaffCompleto || !window.esStaffCompleto()) { window.location.href = '../INICIO/'; return; }
+    try { NOMBRES_COPIA = await gasGet({ action: 'getNombresCategorias' }) || {}; } catch(e) { NOMBRES_COPIA = {}; }
     refrescar(false); // false = respetar cache
   });
 
@@ -384,7 +423,7 @@
             <div class="p-robot">${p.robot || '—'}</div>
             <div class="p-nombre">${p.nombre || '—'} · ${p.institucion || '—'}</div>
             ${m2 ? `<div class="p-miembro2">+ ${m2}</div>` : ''}
-            <span class="p-cat ${nivel}">${p.categoria || '—'}</span>
+            <span class="p-cat ${nivel}">${resolverNombreCategoria(p.categoria) || '—'}</span>
           </div>
           ${entregada
             ? `<div class="btn-entregada-label">✅ Entregada</div>`

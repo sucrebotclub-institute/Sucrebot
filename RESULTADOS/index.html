@@ -275,6 +275,18 @@
       cr: 'Cubo Rubik', lk: 'Lego Kids', dev: 'Impacto Tecnológico'
     };
 
+    // Categorías copia (independientes, ver CONFIGURACION → Duplicar
+    // categoría / CODIGOS_CATEGORIA_COPIA en Code.gs) -- su nombre visible
+    // no es fijo como el de RUTAS_NOMBRE, se consulta a getNombresCategorias
+    // una vez al cargar la página y se cachea acá.
+    let NOMBRES_COPIA = {};
+    async function cargarNombresCopia() {
+      try { NOMBRES_COPIA = await fetchJSON('getNombresCategorias'); } catch(e) { NOMBRES_COPIA = {}; }
+    }
+    function resolverNombreCategoria(cat) {
+      return RUTAS_NOMBRE[cat] || NOMBRES_COPIA[cat] || cat;
+    }
+
     function hora() { return new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
     setInterval(() => { document.getElementById('tv-hora').textContent = hora(); }, 1000);
     document.getElementById('tv-hora').textContent = hora();
@@ -300,7 +312,7 @@
       let html = '';
       let selHtml = '<option value="">Selecciona una categoría...</option>';
       publicados.forEach(function(p) {
-        const nombre = RUTAS_NOMBRE[p.categoria] || p.categoria;
+        const nombre = resolverNombreCategoria(p.categoria);
         html += `<button class="cat-tab tiene-datos ${categoriaActiva === p.categoria ? 'active' : ''}" data-ruta="${p.categoria}" onclick="seleccionarManual('${p.categoria}')">${nombre}</button>`;
         selHtml += `<option value="${p.categoria}">${nombre}</option>`;
       });
@@ -364,11 +376,15 @@
     // Categorías cuyo podio vive en resultados_publicados (no en podio_manual
     // como ms_a/ms_rc/bat/soc): PANEL-CALIFICACION (jueces por criterios) y,
     // desde el sprint de extensión, CRONOMETRO/INSECTOS (tiempos).
-    const CATS_CALIFICACION = ['bai', 'dev', 'lk', 'ins', 'trp_a', 'trp_p', 'sl_a', 'sl_p', 'cr'];
+    const CATS_CALIFICACION = [
+      'bai', 'dev', 'lk', 'ins', 'trp_a', 'trp_p', 'sl_a', 'sl_p', 'cr',
+      // Categorías copia con el mismo tipo de podio (timing/calificación)
+      'dev2', 'trp_a2', 'trp_p2', 'sl_a2', 'sl_p2', 'cr2', 'bai2', 'lk2', 'ins2'
+    ];
 
     // ── PODIO PUBLICADO (top 3 de una categoría) ────────────────────
     async function renderizarPodio(ruta) {
-      const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
+      const nombreCat = resolverNombreCategoria(ruta);
       document.getElementById('tv-ronda').textContent = 'PODIO';
       document.getElementById('tv-cat').textContent   = nombreCat;
       const wrap = document.getElementById('tv-tabla-wrap');
@@ -409,7 +425,7 @@
     // esa categoría en Resultados. Resetear el bracket en PANEL-BRACKET ya
     // NO hace esto solo, hay que venir acá a propósito.
     async function despublicarPodio(ruta) {
-      const nombreCat = RUTAS_NOMBRE[ruta] || ruta;
+      const nombreCat = resolverNombreCategoria(ruta);
       if (!confirm(`¿Quitar el podio de "${nombreCat}" de Resultados?\n\nEsto NO borra el bracket ni los certificados ya generados — solo deja de mostrarse acá.`)) return;
       try {
         const r = await postJSON({ action: 'despublicarPodio', categoria: ruta });
@@ -426,7 +442,7 @@
     // se puede volver a publicar guardando su podio de nuevo.
     async function limpiarTodosPodios() {
       if (!publicados.length) { alert('No hay ningún podio publicado para limpiar.'); return; }
-      const listaTexto = publicados.map(p => '  • ' + (RUTAS_NOMBRE[p.categoria] || p.categoria)).join('\n');
+      const listaTexto = publicados.map(p => '  • ' + resolverNombreCategoria(p.categoria)).join('\n');
       const ok = confirm(`¿Quitar de Resultados TODOS los podios publicados (${publicados.length})?\n\n${listaTexto}\n\nEsto NO borra brackets, calificaciones ni certificados ya generados — solo dejan de mostrarse acá.`);
       if (!ok) return;
       const btn = document.getElementById('btnLimpiarPodios');
@@ -454,7 +470,10 @@
     // ── EXCEL — TODOS LOS PODIOS (todas las categorías publicadas) ──
     // Orden fijo igual a CATEGORIA_MAP en Code.gs, para que el Excel salga
     // siempre en el mismo orden sin importar en qué orden se fueron publicando.
-    const ORDEN_CATS = ['ins','trp_a','sl_a','sl_p','ms_a','ms_rc','bai','bat','dev','trp_p','soc','cr','lk'];
+    const ORDEN_CATS = [
+      'ins','trp_a','sl_a','sl_p','ms_a','ms_rc','bai','bat','dev','trp_p','soc','cr','lk',
+      'trp_a2','sl_a2','sl_p2','ms_a2','ms_rc2','bat2','dev2','cr2','bai2','lk2','soc2','ins2'
+    ];
 
     // SheetJS se carga a demanda (solo al presionar el botón), NO en el <head>.
     // Esta página se recarga sola cada 3 min en un TV rotando resultados —
@@ -521,7 +540,7 @@
         let huboAlgunPodio = false;
 
         for (const cat of categoriasOrdenadas) {
-          const nombreCat = RUTAS_NOMBRE[cat] || cat;
+          const nombreCat = resolverNombreCategoria(cat);
           let cardsData = [];
           try {
             if (CATS_CALIFICACION.includes(cat)) {
@@ -534,7 +553,7 @@
               cardsData = podio.filter(p => p.posicion >= 1 && p.posicion <= 3).sort((a, b) => a.posicion - b.posicion)
                 .map(p => {
                   let institucion = porId[p.equipo_id] || '';
-                  if (!institucion && cat === 'soc') institucion = porEquipo[nombreCat + '||' + String(p.equipo_nombre || '').trim()] || '';
+                  if (!institucion && (cat === 'soc' || cat === 'soc2')) institucion = porEquipo[nombreCat + '||' + String(p.equipo_nombre || '').trim()] || '';
                   return { posicion: p.posicion, nombre: p.equipo_nombre, institucion };
                 });
             }
@@ -669,6 +688,7 @@
       }
       document.getElementById('contenido-staff').style.display = 'block';
       mostrarSplashAuspiciante();
+      await cargarNombresCopia();
       setInterval(pollPodios, 20000);
       pollPodios();
       try {

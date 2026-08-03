@@ -7,6 +7,31 @@
 const LOGO_SUCRE = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/logosucre.png';
 const LOGO_CLUB  = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/club-robotica-transparente.png';
 
+// ── Categorías copia (ver CONFIGURACION → Duplicar categoría) ──────────
+// El texto del diploma no debe mostrar el identificador interno guardado
+// en participantes/certificados (ej. "Trepador (Amateur) [Copia]"), sino
+// el nombre visible que le puso el staff. precargarNombresCopiaCert()
+// debe llamarse (con await) ANTES de generar cualquier certificado real;
+// si no se llamó, resolverNombreCategoriaCert() devuelve el nombre tal
+// cual llegó (mejor eso que bloquear la generación).
+const CODIGO_POR_NOMBRE_INTERNO_CERT = {
+  'Insectos [Copia]':'ins2','Trepador (Amateur) [Copia]':'trp_a2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2',
+  'Seguidor de línea ST (Pro) [Copia]':'sl_p2','Minisumo Autónomo [Copia]':'ms_a2','Minisumo RC [Copia]':'ms_rc2',
+  'Bailarín [Copia]':'bai2','Batalla [Copia]':'bat2','Impacto Tecnológico [Copia]':'dev2',
+  'Trepador (Pro) [Copia]':'trp_p2','Robot soccer [Copia]':'soc2','Cubo Rubik [Copia]':'cr2','Lego Kids [Copia]':'lk2'
+};
+let _nombresCopiaCert = {};
+async function precargarNombresCopiaCert() {
+  try { _nombresCopiaCert = await fetch(CONFIG.GAS_URL() + '?action=getNombresCategorias').then(r => r.json()) || {}; }
+  catch (e) { _nombresCopiaCert = {}; }
+}
+function resolverNombreCategoriaCert(categoria) {
+  const codigo = CODIGO_POR_NOMBRE_INTERNO_CERT[categoria];
+  if (codigo && _nombresCopiaCert[codigo]) return _nombresCopiaCert[codigo];
+  return categoria;
+}
+window.precargarNombresCopiaCert = precargarNombresCopiaCert;
+
 // Fondo decorativo (triángulos). Se serializa a <img> data-URI en vez de dejarlo
 // como <svg> inline: html2canvas convierte internamente los <svg> inline a imagen
 // para poder dibujarlos, y esa conversión no siempre termina antes de que intente
@@ -241,7 +266,8 @@ const CERTIFICADO_CSS = `
 `;
 // ── TEXTOS ─────────────────────────────────────────────────────────────────────
 
-function obtenerTextoLogro(tipo, categoria) {
+function obtenerTextoLogro(tipo, categoriaOriginal) {
+  const categoria = resolverNombreCategoriaCert(categoriaOriginal);
   const norm = {
     '1ro':'1er','GANADOR':'1er','1er':'1er',
     '2do':'2do','SUBCAMPEÓN':'2do','SUBCAMPEON':'2do','FINALISTA':'2do',

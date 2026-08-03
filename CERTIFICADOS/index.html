@@ -235,6 +235,21 @@
         <option value="Cubo Rubik">Cubo Rubik</option>
         <option value="Lego Kids">Lego Kids</option>
       </optgroup>
+      <optgroup label="🧬 COPIAS" id="optgroupCopiasFiltro" style="display:none;">
+        <option value="Trepador (Amateur) [Copia]" data-codigo="trp_a2">Trepador (Amateur)</option>
+        <option value="Seguidor de línea ST (Amateur) [Copia]" data-codigo="sl_a2">Seguidor de línea ST (Amateur)</option>
+        <option value="Seguidor de línea ST (Pro) [Copia]" data-codigo="sl_p2">Seguidor de línea ST (Pro)</option>
+        <option value="Minisumo Autónomo [Copia]" data-codigo="ms_a2">Minisumo Autónomo</option>
+        <option value="Minisumo RC [Copia]" data-codigo="ms_rc2">Minisumo RC</option>
+        <option value="Batalla [Copia]" data-codigo="bat2">Batalla</option>
+        <option value="Trepador (Pro) [Copia]" data-codigo="trp_p2">Trepador (Pro)</option>
+        <option value="Impacto Tecnológico [Copia]" data-codigo="dev2">Impacto Tecnológico</option>
+        <option value="Cubo Rubik [Copia]" data-codigo="cr2">Cubo Rubik</option>
+        <option value="Bailarín [Copia]" data-codigo="bai2">Bailarín</option>
+        <option value="Lego Kids [Copia]" data-codigo="lk2">Lego Kids</option>
+        <option value="Robot soccer [Copia]" data-codigo="soc2">Robot soccer</option>
+        <option value="Insectos [Copia]" data-codigo="ins2">Insectos</option>
+      </optgroup>
     </select>
     <label>🏅 TIPO:</label>
     <select class="filtro-select" id="filtro-tipo" style="min-width:160px;">
@@ -270,6 +285,33 @@
 const GAS_URL = CONFIG.GAS_URL();
 let todosCerts = [];
 
+// Nombre visible de una categoría copia (ver CONFIGURACION → Duplicar
+// categoría) -- cert.categoria trae el identificador interno con sufijo
+// " [Copia]", no lo que debe verse acá.
+let NOMBRES_COPIA = {};
+const CODIGO_POR_NOMBRE_INTERNO = {
+  'Insectos [Copia]':'ins2','Trepador (Amateur) [Copia]':'trp_a2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2',
+  'Seguidor de línea ST (Pro) [Copia]':'sl_p2','Minisumo Autónomo [Copia]':'ms_a2','Minisumo RC [Copia]':'ms_rc2',
+  'Bailarín [Copia]':'bai2','Batalla [Copia]':'bat2','Impacto Tecnológico [Copia]':'dev2',
+  'Trepador (Pro) [Copia]':'trp_p2','Robot soccer [Copia]':'soc2','Cubo Rubik [Copia]':'cr2','Lego Kids [Copia]':'lk2'
+};
+function resolverNombreCategoria(cat) {
+  const codigo = CODIGO_POR_NOMBRE_INTERNO[cat];
+  if (codigo && NOMBRES_COPIA[codigo]) return NOMBRES_COPIA[codigo];
+  return cat;
+}
+function aplicarNombresCopiaFiltro() {
+  const optgroup = document.getElementById('optgroupCopiasFiltro');
+  if (!optgroup) return;
+  let algunaVisible = false;
+  optgroup.querySelectorAll('option[data-codigo]').forEach(opt => {
+    const nombreVisible = NOMBRES_COPIA && NOMBRES_COPIA[opt.dataset.codigo];
+    if (nombreVisible) { opt.textContent = nombreVisible; opt.style.display = ''; algunaVisible = true; }
+    else { opt.style.display = 'none'; }
+  });
+  optgroup.style.display = algunaVisible ? '' : 'none';
+}
+
 const TIPO_INFO = {
   'participacion': { clase: 'participacion', texto: '🏅 PARTICIPACIÓN' },
   '1er':           { clase: 'primer',        texto: '🥇 PRIMER LUGAR' },
@@ -284,6 +326,8 @@ const TIPO_INFO = {
 
 async function cargarTodosCertificados() {
   try {
+    try { NOMBRES_COPIA = await fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json()); } catch(e) { NOMBRES_COPIA = {}; }
+    aplicarNombresCopiaFiltro();
     const resCerts = await fetch(GAS_URL + '?action=obtenerTodosCertificados');
     const certs = await resCerts.json();
     if (Array.isArray(certs)) {
@@ -337,7 +381,7 @@ function renderCerts(lista) {
         <div class="cert-card-body">
           <div class="cert-nombre">${cert.nombre_completo || '—'}</div>
           <div class="cert-meta">
-            <div class="cert-meta-item"><span>📂</span> ${cert.categoria || '—'}</div>
+            <div class="cert-meta-item"><span>📂</span> ${resolverNombreCategoria(cert.categoria) || '—'}</div>
             <div class="cert-meta-item"><span>🎓</span> ${cert.institucion || '—'}</div>
             ${cert.evento ? '<div class="cert-meta-item"><span>🏆</span> ' + cert.evento + '</div>' : ''}
           </div>
