@@ -1683,10 +1683,22 @@ async function guardarPodioCrono(){
   });
   if(mapaParticipantes.size===0){showToast('⚠️ No hay participantes en el ranking',true);return;}
   if(mapaParticipantes.size<2){const ok=await customConfirm('⚠️ Solo se detectó '+mapaParticipantes.size+' participante en el ranking.\n¿El estado de la competencia está completo?\n\nSi recargaste la página (F5) durante la competencia, el ranking puede estar incompleto.\n\n¿Continuar de todas formas?');if(!ok)return;}
-  const conT=[...mapaParticipantes.values()].filter(c=>!c.esDNF&&c.tiempo!=='—'&&c.tiempo!=='DNF').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
-  const sinT=[...mapaParticipantes.values()].filter(c=>!c.esDNF&&(c.tiempo==='—'||!c.tiempo)&&c.tiempo!=='DNF');
-  const dnfs=[...mapaParticipantes.values()].filter(c=>c.esDNF||c.tiempo==='DNF');
-  const ranking=[...conT,...sinT,...dnfs];
+  // Prioriza SIEMPRE la ronda alcanzada (quien llegó más lejos va antes,
+  // sin importar el tiempo bruto) y solo dentro de la misma ronda ordena
+  // por tiempo — mismo criterio que ya usa crearHoja() para el "Ranking
+  // General" del Excel. Sin esto, alguien eliminado en clasificatoria con
+  // un tiempo crudo más rápido que el de la final le robaba el puesto a
+  // quien sí llegó a la ronda final.
+  const porRonda={};
+  [...mapaParticipantes.values()].forEach(c=>{const rn=c.ronda||0;(porRonda[rn]=porRonda[rn]||[]).push(c);});
+  const ranking=[];
+  Object.keys(porRonda).map(Number).sort((a,b)=>b-a).forEach(rn=>{
+    const grupo=porRonda[rn];
+    const conT=grupo.filter(c=>!c.esDNF&&c.tiempo!=='—'&&c.tiempo!=='DNF').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
+    const sinT=grupo.filter(c=>!c.esDNF&&(c.tiempo==='—'||!c.tiempo)&&c.tiempo!=='DNF');
+    const dnfs=grupo.filter(c=>c.esDNF||c.tiempo==='DNF');
+    ranking.push(...conT,...sinT,...dnfs);
+  });
   const preview=ranking.map((p,i)=>`${i+1}. ${p.robot} (${p.tiempo||'—'})`).join('\n');
   if(!(await customConfirm('¿Guardar podio de '+catNombre+' en certificados?\n'+ranking.length+' participantes:\n'+preview)))return;
   const tipos=['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
