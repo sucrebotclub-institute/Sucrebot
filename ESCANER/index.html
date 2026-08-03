@@ -257,9 +257,8 @@
 
   // Nombre visible de una categoría copia (ver CONFIGURACION → Categorías
   // copia) -- p.categoria trae el identificador interno con sufijo
-  // " [Copia]" y no es lo que debe verse en el pase. ESCANER todavía no
-  // permite elegir una copia como categoría activa para escanear (solo
-  // resuelve el nombre si el participante ya viene con una asignada).
+  // " [Copia]" y no es lo que debe verse en el pase ni en el selector de
+  // categoría activa (ver agregarCopiasACategorias más abajo).
   let NOMBRES_COPIA = {};
   const CODIGO_POR_NOMBRE_INTERNO = {
     'Insectos [Copia]':'ins2','Trepador (Amateur) [Copia]':'trp_a2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2',
@@ -271,6 +270,34 @@
     const codigo = CODIGO_POR_NOMBRE_INTERNO[cat];
     if (codigo && NOMBRES_COPIA[codigo]) return NOMBRES_COPIA[codigo];
     return cat;
+  }
+  const _nombresCopiaPromise = fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json()).then(n => { NOMBRES_COPIA = n || {}; }).catch(() => {});
+  // Metadata para agregar las categorías copia a CATEGORIAS una vez que
+  // sepamos cuáles ya tienen nombre asignado (ver cargarCopiasEscaner).
+  const COPIAS_META = {
+    ins2:   { nombre: 'Insectos [Copia]',                      emoji: '🐛' },
+    trp_a2: { nombre: 'Trepador (Amateur) [Copia]',             emoji: '🧗' },
+    trp_p2: { nombre: 'Trepador (Pro) [Copia]',                 emoji: '🧗' },
+    sl_a2:  { nombre: 'Seguidor de línea ST (Amateur) [Copia]', emoji: '➡️' },
+    sl_p2:  { nombre: 'Seguidor de línea ST (Pro) [Copia]',     emoji: '➡️' },
+    ms_a2:  { nombre: 'Minisumo Autónomo [Copia]',              emoji: '🤖' },
+    ms_rc2: { nombre: 'Minisumo RC [Copia]',                    emoji: '🕹️' },
+    bai2:   { nombre: 'Bailarín [Copia]',                       emoji: '💃' },
+    bat2:   { nombre: 'Batalla [Copia]',                        emoji: '⚔️' },
+    dev2:   { nombre: 'Impacto Tecnológico [Copia]',            emoji: '💡' },
+    soc2:   { nombre: 'Robot soccer [Copia]',                   emoji: '⚽' },
+    cr2:    { nombre: 'Cubo Rubik [Copia]',                     emoji: '🎲' },
+    lk2:    { nombre: 'Lego Kids [Copia]',                      emoji: '🧱' }
+  };
+  // Agrega a CATEGORIAS (mismo array que usan renderCatGrid/seleccionarCategoria/
+  // restaurar categoría guardada) las copias que ya tienen nombre asignado --
+  // mismo criterio de "oculta sin nombre" que el resto del sitio.
+  function agregarCopiasACategorias() {
+    Object.keys(COPIAS_META).forEach(codigo => {
+      if (!NOMBRES_COPIA[codigo]) return;
+      if (CATEGORIAS.some(c => c.ruta === codigo)) return; // ya agregada
+      CATEGORIAS.push({ nombre: COPIAS_META[codigo].nombre, emoji: COPIAS_META[codigo].emoji, ruta: codigo });
+    });
   }
 
   let categoriaSeleccionada = null;
@@ -286,10 +313,11 @@
     if (window.esperarRol) await window.esperarRol();
     if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
     show('contenido-staff');
-    fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json()).then(n => { NOMBRES_COPIA = n || {}; }).catch(() => {});
   });
 
   window.addEventListener('DOMContentLoaded', async () => {
+    await _nombresCopiaPromise;
+    agregarCopiasACategorias();
     renderCatGrid();
     try {
       const saved = localStorage.getItem('escaner_en_pista');
@@ -357,7 +385,7 @@
     grid.innerHTML = CATEGORIAS.map(cat => `
       <div class="cat-option" id="cat-opt-${cat.ruta}" onclick="seleccionarCategoria(CATEGORIAS.find(c=>c.ruta==='${cat.ruta}'), true)">
         <div class="cat-option-emoji">${cat.emoji}</div>
-        <div class="cat-option-nombre">${cat.nombre}</div>
+        <div class="cat-option-nombre">${resolverNombreCategoria(cat.nombre)}</div>
       </div>`).join('');
   }
 
@@ -368,7 +396,7 @@
     if (opt) opt.classList.add('selected');
     const btn = document.getElementById('btn-iniciar');
     btn.classList.add('habilitado');
-    btn.textContent = `📷 Iniciar escáner — ${cat.emoji} ${cat.nombre}`;
+    btn.textContent = `📷 Iniciar escáner — ${cat.emoji} ${resolverNombreCategoria(cat.nombre)}`;
     localStorage.setItem('escaner_categoria', cat.ruta);
   }
 
@@ -377,7 +405,7 @@
     document.getElementById('paso1').style.display = 'none';
     document.getElementById('paso2').style.display = 'block';
     document.getElementById('cat-activa-emoji').textContent = categoriaSeleccionada.emoji;
-    document.getElementById('cat-activa-nombre').textContent = categoriaSeleccionada.nombre;
+    document.getElementById('cat-activa-nombre').textContent = resolverNombreCategoria(categoriaSeleccionada.nombre);
     renderHistorial();
   }
 
@@ -455,7 +483,7 @@
     const wrongBanner = document.getElementById('pase-cat-wrong');
     if (!catCorrecta) {
       document.getElementById('wrong-text').textContent = 'Categoría incorrecta';
-      document.getElementById('wrong-sub').textContent  = `Este robot es de "${p.categoria}", no de "${categoriaSeleccionada.nombre}"`;
+      document.getElementById('wrong-sub').textContent  = `Este robot es de "${resolverNombreCategoria(p.categoria)}", no de "${resolverNombreCategoria(categoriaSeleccionada.nombre)}"`;
       wrongBanner.style.display = 'flex';
     } else { wrongBanner.style.display = 'none'; }
     const btnConfirmar = document.getElementById('btn-confirmar');

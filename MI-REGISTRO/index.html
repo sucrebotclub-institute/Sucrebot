@@ -204,6 +204,23 @@
                     </optgroup>
                     <optgroup label="⭐ EXTRA">
                       <option value="Cubo Rubik">Cubo Rubik</option>
+                      <option value="Lego Kids">Lego Kids</option>
+                      <option value="Impacto Tecnológico">Impacto Tecnológico</option>
+                    </optgroup>
+                    <optgroup label="🧬 COPIAS" id="optgroupCopiasEdit" style="display:none;">
+                      <option value="Insectos [Copia]" data-codigo="ins2">Insectos</option>
+                      <option value="Trepador (Amateur) [Copia]" data-codigo="trp_a2">Trepador (Amateur)</option>
+                      <option value="Seguidor de línea ST (Amateur) [Copia]" data-codigo="sl_a2">Seguidor de línea ST (Amateur)</option>
+                      <option value="Seguidor de línea ST (Pro) [Copia]" data-codigo="sl_p2">Seguidor de línea ST (Pro)</option>
+                      <option value="Minisumo Autónomo [Copia]" data-codigo="ms_a2">Minisumo Autónomo</option>
+                      <option value="Minisumo RC [Copia]" data-codigo="ms_rc2">Minisumo RC</option>
+                      <option value="Bailarín [Copia]" data-codigo="bai2">Bailarín</option>
+                      <option value="Batalla [Copia]" data-codigo="bat2">Batalla</option>
+                      <option value="Trepador (Pro) [Copia]" data-codigo="trp_p2">Trepador (Pro)</option>
+                      <option value="Robot soccer [Copia]" data-codigo="soc2">Robot soccer</option>
+                      <option value="Cubo Rubik [Copia]" data-codigo="cr2">Cubo Rubik</option>
+                      <option value="Lego Kids [Copia]" data-codigo="lk2">Lego Kids</option>
+                      <option value="Impacto Tecnológico [Copia]" data-codigo="dev2">Impacto Tecnológico</option>
                     </optgroup>
                   </select>
                 </div>
@@ -264,6 +281,20 @@
     return cat;
   }
   const _nombresCopiaPromise = fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json()).then(n => { NOMBRES_COPIA = n || {}; }).catch(() => {});
+  // Igual que en REGISTRO: una copia sin nombre asignado todavía queda
+  // oculta en el selector -- mostrar "Insectos" duplicado sin
+  // explicación confundiría más de lo que ayuda.
+  function aplicarNombresCopiaSelect() {
+    const optgroup = document.getElementById('optgroupCopiasEdit');
+    if (!optgroup) return;
+    let algunaVisible = false;
+    optgroup.querySelectorAll('option[data-codigo]').forEach(opt => {
+      const nombreVisible = NOMBRES_COPIA && NOMBRES_COPIA[opt.dataset.codigo];
+      if (nombreVisible) { opt.textContent = nombreVisible; opt.style.display = ''; algunaVisible = true; }
+      else { opt.style.display = 'none'; }
+    });
+    optgroup.style.display = algunaVisible ? '' : 'none';
+  }
 
   // ── Al cargar: detectar ?correo= en la URL ───────────────────
   document.addEventListener('componentsLoaded', function() {
@@ -334,6 +365,7 @@
       }
       participanteActual = p;
       await _nombresCopiaPromise; // asegura que NOMBRES_COPIA ya esté listo antes de mostrar la ficha
+      aplicarNombresCopiaSelect();
       mostrarFicha(p);
     } catch(error) {
       console.error('Error al buscar participante:', error);
