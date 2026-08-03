@@ -606,7 +606,7 @@
       catConteo[p.categoria]   = (catConteo[p.categoria]   || 0) + 1;
       if (p.aprobado === 'APROBADO') catAprobados[p.categoria] = (catAprobados[p.categoria] || 0) + 1;
     });
-    const renderSeccion = (label, cats) => {
+    const renderSeccion = (label, cats, resolverNombre) => {
       let html = `<div class="cats-section-label">${label}</div>`;
       cats.forEach(cat => {
         const total = catConteo[cat] || 0;
@@ -614,16 +614,22 @@
         const tiene = total > 0;
         html += `<div class="cat-row">
           <div class="cat-dot ${tiene ? 'tiene' : 'vacio'}"></div>
-          <div class="cat-nombre">${cat}</div>
+          <div class="cat-nombre">${resolverNombre ? resolverNombre(cat) : cat}</div>
           ${tiene ? `<div class="cat-count">${apro}/${total}</div>` : `<div class="cat-count vacio">—</div>`}
         </div>`;
       });
       return html;
     };
+    // Copias: solo las que ya tienen nombre asignado (mismo criterio de
+    // "oculta sin nombre" que el resto del sitio) -- si nadie le asignó
+    // nombre todavía, no tiene sentido mostrarla acá aunque por algún
+    // motivo ya tuviera participantes cargados.
+    const catsCopia = Object.keys(CODIGO_POR_NOMBRE_INTERNO).filter(cat => NOMBRES_COPIA[CODIGO_POR_NOMBRE_INTERNO[cat]]);
     document.getElementById('cats-lista').innerHTML =
       renderSeccion('🏅 Amateur', CATS_AMATEUR) +
       renderSeccion('🏆 Pro', CATS_PRO) +
-      renderSeccion('🌟 Open', CATS_OPEN);
+      renderSeccion('🌟 Open', CATS_OPEN) +
+      (catsCopia.length ? renderSeccion('🧬 Copias', catsCopia, resolverNombreCategoria) : '');
   }
 
   function renderPagina() {
