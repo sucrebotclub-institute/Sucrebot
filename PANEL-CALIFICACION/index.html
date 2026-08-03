@@ -418,6 +418,11 @@
       </div>
 
       <script>
+      // Arranca ni bien carga este script, en paralelo con auth/componentes
+      // -- antes se pedía recién dentro de renderCopiasCategoriasCalificacion()
+      // (llamada desde componentsLoaded), así que las tarjetas de categoría
+      // copia siempre aparecían notoriamente después que las reales.
+      window._nombresCopiaPromise = fetch(CONFIG.GAS_URL() + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()).catch(() => ({}));
       // ── Categorías copia (independientes, mismo flujo que su base) ──
       // Creadas en Code.gs (ver CODIGOS_CATEGORIA_COPIA). El nombre visible
       // se asigna desde CONFIGURACION — una copia sin nombre asignado
@@ -435,8 +440,7 @@
           const grid = document.querySelector('.cat-cards-grid');
           if (!grid || typeof CAT_NOMBRES === 'undefined') return;
           grid.querySelectorAll('.cat-card.cat-card-copia').forEach(el => el.remove());
-          let nombres = {};
-          try { nombres = await fetch(GAS + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()); } catch (e) { nombres = {}; }
+          const nombres = await window._nombresCopiaPromise;
           window.NOMBRES_COPIA_CALIFICACION = nombres || {}; // usado por nombreVisibleCal() en el resto de la página
           CODIGOS_COPIA_CALIF.forEach(codigo => {
             const nombreVisible = nombres && nombres[codigo];

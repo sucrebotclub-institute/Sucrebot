@@ -707,6 +707,11 @@
     </div>
 
     <script>
+    // Arranca ni bien carga este script, en paralelo con auth/componentes
+    // -- antes se pedía recién dentro de renderCopiasCategoriasBracket()
+    // (llamada desde componentsLoaded), así que las tarjetas de categoría
+    // copia siempre aparecían notoriamente después que las reales.
+    window._nombresCopiaPromise = fetch(CONFIG.GAS_URL() + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()).catch(() => ({}));
     // ── Categorías copia (independientes, mismo motor que su base) ──
     // Creadas en Code.gs (ver CODIGOS_CATEGORIA_COPIA). El nombre visible
     // se asigna desde CONFIGURACION (getNombresCategorias/setNombreCategoria)
@@ -725,8 +730,7 @@
         const grid = document.querySelector('#panel-1 .cat-grid');
         if (!grid || typeof CAT_INFO === 'undefined') return;
         grid.querySelectorAll('.cat-btn.cat-btn-copia').forEach(el => el.remove());
-        let nombres = {};
-        try { nombres = await fetch(GAS + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()); } catch (e) { nombres = {}; }
+        const nombres = await window._nombresCopiaPromise;
         window.NOMBRES_COPIA_BRACKET = nombres || {}; // usado por nombreVisibleCategoria() en el resto de la página
         CODIGOS_COPIA_BRACKET.forEach(codigo => {
           const nombreVisible = nombres && nombres[codigo];

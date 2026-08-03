@@ -721,6 +721,12 @@
 <script src="../shared/js/auth.js"></script>
 <script>
 const GAS_URL = CONFIG.GAS_URL();
+// Arranca ni bien carga el script, en paralelo con auth/componentes —
+// antes se pedía recién dentro de componentsLoaded, así que las
+// tarjetas de categoría copia siempre aparecían notoriamente después
+// que las reales (mismo principio ya aplicado a prefetchRol() en
+// auth.js: lo más lento debe arrancar lo antes posible, no al final).
+const _nombresCopiaPromise = fetch(GAS_URL + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()).catch(() => ({}));
 const RUTAS = {
   'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr',
   // Categorías copia (independientes, mismo hardware/flujo que su base — ver CONFIGURACION → Duplicar categoría)
@@ -760,8 +766,7 @@ async function renderCopiasCategorias(){
   const grid=document.getElementById('catGrid');
   if(!grid)return;
   grid.querySelectorAll('.cat-btn.cat-btn-copia').forEach(el=>el.remove());
-  let nombres={};
-  try{nombres=await fetch(GAS_URL+'?action=getNombresCategorias',{cache:'no-store'}).then(r=>r.json());}catch(e){nombres={};}
+  const nombres=await _nombresCopiaPromise;
   COPIAS_CRONOMETRO.forEach(c=>{
     const nombreVisible=nombres&&nombres[c.codigo];
     if(!nombreVisible)return;
