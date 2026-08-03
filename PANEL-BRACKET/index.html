@@ -727,6 +727,7 @@
         grid.querySelectorAll('.cat-btn.cat-btn-copia').forEach(el => el.remove());
         let nombres = {};
         try { nombres = await fetch(GAS + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()); } catch (e) { nombres = {}; }
+        window.NOMBRES_COPIA_BRACKET = nombres || {}; // usado por nombreVisibleCategoria() en el resto de la página
         CODIGOS_COPIA_BRACKET.forEach(codigo => {
           const nombreVisible = nombres && nombres[codigo];
           if (!nombreVisible) return;
@@ -816,6 +817,18 @@ const CAT_INFO = {
   bat2:   { nombre: 'Batalla [Copia]',           tipo: 'batalla',  gasNombre: 'Batalla [Copia]' },
   soc2:   { nombre: 'Robot Soccer [Copia]',      tipo: 'soccer',   gasNombre: 'Robot soccer [Copia]' }
 };
+
+// Nombre a mostrar en pantalla para la categoría dada -- para una copia
+// sin nombre asignado todavía (no debería pasar, ya que la tarjeta que
+// la abre solo aparece si ya tiene nombre) cae al nombre interno sin el
+// sufijo "[Copia]" como último respaldo.
+function nombreVisibleCategoria(cat) {
+  const info = CAT_INFO[cat];
+  if (!info) return cat || '';
+  if (!info.nombre.includes('[Copia]')) return info.nombre;
+  const visible = (window.NOMBRES_COPIA_BRACKET || {})[cat];
+  return visible || info.nombre.replace(/\s*\[Copia\]\s*$/, '');
+}
 
 let state = {
   categoria:'', tipo:'', participantes:[], seleccionados:new Set(),
@@ -922,14 +935,14 @@ async function intentarCargarTorneoSoccer() {
 //  PASO 2 — SELECCIÓN DE PRESENTES
 // ════════════════════════════════════════
 function actualizarTitulos() {
-  const nombre=CAT_INFO[state.categoria]?.nombre||'';
+  const nombre=nombreVisibleCategoria(state.categoria)||'';
   document.getElementById('paso2Titulo').textContent=state.tipo==='soccer'?`Equipos Presentes — ${nombre}`:`Robots Presentes — ${nombre}`;
   document.getElementById('paso3Titulo').textContent=state.tipo==='soccer'?`TORNEO SOCCER — ${nombre}`:`BRACKET — ${nombre}`;
 }
 function renderSeleccion() {
   const lista=document.getElementById('participantesList'); const total=state.participantes.length;
   document.getElementById('selTotal').textContent=total; actualizarContadorSel();
-  if(!total){ lista.innerHTML=`<div class="aviso-empty">⚠️ No hay participantes aprobados para ${CAT_INFO[state.categoria]?.nombre}</div>`; document.getElementById('btnGenerarBracket').disabled=true; return; }
+  if(!total){ lista.innerHTML=`<div class="aviso-empty">⚠️ No hay participantes aprobados para ${nombreVisibleCategoria(state.categoria)}</div>`; document.getElementById('btnGenerarBracket').disabled=true; return; }
   lista.innerHTML=state.participantes.map(p=>{
     const sel=state.seleccionados.has(p.id);
     const sub=state.tipo==='soccer'?`${p.robots?.length||0} robot(s) · ${p.robots?.map(r=>r.robot).join(', ')}`:(p.sub||p.institucion||'—');
@@ -1383,7 +1396,7 @@ async function registrarGanadorMinisumo(partidoId,ganadorId,ganadorNombre) {
 // ════════════════════════════════════════
 function resetearBracket() {
   const esSoccer=state.tipo==='soccer';
-  confirmar('🗑','RESETEAR TORNEO',`¿Eliminar el torneo de ${CAT_INFO[state.categoria]?.nombre}? Esta acción no se puede deshacer.`,'Resetear','danger',
+  confirmar('🗑','RESETEAR TORNEO',`¿Eliminar el torneo de ${nombreVisibleCategoria(state.categoria)}? Esta acción no se puede deshacer.`,'Resetear','danger',
     async()=>{
       loading(true,'RESETEANDO...');
       try{
@@ -1941,7 +1954,7 @@ async function verPodioEnBracket() {
     }
   }
   const etManual=podio.manual?' <span style="font-size:.6rem;color:var(--orange);">(asignado manualmente)</span>':'';
-  document.getElementById('podio-display').innerHTML=`<div class="podio-display"><div class="podio-display-title">🏆 Podio — ${CAT_INFO[state.categoria]?.nombre}${etManual}</div><div class="podio-grid"><div class="podio-item oro"><div class="podio-item-icon">🥇</div><div class="podio-item-nombre">${podio.primero.nombre||'—'}</div><div class="podio-item-label">GANADOR</div></div><div class="podio-item plata"><div class="podio-item-icon">🥈</div><div class="podio-item-nombre">${podio.segundo.nombre||'—'}</div><div class="podio-item-label">SUBCAMPEÓN</div></div>${tercerosHTML}</div></div>`;
+  document.getElementById('podio-display').innerHTML=`<div class="podio-display"><div class="podio-display-title">🏆 Podio — ${nombreVisibleCategoria(state.categoria)}${etManual}</div><div class="podio-grid"><div class="podio-item oro"><div class="podio-item-icon">🥇</div><div class="podio-item-nombre">${podio.primero.nombre||'—'}</div><div class="podio-item-label">GANADOR</div></div><div class="podio-item plata"><div class="podio-item-icon">🥈</div><div class="podio-item-nombre">${podio.segundo.nombre||'—'}</div><div class="podio-item-label">SUBCAMPEÓN</div></div>${tercerosHTML}</div></div>`;
   document.getElementById('podio-display').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -1990,7 +2003,7 @@ async function descargarImagenBracketGeneral() {
     await cargarHtml2CanvasSoc();
     const canvas=await html2canvas(el,{scale:2,backgroundColor:'#0d1420',logging:false});
     const fecha=new Date().toLocaleDateString('es-EC').replace(/\//g,'-');
-    const nombreCat=(CAT_INFO[state.categoria]?.nombre||state.categoria)
+    const nombreCat=(nombreVisibleCategoria(state.categoria)||state.categoria)
       .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w]+/g,'_');
     const link=document.createElement('a');
     link.download='SucreBot2026_'+nombreCat+'_Bracket_'+fecha+'.png';

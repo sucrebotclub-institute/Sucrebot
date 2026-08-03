@@ -255,6 +255,24 @@
     { nombre: 'Lego Kids',                      emoji: '🧱', ruta: 'lk'    },
   ];
 
+  // Nombre visible de una categoría copia (ver CONFIGURACION → Categorías
+  // copia) -- p.categoria trae el identificador interno con sufijo
+  // " [Copia]" y no es lo que debe verse en el pase. ESCANER todavía no
+  // permite elegir una copia como categoría activa para escanear (solo
+  // resuelve el nombre si el participante ya viene con una asignada).
+  let NOMBRES_COPIA = {};
+  const CODIGO_POR_NOMBRE_INTERNO = {
+    'Insectos [Copia]':'ins2','Trepador (Amateur) [Copia]':'trp_a2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2',
+    'Seguidor de línea ST (Pro) [Copia]':'sl_p2','Minisumo Autónomo [Copia]':'ms_a2','Minisumo RC [Copia]':'ms_rc2',
+    'Bailarín [Copia]':'bai2','Batalla [Copia]':'bat2','Impacto Tecnológico [Copia]':'dev2',
+    'Trepador (Pro) [Copia]':'trp_p2','Robot soccer [Copia]':'soc2','Cubo Rubik [Copia]':'cr2','Lego Kids [Copia]':'lk2'
+  };
+  function resolverNombreCategoria(cat) {
+    const codigo = CODIGO_POR_NOMBRE_INTERNO[cat];
+    if (codigo && NOMBRES_COPIA[codigo]) return NOMBRES_COPIA[codigo];
+    return cat;
+  }
+
   let categoriaSeleccionada = null;
   let codeReader = null, videoStream = null, scannerActivo = false;
   let participanteActual = null;
@@ -268,6 +286,7 @@
     if (window.esperarRol) await window.esperarRol();
     if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
     show('contenido-staff');
+    fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json()).then(n => { NOMBRES_COPIA = n || {}; }).catch(() => {});
   });
 
   window.addEventListener('DOMContentLoaded', async () => {
@@ -422,7 +441,7 @@
     const yaEnPista = enPistaIds.has(p.id);
     const emoji = categoriaSeleccionada ? categoriaSeleccionada.emoji : '🤖';
     document.getElementById('pase-cat-emoji').textContent = emoji;
-    document.getElementById('pase-cat-text').textContent  = p.categoria || '—';
+    document.getElementById('pase-cat-text').textContent  = p.categoria ? resolverNombreCategoria(p.categoria) : '—';
     document.getElementById('pase-robot').textContent     = p.robot || '—';
     document.getElementById('pase-capitan').textContent   = p.nombre || '—';
     document.getElementById('pase-inst').textContent      = p.institucion || '—';

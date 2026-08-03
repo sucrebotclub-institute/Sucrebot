@@ -437,6 +437,7 @@
           grid.querySelectorAll('.cat-card.cat-card-copia').forEach(el => el.remove());
           let nombres = {};
           try { nombres = await fetch(GAS + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()); } catch (e) { nombres = {}; }
+          window.NOMBRES_COPIA_CALIFICACION = nombres || {}; // usado por nombreVisibleCal() en el resto de la página
           CODIGOS_COPIA_CALIF.forEach(codigo => {
             const nombreVisible = nombres && nombres[codigo];
             if (!nombreVisible) return;
@@ -798,6 +799,20 @@
 const GAS = CONFIG.GAS_URL();
 const ALL_CATS = ['bai','dev','lk'];
 const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico', lk:'Lego Kids', dev2:'Impacto Tecnológico [Copia]', bai2:'Bailarín [Copia]', lk2:'Lego Kids [Copia]' };
+
+// Nombre a mostrar en pantalla (títulos, toasts, confirmaciones) -- para
+// una copia usa el nombre que le puso el staff, NUNCA el identificador
+// interno de CAT_NOMBRES. Distinto de CAT_NOMBRES[cat], que sigue
+// siendo el valor correcto para mandar al backend (guardarCertificado,
+// bloquearCategoria, filtros de participantes, etc.) -- no reemplazar
+// esos usos por este helper.
+function nombreVisibleCal(cat) {
+  const interno = CAT_NOMBRES[cat];
+  if (!interno) return cat || '';
+  if (!interno.includes('[Copia]')) return interno;
+  const visible = (window.NOMBRES_COPIA_CALIFICACION || {})[cat];
+  return visible || interno.replace(/\s*\[Copia\]\s*$/, '');
+}
 
 // ── CRITERIOS LK ──────────────────────────────────────────────
 const LK_CRITERIOS_F1 = [
@@ -1404,7 +1419,7 @@ function volverPaso1Cal()   { setStep(1); }
 function buildPaso3() {
   if ((state.categoria === 'lk' || state.categoria === 'lk2')) restaurarCrono();
   const cat = state.categoria;
-  document.getElementById('listaCatLabel').textContent = CAT_NOMBRES[cat];
+  document.getElementById('listaCatLabel').textContent = nombreVisibleCal(cat);
   const esLk = (cat === 'lk' || cat === 'lk2');
   document.getElementById('lkCronometroBar').classList.toggle('show', esLk);
   document.getElementById('lkFase2Trigger').style.display = esLk ? 'block' : 'none';
@@ -1714,7 +1729,7 @@ async function guardarNumJueces() {
 
   try {
     await gasPost({ action: 'setEstado', ruta: 'panel_cal_num_jueces_' + cat, estado: { n } });
-    toast(`✅ ${n} juez(es) configurado(s) para ${CAT_NOMBRES[cat]}`, 'success');
+    toast(`✅ ${n} juez(es) configurado(s) para ${nombreVisibleCal(cat)}`, 'success');
   } catch(e) {
     toast('⚠️ No se pudo guardar en el servidor (queda aplicado solo en este dispositivo)', 'error');
   }
@@ -2098,7 +2113,7 @@ function terminarCategoria() {
   if (!state.categoria) { toast('No hay categoría activa', 'error'); return; }
   const catNombre = CAT_NOMBRES[state.categoria];
   confirmar('🏁','TERMINAR CATEGORÍA',
-    `¿Terminar la calificación de ${catNombre}?\nSe borrarán todas las puntuaciones guardadas de esta categoría y volverás al inicio para empezar de nuevo.\nEsta acción no se puede deshacer.`,
+    `¿Terminar la calificación de ${nombreVisibleCal(state.categoria)}?\nSe borrarán todas las puntuaciones guardadas de esta categoría y volverás al inicio para empezar de nuevo.\nEsta acción no se puede deshacer.`,
     'Terminar categoría','danger',
     async () => {
       loading(true, 'TERMINANDO CATEGORÍA...');
@@ -2176,7 +2191,7 @@ async function cargarRanking(soloRerenderizar) {
   document.getElementById('btnQuitarPodioManualCal').style.display = state.podioManualOverride ? 'inline-flex' : 'none';
 
   const maxScore = state.rankingData[0]?.total || 1;
-  document.getElementById('rankingTitle').textContent = `RANKING — ${CAT_NOMBRES[cat]}`;
+  document.getElementById('rankingTitle').textContent = `RANKING — ${nombreVisibleCal(cat)}`;
   document.getElementById('rankingStats').textContent = `${state.rankingData.length} participantes evaluados` + (state.podioManualOverride ? ' · ✏️ Podio ajustado manualmente' : '');
   // Mostrar botón TOP 3 solo para bai
   const btnTop3 = document.getElementById('btnTop3Ranking');
@@ -2412,7 +2427,7 @@ async function guardarPodio() {
   });
 
   confirmar('🏆','GUARDAR TODOS LOS COMPETIDORES',
-    `¿Guardar los ${total} equipos de ${catNombre}?\n${totalDiplomas} diplomas en total.\nTOP 3 con su posición, el resto como Participación.`,
+    `¿Guardar los ${total} equipos de ${nombreVisibleCal(state.categoria)}?\n${totalDiplomas} diplomas en total.\nTOP 3 con su posición, el resto como Participación.`,
     'Guardar todos','success',
     async () => {
       loading(true, 'GUARDANDO COMPETIDORES...');
@@ -2557,7 +2572,7 @@ async function generarExcelPodio(cat) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(podioRows), 'Podio');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Ranking Completo');
-  XLSX.writeFile(wb, 'SucreBot2026_' + CAT_NOMBRES[cat].replace(/\s+/g, '_') + '_Podio_' + Date.now() + '.xlsx');
+  XLSX.writeFile(wb, 'SucreBot2026_' + nombreVisibleCal(cat).replace(/\s+/g, '_') + '_Podio_' + Date.now() + '.xlsx');
 }
 
 // ── PASO 5: RONDA FINAL (bai) ────────────────────────────────

@@ -247,6 +247,24 @@
   const GAS_URL = CONFIG.GAS_URL();
   let participanteActual = null;
 
+  // Nombre visible de una categoría copia (ver CONFIGURACION → Categorías
+  // copia) -- p.categoria trae el identificador interno con sufijo
+  // " [Copia]" y no es lo que debe verse acá (esta pantalla la ve el
+  // participante, no solo staff).
+  let NOMBRES_COPIA = {};
+  const CODIGO_POR_NOMBRE_INTERNO = {
+    'Insectos [Copia]':'ins2','Trepador (Amateur) [Copia]':'trp_a2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2',
+    'Seguidor de línea ST (Pro) [Copia]':'sl_p2','Minisumo Autónomo [Copia]':'ms_a2','Minisumo RC [Copia]':'ms_rc2',
+    'Bailarín [Copia]':'bai2','Batalla [Copia]':'bat2','Impacto Tecnológico [Copia]':'dev2',
+    'Trepador (Pro) [Copia]':'trp_p2','Robot soccer [Copia]':'soc2','Cubo Rubik [Copia]':'cr2','Lego Kids [Copia]':'lk2'
+  };
+  function resolverNombreCategoria(cat) {
+    const codigo = CODIGO_POR_NOMBRE_INTERNO[cat];
+    if (codigo && NOMBRES_COPIA[codigo]) return NOMBRES_COPIA[codigo];
+    return cat;
+  }
+  const _nombresCopiaPromise = fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json()).then(n => { NOMBRES_COPIA = n || {}; }).catch(() => {});
+
   // ── Al cargar: detectar ?correo= en la URL ───────────────────
   document.addEventListener('componentsLoaded', function() {
     const params     = new URLSearchParams(window.location.search);
@@ -315,6 +333,7 @@
         return;
       }
       participanteActual = p;
+      await _nombresCopiaPromise; // asegura que NOMBRES_COPIA ya esté listo antes de mostrar la ficha
       mostrarFicha(p);
     } catch(error) {
       console.error('Error al buscar participante:', error);
@@ -334,7 +353,7 @@
     document.getElementById('screen-loading').style.display = 'none';
     document.getElementById('screen-ficha').style.display   = 'block';
     document.getElementById('f-robot').textContent      = p.robot       || '—';
-    document.getElementById('f-categoria').textContent  = p.categoria   || '—';
+    document.getElementById('f-categoria').textContent  = p.categoria ? resolverNombreCategoria(p.categoria) : '—';
     document.getElementById('f-institucion').textContent = p.institucion || '—';
     document.getElementById('f-ciudad').textContent     = p.ciudad      || '—';
     document.getElementById('f-correo').textContent     = p.correo      || '—';
