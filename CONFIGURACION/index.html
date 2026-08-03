@@ -340,6 +340,7 @@
 
   async function cargarEstado() {
     try {
+      await cargarNombresCopiaGlobal();
       const cfg = await gasGet({ action: 'getConfigRegistro' });
       renderEstado(cfg && cfg.abierto !== false);
       renderCategorias(cfg && Array.isArray(cfg.categoriasCerradas) ? cfg.categoriasCerradas : []);
@@ -347,6 +348,28 @@
       document.getElementById('config-loading').innerHTML = '⚠️ Error al cargar el estado: ' + e.message;
       document.getElementById('cats-loading').innerHTML = '⚠️ Error al cargar categorías: ' + e.message;
     }
+  }
+
+  // Nombres visibles de categorías copia -- compartido entre "Categorías
+  // individuales" (abrir/cerrar) y "Cambiar categoría", para que ambas
+  // muestren las copias que ya tienen nombre asignado, no solo las 13
+  // originales. Se recarga cada vez que se guarda un nombre nuevo en la
+  // pestaña "Categorías copia" (ver guardarNombreCategoriaCopia).
+  let _nombresCopiaGlobal = {};
+  async function cargarNombresCopiaGlobal() {
+    try { _nombresCopiaGlobal = await gasGet({ action: 'getNombresCategorias' }); }
+    catch (e) { _nombresCopiaGlobal = {}; }
+  }
+  // Lista combinada: las 13 originales + las copias que ya tienen nombre
+  // asignado (ocultas hasta entonces, igual que en REGISTRO/CRONOMETRO).
+  function categoriasParaSelect() {
+    const lista = CATEGORIAS.map(n => ({ valor: n, label: n }));
+    CATEGORIAS_COPIA.forEach(c => {
+      const nombreVisible = _nombresCopiaGlobal && _nombresCopiaGlobal[c.codigo];
+      if (!nombreVisible) return;
+      lista.push({ valor: c.base + ' [Copia]', label: nombreVisible + ' (copia)' });
+    });
+    return lista;
   }
 
   // Mismas 13 categorías que CATEGORIA_MAP en Code.gs
@@ -360,12 +383,12 @@
   function renderCategorias(categoriasCerradas) {
     const cont = document.getElementById('cats-lista');
     cont.innerHTML = '';
-    CATEGORIAS.forEach(nombre => {
+    categoriasParaSelect().forEach(({ valor: nombre, label }) => {
       const cerrada = categoriasCerradas.includes(nombre);
       const row = document.createElement('div');
       row.className = 'cat-row';
       row.innerHTML =
-        '<div><span class="cat-nombre">' + nombre + '</span>' +
+        '<div><span class="cat-nombre">' + label + '</span>' +
         '<span class="cat-estado ' + (cerrada ? 'cerrada' : 'abierta') + '">' + (cerrada ? 'CERRADA' : 'ABIERTA') + '</span></div>' +
         '<button class="btn-cat-toggle ' + (cerrada ? 'abrir' : 'cerrar') + '">' + (cerrada ? '🔓 Abrir' : '🔒 Cerrar') + '</button>';
       row.querySelector('button').addEventListener('click', () => toggleCategoria(nombre, cerrada, row));
@@ -619,9 +642,9 @@
       '</div>';
 
     const sel = document.getElementById('cambcat-nueva');
-    CATEGORIAS.forEach(nombre => {
+    categoriasParaSelect().forEach(({ valor: nombre, label }) => {
       const opt = document.createElement('option');
-      opt.value = nombre; opt.textContent = nombre;
+      opt.value = nombre; opt.textContent = label;
       if (nombre === p.categoria) opt.selected = true;
       sel.appendChild(opt);
     });
@@ -751,6 +774,7 @@
       const resp = await gasPost({ action: 'setNombreCategoria', codigo, nombre });
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
       _nombresCategoriasCopia = resp.nombres || _nombresCategoriasCopia;
+      _nombresCopiaGlobal = resp.nombres || _nombresCopiaGlobal; // sincroniza "Categorías" y "Cambiar categoría" sin recargar
       showToast('✅ "' + nombre + '" guardado — ya visible para todo el staff');
     } catch (e) {
       showToast('⚠️ Error al guardar: ' + e.message, true);
