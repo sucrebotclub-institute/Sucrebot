@@ -401,8 +401,9 @@
     .sb-modal-btn.primary:hover{box-shadow:0 6px 16px rgba(42,142,200,0.4)}
     .sb-modal-btn.ghost{background:rgba(255,255,255,0.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18)}
     .sb-modal-btn.ghost:hover{background:rgba(255,255,255,0.14)}
-    .rank-row.has-tags{border-radius:8px 8px 0 0;margin-bottom:0}
-    .rank-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:#0d2040;border-radius:0 0 8px 8px;margin:0 0 6px 0;padding:3px 12px 8px 46px}
+    .rank-row.has-tags{border-radius:8px 8px 0 0;margin-bottom:0;border-bottom:none}
+    .rank-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:#0d2040;border-radius:0 0 8px 8px;margin:0 0 6px 0;padding:3px 12px 8px 46px;border:5px solid transparent;border-top:none}
+    .rank-tags.avanza-marcado{border-color:#1e8449}
     .tag-intento{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono';font-size:.7rem;color:var(--ins-muted)}
     .tag-val{color:var(--ins-cyan)}
     .tag-val.dnf{color:var(--ins-red)}
@@ -410,8 +411,8 @@
     .ins-btn-editar-intento:hover{background:var(--ins-cyan);color:#071e45;transform:translateY(-1px)}
     .ins-btn-avanza{background:transparent;border:1.5px solid var(--ins-green);color:var(--ins-green);font-size:.72rem;padding:4px 8px;border-radius:6px;cursor:pointer;transition:all .2s;font-weight:700;flex-shrink:0}
     .ins-btn-avanza:hover{background:rgba(46,204,113,.12)}
-    .ins-btn-avanza.marcado{background:var(--ins-green);border-color:var(--ins-green);color:#071e45}
-    .rank-row.avanza-marcado{background:rgba(46,204,113,.14);border-left:3px solid var(--ins-green)}
+    .rank-row.clas{border:5px solid transparent}
+    .rank-row.avanza-marcado{border-color:#1e8449}
   </style>
 </head>
 <body>
@@ -2553,11 +2554,11 @@ document.addEventListener('componentsLoaded',async function(){
     });
   }
 
-  function tagsIntentosClas(p) {
+  function tagsIntentosClas(p, marcado) {
     const lista = (intentos[p.id] || []).filter(x => x.ronda === rondaActual).slice().sort((a, b) => a.intento - b.intento);
     if (!lista.length) return '';
     const mejor = mejores[p.id];
-    return `<div class="rank-tags">${lista.map(x => {
+    return `<div class="rank-tags${marcado ? ' avanza-marcado' : ''}">${lista.map(x => {
       const esMejor = !x.dnf && mejor && x.tiempo === mejor.tiempo;
       const txt = x.dnf ? 'DNF' : fmtMs(x.tiempo);
       return `<span class="tag-intento">I${x.intento}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="ins-btn-editar-intento" title="Corregir intento ${x.intento} de ${p.robot}" onclick="insAbrirEditorIntento('${p.id}',${x.intento})">🔧</button></span>`;
@@ -2597,7 +2598,7 @@ document.addEventListener('componentsLoaded',async function(){
               <div class="rank-inst">${r.p.nombre}</div>
               <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo !== null ? fmtMs(r.tiempo) : (r.intentado ? 'DNF' : '—')}</div>
             </div>
-          </div>${tagsIntentosClas(r.p)}`;
+          </div>${tagsIntentosClas(r.p, marcado)}`;
       }).join('')}
     </div>`;
   }
