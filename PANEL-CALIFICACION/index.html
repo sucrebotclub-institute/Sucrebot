@@ -2948,11 +2948,39 @@ function generarExcelPodioFinal(rankingFinal) {
   XLSX.writeFile(wb, 'SucreBot2026_Bailarin_PodioFinal_' + Date.now() + '.xlsx');
 }
 
+// ── RESTAURAR SESIÓN — 'panel_cal_sesion' se guardaba en localStorage
+// desde hace tiempo (seleccionarCategoria/iniciarCalificacion) pero nunca
+// se leía de vuelta: un F5 accidental dejaba al staff otra vez en la
+// pantalla de "Seleccionar Categoría", como si nunca hubiera entrado.
+// Las notas YA guardadas están a salvo en el backend (getPuntuaciones se
+// vuelve a pedir siempre que se entra a Calificar) — lo que se perdía era
+// solo la navegación: había que re-elegir categoría, jueza/juez y volver
+// a presionar "Iniciar Calificación" para que el panel las recuperara.
+// Esto reproduce automáticamente esos mismos clics al recargar.
+async function intentarRestaurarSesionCal() {
+  try {
+    const raw = localStorage.getItem('panel_cal_sesion');
+    if (!raw) return;
+    const sesion = JSON.parse(raw);
+    if (!sesion || !sesion.categoria || !CAT_NOMBRES[sesion.categoria]) return;
+    loading(true, 'RESTAURANDO SESIÓN...');
+    await seleccionarCategoria(sesion.categoria);
+    if (sesion.paso >= 2) {
+      await iniciarCalificacion();
+      await iniciarCalificacionConPresentes();
+    }
+    toast('✅ Sesión de "' + nombreVisibleCal(sesion.categoria) + '" restaurada', 'success');
+  } catch (e) {
+    console.error('No se pudo restaurar la sesión de calificación:', e);
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────
-document.addEventListener('componentsLoaded', () => {
+document.addEventListener('componentsLoaded', async () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
   if (typeof renderCopiasCategoriasCalificacion === 'function') renderCopiasCategoriasCalificacion();
+  await intentarRestaurarSesionCal();
   loading(false);
 });
 </script>
