@@ -3187,7 +3187,17 @@ document.addEventListener('componentsLoaded',async function(){
     if(!('serial' in navigator)){showToast('❌ Web Serial solo funciona en Chrome',true);return;}
     try{
       puerto=await navigator.serial.requestPort();
-      await puerto.open({baudRate:115200});
+      try{
+        await puerto.open({baudRate:115200});
+      }catch(openErr){
+        // Si la sesión anterior se cortó sin cerrar limpiamente (desconexión
+        // física, error de lectura), el navegador puede seguir pensando que
+        // el puerto ya está abierto y open() falla con InvalidStateError —
+        // antes esto obligaba a recargar la página. Se intenta cerrar y
+        // reabrir una vez antes de rendirse.
+        try{await puerto.close();}catch(e2){}
+        await puerto.open({baudRate:115200});
+      }
       const enc=new TextEncoderStream();
       enc.readable.pipeTo(puerto.writable).catch(()=>{});
       writer=enc.writable.getWriter();
@@ -3210,6 +3220,9 @@ document.addEventListener('componentsLoaded',async function(){
   }
 
   async function escuchar(){
+    buffer=''; // descarta cualquier fragmento de línea sin terminar que haya
+               // quedado colgado de una conexión anterior (evita mensajes
+               // pegados/corruptos justo después de reconectar)
     const dec=new TextDecoderStream();
     puerto.readable.pipeTo(dec.writable).catch(()=>{});
     const lector=dec.readable.getReader();
@@ -3226,7 +3239,13 @@ document.addEventListener('componentsLoaded',async function(){
       if(e.name!=='AbortError'){
         showToast('⚠️ Dispositivo desconectado',true);
         actualizarBoton(document.getElementById('btn-serial'),false);
-        puerto=null;writer=null;
+        // Cerrar el puerto explícitamente (aunque el dispositivo ya se haya
+        // desenchufado físicamente) para que el navegador libere su estado
+        // interno de "abierto" — si no, el próximo intento de reconectar
+        // desde el botón falla con InvalidStateError y solo se arregla
+        // recargando la página.
+        const p=puerto;puerto=null;writer=null;
+        try{if(p)await p.close();}catch(e2){}
       }
     }
   }
