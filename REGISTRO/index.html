@@ -597,13 +597,36 @@
     return String(cat || '').replace(/\s*\[Copia\]\s*$/, '');
   }
 
+  // Oculta del <select> las categorías que el administrador NO marcó como
+  // activas para la edición actual (CONFIGURACION → Ediciones). Corre
+  // DESPUÉS de aplicarNombresCategoriasCopia() -- una copia necesita las
+  // dos cosas para verse: tener nombre asignado Y estar activa esta vez.
+  // Si la consulta falla, no oculta nada (mejor mostrar de más que dejar
+  // el formulario sin ninguna opción por un error de red).
+  async function aplicarCategoriasActivasEdicion() {
+    try {
+      const info = await fetch(GAS_URL + '?action=getInfoEdicion', { cache: 'no-store' }).then(r => r.json());
+      const activas = Array.isArray(info.categorias_activas) ? new Set(info.categorias_activas) : null;
+      if (!activas || !activas.size) return;
+      document.querySelectorAll('#f-categoria option[value]').forEach(opt => {
+        if (!opt.value || opt.style.display === 'none') return; // placeholder o copia ya oculta sin nombre
+        if (!activas.has(opt.value)) { opt.style.display = 'none'; opt.disabled = true; }
+      });
+      document.querySelectorAll('#f-categoria optgroup').forEach(og => {
+        const algunaVisible = [...og.querySelectorAll('option')].some(o => o.style.display !== 'none');
+        og.style.display = algunaVisible ? '' : 'none';
+      });
+    } catch (e) { /* sin info de edición, se muestran todas */ }
+  }
+
   async function initRegistro() {
     try {
       const cfg = await fetch(GAS_URL + '?action=getConfigRegistro').then(r => r.json());
       if (cfg && cfg.abierto === false) { mostrarRegistroCerrado(); return; }
       if (cfg && Array.isArray(cfg.categoriasCerradas)) CATEGORIAS_CERRADAS = cfg.categoriasCerradas;
     } catch(e) { /* si falla la consulta, no bloquear el registro */ }
-    aplicarNombresCategoriasCopia();
+    await aplicarNombresCategoriasCopia();
+    await aplicarCategoriasActivasEdicion();
     cargarInstituciones();
   }
   initRegistro();

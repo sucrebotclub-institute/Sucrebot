@@ -680,25 +680,25 @@
       <div class="pb-card">
         <div class="pb-card-title">Seleccionar categoría</div>
         <div class="cat-grid">
-          <div class="cat-btn" onclick="seleccionarCategoria('ms_a')">
+          <div class="cat-btn" data-catcodigo="ms_a" onclick="seleccionarCategoria('ms_a')">
             <div class="cat-btn-icon">🤖</div>
             <div class="cat-btn-nombre">Minisumo Autónomo</div>
             <div class="cat-btn-desc">Combate autónomo 1v1</div>
             <div class="cat-btn-tipo tipo-bracket">BRACKET</div>
           </div>
-          <div class="cat-btn" onclick="seleccionarCategoria('ms_rc')">
+          <div class="cat-btn" data-catcodigo="ms_rc" onclick="seleccionarCategoria('ms_rc')">
             <div class="cat-btn-icon">🎮</div>
             <div class="cat-btn-nombre">Minisumo RC</div>
             <div class="cat-btn-desc">Combate radiocontrol 1v1</div>
             <div class="cat-btn-tipo tipo-bracket">BRACKET</div>
           </div>
-          <div class="cat-btn" onclick="seleccionarCategoria('soc')">
+          <div class="cat-btn" data-catcodigo="soc" onclick="seleccionarCategoria('soc')">
             <div class="cat-btn-icon">⚽</div>
             <div class="cat-btn-nombre">Robot Soccer</div>
             <div class="cat-btn-desc">Torneo por grupos/fases</div>
             <div class="cat-btn-tipo tipo-soccer">SOCCER</div>
           </div>
-          <div class="cat-btn" onclick="seleccionarCategoria('bat')">
+          <div class="cat-btn" data-catcodigo="bat" onclick="seleccionarCategoria('bat')">
             <div class="cat-btn-icon">🥊</div>
             <div class="cat-btn-nombre">Batalla</div>
             <div class="cat-btn-desc">Combate de puntuación 3lb</div>
@@ -740,6 +740,7 @@
           const baseNombre = CAT_INFO[codigo].nombre.replace(/\s*\[Copia\]\s*$/, '');
           const div = document.createElement('div');
           div.className = 'cat-btn cat-btn-copia';
+          div.dataset.catcodigo = codigo;
           div.title = 'Copia de "' + baseNombre + '"';
           div.innerHTML =
             '<div class="cat-btn-icon">' + (ICONO[codigo] || '🔁') + '</div>' +
@@ -823,6 +824,22 @@ const CAT_INFO = {
   bat2:   { nombre: 'Batalla [Copia]',           tipo: 'batalla',  gasNombre: 'Batalla [Copia]' },
   soc2:   { nombre: 'Robot Soccer [Copia]',      tipo: 'soccer',   gasNombre: 'Robot soccer [Copia]' }
 };
+
+// Oculta del selector las tarjetas de categoría que el administrador NO
+// marcó como activas para la edición actual (CONFIGURACION → Ediciones).
+// Corre DESPUÉS de renderCopiasCategoriasBracket() -- así ya existen en
+// el DOM tanto las 4 originales como las copias con nombre asignado.
+async function aplicarCategoriasActivasBracket(){
+  try{
+    const info=await fetch(GAS+'?action=getInfoEdicion',{cache:'no-store'}).then(r=>r.json());
+    const activas=Array.isArray(info.categorias_activas)?new Set(info.categorias_activas):null;
+    if(!activas||!activas.size)return;
+    document.querySelectorAll('#panel-1 .cat-grid .cat-btn[data-catcodigo]').forEach(el=>{
+      const info2=CAT_INFO[el.dataset.catcodigo];
+      if(info2&&!activas.has(info2.gasNombre))el.style.display='none';
+    });
+  }catch(e){ /* sin info de edición, se muestran todas */ }
+}
 
 // Nombre a mostrar en pantalla para la categoría dada -- para una copia
 // sin nombre asignado todavía (no debería pasar, ya que la tarjeta que
@@ -2876,7 +2893,7 @@ async function msFinalizarCombate() {
   loading(false);
 }
 
-document.addEventListener('componentsLoaded',()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} if(typeof renderCopiasCategoriasBracket==='function')renderCopiasCategoriasBracket(); });
+document.addEventListener('componentsLoaded',async ()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} if(typeof renderCopiasCategoriasBracket==='function')await renderCopiasCategoriasBracket(); aplicarCategoriasActivasBracket(); });
 </script>
 
 <!-- PANTALLA COMPLETA (tecla F) -->

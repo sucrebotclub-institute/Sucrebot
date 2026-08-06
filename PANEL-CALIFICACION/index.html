@@ -397,19 +397,19 @@
     <div class="panel-card" style="margin-bottom:20px">
       <div class="panel-card-title">Seleccionar Categoría</div>
       <div class="cat-cards-grid">
-        <div class="cat-card" id="card-bai" onclick="seleccionarCategoria('bai')">
+        <div class="cat-card" id="card-bai" data-catcodigo="bai" onclick="seleccionarCategoria('bai')">
           <span class="cat-card-emoji">🩺</span>
           <div class="cat-card-nombre">Bailarín</div>
           <div class="cat-card-desc">Coreografía · Sincronía · Creatividad</div>
           <div class="cat-card-badge">CRITERIOS</div>
         </div>
-        <div class="cat-card" id="card-dev" onclick="seleccionarCategoria('dev')">
+        <div class="cat-card" id="card-dev" data-catcodigo="dev" onclick="seleccionarCategoria('dev')">
           <span class="cat-card-emoji">💡</span>
           <div class="cat-card-nombre">Impacto Tecnológico</div>
           <div class="cat-card-desc">Innovación · Funcionalidad · Impacto Social</div>
           <div class="cat-card-badge">CRITERIOS</div>
         </div>
-        <div class="cat-card" id="card-lk" onclick="seleccionarCategoria('lk')">
+        <div class="cat-card" id="card-lk" data-catcodigo="lk" onclick="seleccionarCategoria('lk')">
           <span class="cat-card-emoji">🧱</span>
           <div class="cat-card-nombre">Lego Kids</div>
           <div class="cat-card-desc">Ensamble · Funcionalidad · Tiempo de carrera</div>
@@ -449,6 +449,7 @@
             const div = document.createElement('div');
             div.className = 'cat-card cat-card-copia';
             div.id = 'card-' + codigo;
+            div.dataset.catcodigo = codigo;
             div.title = 'Copia de "' + baseNombre + '"';
             div.innerHTML =
               '<span class="cat-card-emoji">' + (EMOJI[codigo] || '🔁') + '</span>' +
@@ -803,6 +804,22 @@
 const GAS = CONFIG.GAS_URL();
 const ALL_CATS = ['bai','dev','lk'];
 const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico', lk:'Lego Kids', dev2:'Impacto Tecnológico [Copia]', bai2:'Bailarín [Copia]', lk2:'Lego Kids [Copia]' };
+
+// Oculta del selector las tarjetas de categoría que el administrador NO
+// marcó como activas para la edición actual (CONFIGURACION → Ediciones).
+// Corre DESPUÉS de renderCopiasCategoriasCalificacion() -- así ya existen
+// en el DOM tanto las 3 originales como las copias con nombre asignado.
+async function aplicarCategoriasActivasCalificacion(){
+  try{
+    const info=await fetch(CONFIG.GAS_URL()+'?action=getInfoEdicion',{cache:'no-store'}).then(r=>r.json());
+    const activas=Array.isArray(info.categorias_activas)?new Set(info.categorias_activas):null;
+    if(!activas||!activas.size)return;
+    document.querySelectorAll('.cat-cards-grid .cat-card[data-catcodigo]').forEach(el=>{
+      const nombreCompleto=CAT_NOMBRES[el.dataset.catcodigo];
+      if(nombreCompleto&&!activas.has(nombreCompleto))el.style.display='none';
+    });
+  }catch(e){ /* sin info de edición, se muestran todas */ }
+}
 
 // Nombre a mostrar en pantalla (títulos, toasts, confirmaciones) -- para
 // una copia usa el nombre que le puso el staff, NUNCA el identificador
@@ -2979,7 +2996,8 @@ async function intentarRestaurarSesionCal() {
 document.addEventListener('componentsLoaded', async () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
-  if (typeof renderCopiasCategoriasCalificacion === 'function') renderCopiasCategoriasCalificacion();
+  if (typeof renderCopiasCategoriasCalificacion === 'function') await renderCopiasCategoriasCalificacion();
+  aplicarCategoriasActivasCalificacion();
   await intentarRestaurarSesionCal();
   loading(false);
 });

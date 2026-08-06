@@ -467,12 +467,12 @@
       <div class="pb-card-title">Seleccionar Categoría</div>
       <div class="cat-grid" id="catGrid">
         
-        <div class="cat-btn" onclick="elegirCategoria('Trepador (Amateur)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Amateur</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Trepador (Pro)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Pro</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Seguidor de línea ST (Amateur)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Amateur</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Seguidor de línea ST (Pro)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Pro</div></div>
-        <div class="cat-btn" onclick="elegirCategoria('Cubo Rubik', event)"><div class="cat-btn-icon">🧩</div><div class="cat-btn-nombre">Cubo Rubik</div></div>
-        <div class="cat-btn" onclick="abrirInsectosCrono(event)"><div class="cat-btn-icon">🐜</div><div class="cat-btn-nombre">Insectos</div></div>
+        <div class="cat-btn" data-cat="Trepador (Amateur)" onclick="elegirCategoria('Trepador (Amateur)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Amateur</div></div>
+        <div class="cat-btn" data-cat="Trepador (Pro)" onclick="elegirCategoria('Trepador (Pro)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Pro</div></div>
+        <div class="cat-btn" data-cat="Seguidor de línea ST (Amateur)" onclick="elegirCategoria('Seguidor de línea ST (Amateur)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Amateur</div></div>
+        <div class="cat-btn" data-cat="Seguidor de línea ST (Pro)" onclick="elegirCategoria('Seguidor de línea ST (Pro)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Pro</div></div>
+        <div class="cat-btn" data-cat="Cubo Rubik" onclick="elegirCategoria('Cubo Rubik', event)"><div class="cat-btn-icon">🧩</div><div class="cat-btn-nombre">Cubo Rubik</div></div>
+        <div class="cat-btn" data-cat="Insectos" onclick="abrirInsectosCrono(event)"><div class="cat-btn-icon">🐜</div><div class="cat-btn-nombre">Insectos</div></div>
       </div>
     </div>
   </div>
@@ -773,6 +773,7 @@ async function renderCopiasCategorias(){
     if(!nombreVisible)return;
     const div=document.createElement('div');
     div.className='cat-btn cat-btn-copia';
+    div.dataset.cat=c.nombreInterno;
     div.title='Copia de "'+c.nombreInterno.replace(/\s*\[Copia\]\s*$/,'')+'"';
     div.innerHTML='<div class="cat-btn-icon">'+c.icono+'</div><div class="cat-btn-nombre">'+nombreVisible+'</div>';
     if(c.esInsectos){
@@ -788,6 +789,22 @@ async function renderCopiasCategorias(){
     }
     grid.appendChild(div);
   });
+}
+
+// Oculta del selector las tarjetas de categoría que el administrador NO
+// marcó como activas para la edición actual (CONFIGURACION → Ediciones).
+// Corre DESPUÉS de renderCopiasCategorias() -- así ya existen en el DOM
+// tanto las 6 originales como las copias con nombre asignado, y esto
+// solo tiene que ocultar por data-cat, sin duplicar lógica de nombres.
+async function aplicarCategoriasActivasCronometro(){
+  try{
+    const info=await fetch(GAS_URL+'?action=getInfoEdicion',{cache:'no-store'}).then(r=>r.json());
+    const activas=Array.isArray(info.categorias_activas)?new Set(info.categorias_activas):null;
+    if(!activas||!activas.size)return;
+    document.querySelectorAll('#catGrid .cat-btn[data-cat]').forEach(el=>{
+      if(!activas.has(el.dataset.cat))el.style.display='none';
+    });
+  }catch(e){ /* sin info de edición, se muestran todas */ }
 }
 
 let categoriaActual=null,participanteActual=null,pollingInterval=null,cronoInterval=null,cronoInicio=null;
@@ -1743,7 +1760,7 @@ async function guardarPodioCrono(){
 
 document.addEventListener('componentsLoaded',async function(){
   actualizarBadgeOffline();
-  renderCopiasCategorias();
+  renderCopiasCategorias().then(aplicarCategoriasActivasCronometro);
   const savedUser=localStorage.getItem('sucrebot_user');if(!savedUser){window.location.href='../INICIO/';return;}
   const catGuardada=localStorage.getItem('cronometro_categoria_activa');
   if(catGuardada&&RUTAS[catGuardada]){
