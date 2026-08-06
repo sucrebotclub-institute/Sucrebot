@@ -322,7 +322,7 @@
 
   function gasGet(params) {
     const qs = new URLSearchParams({ ...params, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }).toString();
-    return fetch(GAS_URL + '?' + qs).then(r => r.json());
+    return fetch(GAS_URL + '?' + qs, { cache: 'no-store' }).then(r => r.json());
   }
 
   function show(id) { document.getElementById(id).style.display = 'block'; }
