@@ -396,7 +396,7 @@
   <div class="step-panel active" id="panel-1">
     <div class="panel-card" style="margin-bottom:20px">
       <div class="panel-card-title">Seleccionar Categoría</div>
-      <div class="cat-cards-grid">
+      <div class="cat-cards-grid" style="visibility:hidden">
         <div class="cat-card" id="card-bai" data-catcodigo="bai" onclick="seleccionarCategoria('bai')">
           <span class="cat-card-emoji">🩺</span>
           <div class="cat-card-nombre">Bailarín</div>
@@ -2996,8 +2996,11 @@ async function intentarRestaurarSesionCal() {
 document.addEventListener('componentsLoaded', async () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
+  const mostrarCatGrid = () => { const g = document.querySelector('.cat-cards-grid'); if (g) g.style.visibility = 'visible'; };
+  setTimeout(mostrarCatGrid, 4000); // resguardo: si algo falla, no se queda oculta para siempre
   if (typeof renderCopiasCategoriasCalificacion === 'function') await renderCopiasCategoriasCalificacion();
-  aplicarCategoriasActivasCalificacion();
+  await aplicarCategoriasActivasCalificacion();
+  mostrarCatGrid();
   await intentarRestaurarSesionCal();
   loading(false);
 });
