@@ -356,7 +356,7 @@
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay"><img src="../shared/images/sucrebot-sin%20fondo.png" alt="SucreBot" class="loading-logo"><div class="spinner"></div><div class="loading-txt" id="loadingTxt">CARGANDO...</div></div>
+<div class="loading-overlay show" id="loadingOverlay"><img src="../shared/images/sucrebot-sin%20fondo.png" alt="SucreBot" class="loading-logo"><div class="spinner"></div><div class="loading-txt" id="loadingTxt">CARGANDO...</div></div>
 <div id="toast"></div>
 
 <div class="modal-overlay" id="confirmModal">
@@ -679,7 +679,7 @@
     <div class="step-panel active" id="panel-1">
       <div class="pb-card">
         <div class="pb-card-title">Seleccionar categoría</div>
-        <div class="cat-grid" style="visibility:hidden">
+        <div class="cat-grid">
           <div class="cat-btn" data-catcodigo="ms_a" onclick="seleccionarCategoria('ms_a')">
             <div class="cat-btn-icon">🤖</div>
             <div class="cat-btn-nombre">Minisumo Autónomo</div>
@@ -2893,7 +2893,7 @@ async function msFinalizarCombate() {
   loading(false);
 }
 
-document.addEventListener('componentsLoaded',async ()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} const mostrarCatGrid=()=>{const g=document.querySelector('#panel-1 .cat-grid');if(g)g.style.visibility='visible';}; setTimeout(mostrarCatGrid,4000); if(typeof renderCopiasCategoriasBracket==='function')await renderCopiasCategoriasBracket(); await aplicarCategoriasActivasBracket(); mostrarCatGrid(); });
+document.addEventListener('componentsLoaded',async ()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} setTimeout(()=>loading(false),4000); if(typeof renderCopiasCategoriasBracket==='function')await renderCopiasCategoriasBracket(); await aplicarCategoriasActivasBracket(); loading(false); });
 </script>
 
 <!-- PANTALLA COMPLETA (tecla F) -->

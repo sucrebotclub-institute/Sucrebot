@@ -417,7 +417,7 @@
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay">
+<div class="loading-overlay show" id="loadingOverlay">
   <img src="../shared/images/sucrebot-sin%20fondo.png" alt="SucreBot" class="loading-logo">
   <div class="spinner"></div>
   <div class="loading-txt" id="loadingTxt">CARGANDO...</div>
@@ -465,7 +465,7 @@
 
     <div class="pb-card">
       <div class="pb-card-title">Seleccionar Categoría</div>
-      <div class="cat-grid" id="catGrid" style="visibility:hidden">
+      <div class="cat-grid" id="catGrid">
         
         <div class="cat-btn" data-cat="Trepador (Amateur)" onclick="elegirCategoria('Trepador (Amateur)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Amateur</div></div>
         <div class="cat-btn" data-cat="Trepador (Pro)" onclick="elegirCategoria('Trepador (Pro)', event)"><div class="cat-btn-icon">🧗</div><div class="cat-btn-nombre">Trepador Pro</div></div>
@@ -1760,9 +1760,12 @@ async function guardarPodioCrono(){
 
 document.addEventListener('componentsLoaded',async function(){
   actualizarBadgeOffline();
-  const mostrarCatGrid=()=>{const grid=document.getElementById('catGrid');if(grid)grid.style.visibility='visible';};
-  setTimeout(mostrarCatGrid,4000); // resguardo: si algo falla, no se queda oculta para siempre
-  renderCopiasCategorias().then(aplicarCategoriasActivasCronometro).finally(mostrarCatGrid);
+  // Overlay de carga (logo SucreBot) tapando todo mientras se arma el
+  // selector de categorías -- evita el flash de categorías sin filtrar
+  // que se veía antes de que llegara la respuesta de getInfoEdicion.
+  loading(true);
+  setTimeout(()=>loading(false),4000); // resguardo: si algo falla, no se queda tapado para siempre
+  renderCopiasCategorias().then(aplicarCategoriasActivasCronometro).finally(()=>loading(false));
   const savedUser=localStorage.getItem('sucrebot_user');if(!savedUser){window.location.href='../INICIO/';return;}
   const catGuardada=localStorage.getItem('cronometro_categoria_activa');
   if(catGuardada&&RUTAS[catGuardada]){
