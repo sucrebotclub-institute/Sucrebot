@@ -630,6 +630,11 @@
   // ── Ediciones ─────────────────────────────────────────────────────
   async function cargarInfoEdicion() {
     try {
+      // Asegura que _nombresCopiaGlobal esté fresco antes de armar la lista
+      // de checkboxes -- si no, las categorías copia sin nombre asignado
+      // todavía quedan excluidas por categoriasParaSelect() aunque ya
+      // tengan nombre (carrera con cargarEstado(), que también la llama).
+      await cargarNombresCopiaGlobal();
       const info = await gasGet({ action: 'getInfoEdicion' });
       document.getElementById('edic-actual').textContent = 'Edición ' + (info.edicion_actual || '—');
       document.getElementById('edic-fecha').value = info.fecha_evento || '';
@@ -642,14 +647,20 @@
     }
   }
 
+  // Lista completa de las 26 categorías posibles: las 13 originales +
+  // las 13 "copia" que ya tengan nombre asignado (ver categoriasParaSelect,
+  // misma fuente que usa "Categorías individuales" más arriba). Una copia
+  // sin nombre todavía no "existe" para el sitio, así que no aparece acá
+  // tampoco -- ponerle nombre en la pestaña "Categorías copia" es lo que
+  // la habilita en todos lados, incluida esta lista.
   function renderCategoriasEdicion(activas) {
     const set = new Set(activas);
     const cont = document.getElementById('edic-cats-lista');
-    cont.innerHTML = CATEGORIAS.map(nombre => {
+    cont.innerHTML = categoriasParaSelect().map(({ valor: nombre, label }) => {
       const id = 'edic-cat-' + nombre.replace(/[^a-zA-Z0-9]/g, '');
       const checked = set.has(nombre);
       return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--border,#2a3550);border-radius:8px;padding:6px 10px;font-size:.82rem;cursor:pointer;">' +
-        '<input type="checkbox" id="' + id + '" value="' + nombre.replace(/"/g, '&quot;') + '" ' + (checked ? 'checked' : '') + '> ' + nombre +
+        '<input type="checkbox" id="' + id + '" value="' + nombre.replace(/"/g, '&quot;') + '" ' + (checked ? 'checked' : '') + '> ' + label +
       '</label>';
     }).join('');
   }
