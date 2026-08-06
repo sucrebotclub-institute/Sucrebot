@@ -161,6 +161,7 @@
             <button class="config-nav-item" data-section="registro" onclick="mostrarSeccion('registro')"><span class="config-nav-icon">📋</span> Registro</button>
             <button class="config-nav-item" data-section="categorias" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
             <button class="config-nav-item" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
+            <button class="config-nav-item" data-section="ediciones" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
             <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
             <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
           </div>
@@ -223,6 +224,50 @@
 
           <div id="pers-loading" class="loading-msg"><span class="spinner"></span> Cargando personal...</div>
           <div id="pers-lista"></div>
+        </div>
+
+        <div class="config-card config-section" data-section="ediciones">
+          <div class="config-card-title">🏆 Ediciones</div>
+          <div class="config-card-desc">
+            Cada edición del torneo (IV, V, VI...) guarda sus propios participantes, resultados,
+            certificados y brackets por separado. Al generar una edición nueva, la que termina
+            queda intacta y archivada; el sitio empieza a escribir en la edición nueva sin que
+            haya que tocar nada más.
+          </div>
+
+          <div id="edic-loading" class="loading-msg"><span class="spinner"></span> Cargando información de edición...</div>
+
+          <div id="edic-contenido" style="display:none;">
+            <div class="estado-row">
+              <div>
+                <div class="estado-label">Edición activa</div>
+                <div class="estado-valor abierto"><span id="edic-actual">—</span></div>
+              </div>
+            </div>
+
+            <div style="margin-top:18px;">
+              <div class="estado-label" style="margin-bottom:6px;">Fecha del evento (se usa en los correos de registro)</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="text" id="edic-fecha" class="form-control" style="flex:1;min-width:220px;" placeholder='Ej. "Miércoles, 16 de julio de 2027"'>
+                <button class="btn-personal-add" onclick="guardarFechaEventoUI()">💾 Guardar</button>
+              </div>
+            </div>
+
+            <div style="margin-top:24px;border-top:1px solid var(--border,#2a3550);padding-top:18px;">
+              <div class="estado-label" style="margin-bottom:6px;">Generar nueva edición</div>
+              <div class="config-card-desc" style="margin-bottom:10px;">
+                Usar solo cuando el torneo de la edición activa ya terminó por completo
+                (podios, certificados, todo cerrado). Esta acción no se puede deshacer sola
+                — una vez generada, hay que pedir soporte para volver atrás.
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="text" id="edic-nueva-codigo" class="form-control" style="max-width:160px;" placeholder='Ej. "VI"'>
+                <button class="btn-personal-add" id="btn-edic-generar" onclick="generarNuevaEdicionUI()">🆕 Generar edición nueva</button>
+              </div>
+            </div>
+
+            <div id="edic-historial" style="margin-top:24px;"></div>
+          </div>
         </div>
 
         <div class="config-card config-section" data-section="cambcat">
@@ -289,6 +334,7 @@
     mostrarSeccion(localStorage.getItem('sucrebot_config_seccion') || 'registro');
     cargarEstado();
     cargarPersonal();
+    cargarInfoEdicion();
   });
 
   function mostrarSeccion(id) {
@@ -567,6 +613,67 @@
       showToast('✅ Acceso de ' + correo + ' eliminado');
     } catch(e) {
       showToast('⚠️ Error al eliminar: ' + e.message, true);
+      btn.disabled = false;
+    }
+  }
+
+  // ── Ediciones ─────────────────────────────────────────────────────
+  async function cargarInfoEdicion() {
+    try {
+      const info = await gasGet({ action: 'getInfoEdicion' });
+      document.getElementById('edic-actual').textContent = 'Edición ' + (info.edicion_actual || '—');
+      document.getElementById('edic-fecha').value = info.fecha_evento || '';
+      renderHistorialEdiciones(info.ediciones || {}, info.edicion_actual);
+      document.getElementById('edic-loading').style.display = 'none';
+      document.getElementById('edic-contenido').style.display = 'block';
+    } catch(e) {
+      document.getElementById('edic-loading').innerHTML = '⚠️ Error al cargar la edición: ' + e.message;
+    }
+  }
+
+  function renderHistorialEdiciones(ediciones, actual) {
+    const cont = document.getElementById('edic-historial');
+    const codigos = Object.keys(ediciones);
+    if (!codigos.length) { cont.innerHTML = ''; return; }
+    let html = '<div class="estado-label" style="margin-bottom:6px;">Ediciones generadas desde acá</div>';
+    codigos.forEach(cod => {
+      html += '<div class="cat-row"><div><span class="cat-nombre">Edición ' + cod + '</span>' +
+        (cod === actual ? '<span class="cat-estado abierta">ACTIVA</span>' : '') + '</div></div>';
+    });
+    cont.innerHTML = html;
+  }
+
+  async function guardarFechaEventoUI() {
+    const fecha = document.getElementById('edic-fecha').value.trim();
+    try {
+      const resp = await gasPost({ action: 'guardarFechaEvento', fecha });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Fecha del evento actualizada');
+    } catch(e) {
+      showToast('⚠️ Error al guardar la fecha: ' + e.message, true);
+    }
+  }
+
+  async function generarNuevaEdicionUI() {
+    const codigo = document.getElementById('edic-nueva-codigo').value.trim();
+    if (!codigo) { showToast('⚠️ Escribí el código de la edición nueva (ej. "VI")', true); return; }
+    if (!confirm(
+      '¿Generar la Edición ' + codigo.toUpperCase() + '?\n\n' +
+      'Esto crea un Sheet nuevo y vacío para participantes/resultados/certificados/brackets, ' +
+      'y el sitio completo empieza a escribir ahí de inmediato. La edición actual queda ' +
+      'archivada tal cual está, sin perder nada.\n\n' +
+      'Solo confirmá si el torneo de la edición activa ya terminó por completo.'
+    )) return;
+    const btn = document.getElementById('btn-edic-generar');
+    btn.disabled = true;
+    try {
+      const resp = await gasPost({ action: 'generarNuevaEdicion', edicion: codigo });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Edición ' + resp.edicion.edicion + ' generada — recargando...');
+      document.getElementById('edic-nueva-codigo').value = '';
+      setTimeout(() => location.reload(), 1800);
+    } catch(e) {
+      showToast('⚠️ Error al generar la edición: ' + e.message, true);
       btn.disabled = false;
     }
   }
