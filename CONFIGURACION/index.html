@@ -254,6 +254,16 @@
             </div>
 
             <div style="margin-top:24px;border-top:1px solid var(--border,#2a3550);padding-top:18px;">
+              <div class="estado-label" style="margin-bottom:6px;">Categorías de esta edición</div>
+              <div class="config-card-desc" style="margin-bottom:10px;">
+                Desmarcá las que esta edición no va a ofrecer (ej. no hay Robot Soccer esta vez).
+                El número de "Categorías" en INICIO refleja exactamente lo que quede marcado acá.
+              </div>
+              <div id="edic-cats-lista" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;"></div>
+              <button class="btn-personal-add" onclick="guardarCategoriasEdicionUI()">💾 Guardar categorías</button>
+            </div>
+
+            <div style="margin-top:24px;border-top:1px solid var(--border,#2a3550);padding-top:18px;">
               <div class="estado-label" style="margin-bottom:6px;">Generar nueva edición</div>
               <div class="config-card-desc" style="margin-bottom:10px;">
                 Usar solo cuando el torneo de la edición activa ya terminó por completo
@@ -624,10 +634,35 @@
       document.getElementById('edic-actual').textContent = 'Edición ' + (info.edicion_actual || '—');
       document.getElementById('edic-fecha').value = info.fecha_evento || '';
       renderHistorialEdiciones(info.ediciones || {}, info.edicion_actual);
+      renderCategoriasEdicion(Array.isArray(info.categorias_activas) ? info.categorias_activas : CATEGORIAS);
       document.getElementById('edic-loading').style.display = 'none';
       document.getElementById('edic-contenido').style.display = 'block';
     } catch(e) {
       document.getElementById('edic-loading').innerHTML = '⚠️ Error al cargar la edición: ' + e.message;
+    }
+  }
+
+  function renderCategoriasEdicion(activas) {
+    const set = new Set(activas);
+    const cont = document.getElementById('edic-cats-lista');
+    cont.innerHTML = CATEGORIAS.map(nombre => {
+      const id = 'edic-cat-' + nombre.replace(/[^a-zA-Z0-9]/g, '');
+      const checked = set.has(nombre);
+      return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--border,#2a3550);border-radius:8px;padding:6px 10px;font-size:.82rem;cursor:pointer;">' +
+        '<input type="checkbox" id="' + id + '" value="' + nombre.replace(/"/g, '&quot;') + '" ' + (checked ? 'checked' : '') + '> ' + nombre +
+      '</label>';
+    }).join('');
+  }
+
+  async function guardarCategoriasEdicionUI() {
+    const seleccionadas = [...document.querySelectorAll('#edic-cats-lista input:checked')].map(i => i.value);
+    if (!seleccionadas.length) { showToast('⚠️ Tiene que quedar al menos una categoría marcada', true); return; }
+    try {
+      const resp = await gasPost({ action: 'guardarCategoriasEdicion', categorias: seleccionadas });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Categorías de esta edición actualizadas (' + seleccionadas.length + ')');
+    } catch(e) {
+      showToast('⚠️ Error al guardar categorías: ' + e.message, true);
     }
   }
 
