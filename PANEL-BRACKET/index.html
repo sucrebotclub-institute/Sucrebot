@@ -134,6 +134,8 @@
     .soc-badge-desemp{background:rgba(243,156,18,.15);color:var(--orange)}
     .btn-jugar-soc-sm{font-family:'Orbitron';font-size:.55rem;letter-spacing:.5px;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;background:var(--green);color:#fff;flex-shrink:0;white-space:nowrap}
     .btn-jugar-soc-sm:hover{background:#27ae60}
+    .btn-revancha-soc{background:#e67e22}
+    .btn-revancha-soc:hover{background:#d35400}
     /* ── Soccer: tabla de posiciones de grupo ── */
     .soc-tabla{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:4px}
     .soc-tabla th{font-family:'Orbitron';font-size:.55rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;text-align:center;padding:6px 4px;border-bottom:1.5px solid var(--border2)}
@@ -1712,6 +1714,8 @@ function renderSocPartido(p) {
   let botonHtml='';
   if(!esFin&&!sinEquipos){
     botonHtml=`<button class="btn-jugar-soc-sm" onclick='abrirCronometroSoccer(${JSON.stringify(p)})'>▶ Jugar</button>`;
+  } else if(esFin){
+    botonHtml=`<button class="btn-jugar-soc-sm btn-revancha-soc" onclick="revanchaPartidoSoccer('${p.partido_id}')">🔁 Revancha</button>`;
   }
 
   return`<div class="soc-partido ${esFin?'finalizado':''}">
@@ -1724,6 +1728,19 @@ function renderSocPartido(p) {
     ${badgeHtml}
     ${botonHtml}
   </div>`;
+}
+
+async function revanchaPartidoSoccer(partidoId) {
+  if(!confirm('¿Repetir este partido? Se va a borrar el marcador y el resultado guardado, y va a volver a quedar disponible para jugar.')) return;
+  loading(true,'REABRIENDO PARTIDO...');
+  try{
+    const res=await gasPost({action:'reabrirPartidoSoccer',partido_id:partidoId,categoria:state.categoria});
+    if(!res.ok)throw new Error(res.error||'Error');
+    state.torneoSoc=res.torneo;
+    toast('✅ Partido reabierto — ya podés volver a jugarlo','success');
+    renderTorneoSoccer();
+  }catch(e){toast('Error: '+e.message,'error');}
+  loading(false);
 }
 
 // ── Avance manual de una llave (checkboxes + quién confirma) ──
