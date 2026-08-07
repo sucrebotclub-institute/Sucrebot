@@ -210,7 +210,11 @@
     const lum = (0.299*r + 0.587*g + 0.114*b) / 255;
     return lum > 0.55 ? '#1a1a1a' : '#ffffff';
   }
-  const CAT_COLOR = {
+  // Colores por categoría: antes hardcodeados acá, ahora vienen de
+  // CONFIGURACION → Colores (getColoresCategoria), un solo lugar editable
+  // para MANILLAS/PARTICIPANTES_REGISTRADOS/PANTALLA. Este objeto queda
+  // solo como respaldo si el fetch falla (ej. sin internet al cargar).
+  const CAT_COLOR_FALLBACK = {
     'Insectos':                       '#2980B9',
     'Trepador (Amateur)':             '#16A085',
     'Seguidor de línea ST (Amateur)': '#00BFFF',
@@ -224,25 +228,15 @@
     'Robot soccer':                   '#CC0000',
     'Cubo Rubik':                     '#C0C0C0',
     'Lego Kids':                      '#2980B9',
-    // Drones no tiene color oficial de manilla asignado todavía (tabla de
-    // 12 colores en SKILL.md) — provisional hasta que Raku confirme uno.
-    'Drones':                         '#4A5568',
-    // Categorías copia (independientes, mismo flujo que su base) — mismo
-    // color que su base, ya que no hay un color oficial nuevo asignado.
-    'Trepador (Amateur) [Copia]':               '#16A085',
-    'Seguidor de línea ST (Amateur) [Copia]':   '#00BFFF',
-    'Seguidor de línea ST (Pro) [Copia]':       '#7B2D8B',
-    'Minisumo Autónomo [Copia]':                '#9B59B6',
-    'Minisumo RC [Copia]':                      '#F5A623',
-    'Batalla [Copia]':                          '#E91E8C',
-    'Impacto Tecnológico [Copia]':               '#D4AF37',
-    'Trepador (Pro) [Copia]':                   '#E67E22',
-    'Cubo Rubik [Copia]':                       '#C0C0C0',
-    'Bailarín [Copia]':                         '#27AE60',
-    'Lego Kids [Copia]':                        '#2980B9',
-    'Robot soccer [Copia]':                     '#CC0000',
-    'Insectos [Copia]':                         '#2980B9',
+    'Drones':                         '#4A5568'
   };
+  let CAT_COLOR_REMOTO = {};
+  // Resuelve el color de cualquier categoría, incluidas las "copia" (heredan
+  // el color de su base — no tienen picker propio en CONFIGURACION).
+  function colorDeCategoria(cat) {
+    const base = String(cat || '').replace(/\s*\[Copia\]\s*$/, '');
+    return CAT_COLOR_REMOTO[base] || CAT_COLOR_FALLBACK[base] || '#1a5ca8';
+  }
   const NIVEL = {
     'Insectos':'amateur','Trepador (Amateur)':'amateur','Seguidor de línea ST (Amateur)':'amateur',
     'Seguidor de línea ST (Pro)':'pro','Minisumo Autónomo':'pro','Minisumo RC':'pro',
@@ -291,6 +285,7 @@
     if (window.esperarRol) await window.esperarRol();
     if (!window.esStaffCompleto || !window.esStaffCompleto()) { window.location.href = '../INICIO/'; return; }
     try { NOMBRES_COPIA = await gasGet({ action: 'getNombresCategorias' }) || {}; } catch(e) { NOMBRES_COPIA = {}; }
+    try { CAT_COLOR_REMOTO = await gasGet({ action: 'getColoresCategoria' }) || {}; } catch(e) { CAT_COLOR_REMOTO = {}; }
     refrescar(false); // false = respetar cache
   });
 
@@ -416,7 +411,7 @@
       const iniciales = String(p.robot || p.nombre || '?').slice(0, 2).toUpperCase();
       const m2        = (p.miembro2 && String(p.miembro2).trim() && String(p.miembro2).trim() !== '0')
                         ? String(p.miembro2).trim() : null;
-      const cardColor = CAT_COLOR[p.categoria] || '#1a5ca8';
+      const cardColor = colorDeCategoria(p.categoria);
       const cardText  = entregada ? '' : textContrast(cardColor);
       const cardStyle = entregada ? '' : `background:${cardColor};border-color:${cardColor}cc;color:${cardText};`;
       return `

@@ -337,12 +337,57 @@
 <script src="../shared/js/auth.js"></script>
 <script>
   const COLS = ['Auditorio','Escenario 1','Escenario 2','Escenario 3','Escenario 4'];
+  // Respaldo si getColoresCategoria falla (sin internet al cargar) -- el
+  // color real ahora viene de CONFIGURACION → Colores, mismo origen que
+  // MANILLAS/PARTICIPANTES_REGISTRADOS. Antes esta tabla vivía solo acá y
+  // quedaba desincronizada de las manillas reales (ver nota abajo).
   const COLOR_MAP = {"Seguidor de Línea Amateur": "#00BFFF", "Seguidor de Línea Pro": "#7B2D8B", "Minisumo Autónomo": "#9B59B6", "Insectos": "#2980B9", "Lego Kids": "#E91E8C", "Trepador Pro": "#7B2D8B", "Bailarín": "#E67E22", "Batalla 3Lb": "#E67E22", "Robot Soccer – Fase de Grupos": "#CC0000", "Robot Soccer – Finales": "#CC0000", "Cubo Rubik": "#16A085", "Impacto Tecnológico": "#16A085"};
+  // Los bloques del cronograma (EVENTS más abajo) usan nombres de horario
+  // libres, no el nombre exacto de la categoría en CATEGORIA_MAP -- este
+  // mapa traduce cada bloque a su categoría real para buscar el color.
+  const EVENTO_A_CATEGORIA = {
+    'Seguidor de Línea Amateur': 'Seguidor de línea ST (Amateur)',
+    'Seguidor de Línea Pro': 'Seguidor de línea ST (Pro)',
+    'Minisumo Autónomo': 'Minisumo Autónomo',
+    'Insectos': 'Insectos',
+    'Lego Kids': 'Lego Kids',
+    'Trepador Pro': 'Trepador (Pro)',
+    'Bailarín': 'Bailarín',
+    'Batalla 3Lb': 'Batalla',
+    'Robot Soccer – Fase de Grupos': 'Robot soccer',
+    'Robot Soccer – Finales': 'Robot soccer',
+    'Cubo Rubik': 'Cubo Rubik',
+    'Impacto Tecnológico': 'Impacto Tecnológico'
+  };
   // Categorías cuya manilla física usa DOS colores (banda dividida: arriba/abajo)
+  // -- son bloques combinados del cronograma sin categoría única real detrás,
+  // así que quedan hardcodeados acá (no hay equivalente en CONFIGURACION).
   const COLOR_MAP_DUAL = {"MiniSumo RC Pro": ["#27AE60", "#F5A623"], "Trepador Amateur": ["#C0C0C0", "#D4AF37"]};
+  // Cache-first (mismo principio que CRONOMETRO/REGISTRO desde el sprint del
+  // 6-ago): esta pantalla no tiene gate de staff ni pantalla de carga, así
+  // que aplicar el color de una vez con lo último conocido (sin esperar red)
+  // evita el "flash" del color viejo -> nuevo al recargar.
+  const COLORES_CACHE_KEY = 'sucrebot_cache_colores_categoria';
+  let CAT_COLOR_REMOTO = {};
+  try { CAT_COLOR_REMOTO = JSON.parse(localStorage.getItem(COLORES_CACHE_KEY) || '{}') || {}; } catch(e) { CAT_COLOR_REMOTO = {}; }
+  async function actualizarColoresCategoria() {
+    try {
+      const resp = await fetch(CONFIG.GAS_URL() + '?action=getColoresCategoria', { cache: 'no-store' }).then(r => r.json());
+      if (!resp || typeof resp !== 'object') return;
+      CAT_COLOR_REMOTO = resp;
+      localStorage.setItem(COLORES_CACHE_KEY, JSON.stringify(resp));
+      if (document.getElementById('fsOverlay').classList.contains('active')) buildGrid('fsGrid', true);
+      else buildGrid('normalGrid', false);
+    } catch (e) { /* sin conexión, se queda con el cache (o el respaldo si no había) */ }
+  }
   // Tarjeta siempre blanca con texto azul institucional; el color de COLOR_MAP
   // ahora solo se usa en el pequeño cuadrito identificador de categoría.
-  function getEvColor(n) { const d = COLOR_MAP_DUAL[n]; if (d) return d[0]; return COLOR_MAP[n] || '#1a5ca8'; }
+  function getEvColor(n) {
+    const d = COLOR_MAP_DUAL[n]; if (d) return d[0];
+    const cat = EVENTO_A_CATEGORIA[n];
+    if (cat && CAT_COLOR_REMOTO[cat]) return CAT_COLOR_REMOTO[cat];
+    return COLOR_MAP[n] || '#1a5ca8';
+  }
   function getEvBackground(n) { const d = COLOR_MAP_DUAL[n]; if (d) return `linear-gradient(180deg, ${d[0]} 50%, ${d[1]} 50%)`; return getEvColor(n); }
   function textContrast(hex) {
     const r = parseInt(hex.slice(1,3),16);
@@ -542,6 +587,7 @@
   tick();
   setTimeout(()=>{ buildGrid('normalGrid', false); actualizarHintScroll(); }, 0);
   setTimeout(()=>{ buildGrid('normalGrid', false); actualizarHintScroll(); }, 800);
+  actualizarColoresCategoria();
 </script>
 
 </body>

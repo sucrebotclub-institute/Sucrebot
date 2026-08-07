@@ -164,6 +164,7 @@
             <button class="config-nav-item" data-section="ediciones" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
             <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
             <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
+            <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
           </div>
 
           <div class="config-panel">
@@ -302,6 +303,18 @@
 
           <div id="dupcat-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
           <div id="dupcat-lista" style="display:none;"></div>
+        </div>
+
+        <div class="config-card config-section" data-section="colores">
+          <div class="config-card-title">🎨 Colores de categoría</div>
+          <div class="config-card-desc">
+            Un solo color por categoría, usado en MANILLAS, PARTICIPANTES_REGISTRADOS
+            y el cronograma (PANTALLA). Cambiarlo acá lo actualiza en las tres páginas
+            sin tener que tocar código.
+          </div>
+
+          <div id="colores-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
+          <div id="colores-lista" style="display:none;"></div>
         </div>
 
           </div><!-- /config-panel -->
@@ -981,6 +994,88 @@
   }
 
   cargarCategoriasCopia();
+  cargarColoresCategoria();
+
+  // ── Colores de categoría ──────────────────────────────────────────
+  // Un color por cada una de las 14 categorías base (CATEGORIAS, ya
+  // declarado más arriba con Drones incluido). Las copias no tienen
+  // picker propio -- heredan el color de su base (mismo criterio que ya
+  // usaban las tablas hardcodeadas que esto reemplaza), así que no hace
+  // falta listarlas acá también.
+  let _coloresCategoria = {};
+
+  async function cargarColoresCategoria() {
+    try { _coloresCategoria = await gasGet({ action: 'getColoresCategoria' }); }
+    catch (e) { _coloresCategoria = {}; showToast('⚠️ Error al cargar colores de categoría', true); }
+    renderColoresCategoria();
+    document.getElementById('colores-loading').style.display = 'none';
+    document.getElementById('colores-lista').style.display = 'block';
+  }
+
+  function renderColoresCategoria() {
+    const cont = document.getElementById('colores-lista');
+    cont.innerHTML = '';
+    CATEGORIAS.forEach(cat => {
+      const color = _coloresCategoria[cat] || '#4A5568';
+
+      const row = document.createElement('div');
+      row.className = 'pers-row';
+
+      const info = document.createElement('div');
+      info.className = 'pers-info';
+      info.style.flex = '1 1 260px';
+      info.style.display = 'flex';
+      info.style.alignItems = 'center';
+      info.style.gap = '10px';
+
+      const picker = document.createElement('input');
+      picker.type = 'color';
+      picker.value = color;
+      picker.style.cssText = 'width:44px;height:38px;border:none;border-radius:6px;cursor:pointer;background:none;padding:0;';
+
+      const nombre = document.createElement('span');
+      nombre.className = 'pers-correo';
+      nombre.textContent = cat;
+
+      const hex = document.createElement('span');
+      hex.className = 'pers-nombre';
+      hex.textContent = color.toUpperCase();
+      picker.addEventListener('input', () => { hex.textContent = picker.value.toUpperCase(); });
+
+      info.appendChild(picker);
+      const textos = document.createElement('div');
+      textos.appendChild(nombre);
+      textos.appendChild(document.createElement('br'));
+      textos.appendChild(hex);
+      info.appendChild(textos);
+
+      const acciones = document.createElement('div');
+      acciones.className = 'pers-acciones';
+      const btnGuardar = document.createElement('button');
+      btnGuardar.className = 'btn-personal-add';
+      btnGuardar.style.height = '38px';
+      btnGuardar.textContent = '💾 Guardar';
+      btnGuardar.addEventListener('click', () => guardarColorCategoriaUI(cat, picker, btnGuardar));
+
+      acciones.appendChild(btnGuardar);
+      row.appendChild(info);
+      row.appendChild(acciones);
+      cont.appendChild(row);
+    });
+  }
+
+  async function guardarColorCategoriaUI(categoria, inputEl, btnEl) {
+    btnEl.disabled = true;
+    try {
+      const resp = await gasPost({ action: 'guardarColorCategoria', categoria, color: inputEl.value });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      _coloresCategoria = resp.colores || _coloresCategoria;
+      showToast('✅ Color de "' + categoria + '" guardado');
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    }
+    btnEl.disabled = false;
+  }
   </script>
 </body>
 </html>
