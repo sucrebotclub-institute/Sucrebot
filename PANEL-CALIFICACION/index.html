@@ -3026,16 +3026,17 @@ document.addEventListener('componentsLoaded', async () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
   // Si este dispositivo ya visitó la página antes, sabemos de la vez
-  // pasada qué categorías van activas/con nombre -- se aplica de una,
-  // sin tapar nada con el overlay (ya mostrado por defecto desde el
-  // HTML), y se revalida en segundo plano. Solo la primerísima vez en
-  // un dispositivo nuevo hace falta esperar a la red.
+  // pasada qué categorías van activas/con nombre -- se aplica de una
+  // (sin depender de la red) y se revalida en segundo plano. IMPORTANTE:
+  // el overlay (mostrado por defecto desde el HTML) recién se destapa
+  // DESPUÉS de aplicar el filtro al DOM -- destaparlo antes, aunque
+  // haya cache, deja una rendija donde se alcanza a ver la grilla sin
+  // filtrar entre que se oculta el overlay y que corre el filtro.
   const huboCache = !!window._leerCache(CATS_ACTIVAS_CACHE_KEY);
-  if (huboCache) loading(false);
-  else setTimeout(() => loading(false), 4000); // resguardo: si algo falla, no se queda tapado para siempre
+  if (!huboCache) setTimeout(() => loading(false), 4000); // resguardo: si algo falla, no se queda tapado para siempre
   if (typeof renderCopiasCategoriasCalificacion === 'function') await renderCopiasCategoriasCalificacion();
   await aplicarCategoriasActivasCalificacion();
-  if (!huboCache) loading(false);
+  loading(false);
   await intentarRestaurarSesionCal();
 });
 </script>

@@ -1798,21 +1798,18 @@ async function guardarPodioCrono(){
 document.addEventListener('componentsLoaded',async function(){
   actualizarBadgeOffline();
   // Si este dispositivo ya visitó la página antes, sabemos de la vez
-  // pasada qué categorías van con nombre/activas -- se aplica de una,
-  // sin tapar nada con el overlay, y se revalida solo en segundo plano
-  // (ver _nombresCopiaPromise y aplicarCategoriasActivasCronometro más
-  // arriba). Solo la primerísima vez en un dispositivo nuevo hace falta
-  // esperar a la red, y ahí sí tapamos con el overlay para no mostrar
-  // categorías de más mientras tanto.
+  // pasada qué categorías van con nombre/activas -- se aplica de una
+  // (sin depender de la red) y se revalida solo en segundo plano (ver
+  // _nombresCopiaPromise y aplicarCategoriasActivasCronometro más
+  // arriba). IMPORTANTE: loading(false) va DENTRO del .finally() de la
+  // cadena, nunca antes -- destaparlo antes de que el filtro corra deja
+  // una rendija donde se alcanza a ver la grilla sin filtrar.
   const huboCache=!!leerCache(CATS_ACTIVAS_CACHE_KEY);
-  if(huboCache){
-    loading(false);
-    renderCopiasCategorias().then(aplicarCategoriasActivasCronometro);
-  }else{
+  if(!huboCache){
     loading(true);
     setTimeout(()=>loading(false),4000); // resguardo: si algo falla, no se queda tapado para siempre
-    renderCopiasCategorias().then(aplicarCategoriasActivasCronometro).finally(()=>loading(false));
   }
+  renderCopiasCategorias().then(aplicarCategoriasActivasCronometro).finally(()=>loading(false));
   const savedUser=localStorage.getItem('sucrebot_user');if(!savedUser){window.location.href='../INICIO/';return;}
   const catGuardada=localStorage.getItem('cronometro_categoria_activa');
   if(catGuardada&&RUTAS[catGuardada]){
