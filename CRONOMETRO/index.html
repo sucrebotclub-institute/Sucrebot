@@ -714,6 +714,12 @@
 
 <div class="modal" id="modal-ronda"><div class="modal-box"><div class="modal-title">Cerrar <span id="modal-ronda-nom">Ronda 1</span></div><div class="modal-text" id="modal-ronda-text">Solo los marcados con ▲ pasan a la siguiente ronda. ¿Confirmar?</div><div class="modal-btns"><button class="modal-btn cancel" onclick="cerrarModal('modal-ronda')">Cancelar</button><button class="modal-btn confirm" onclick="confirmarCerrarRonda()">Sí, cerrar</button></div></div></div>
 <div class="modal" id="modal-cat"><div class="modal-box"><div class="modal-title">Cerrar Categoría</div><div class="modal-text">¿Cerrar "<span id="modal-cat-nom"></span>"? Se liberará la categoría y se borrará el progreso local.</div><div class="modal-btns"><button class="modal-btn cancel" onclick="cerrarModal('modal-cat')">Cancelar</button><button class="modal-btn confirm" onclick="confirmarCerrarCategoria()">Sí, cerrar</button></div></div></div>
+<div class="modal" id="modal-podio-visual"><div class="modal-box" style="max-width:480px;text-align:center;">
+  <div class="modal-title">🏆 Podio Final</div>
+  <div class="podio-wrap" id="dronesPodioWrap"></div>
+  <div id="dronesPodioNota" style="font-size:.75rem;color:#64748b;margin-top:4px;"></div>
+  <div class="modal-btns"><button class="modal-btn confirm" style="grid-column:1/-1" onclick="cerrarModal('modal-podio-visual')">Cerrar</button></div>
+</div></div>
 <div class="modal" id="modal-generic-confirm"><div class="modal-box"><div class="modal-title" id="mgc-title">Confirmar</div><div class="modal-text" id="mgc-text" style="white-space:pre-line;"></div><div class="modal-btns"><button class="modal-btn cancel" id="mgc-cancel">Cancelar</button><button class="modal-btn confirm" id="mgc-ok">Aceptar</button></div></div></div>
 <div class="modal" id="modal-editar-intento">
   <div class="modal-box">
@@ -1790,6 +1796,26 @@ function crearHoja(rd,r,cat,esGeneral){
 }
 
 function cerrarModal(id){document.getElementById(id).classList.remove('show');}
+
+// Podio visual con medallas (Drones) — mismo componente CSS (.podio-wrap/
+// .podio-plat) que ya usa el submódulo de Insectos más abajo en este mismo
+// archivo. top3 viene ya ordenado (guardarPodioCrono ya aplicó el criterio
+// de Drones: puntos desc, tiempo como desempate).
+function mostrarPodioVisualDrones(top3){
+  const wrap=document.getElementById('dronesPodioWrap');
+  const nota=document.getElementById('dronesPodioNota');
+  if(!wrap)return;
+  const medallas=[{label:'🥇',cls:'p1'},{label:'🥈',cls:'p2'},{label:'🥉',cls:'p3'}];
+  const orden=[1,0,2]; // 2do a la izquierda, 1ro al centro (más alto), 3ro a la derecha
+  wrap.innerHTML=orden.map(oi=>{
+    const {label,cls}=medallas[oi];
+    const p=top3[oi];
+    const detalle=p?((p.tiempo||'—')+' · '+(p.puntos||0)+' pts'):'';
+    return '<div class="podio-col"><div class="podio-robot">'+(p?p.robot:'—')+'</div><div class="podio-tiempo">'+detalle+'</div><div class="podio-plat '+cls+(p?'':' vacio')+'">'+label+'</div></div>';
+  }).join('');
+  nota.textContent=top3.length<3?'Podio incompleto — no hay suficientes participantes con resultado registrado.':'';
+  document.getElementById('modal-podio-visual').classList.add('show');
+}
 // Reemplazo de confirm() nativo: el confirm() del navegador fuerza la salida
 // del modo Fullscreen API (comportamiento estándar de los navegadores al mostrar
 // un diálogo nativo), lo que sacaba al usuario de pantalla completa cada vez que
@@ -1881,6 +1907,9 @@ async function guardarPodioCrono(){
   if(errores===0)showToast(modoOffline?'💾 Podio guardado en Excel local — '+guardados+' participantes':'🏆 Podio guardado — '+guardados+' participantes');
   else showToast('⚠️ '+guardados+' guardados, '+errores+' con error',true);
   if(modoOffline)actualizarBadgeOffline();
+  // Podio visual con medallas (por ahora solo Drones — es el único que lo pidió;
+  // el resto de categorías de este flujo sigue solo con la lista de ranking).
+  if(esPuntos&&errores===0)mostrarPodioVisualDrones(ranking.slice(0,3));
   // Publica el ranking en resultados_publicados (mismo mecanismo que ya usa
   // PANEL-CALIFICACION para bai/dev/lk) para que RESULTADOS pueda mostrar el
   // podio de esta categoría — antes CRONOMETRO nunca marcaba podio_publicado.
