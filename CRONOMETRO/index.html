@@ -1804,7 +1804,9 @@ document.addEventListener('componentsLoaded',async function(){
   // arriba). Solo la primerísima vez en un dispositivo nuevo hace falta
   // esperar a la red, y ahí sí tapamos con el overlay para no mostrar
   // categorías de más mientras tanto.
-  if(leerCache(CATS_ACTIVAS_CACHE_KEY)){
+  const huboCache=!!leerCache(CATS_ACTIVAS_CACHE_KEY);
+  if(huboCache){
+    loading(false);
     renderCopiasCategorias().then(aplicarCategoriasActivasCronometro);
   }else{
     loading(true);
