@@ -472,6 +472,7 @@
         <div class="cat-btn" data-cat="Seguidor de línea ST (Amateur)" onclick="elegirCategoria('Seguidor de línea ST (Amateur)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Amateur</div></div>
         <div class="cat-btn" data-cat="Seguidor de línea ST (Pro)" onclick="elegirCategoria('Seguidor de línea ST (Pro)', event)"><div class="cat-btn-icon">〰️</div><div class="cat-btn-nombre">Seguidor Pro</div></div>
         <div class="cat-btn" data-cat="Cubo Rubik" onclick="elegirCategoria('Cubo Rubik', event)"><div class="cat-btn-icon">🧩</div><div class="cat-btn-nombre">Cubo Rubik</div></div>
+        <div class="cat-btn" data-cat="Drones" onclick="elegirCategoria('Drones', event)"><div class="cat-btn-icon">🚁</div><div class="cat-btn-nombre">Drones</div></div>
         <div class="cat-btn" data-cat="Insectos" onclick="abrirInsectosCrono(event)"><div class="cat-btn-icon">🐜</div><div class="cat-btn-nombre">Insectos</div></div>
       </div>
     </div>
@@ -514,6 +515,14 @@
         <div class="col-crono">
           <div class="participante-strip empty" id="participante-strip"><div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner o selección...</div></div><div class="p-badge">—</div></div>
           <div class="crono-display" id="crono-display"><div id="cronometro">00:00:00</div><div class="crono-status" id="crono-status">LISTO</div></div>
+          <div class="card-dark" id="drones-puntos-wrap" style="display:none;text-align:center;">
+            <div class="config-title">PUNTOS — INTENTO ACTUAL</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:8px;">
+              <button class="btn-crono" style="background:#b91c1c;border-color:#b91c1c;color:#fff;min-width:56px;flex:0 0 auto;" onclick="ajustarPuntosDrones(-1)">−1</button>
+              <div id="drones-puntos-valor" style="font-family:'Bebas Neue';font-size:2.2rem;color:var(--text);min-width:64px;">0</div>
+              <button class="btn-crono" style="background:#15803d;border-color:#15803d;color:#fff;min-width:56px;flex:0 0 auto;" onclick="ajustarPuntosDrones(1)">+1</button>
+            </div>
+          </div>
           <div class="btn-row-crono">
             <button class="btn-crono btn-start" id="btn-start" onclick="iniciarCrono()">▶ Iniciar</button>
             <button class="btn-crono btn-stop"  onclick="detenerCrono()">⏸ Detener</button>
@@ -753,7 +762,7 @@ _nombresCopiaFetch.then(nombres => {
   }
 });
 const RUTAS = {
-  'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr',
+  'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr','Drones':'dro',
   // Categorías copia (independientes, mismo hardware/flujo que su base — ver CONFIGURACION → Duplicar categoría)
   'Trepador (Amateur) [Copia]':'trp_a2','Trepador (Pro) [Copia]':'trp_p2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2','Seguidor de línea ST (Pro) [Copia]':'sl_p2','Cubo Rubik [Copia]':'cr2'
 };
@@ -761,6 +770,11 @@ const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)','Seguidor de línea
 const CATS_PULSADOR = ['Cubo Rubik','Cubo Rubik [Copia]'];
 const CATS_SEG      = ['Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)','Seguidor de línea ST (Amateur) [Copia]','Seguidor de línea ST (Pro) [Copia]'];
 const CATS_SERIAL   = [...CATS_SENSOR,...CATS_PULSADOR];
+// Drones: cronómetro manual (sin sensor/serial) + puntos en vivo (+1/-1)
+// mientras el intento corre. Ranking: quienes completan la pista van
+// primero (ordenados por puntos desc, tiempo asc como desempate);
+// quienes no completan (DNF) quedan debajo, también por puntos desc.
+const CATS_PUNTOS   = ['Drones'];
 const AVISO_SENSOR  = {
   'Trepador (Amateur)':             {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
   'Trepador (Pro)':                 {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
@@ -850,6 +864,11 @@ let rondasData={};
 let intentosLog=[],competenciaIniciada=false,ultimoIdLimpiado=null,ultimoIdLimpiadoTs=0;
 let esperandoConfirmacionIntento=false;
 let presentes=[],seleccionados=new Set();
+// Drones: puntos acumulados del intento EN CURSO (+1/-1 en vivo mientras
+// corre el cronómetro). Se resetea a 0 cada vez que arranca un intento
+// nuevo, se captura al detener/DNF, y queda guardado por intento en
+// c.puntosPorIntento (paralelo a c.tiempos, mismo índice).
+let puntosIntentoActual=0;
 
 // Config de intentos (y nombre opcional) por cada ronda — permite que, por ejemplo,
 // la Ronda 1 (Clasificatoria) tenga 2 intentos y la Ronda 2 (Final) tenga 1 solo.
@@ -1067,6 +1086,7 @@ async function confirmarIniciarCrono(){
   if(CATS_SERIAL.includes(catNombre)){const info=AVISO_SENSOR[catNombre]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32 antes de iniciar.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}else{aviso.classList.remove('visible');}
   if(typeof mostrarBotonSerial==='function')setTimeout(()=>mostrarBotonSerial(CATS_SERIAL.includes(catNombre)),100);
   actualizarBadges();renderRondas();actualizarContador();reiniciarCrono();limpiarParticipante();guardarEstado();if(!(window.OfflineExcel&&OfflineExcel.estaActivo()))iniciarPolling();setStep(3);
+  actualizarPuntosUI();
   bloquearBtn();
   showToast('✅ '+selArr.length+' participantes cargados · '+catNombre);
 }
@@ -1079,6 +1099,7 @@ async function volverPaso1Desde3(){
   categoriaActual=null;participanteActual=null;rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
   rondasData={};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);
+  puntosIntentoActual=0;actualizarPuntosUI();
 }
 
 function getRuta(){return RUTAS[categoriaActual]||null;}
@@ -1130,6 +1151,7 @@ function limpiarParticipante(){
   const strip=document.getElementById('participante-strip');strip.className='participante-strip empty';
   strip.innerHTML='<div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner o selección...</div></div><div class="p-badge">—</div>';
   ocultarBotonesAccion();
+  puntosIntentoActual=0;actualizarPuntosUI();
   if(categoriaActual)fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
 }
 
@@ -1137,6 +1159,46 @@ function limpiarParticipante(){
 // aquí es donde existe la ventana de carrera entre el clic de
 // "Iniciar" y el momento real en que el ESP32 arma el sensor.
 const CATS_ARM_ESPERA=['Trepador (Amateur)','Trepador (Pro)','Trepador (Amateur) [Copia]','Trepador (Pro) [Copia]'];
+
+// ── DRONES — puntos en vivo (+1/-1) ──────────────────────────────
+// Los botones +1/-1 solo suman al puntaje del intento EN CURSO
+// mientras el cronómetro está corriendo (mismo criterio que los
+// botones de asalto de Minisumo: bloqueados hasta iniciar).
+function ajustarPuntosDrones(delta){
+  if(!cronoInterval){showToast('⚠️ Inicia el cronómetro antes de sumar puntos',true);return;}
+  puntosIntentoActual+=delta;
+  actualizarPuntosUI();
+}
+function actualizarPuntosUI(){
+  const wrap=document.getElementById('drones-puntos-wrap');
+  if(!wrap)return;
+  const esDrones=CATS_PUNTOS.includes(categoriaActual);
+  wrap.style.display=esDrones?'block':'none';
+  if(esDrones)document.getElementById('drones-puntos-valor').textContent=puntosIntentoActual;
+}
+
+// Recalcula c.tiempo/c.esDNF/c.puntos de un participante de Drones a partir
+// de c.tiempos/c.puntosPorIntento (arrays paralelos, mismo índice). El
+// "mejor intento" es el de más puntos entre los que SÍ completaron la
+// pista (tiempo desempata); si ninguno completó, el participante queda
+// DNF y su puntaje es el mayor acumulado entre sus intentos DNF.
+function actualizarMejorDrones(c){
+  const tiempos=c.tiempos||[];const puntosArr=c.puntosPorIntento||[];
+  let mejorIdx=-1;
+  for(let i=0;i<tiempos.length;i++){
+    if(tiempos[i]==='DNF')continue;
+    if(mejorIdx===-1){mejorIdx=i;continue;}
+    const pA=puntosArr[i]||0,pB=puntosArr[mejorIdx]||0;
+    if(pA>pB||(pA===pB&&tiempoASegundos(tiempos[i])<tiempoASegundos(tiempos[mejorIdx])))mejorIdx=i;
+  }
+  if(mejorIdx>=0){
+    c.tiempo=tiempos[mejorIdx];c.esDNF=false;c.puntos=puntosArr[mejorIdx]||0;
+  }else{
+    c.esDNF=tiempos.length>0;
+    c.tiempo=tiempos.length>0?'DNF':'—';
+    c.puntos=puntosArr.length?Math.max(...puntosArr.map(p=>p||0)):0;
+  }
+}
 
 async function iniciarCrono(){
   if(!competenciaIniciada){showToast('⚠️ Configura e inicia la competencia primero',true);return;}
@@ -1157,6 +1219,7 @@ async function iniciarCrono(){
   document.getElementById('crono-display').className='crono-display running';
   document.getElementById('crono-status').textContent='EN MARCHA · Intento '+intentoActual+' de '+maxIntentos;
   document.getElementById('btn-dnf').style.display='block';ocultarBotonesAccion();
+  if(CATS_PUNTOS.includes(categoriaActual)){puntosIntentoActual=0;actualizarPuntosUI();}
 }
 
 function detenerCrono(){
@@ -1206,6 +1269,7 @@ async function reiniciarCrono(){
   document.getElementById('cronometro').textContent='00:00:00';document.getElementById('crono-display').className='crono-display';
   document.getElementById('crono-status').textContent=participanteActual?'LISTO · Intento '+intentoActual+' de '+maxIntentos:'LISTO';document.getElementById('btn-dnf').style.display='none';
   if(CATS_PULSADOR.includes(categoriaActual)||CATS_SEG.includes(categoriaActual))enviarSerial('R');
+  puntosIntentoActual=0;actualizarPuntosUI();
 }
 
 // Quita un tiempo específico del array `tiempos` de un participante en
@@ -1216,7 +1280,11 @@ function quitarTiempoDelRanking(id, tiempoABorrar, ronda){
   const c = rd.clasificados.find(x => x.id === id);
   if (!c) return;
   const idxT = (c.tiempos || []).indexOf(tiempoABorrar);
-  if (idxT >= 0) c.tiempos.splice(idxT, 1);
+  if (idxT >= 0) {
+    c.tiempos.splice(idxT, 1);
+    if (c.puntosPorIntento) c.puntosPorIntento.splice(idxT, 1);
+  }
+  if (CATS_PUNTOS.includes(categoriaActual)) { actualizarMejorDrones(c); renderRondas(); actualizarContador(); return; }
   const validos = (c.tiempos || []).filter(t => t && t !== '—' && t !== 'DNF');
   if (validos.length > 0) {
     c.tiempo = validos.reduce((mejor, t) => tiempoASegundos(t) < tiempoASegundos(mejor) ? t : mejor, validos[0]);
@@ -1318,18 +1386,22 @@ async function confirmarEditorIntento(modo){
   const c=rd.clasificados.find(x=>x.ts===ts);
   if(!c){cerrarModal('modal-editar-intento');editorIntentoCtx=null;return;}
   c.tiempos=c.tiempos||[];
+  const esPuntos=CATS_PUNTOS.includes(categoriaActual);
+  c.puntosPorIntento=c.puntosPorIntento||[];
 
   if((modo==='borrar'||modo==='rodar')&&intento<totalIntentos){
     // Hay intentos después del que se borra: se borran en GAS TODOS desde este
     // en adelante y se re-insertan corridos un lugar, para no dejar huecos en
-    // la numeración (ni local ni en la hoja de resultados).
+    // la numeración (ni local ni en la hoja de resultados). puntosPorIntento
+    // (Drones) se recorre en paralelo, mismo índice que tiempos.
     for(let i=intento;i<=totalIntentos;i++){
       const ok=await eliminarResultadoGAS(id, ronda, i);
       if(!ok){showToast('⚠️ No se pudo actualizar en el servidor — intenta de nuevo',true);btns.forEach(b=>b.disabled=false);return;}
     }
     c.tiempos.splice(intento-1,1);
+    if(c.puntosPorIntento.length)c.puntosPorIntento.splice(intento-1,1);
     for(let i=intento;i<=totalIntentos-1;i++){
-      await guardarResultadoGAS(c.tiempos[i-1],{participante:c,ronda,intento:i});
+      await guardarResultadoGAS(c.tiempos[i-1],{participante:c,ronda,intento:i,puntos:c.puntosPorIntento[i-1]});
     }
   }else{
     const okBorrado=await eliminarResultadoGAS(id, ronda, intento);
@@ -1340,20 +1412,25 @@ async function confirmarEditorIntento(modo){
     }
     if(nuevoTiempo){
       c.tiempos[intento-1]=nuevoTiempo;
-      await guardarResultadoGAS(nuevoTiempo,{participante:c,ronda,intento});
+      await guardarResultadoGAS(nuevoTiempo,{participante:c,ronda,intento,puntos:c.puntosPorIntento[intento-1]});
     }else{
       c.tiempos.pop(); // modo==='borrar' y era el último — sin huecos que recorrer
+      if(c.puntosPorIntento.length)c.puntosPorIntento.pop();
     }
   }
 
-  const validos=c.tiempos.filter(t=>t&&t!=='—'&&t!=='DNF');
-  if(validos.length>0){
-    c.tiempo=validos.reduce((mejor,t)=>tiempoASegundos(t)<tiempoASegundos(mejor)?t:mejor,validos[0]);
-    c.esDNF=false;
+  if(esPuntos){
+    actualizarMejorDrones(c);
   }else{
-    const quedaDNF=c.tiempos.includes('DNF');
-    c.tiempo=quedaDNF?'DNF':'—';
-    c.esDNF=quedaDNF;
+    const validos=c.tiempos.filter(t=>t&&t!=='—'&&t!=='DNF');
+    if(validos.length>0){
+      c.tiempo=validos.reduce((mejor,t)=>tiempoASegundos(t)<tiempoASegundos(mejor)?t:mejor,validos[0]);
+      c.esDNF=false;
+    }else{
+      const quedaDNF=c.tiempos.includes('DNF');
+      c.tiempo=quedaDNF?'DNF':'—';
+      c.esDNF=quedaDNF;
+    }
   }
   renderRondas();
   actualizarContador();
@@ -1413,8 +1490,10 @@ function tickCrono(){if(!cronoInicio)return;const t=Date.now()-cronoInicio;const
 
 function registrarIntento(tiempo){
   if(!participanteActual)return;const esDNF=tiempo==='DNF';
-  intentosLog.push({ronda:rondaActual,intento:intentoActual,tiempo,esDNF});
-  agregarAlRanking(tiempo,esDNF);guardarResultadoGAS(tiempo);ocultarBotonesAccion();
+  const esPuntos=CATS_PUNTOS.includes(categoriaActual);
+  const puntos=esPuntos?puntosIntentoActual:undefined;
+  intentosLog.push({ronda:rondaActual,intento:intentoActual,tiempo,esDNF,puntos});
+  agregarAlRanking(tiempo,esDNF,puntos);guardarResultadoGAS(tiempo,{puntos});ocultarBotonesAccion();
   if(intentosLog.length<maxIntentos){bloquearBtn();esperandoConfirmacionIntento=true;document.getElementById('btn-sig-intento').classList.add('visible');document.getElementById('btn-saltar').classList.add('visible');document.getElementById('crono-status').textContent=esDNF?'DNF · '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)':'⏸ '+(maxIntentos-intentosLog.length)+' intento(s) restante(s)';}
   else{bloquearBtn();mostrarBtnSigPart();document.getElementById('crono-status').textContent=esDNF?'⛔ DNF · '+maxIntentos+'/'+maxIntentos+' intentos':'✓ COMPLETÓ '+maxIntentos+'/'+maxIntentos+' INTENTOS';}
   guardarEstado();
@@ -1457,19 +1536,23 @@ async function iniciarCompetencia(){
 
 function getRonda(r){if(!rondasData[r])rondasData[r]={clasificados:[],eliminados:[],cerrada:false};return rondasData[r];}
 
-function agregarAlRanking(tiempo,esDNF){
+function agregarAlRanking(tiempo,esDNF,puntos){
   if(!participanteActual)return;
+  const esPuntos=CATS_PUNTOS.includes(categoriaActual);
   const rd=getRonda(rondaActual);const idx=rd.clasificados.findIndex(c=>c.id===participanteActual.id);
+  let ant;
   if(idx>=0){
-    const ant=rd.clasificados[idx];ant.tiempos=ant.tiempos||[];
-    if(tiempo&&tiempo!=='—'&&tiempo!=='00:00:00')ant.tiempos.push(tiempo);
+    ant=rd.clasificados[idx];ant.tiempos=ant.tiempos||[];ant.puntosPorIntento=ant.puntosPorIntento||[];
+    if(tiempo&&tiempo!=='—'&&tiempo!=='00:00:00'){ant.tiempos.push(tiempo);ant.puntosPorIntento.push(esPuntos?(puntos||0):null);}
     if(!esDNF&&(ant.esDNF||tiempoASegundos(tiempo)<tiempoASegundos(ant.tiempo))){ant.tiempo=tiempo;ant.esDNF=false;}
     if(!ant.correo&&participanteActual.correo)ant.correo=participanteActual.correo;
     if(!ant.miembro2&&participanteActual.miembro2)ant.miembro2=participanteActual.miembro2;
   }else{
     const datosFull=presentes.find(p=>p.id===participanteActual.id)||{};
-    rd.clasificados.push({id:participanteActual.id,robot:participanteActual.robot,nombre:participanteActual.nombre||'',institucion:participanteActual.institucion||'',ciudad:participanteActual.ciudad||'',categoria:participanteActual.categoria||'',correo:participanteActual.correo||datosFull.correo||'',miembro2:participanteActual.miembro2||datosFull.miembro2||'',tiempo,tiempos:(tiempo&&tiempo!=='—'&&tiempo!=='00:00:00')?[tiempo]:[],esDNF,avanza:false,ronda:rondaActual,ts:Date.now()+rd.clasificados.length});
+    ant={id:participanteActual.id,robot:participanteActual.robot,nombre:participanteActual.nombre||'',institucion:participanteActual.institucion||'',ciudad:participanteActual.ciudad||'',categoria:participanteActual.categoria||'',correo:participanteActual.correo||datosFull.correo||'',miembro2:participanteActual.miembro2||datosFull.miembro2||'',tiempo,tiempos:(tiempo&&tiempo!=='—'&&tiempo!=='00:00:00')?[tiempo]:[],puntosPorIntento:(tiempo&&tiempo!=='—'&&tiempo!=='00:00:00')?[esPuntos?(puntos||0):null]:[],esDNF,avanza:false,ronda:rondaActual,ts:Date.now()+rd.clasificados.length};
+    rd.clasificados.push(ant);
   }
+  if(esPuntos)actualizarMejorDrones(ant);
   renderRondas();actualizarContador();
 }
 
@@ -1502,10 +1585,17 @@ function renderRondas(){
   const rondas=Object.keys(rondasData).map(Number).sort((a,b)=>b-a);
   const total=Object.values(rondasData).reduce((a,r)=>a+r.clasificados.length+r.eliminados.length,0);
   if(total===0){container.innerHTML='<p class="ranking-empty">Sin participantes aún</p>';return;}
+  const esPuntos=CATS_PUNTOS.includes(categoriaActual);
   container.innerHTML=rondas.map(r=>{
     const rd=rondasData[r];const esActual=r===rondaActual;const cerrada=rd.cerrada;
-    const conT=rd.clasificados.filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
-    const sinT=rd.clasificados.filter(c=>c.tiempo==='—');const dnfs=rd.clasificados.filter(c=>c.esDNF);const clases=[...conT,...sinT,...dnfs];
+    // Drones: quienes completan la pista van primero, ordenados por puntos
+    // (desc) y el tiempo como desempate; quienes no completan (DNF) quedan
+    // debajo, también ordenados por puntos. El resto de categorías sigue
+    // ordenando solo por tiempo, como siempre.
+    const conT=rd.clasificados.filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>esPuntos?((b.puntos||0)-(a.puntos||0)||tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo)):(tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo)));
+    const sinT=rd.clasificados.filter(c=>c.tiempo==='—');
+    const dnfs=rd.clasificados.filter(c=>c.esDNF).sort((a,b)=>esPuntos?((b.puntos||0)-(a.puntos||0)):0);
+    const clases=[...conT,...sinT,...dnfs];
     const items=clases.length===0?'<p class="ranking-empty" style="padding:8px 0">Ninguno aún</p>':clases.map((c,i)=>{
       const tiempos=(c.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00');
       // Cada intento con tiempo/DNF ya registrado tiene su propio botón 🔧 —
@@ -1517,10 +1607,12 @@ function renderRondas(){
         const esDNFChip=t==='DNF';
         const mejor=!esDNFChip&&!c.esDNF&&t===c.tiempo;
         const tagClass='comp-tag'+(mejor?' mejor':'')+(esDNFChip?' es-dnf':'');
-        return '<span class="comp-tag-wrap"><span class="'+tagClass+'">'+t+(mejor?' ★':'')+'</span><button class="btn-editar-intento" title="Corregir intento '+(idx+1)+' de '+c.robot+'" onclick="abrirEditorIntento('+c.ts+','+r+','+(idx+1)+')">🔧</button></span>';
+        const ptsChip=esPuntos&&(c.puntosPorIntento||[])[idx]!=null?' <b style="color:#f9d423">'+(c.puntosPorIntento[idx]>=0?'+':'')+c.puntosPorIntento[idx]+'pt</b>':'';
+        return '<span class="comp-tag-wrap"><span class="'+tagClass+'">'+t+(mejor?' ★':'')+ptsChip+'</span><button class="btn-editar-intento" title="Corregir intento '+(idx+1)+' de '+c.robot+'" onclick="abrirEditorIntento('+c.ts+','+r+','+(idx+1)+')">🔧</button></span>';
       }).join('');
       const acc=esActual&&!cerrada?'<div class="comp-actions"><button class="btn-sel" onclick="seleccionarCompetido('+c.ts+','+r+')">▶</button>'+(r<maxRondas?'<button class="btn-avanza'+(c.avanza?' marcado':'')+'" onclick="toggleAvanza('+c.ts+','+r+')" title="Marcar para avanzar a la siguiente ronda">▲</button>':'')+'</div>':'';
-      return'<div class="'+(c.esDNF?'comp-item es-dnf':(c.avanza&&r<maxRondas?'comp-item avanza-marcado':'comp-item'))+'"><span class="'+(c.esDNF?'comp-num dnf':'comp-num')+'">'+(c.esDNF?'DNF':i+1)+'</span><div class="comp-info"><div class="comp-robot">'+c.robot+'</div><div class="comp-tiempos">'+chips+'</div></div>'+acc+'</div>';
+      const puntosBadge=esPuntos?'<div class="comp-tiempos" style="margin-top:2px"><b style="color:#f9d423">🎯 '+(c.puntos||0)+' pts (mejor intento)</b></div>':'';
+      return'<div class="'+(c.esDNF?'comp-item es-dnf':(c.avanza&&r<maxRondas?'comp-item avanza-marcado':'comp-item'))+'"><span class="'+(c.esDNF?'comp-num dnf':'comp-num')+'">'+(c.esDNF?'DNF':i+1)+'</span><div class="comp-info"><div class="comp-robot">'+c.robot+'</div><div class="comp-tiempos">'+chips+'</div>'+puntosBadge+'</div>'+acc+'</div>';
     }).join('');
     const elims=rd.eliminados.length===0?'':'<div class="eliminados-wrap"><div class="eliminados-title">ELIMINADOS</div>'+rd.eliminados.map(c=>'<div class="elim-item"><div><div class="elim-robot">'+c.robot+'</div></div>'+(esActual&&!cerrada?'<button class="btn-recuperar" onclick="recuperarEliminado('+c.ts+','+r+')">↩</button>':'')+'</div>').join('')+'</div>';
     return'<div class="ronda-seccion"><div class="ronda-header"><span class="ronda-header-title '+(cerrada?'cerrada':'')+'">'+(cerrada?'✓':'●')+' RONDA '+r+'</span><span class="ronda-header-badge '+(cerrada?'cerrada':'')+'">'+clases.length+' clasif.</span></div><div class="ronda-body">'+items+'</div>'+elims+'</div>';
@@ -1563,6 +1655,7 @@ async function confirmarCerrarCategoria(){
     categoriaActual=null;participanteActual=null;rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
     rondasData={};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
     reiniciarCrono();limpiarParticipante();actualizarBadges();renderRondas();document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);
+    puntosIntentoActual=0;actualizarPuntosUI();
     if(desbloqueoOk)showToast('✅ Categoría cerrada');
     else showToast('⚠️ Categoría cerrada acá, pero el servidor no confirmó el desbloqueo — puede seguir marcada "en uso" para otro dispositivo',true);
   }catch(e){showToast('❌ Error al cerrar categoría',true);}
@@ -1588,7 +1681,8 @@ async function guardarResultadoGAS(tiempo,opts){
   const ronda=(opts&&opts.ronda)!=null?opts.ronda:rondaActual;
   const intento=(opts&&opts.intento)!=null?opts.intento:intentoActual;
   if(!p||!categoriaActual)return;
-  const payload={participanteId:p.id,nombre:p.nombre||'',robot:p.robot||'',institucion:p.institucion||'',categoria:categoriaActual,tiempo,ronda,intento,ruta:getRuta()||'general',fecha:new Date().toISOString()};
+  const puntos=(opts&&opts.puntos!=null)?opts.puntos:undefined;
+  const payload={participanteId:p.id,nombre:p.nombre||'',robot:p.robot||'',institucion:p.institucion||'',categoria:categoriaActual,tiempo,ronda,intento,ruta:getRuta()||'general',fecha:new Date().toISOString(),puntos};
   const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
   if(modoOffline){
     const guardado=await OfflineExcel.guardarResultado(payload);
@@ -1644,36 +1738,42 @@ function tiempoAFraccionDia(t){
 }
 function crearHoja(rd,r,cat,esGeneral){
   const todos=rd.clasificados;const maxI=Math.max(...todos.map(c=>(c.tiempos||[c.tiempo]).length),1);
+  const esPuntos=CATS_PUNTOS.includes(cat);
+  const cmpFinalistas=(a,b)=>esPuntos?((b.puntos||0)-(a.puntos||0)||tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo)):(tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
+  const cmpDnf=(a,b)=>esPuntos?((b.puntos||0)-(a.puntos||0)):0;
   let lista;
   if(esGeneral){
     // Prioriza ronda alcanzada (los finalistas siempre por encima de quienes quedaron
-    // en clasificatoria, sin importar el tiempo bruto) y dentro de cada ronda, por tiempo.
+    // en clasificatoria, sin importar el tiempo bruto) y dentro de cada ronda, por tiempo
+    // (o por puntos+tiempo si es Drones).
     const porRonda={};
     todos.forEach(c=>{const rn=c.ronda||0;(porRonda[rn]=porRonda[rn]||[]).push(c);});
     lista=[];
     Object.keys(porRonda).map(Number).sort((a,b)=>b-a).forEach(rn=>{
       const grupo=porRonda[rn];
-      const conT=grupo.filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
+      const conT=grupo.filter(c=>!c.esDNF&&c.tiempo!=='—').sort(cmpFinalistas);
       const sin=grupo.filter(c=>c.tiempo==='—'&&!c.esDNF);
-      const dnfs=grupo.filter(c=>c.esDNF);
+      const dnfs=grupo.filter(c=>c.esDNF).sort(cmpDnf);
       lista.push(...conT,...sin,...dnfs);
     });
   }else{
-    const conT=[...todos].filter(c=>!c.esDNF&&c.tiempo!=='—').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
-    const dnfs=todos.filter(c=>c.esDNF);const sin=todos.filter(c=>c.tiempo==='—');
+    const conT=[...todos].filter(c=>!c.esDNF&&c.tiempo!=='—').sort(cmpFinalistas);
+    const dnfs=todos.filter(c=>c.esDNF).sort(cmpDnf);const sin=todos.filter(c=>c.tiempo==='—');
     lista=[...conT,...sin,...dnfs];
   }
   const headerBase=['#','Robot','Nombre','Institución','Ciudad','Mejor Tiempo'];
+  if(esPuntos)headerBase.push('Puntos (mejor intento)');
   if(esGeneral)headerBase.push('Ronda alcanzada');
   const aoa=[[esGeneral?'SucreBot — Ranking General':'SucreBot — Ronda '+r],['Categoría: '+cat],[],[...headerBase,...Array.from({length:maxI},(_,i)=>'I'+(i+1))]];
   lista.forEach((c,i)=>{
     const fila=[c.esDNF?'DNF':i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo];
+    if(esPuntos)fila.push(c.puntos||0);
     if(esGeneral)fila.push('Ronda '+(c.ronda||'—'));
     fila.push(...(c.tiempos||[c.tiempo]));
     aoa.push(fila);
   });
   if(!esGeneral&&rd.eliminados?.length){aoa.push([],['ELIMINADOS']);rd.eliminados.forEach((c,i)=>aoa.push([i+1,c.robot||'—',c.nombre||'—',c.institucion||'—',c.ciudad||'—',c.tiempo||'—']));}
-  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...(esGeneral?[{wch:14}]:[]),...Array(maxI).fill({wch:12})];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:4},{wch:20},{wch:22},{wch:24},{wch:14},{wch:14},...(esPuntos?[{wch:12}]:[]),...(esGeneral?[{wch:14}]:[]),...Array(maxI).fill({wch:12})];
   // Aplicar formato de hora (mm:ss.00) a las celdas de tiempo — quedan como
   // valor numérico real de Excel (fracción de día), no como texto plano
   const range=XLSX.utils.decode_range(ws['!ref']);
@@ -1744,17 +1844,18 @@ async function guardarPodioCrono(){
   // General" del Excel. Sin esto, alguien eliminado en clasificatoria con
   // un tiempo crudo más rápido que el de la final le robaba el puesto a
   // quien sí llegó a la ronda final.
+  const esPuntos=CATS_PUNTOS.includes(catNombre);
   const porRonda={};
   [...mapaParticipantes.values()].forEach(c=>{const rn=c.ronda||0;(porRonda[rn]=porRonda[rn]||[]).push(c);});
   const ranking=[];
   Object.keys(porRonda).map(Number).sort((a,b)=>b-a).forEach(rn=>{
     const grupo=porRonda[rn];
-    const conT=grupo.filter(c=>!c.esDNF&&c.tiempo!=='—'&&c.tiempo!=='DNF').sort((a,b)=>tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo));
+    const conT=grupo.filter(c=>!c.esDNF&&c.tiempo!=='—'&&c.tiempo!=='DNF').sort((a,b)=>esPuntos?((b.puntos||0)-(a.puntos||0)||tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo)):(tiempoASegundos(a.tiempo)-tiempoASegundos(b.tiempo)));
     const sinT=grupo.filter(c=>!c.esDNF&&(c.tiempo==='—'||!c.tiempo)&&c.tiempo!=='DNF');
-    const dnfs=grupo.filter(c=>c.esDNF||c.tiempo==='DNF');
+    const dnfs=grupo.filter(c=>c.esDNF||c.tiempo==='DNF').sort((a,b)=>esPuntos?((b.puntos||0)-(a.puntos||0)):0);
     ranking.push(...conT,...sinT,...dnfs);
   });
-  const preview=ranking.map((p,i)=>`${i+1}. ${p.robot} (${p.tiempo||'—'})`).join('\n');
+  const preview=ranking.map((p,i)=>esPuntos?`${i+1}. ${p.robot} (${p.puntos||0} pts, ${p.tiempo||'—'})`:`${i+1}. ${p.robot} (${p.tiempo||'—'})`).join('\n');
   if(!(await customConfirm('¿Guardar podio de '+catNombre+' en certificados?\n'+ranking.length+' participantes:\n'+preview)))return;
   const tipos=['GANADOR','SUBCAMPEÓN','TERCER LUGAR'];
   const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
@@ -1787,7 +1888,7 @@ async function guardarPodioCrono(){
     try{
       const rutaCorta=getRuta();
       if(rutaCorta){
-        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo,institucion:p.institucion||''})),staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
+        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo,institucion:p.institucion||'',...(esPuntos?{puntos:p.puntos||0}:{})})),staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
         const d=await r.json();
         if(!d.ok){console.warn('publicarPodioCalificacion rechazado:',d.error);showToast('⚠️ Certificados guardados, pero el podio NO se pudo publicar en RESULTADOS: '+(d.error||'error desconocido'),true);}
       }
@@ -1827,7 +1928,7 @@ document.addEventListener('componentsLoaded',async function(){
       const aviso=document.getElementById('aviso-sensor');
       if(CATS_SERIAL.includes(catGuardada)){const info=AVISO_SENSOR[catGuardada]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}
       if(typeof mostrarBotonSerial==='function')setTimeout(()=>window.mostrarBotonSerial(CATS_SERIAL.includes(catGuardada)),300);
-      cargarEstado(catGuardada);if(!modoOffline)iniciarPolling();setStep(3);showToast('✅ Categoría "'+catGuardada+'" restaurada');
+      cargarEstado(catGuardada);if(!modoOffline)iniciarPolling();setStep(3);actualizarPuntosUI();showToast('✅ Categoría "'+catGuardada+'" restaurada');
       try{
         const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}),{cache:'no-store'});const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
         presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
