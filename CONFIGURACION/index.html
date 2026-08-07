@@ -681,12 +681,34 @@
     const cont = document.getElementById('edic-historial');
     const codigos = Object.keys(ediciones);
     if (!codigos.length) { cont.innerHTML = ''; return; }
-    let html = '<div class="estado-label" style="margin-bottom:6px;">Ediciones generadas desde acá</div>';
+    let html = '<div class="estado-label" style="margin-bottom:6px;">Ediciones generadas desde acá</div>' +
+      '<div class="config-card-desc" style="margin-bottom:10px;">' +
+      'Podés volver a activar cualquiera de estas (ej. para probar una edición nueva y volver a la anterior sin perder nada — cada una guarda su propia fecha/categorías por separado).' +
+      '</div>';
     codigos.forEach(cod => {
+      const esActual = cod === actual;
       html += '<div class="cat-row"><div><span class="cat-nombre">Edición ' + cod + '</span>' +
-        (cod === actual ? '<span class="cat-estado abierta">ACTIVA</span>' : '') + '</div></div>';
+        (esActual ? '<span class="cat-estado abierta">ACTIVA</span>' : '') + '</div>' +
+        (esActual ? '' : '<button class="btn-cat-toggle abrir" onclick="activarEdicionUI(\'' + cod + '\')">🔀 Activar</button>') +
+        '</div>';
     });
     cont.innerHTML = html;
+  }
+
+  async function activarEdicionUI(codigo) {
+    if (!confirm(
+      '¿Volver a activar la Edición ' + codigo + '?\n\n' +
+      'El sitio completo (participantes, resultados, certificados, brackets) va a empezar a leer/escribir ahí de nuevo. ' +
+      'Nada se borra -- la edición que está activa ahora queda intacta, guardada, lista para volver a activarla cuando quieras.'
+    )) return;
+    try {
+      const resp = await gasPost({ action: 'activarEdicion', edicion: codigo });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Edición ' + resp.edicion.edicion + ' activada — recargando...');
+      setTimeout(() => location.reload(), 1500);
+    } catch(e) {
+      showToast('⚠️ Error al activar la edición: ' + e.message, true);
+    }
   }
 
   async function guardarFechaEventoUI() {
