@@ -414,7 +414,7 @@
     CATEGORIAS_COPIA.forEach(c => {
       const nombreVisible = _nombresCopiaGlobal && _nombresCopiaGlobal[c.codigo];
       if (!nombreVisible) return;
-      lista.push({ valor: c.base + ' [Copia]', label: nombreVisible + ' (copia)' });
+      lista.push({ valor: c.base + ' [Copia]', label: nombreVisible + ' (copia de ' + c.base + ')' });
     });
     return lista;
   }
@@ -427,7 +427,7 @@
     const c = CATEGORIAS_COPIA.find(x => (x.base + ' [Copia]') === nombreInterno);
     if (!c) return nombreInterno;
     const nombreVisible = _nombresCopiaGlobal && _nombresCopiaGlobal[c.codigo];
-    return nombreVisible ? (nombreVisible + ' (copia)') : nombreInterno;
+    return nombreVisible ? (nombreVisible + ' (copia de ' + c.base + ')') : nombreInterno;
   }
 
   // Mismas 13 categorías que CATEGORIA_MAP en Code.gs
@@ -435,7 +435,7 @@
     'Insectos', 'Trepador (Amateur)', 'Seguidor de línea ST (Amateur)',
     'Seguidor de línea ST (Pro)', 'Minisumo Autónomo', 'Minisumo RC',
     'Bailarín', 'Batalla', 'Trepador (Pro)', 'Robot soccer',
-    'Cubo Rubik', 'Lego Kids', 'Impacto Tecnológico'
+    'Cubo Rubik', 'Lego Kids', 'Impacto Tecnológico', 'Drones'
   ];
 
   function renderCategorias(categoriasCerradas) {
