@@ -231,11 +231,14 @@
     'Drones':                         '#4A5568'
   };
   let CAT_COLOR_REMOTO = {};
-  // Resuelve el color de cualquier categoría, incluidas las "copia" (heredan
-  // el color de su base — no tienen picker propio en CONFIGURACION).
+  // Resuelve el color de cualquier categoría. Las "copia" ahora SÍ pueden
+  // tener su propio color independiente desde CONFIGURACION → Colores
+  // (guardado bajo su propio identificador, ej. "Trepador (Pro) [Copia]");
+  // si todavía no le asignaron uno propio, heredan el de su base.
   function colorDeCategoria(cat) {
-    const base = String(cat || '').replace(/\s*\[Copia\]\s*$/, '');
-    return CAT_COLOR_REMOTO[base] || CAT_COLOR_FALLBACK[base] || '#1a5ca8';
+    const c = String(cat || '');
+    const base = c.replace(/\s*\[Copia\]\s*$/, '');
+    return CAT_COLOR_REMOTO[c] || CAT_COLOR_REMOTO[base] || CAT_COLOR_FALLBACK[base] || '#1a5ca8';
   }
   const NIVEL = {
     'Insectos':'amateur','Trepador (Amateur)':'amateur','Seguidor de línea ST (Amateur)':'amateur',

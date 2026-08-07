@@ -94,6 +94,13 @@
     .btn-personal-add:active { transform: scale(0.98); }
     .btn-personal-add:disabled { opacity: .5; pointer-events: none; }
 
+    .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+    .color-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; background: #0d1f33; border-radius: 10px; padding: 14px 12px; border: 1px solid #1a3a5a; }
+    .color-card .color-swatch { width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer; background: none; padding: 0; }
+    .color-card .color-cat-nombre { font-family: 'Exo 2'; font-size: 12px; font-weight: 600; color: #c8d8f0; line-height: 1.3; }
+    .color-card .color-cat-hex { font-family: 'DM Mono'; font-size: 10px; color: #4a7a9a; }
+    .color-card .btn-personal-add { width: 100%; flex: none; height: 34px; font-size: 11px; padding: 0 10px; }
+
     .pers-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0d1f33; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid #1a3a5a; flex-wrap: wrap; }
     .pers-row:last-child { margin-bottom: 0; }
     .pers-info { display: flex; flex-direction: column; gap: 2px; min-width: 180px; }
@@ -314,7 +321,7 @@
           </div>
 
           <div id="colores-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
-          <div id="colores-lista" style="display:none;"></div>
+          <div id="colores-lista" class="color-grid" style="display:none;"></div>
         </div>
 
           </div><!-- /config-panel -->
@@ -997,70 +1004,68 @@
   cargarColoresCategoria();
 
   // ── Colores de categoría ──────────────────────────────────────────
-  // Un color por cada una de las 14 categorías base (CATEGORIAS, ya
-  // declarado más arriba con Drones incluido). Las copias no tienen
-  // picker propio -- heredan el color de su base (mismo criterio que ya
-  // usaban las tablas hardcodeadas que esto reemplaza), así que no hace
-  // falta listarlas acá también.
+  // Un color por categoría, incluidas las copias que ya tienen nombre
+  // asignado (categoriasParaSelect() -- misma fuente que "Categorías
+  // individuales"/checklist de Ediciones). Cada copia guarda su color
+  // bajo su propio identificador ("Trepador (Pro) [Copia]"), independiente
+  // del de su base -- si todavía no le asignaron uno propio, el picker
+  // arranca mostrando el color heredado de la base (mismo criterio que ya
+  // usan MANILLAS/PARTICIPANTES_REGISTRADOS/PANTALLA), pero guardar en esa
+  // fila desde acá la vuelve independiente.
   let _coloresCategoria = {};
 
+  function colorEfectivo(valor) {
+    if (_coloresCategoria[valor]) return _coloresCategoria[valor];
+    const base = valor.replace(/\s*\[Copia\]\s*$/, '');
+    return _coloresCategoria[base] || '#4A5568';
+  }
+
   async function cargarColoresCategoria() {
+    // Necesita _nombresCopiaGlobal para saber qué copias ya tienen nombre
+    // (y por lo tanto deben listarse acá) -- cargarEstado() también la pide,
+    // pedirla de nuevo acá es gratis (ya cacheada o en curso) y evita una
+    // carrera si esta función corre antes que esa.
+    await cargarNombresCopiaGlobal();
     try { _coloresCategoria = await gasGet({ action: 'getColoresCategoria' }); }
     catch (e) { _coloresCategoria = {}; showToast('⚠️ Error al cargar colores de categoría', true); }
     renderColoresCategoria();
     document.getElementById('colores-loading').style.display = 'none';
-    document.getElementById('colores-lista').style.display = 'block';
+    document.getElementById('colores-lista').style.display = 'grid';
   }
 
   function renderColoresCategoria() {
     const cont = document.getElementById('colores-lista');
     cont.innerHTML = '';
-    CATEGORIAS.forEach(cat => {
-      const color = _coloresCategoria[cat] || '#4A5568';
+    categoriasParaSelect().forEach(({ valor, label }) => {
+      const color = colorEfectivo(valor);
 
-      const row = document.createElement('div');
-      row.className = 'pers-row';
-
-      const info = document.createElement('div');
-      info.className = 'pers-info';
-      info.style.flex = '1 1 260px';
-      info.style.display = 'flex';
-      info.style.alignItems = 'center';
-      info.style.gap = '10px';
+      const card = document.createElement('div');
+      card.className = 'color-card';
 
       const picker = document.createElement('input');
       picker.type = 'color';
+      picker.className = 'color-swatch';
       picker.value = color;
-      picker.style.cssText = 'width:44px;height:38px;border:none;border-radius:6px;cursor:pointer;background:none;padding:0;';
 
-      const nombre = document.createElement('span');
-      nombre.className = 'pers-correo';
-      nombre.textContent = cat;
+      const nombre = document.createElement('div');
+      nombre.className = 'color-cat-nombre';
+      nombre.textContent = label;
 
-      const hex = document.createElement('span');
-      hex.className = 'pers-nombre';
+      const hex = document.createElement('div');
+      hex.className = 'color-cat-hex';
       hex.textContent = color.toUpperCase();
       picker.addEventListener('input', () => { hex.textContent = picker.value.toUpperCase(); });
 
-      info.appendChild(picker);
-      const textos = document.createElement('div');
-      textos.appendChild(nombre);
-      textos.appendChild(document.createElement('br'));
-      textos.appendChild(hex);
-      info.appendChild(textos);
-
-      const acciones = document.createElement('div');
-      acciones.className = 'pers-acciones';
       const btnGuardar = document.createElement('button');
       btnGuardar.className = 'btn-personal-add';
-      btnGuardar.style.height = '38px';
       btnGuardar.textContent = '💾 Guardar';
-      btnGuardar.addEventListener('click', () => guardarColorCategoriaUI(cat, picker, btnGuardar));
+      btnGuardar.addEventListener('click', () => guardarColorCategoriaUI(valor, picker, btnGuardar));
 
-      acciones.appendChild(btnGuardar);
-      row.appendChild(info);
-      row.appendChild(acciones);
-      cont.appendChild(row);
+      card.appendChild(picker);
+      card.appendChild(nombre);
+      card.appendChild(hex);
+      card.appendChild(btnGuardar);
+      cont.appendChild(card);
     });
   }
 
