@@ -1607,11 +1607,11 @@ function renderRondas(){
         const esDNFChip=t==='DNF';
         const mejor=!esDNFChip&&!c.esDNF&&t===c.tiempo;
         const tagClass='comp-tag'+(mejor?' mejor':'')+(esDNFChip?' es-dnf':'');
-        const ptsChip=esPuntos&&(c.puntosPorIntento||[])[idx]!=null?' <b style="color:#f9d423">'+(c.puntosPorIntento[idx]>=0?'+':'')+c.puntosPorIntento[idx]+'pt</b>':'';
+        const ptsChip=esPuntos&&(c.puntosPorIntento||[])[idx]!=null?' <b style="color:var(--cyan)">'+(c.puntosPorIntento[idx]>=0?'+':'')+c.puntosPorIntento[idx]+'pt</b>':'';
         return '<span class="comp-tag-wrap"><span class="'+tagClass+'">'+t+(mejor?' ★':'')+ptsChip+'</span><button class="btn-editar-intento" title="Corregir intento '+(idx+1)+' de '+c.robot+'" onclick="abrirEditorIntento('+c.ts+','+r+','+(idx+1)+')">🔧</button></span>';
       }).join('');
       const acc=esActual&&!cerrada?'<div class="comp-actions"><button class="btn-sel" onclick="seleccionarCompetido('+c.ts+','+r+')">▶</button>'+(r<maxRondas?'<button class="btn-avanza'+(c.avanza?' marcado':'')+'" onclick="toggleAvanza('+c.ts+','+r+')" title="Marcar para avanzar a la siguiente ronda">▲</button>':'')+'</div>':'';
-      const puntosBadge=esPuntos?'<div class="comp-tiempos" style="margin-top:2px"><b style="color:#f9d423">🎯 '+(c.puntos||0)+' pts (mejor intento)</b></div>':'';
+      const puntosBadge=esPuntos?'<div class="comp-tiempos" style="margin-top:2px"><b style="color:var(--cyan)">🎯 '+(c.puntos||0)+' pts (mejor intento)</b></div>':'';
       return'<div class="'+(c.esDNF?'comp-item es-dnf':(c.avanza&&r<maxRondas?'comp-item avanza-marcado':'comp-item'))+'"><span class="'+(c.esDNF?'comp-num dnf':'comp-num')+'">'+(c.esDNF?'DNF':i+1)+'</span><div class="comp-info"><div class="comp-robot">'+c.robot+'</div><div class="comp-tiempos">'+chips+'</div>'+puntosBadge+'</div>'+acc+'</div>';
     }).join('');
     const elims=rd.eliminados.length===0?'':'<div class="eliminados-wrap"><div class="eliminados-title">ELIMINADOS</div>'+rd.eliminados.map(c=>'<div class="elim-item"><div><div class="elim-robot">'+c.robot+'</div></div>'+(esActual&&!cerrada?'<button class="btn-recuperar" onclick="recuperarEliminado('+c.ts+','+r+')">↩</button>':'')+'</div>').join('')+'</div>';
