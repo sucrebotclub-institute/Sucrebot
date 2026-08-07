@@ -22,6 +22,21 @@ function obtenerRolCacheado(correo) {
   }
 }
 
+// Como obtenerRolCacheado() pero distingue "no hay caché todavía"
+// (undefined) de "ya sabemos que este correo NO tiene rol" (null,
+// participante común) -- activarSesion() necesita esa distinción para
+// no confundir ambos casos al decidir si aplica el nav de una o espera.
+function obtenerRolCacheadoConDistincion(correo) {
+  try {
+    const raw = localStorage.getItem(ROL_CACHE_KEY);
+    if (!raw) return undefined;
+    const c = JSON.parse(raw);
+    return c.correo === correo ? c.rol : undefined;
+  } catch (e) {
+    return undefined;
+  }
+}
+
 function guardarRolCache(correo, rol) {
   localStorage.setItem(ROL_CACHE_KEY, JSON.stringify({ correo: correo, rol: rol, ts: Date.now() }));
 }
@@ -160,34 +175,20 @@ window.handleCredentialResponse = function(response) {
   if (modal) document.body.removeChild(modal);
 }
 
-// ── FUNCIÓN: Activar sesión del usuario
-async function activarSesion(data) {
-  localStorage.setItem('sucrebot_user', JSON.stringify(data));
-
-  const btnLogin    = document.getElementById('btnLogin');
-  const userInfo    = document.getElementById('userInfo');
-  const userName    = document.getElementById('userName');
-  const userAvatar  = document.getElementById('userAvatar');
-
-  if (btnLogin)  btnLogin.style.display = 'none';
-  if (userInfo)  userInfo.classList.add('visible');
-  if (userName)  userName.textContent = data.name || data.email;
-  if (userAvatar && data.picture) userAvatar.src = data.picture;
-
-  const rol = await resolverRol(data.email);
+// Aplica al nav la visibilidad que corresponde a un rol ya resuelto --
+// separada de activarSesion() para poder llamarla DOS veces: una
+// síncrona con el rol cacheado (si hay) apenas se inyecta el nav, y otra
+// después de resolverRol() por si el rol cambió desde la última vez.
+// Sin la primera llamada síncrona, el nav se ve un instante con el
+// estado por defecto de nav.html (Organización/Mi Cuenta visibles,
+// Jueces/Administración ocultos) hasta que el await de resolverRol()
+// termina -- mismo tipo de "flash" que ya se corrigió en los selectores
+// de categoría de CRONOMETRO/PANEL-CALIFICACION/PANEL-BRACKET.
+function aplicarVisibilidadNav(rol) {
   const isStaff    = rol === 'staff' || rol === 'admin';
   const isAyudante = rol === 'ayudante';
   const isAdmin    = rol === 'admin';
   const esJuezRol  = isStaff || isAyudante; // ambos ven/usan páginas de Jueces
-
-  // ── Guardar/limpiar token staff según rol ──────────────────
-  // El token se comparte con ayudantes: lo necesitan para que
-  // Cronómetro/Insectos/Panel-Bracket/Panel-Calificación funcionen.
-  if (esJuezRol) {
-    localStorage.setItem('sucrebot_staff_token', STAFF_TOKEN_VALUE);
-  } else {
-    localStorage.removeItem('sucrebot_staff_token');
-  }
 
   const navStaff        = document.getElementById('navStaff');
   const navOrganizacion = document.getElementById('navOrganizacion');
@@ -208,6 +209,43 @@ async function activarSesion(data) {
     if (navAdmin)         navAdmin.style.display        = 'none';
     if (navPartLink)     navPartLink.style.display     = 'none';
     if (navPartDropdown) navPartDropdown.style.display = 'block';
+  }
+}
+
+// ── FUNCIÓN: Activar sesión del usuario
+async function activarSesion(data) {
+  localStorage.setItem('sucrebot_user', JSON.stringify(data));
+
+  const btnLogin    = document.getElementById('btnLogin');
+  const userInfo    = document.getElementById('userInfo');
+  const userName    = document.getElementById('userName');
+  const userAvatar  = document.getElementById('userAvatar');
+
+  if (btnLogin)  btnLogin.style.display = 'none';
+  if (userInfo)  userInfo.classList.add('visible');
+  if (userName)  userName.textContent = data.name || data.email;
+  if (userAvatar && data.picture) userAvatar.src = data.picture;
+
+  // Aplica YA MISMO el rol cacheado de la última vez (síncrono, sin
+  // esperar red) -- si no hay caché todavía (primer login de la sesión
+  // en este dispositivo), el nav se queda con el estado por defecto de
+  // nav.html hasta que resuelva el await de abajo, como antes.
+  const rolCacheado = obtenerRolCacheadoConDistincion(data.email);
+  if (rolCacheado !== undefined) aplicarVisibilidadNav(rolCacheado);
+
+  const rol = await resolverRol(data.email);
+  aplicarVisibilidadNav(rol);
+  const isStaff    = rol === 'staff' || rol === 'admin';
+  const isAyudante = rol === 'ayudante';
+  const esJuezRol  = isStaff || isAyudante; // ambos ven/usan páginas de Jueces
+
+  // ── Guardar/limpiar token staff según rol ──────────────────
+  // El token se comparte con ayudantes: lo necesitan para que
+  // Cronómetro/Insectos/Panel-Bracket/Panel-Calificación funcionen.
+  if (esJuezRol) {
+    localStorage.setItem('sucrebot_staff_token', STAFF_TOKEN_VALUE);
+  } else {
+    localStorage.removeItem('sucrebot_staff_token');
   }
 }
 
