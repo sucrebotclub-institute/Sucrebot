@@ -689,10 +689,31 @@
       const esActual = cod === actual;
       html += '<div class="cat-row"><div><span class="cat-nombre">Edición ' + cod + '</span>' +
         (esActual ? '<span class="cat-estado abierta">ACTIVA</span>' : '') + '</div>' +
+        '<div style="display:flex;gap:6px;">' +
         (esActual ? '' : '<button class="btn-cat-toggle abrir" onclick="activarEdicionUI(\'' + cod + '\')">🔀 Activar</button>') +
-        '</div>';
+        (esActual ? '' : '<button class="btn-cat-toggle cerrar" onclick="quitarEdicionUI(\'' + cod + '\')">🗑️ Quitar</button>') +
+        '</div></div>';
     });
     cont.innerHTML = html;
+  }
+
+  // Solo saca la edición del registro/config (para poder reusar el
+  // código, ej. volver a generar "VI" limpia) -- NO borra el Sheet ni
+  // la carpeta de Drive, eso sigue siendo manual.
+  async function quitarEdicionUI(codigo) {
+    if (!confirm(
+      '¿Quitar la Edición ' + codigo + ' del registro?\n\n' +
+      'Esto NO borra el Sheet ni la carpeta de Drive (eso lo hacés vos a mano si querés). ' +
+      'Solo hace que deje de aparecer acá y libera el código "' + codigo + '" para poder volver a usarlo en una edición nueva.'
+    )) return;
+    try {
+      const resp = await gasPost({ action: 'eliminarEdicionRegistro', edicion: codigo });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Edición ' + codigo + ' quitada del registro');
+      await cargarInfoEdicion();
+    } catch(e) {
+      showToast('⚠️ Error al quitar la edición: ' + e.message, true);
+    }
   }
 
   async function activarEdicionUI(codigo) {
