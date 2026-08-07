@@ -66,7 +66,19 @@ async function loadHTMLComponents() {
       if (response.ok) {
         const html = await response.text();
         element.innerHTML = html;
-        
+
+        // El nav se corrige apenas se inyecta ÉL MISMO, sin esperar a
+        // que el resto de los data-include (header/footer/topbar)
+        // también terminen -- si no, cuando nav.html resuelve rápido
+        // pero otro componente tarda un poco más, queda expuesto con
+        // el estado por defecto (visitante anónimo) durante esa espera
+        // de más. Esto es solo la aplicación desde caché (síncrona,
+        // sin red); 'componentsLoaded' + activarSesion() siguen siendo
+        // los que revalidan de verdad contra el servidor.
+        if (file.includes('nav.html') && window.aplicarVisibilidadNavDesdeCache) {
+          window.aplicarVisibilidadNavDesdeCache();
+        }
+
         // Ejecutar scripts que vengan en el componente
         const scripts = element.querySelectorAll('script');
         scripts.forEach(script => {

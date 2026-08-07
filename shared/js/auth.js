@@ -212,6 +212,28 @@ function aplicarVisibilidadNav(rol) {
   }
 }
 
+// Hook global que load-components.js llama apenas termina de inyectar
+// nav.html en el DOM -- ANTES de esperar a que el resto de los
+// componentes (header/footer/topbar) también terminen de cargar. El
+// evento 'componentsLoaded' (que dispara activarSesion) no arranca
+// hasta que TODOS los data-include resuelven, así que si nav.html
+// resuelve rápido pero otro componente tarda un poco más, el nav queda
+// expuesto con el estado por defecto (pensado para visitante anónimo)
+// durante esa espera de más -- se nota especialmente en REGISTRO/
+// INICIO, las páginas más livianas donde el resto del layout carga
+// rápido y esa ventana se hace más perceptible. Esta función solo
+// aplica lo que ya sabemos por caché (síncrono, sin red); la
+// revalidación real sigue pasando por activarSesion() como siempre.
+window.aplicarVisibilidadNavDesdeCache = function() {
+  const s = localStorage.getItem('sucrebot_user');
+  if (!s) return;
+  try {
+    const u = JSON.parse(s);
+    const rol = obtenerRolCacheadoConDistincion(u.email);
+    if (rol !== undefined) aplicarVisibilidadNav(rol);
+  } catch (e) {}
+};
+
 // ── FUNCIÓN: Activar sesión del usuario
 async function activarSesion(data) {
   localStorage.setItem('sucrebot_user', JSON.stringify(data));
