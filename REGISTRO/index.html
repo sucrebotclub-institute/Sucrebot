@@ -493,6 +493,44 @@
   const INST_CACHE_KEY = 'sucrebot_instituciones_cache';
   const INST_TTL = 6 * 60 * 60 * 1000;
 
+  // Cache-first para el <select> de categoría (mismo principio ya
+  // aplicado en CRONOMETRO/PANEL-CALIFICACION/PANEL-BRACKET): en vez de
+  // esperar a que resuelvan getNombresCategorias/getInfoEdicion para
+  // recién ahí ocultar lo que no corresponde (dejando ver de más un
+  // instante), se aplica YA MISMO -- de forma síncrona, apenas carga
+  // este script -- la última respuesta conocida en este dispositivo, y
+  // se revalida en segundo plano (ver aplicarNombresCategoriasCopia/
+  // aplicarCategoriasActivasEdicion más abajo, que guardan cache nueva).
+  function leerCacheReg(key){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):null; }catch(e){ return null; } }
+  function guardarCacheReg(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
+  const NOMBRES_COPIA_CACHE_KEY_REG = 'sucrebot_cache_nombres_copia_registro';
+  const CATS_ACTIVAS_CACHE_KEY_REG  = 'sucrebot_cache_cats_activas_registro';
+  // Único punto que decide qué opciones del <select> se ven: primero
+  // nombres (una copia sin nombre asignado no existe), después activas
+  // (solo entre las que ya pasaron el paso anterior) -- se puede llamar
+  // varias veces (cache, luego revalidación) sin ir arrastrando estado
+  // viejo, siempre recalcula las dos cosas desde cero.
+  function aplicarFiltroCategoriasReg(nombres, activas) {
+    if (nombres) {
+      document.querySelectorAll('#f-categoria option[data-codigo]').forEach(opt => {
+        const nombreVisible = nombres[opt.dataset.codigo];
+        if (nombreVisible) { opt.textContent = nombreVisible; opt.style.display = ''; opt.disabled = false; }
+        else { opt.style.display = 'none'; opt.disabled = true; }
+      });
+    }
+    if (activas && activas.length) {
+      const set = new Set(activas);
+      document.querySelectorAll('#f-categoria option[value]').forEach(opt => {
+        if (!opt.value) return;
+        if (opt.hasAttribute('data-codigo') && opt.style.display === 'none') return; // sin nombre, se queda oculta
+        const activo = set.has(opt.value);
+        opt.style.display = activo ? '' : 'none';
+        opt.disabled = !activo;
+      });
+    }
+  }
+  aplicarFiltroCategoriasReg(leerCacheReg(NOMBRES_COPIA_CACHE_KEY_REG), leerCacheReg(CATS_ACTIVAS_CACHE_KEY_REG));
+
   function poblarInstSelect(instituciones) {
     const sel = document.getElementById('f-institucion-select');
     sel.innerHTML = '<option value="">— Selecciona institución / club —</option>';
@@ -565,16 +603,10 @@
   // duplicado sin explicación confundiría más de lo que ayuda.
   async function aplicarNombresCategoriasCopia() {
     try {
-      const nombres = await fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json());
-      document.querySelectorAll('#f-categoria option[data-codigo]').forEach(opt => {
-        const nombreVisible = nombres && nombres[opt.dataset.codigo];
-        if (nombreVisible) {
-          opt.textContent = nombreVisible;
-          opt.style.display = '';
-        } else {
-          opt.style.display = 'none';
-        }
-      });
+      const nombres = await fetch(GAS_URL + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json());
+      if (!nombres) return;
+      aplicarFiltroCategoriasReg(nombres, leerCacheReg(CATS_ACTIVAS_CACHE_KEY_REG));
+      guardarCacheReg(NOMBRES_COPIA_CACHE_KEY_REG, nombres);
     } catch (e) { /* sin nombres configurados, las copias quedan ocultas */ }
   }
 
@@ -594,12 +626,10 @@
   async function aplicarCategoriasActivasEdicion() {
     try {
       const info = await fetch(GAS_URL + '?action=getInfoEdicion', { cache: 'no-store' }).then(r => r.json());
-      const activas = Array.isArray(info.categorias_activas) ? new Set(info.categorias_activas) : null;
-      if (!activas || !activas.size) return;
-      document.querySelectorAll('#f-categoria option[value]').forEach(opt => {
-        if (!opt.value || opt.style.display === 'none') return; // placeholder o copia ya oculta sin nombre
-        if (!activas.has(opt.value)) { opt.style.display = 'none'; opt.disabled = true; }
-      });
+      const activas = Array.isArray(info.categorias_activas) ? info.categorias_activas : null;
+      if (!activas || !activas.length) return;
+      aplicarFiltroCategoriasReg(leerCacheReg(NOMBRES_COPIA_CACHE_KEY_REG), activas);
+      guardarCacheReg(CATS_ACTIVAS_CACHE_KEY_REG, activas);
     } catch (e) { /* sin info de edición, se muestran todas */ }
   }
 
