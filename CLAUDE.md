@@ -50,6 +50,8 @@ Todas las llamadas `gasPost` deben incluir `staffToken`, **excepto** las ACCIONE
 
 ## CATEGORIA_MAP (constante en GAS)
 
+Nota: en realidad tiene **26 entradas** — las 13 originales de abajo + 13 "copia" (mismo nombre + `" [Copia]"`, códigos con sufijo `2`: `ins2`, `trp_a2`, `sl_a2`, `sl_p2`, `ms_a2`, `ms_rc2`, `bai2`, `bat2`, `dev2`, `trp_p2`, `soc2`, `cr2`, `lk2` — ver `CODIGOS_CATEGORIA_COPIA`). Se omiten acá por brevedad.
+
 ```js
 const CATEGORIA_MAP = {
   'Insectos':                         'ins',
@@ -65,6 +67,7 @@ const CATEGORIA_MAP = {
   'Robot soccer':                     'soc',
   'Cubo Rubik':                       'cr',
   'Lego Kids':                        'lk'
+  // + 13 categorías "copia" -- ver nota arriba
 };
 ```
 
@@ -207,8 +210,10 @@ El evento SucreBot 2026 se realizó el 16 de julio de 2026 y ya concluyó. El tr
 - Limpieza manual pendiente en el Sheet (data `[DEV]` de la prueba end-to-end del 27-jul): certificados `[DEV]` de las 13 categorías + 2 de una prueba aislada del fix de doble conteo (`CERT-2026-442`/`443`, institución "[DEV] Instituto Doble Conteo Test"), filas `[DEV]` en `resultados_publicados`, y la hoja `resultados` (sin acción de lectura/borrado por API, no se pudo ni inspeccionar). Ver [[project-prueba-e2e-ranking-27jul]].
 - **Chequeo general 31-jul** (Raku revisó toda la página en producción), pendientes nuevos sin empezar:
   - Roles: la cuenta del club y la de la carrera de Electrónica deben quedar como **solo Admin**.
-  - Generar/organizar carpetas por **edición del evento**, reflejado en toda la página.
-  - Agregar un **selector de edición** (dropdown) visible en la página.
+  - [x] Generar/organizar carpetas por **edición del evento** — hecho 2-ago (Drive) + 6-ago (sistema completo, ver abajo).
+  - [x] Agregar un **selector de edición** — hecho 6-ago, pero terminó siendo distinto a lo imaginado originalmente (no un dropdown público, ver "Sistema de ediciones" abajo).
   - Soccer (PANEL-BRACKET): mostrar el **puntaje obtenido** por partido y quiénes **pasan a la siguiente ronda**.
   - Minisumo (PANEL-BRACKET): permitir **editar manualmente el puntaje** de cada combate.
-  - INSECTOS: advertencia si el **tiempo manual** ingresado supera los **2 minutos reglamentarios**.
+  - [x] INSECTOS: advertencia si el **tiempo manual** ingresado supera los **2 minutos reglamentarios** — hecho 1-ago.
+- **Sistema de ediciones completo (6-ago)** — reemplaza el enfoque de "Sheet + deployment nuevos por edición" por un único deployment que cambia de Sheet activo vía Script Properties. Desde CONFIGURACION → Ediciones: generar edición nueva, activar una anterior sin perder su configuración, quitar una del registro. Ver SKILL.md sprint 06-ago-2026 para el detalle completo (arquitectura, bugs encontrados, principios). Producción activa: **Edición V**. Pendiente manual: borrar de Drive los Sheets de las ediciones de prueba descartadas (VI/TESTFIX/TESTFIX2, links en el historial del chat).
+- **PANEL-BRACKET Soccer — botón "🔁 Revancha"** (6-ago): reabre un partido `FINALIZADO` a `PENDIENTE` sin re-sortear la llave.
