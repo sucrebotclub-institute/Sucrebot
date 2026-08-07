@@ -1411,5 +1411,52 @@ Raku había activado la VI a propósito para probar. Al revisar el sistema encon
 
 ---
 
+### Sprint 07 ago 2026 — nueva categoría Drones (CRONOMETRO + puntos) y colores de categoría centralizados
+
+**Contexto**: Raku pidió una categoría nueva, "Drones", con la misma lógica de CRONOMETRO (rondas/intentos configurables, cronómetro manual sin sensor) pero que además lleve puntos — combinación de dos formas de calificar en una sola categoría, algo que no existía antes en el sitio. Terminó escalando a un segundo cambio de arquitectura (colores de categoría centralizados) al notar que el color provisional de Drones estaba hardcodeado en 3 páginas distintas y desincronizadas entre sí.
+
+#### Reglas de ranking de Drones (acordadas con Raku antes de programar)
+- Quien completa la pista va SIEMPRE por encima de quien no (DNF), sin importar puntos.
+- Entre finalistas: orden por puntos (desc), tiempo como desempate.
+- Entre DNF: también se ordenan por puntos entre ellos.
+- Intentos: "mejor de N" igual que el resto de CRONOMETRO. El "mejor intento" de cada participante es el de más puntos entre los que completaron; si ninguno completó, es el de más puntos entre los DNF.
+- Medición de tiempo: manual (botones Iniciar/Detener), sin sensor. Puntos: un solo juez/operador, botones **+1/-1** en vivo mientras corre el intento (bloqueados si el cronómetro no está corriendo, mismo criterio que los botones de asalto de Minisumo).
+
+#### Implementación en CRONOMETRO (dentro del flujo existente, no página nueva)
+- `Code.gs`: `'Drones': 'dro'` en `CATEGORIA_MAP` + columna 10 (`puntos`) agregada a `pushResultado` (append-only, `eliminarResultadoHelper` solo lee las primeras 9 columnas así que no se rompe nada). Sin categoría "copia" (`dro2`) — el mecanismo de 13 pares es una lista hardcodeada en `Code.gs`, se agrega a mano si se pide después.
+- `CRONOMETRO/index.html`: tarjeta "🚁 Drones", `RUTAS.Drones='dro'`, `CATS_PUNTOS=['Drones']`. Cada participante guarda `puntosPorIntento[]` paralelo a `tiempos[]` (mismo índice); `actualizarMejorDrones(c)` recalcula tiempo/DNF/puntos "oficiales" desde esos arrays. Se tocó `agregarAlRanking`, `quitarTiempoDelRanking`, el corrector 🔧 de intentos ya registrados (`confirmarEditorIntento`, portado de CRONOMETRO sprint 30-jul), `renderRondas`, `guardarPodioCrono` y `crearHoja` (Excel) para que el sort points-first solo aplique cuando `CATS_PUNTOS.includes(categoriaActual)` — el resto de categorías de este mismo flujo (Trepador/Seguidor/Cubo Rubik) no cambia de comportamiento.
+- **Podio visual con medallas**, exclusivo de Drones dentro de este flujo (a pedido de Raku): al guardar podio aparece un modal top-3 con 🥇🥈🥉, tiempo y puntos — reusa el componente CSS `.podio-wrap/.podio-plat` que ya tenía el submódulo de Insectos, sin tocar su código.
+
+#### Huecos encontrados: agregar una categoría nueva toca mucho más que Code.gs
+Cada página del sitio que necesita traducir código-corto→nombre-completo, o listar categorías para un `<select>`/filtro, mantiene su **propia copia local** de ese mapa — no hay una fuente única. Se encontraron y corrigieron uno por uno, grepeando el nombre de una categoría existente (`"Impacto Tecnológico"`, `"ms_a"`) en todo el repo:
+- `RESULTADOS` (`RUTAS_NOMBRE`), `ESTADISTICAS` (`CATS_NOMBRES`), `GENERAR-CERTIFICADOS` (`CATEGORIA_MAP_CORTO`) — mostraban el código crudo "dro" en vez de "Drones".
+- `ESCANER` — faltaba en la lista de check-in por QR (hubiera bloqueado escanear participantes de Drones el día del evento).
+- `CONFIGURACION` — faltaba en `CATEGORIAS` (checklist "Categorías individuales" Y checklist de "Ediciones", ambas leen el mismo array).
+- `REGISTRO`/`REGISTRO-DEV` — faltaba la opción en el `<select>` del formulario público. **Este era el hueco más grave**: nadie podía inscribirse en Drones hasta este fix.
+- `MI-REGISTRO` — mismo select, para editar una inscripción ya hecha.
+- `PARTICIPANTES_REGISTRADOS` — filtro de categoría + badge de color en la tabla.
+- `MANILLAS` — color por categoría.
+
+**Principio nuevo**: al agregar una categoría, no asumir que alcanza con `Code.gs` + la página "principal" donde se va a usar. Grepear el nombre de una categoría ya existente en todo el repo para encontrar todos los mapas locales que hay que tocar.
+
+#### Bug de paso en CONFIGURACION: "(copia)" genérico sin decir de cuál categoría
+Reportado por Raku viendo el checklist de "Ediciones": una copia ya renombrada (ej. `trp_a2` → "sucrebot") se mostraba como "sucrebot (copia)" sin indicar que era copia de Trepador (Pro) — imposible saber cuál era sin ir a revisar `Code.gs`. Fix en `categoriasParaSelect()`/`resolverNombreParaMostrar()`: ahora dice "sucrebot (copia de Trepador (Pro))".
+
+#### Colores de categoría centralizados (segundo cambio de arquitectura de esta sesión)
+Disparado por el color provisional de Drones (`#4A5568`, sin manilla física asignada) — Raku pidió que se gestione desde CONFIGURACION porque se usa en 3 páginas (MANILLAS, PARTICIPANTES_REGISTRADOS, PANTALLA/cronograma), no hardcodeado en cada una. Se aprovechó para migrar las 14 categorías (no solo Drones) y corregir de paso que PANTALLA ya tenía colores desincronizados de las manillas oficiales (ej. "Trepador Pro" usaba ahí el color real de Seguidor Pro).
+
+- **Backend**: fila `config_colores_categoria` en la hoja `estados` (mismo patrón que `config_nombres_categorias` — JSON `{categoria: '#RRGGBB'}`, con `LockService`). `COLORES_CATEGORIA_DEFAULT` (12 oficiales + Drones provisional) como fallback/seed. Acciones `getColoresCategoria` (GET, pública) y `guardarColorCategoria` (POST, staffToken). Agregada a la lista de filas que `generarNuevaEdicionHelper` copia tal cual a una edición nueva (junto a `config_nombres_categorias`) — es branding del club, no dato del torneo.
+- **CONFIGURACION → 🎨 Colores**: un `<input type="color">` por categoría, guardado individual por fila (mismo patrón que "Categorías copia"). **Las categorías "copia" con nombre asignado TAMBIÉN tienen su propio picker** (usa `categoriasParaSelect()`, no solo las 14 base) — guardan su color bajo su propio identificador (`"Trepador (Pro) [Copia]"`), independiente del de su base; si nunca les asignan uno propio, el picker arranca mostrando el heredado de la base.
+- **MANILLAS/PARTICIPANTES_REGISTRADOS**: `colorDeCategoria(cat)` busca primero el color exacto de la categoría (con sufijo `[Copia]` si aplica), después el de la base, después el hardcodeado de respaldo. `PARTICIPANTES_REGISTRADOS` pasó de clases CSS estáticas (`.categoria-badge.cat-xxx`, borradas) a `style` inline calculado con `textContrast()`.
+- **PANTALLA**: caso más delicado — su cronograma indexa por **texto de bloque de horario** (ej. "Robot Soccer – Fase de Grupos"), no por nombre de categoría. Se agregó `EVENTO_A_CATEGORIA` (bloque→categoría real) para poder consultar el color. `COLOR_MAP_DUAL` (manillas de 2 colores, bloques combinados tipo "MiniSumo RC Pro") quedó sin tocar — son presentación sin categoría única real detrás. Como PANTALLA no tiene gate de staff ni overlay de carga (pantalla pública/TV), se usó **cache-first** en `localStorage` para evitar el flash de color al recargar — mismo principio que selectores de categoría/nav del sprint 6-ago.
+- **Bug propio encontrado en la primera pasada**: el JS de carga hacía `document.getElementById('colores-lista').style.display = 'block'`, pisando el `display:grid` del CSS nuevo — el layout en grid nunca se aplicaba pese a que la regla existía. Fix: poner `'grid'`, no `'block'`.
+- **Layout**: rediseñado de filas anchas apiladas a un grid de tarjetas compactas (swatch grande arriba, nombre/hex/guardar abajo) a pedido de Raku tras ver el primer resultado.
+
+**Verificado**: sintaxis (`node --check` sobre los bloques `<script>` extraídos de cada archivo) y comportamiento (ranking de Drones, render de la pestaña Colores, herencia de color copia→base, resolución exacta-antes-que-base) probado inyectando estado falso por consola contra el servidor local, sin tocar producción hasta confirmar. Ambos deploys de `Code.gs` de esta sesión confirmados en vivo contra el endpoint real antes de cerrar.
+
+**Pendiente**: color oficial de manilla física para Drones (Raku debe elegirlo desde CONFIGURACION → Colores); contenido de REGLAMENTO para Drones (pista/tiempo límite/reglas de puntos — requiere que Raku lo provea, no se inventó nada); limpiar a mano en Sheets la entrada `[DEV] Categoria Test Color` que quedó en `config_colores_categoria` de una prueba de verificación (inofensiva, ninguna página itera sobre todas las claves guardadas).
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 31 julio 2026**
+**SKILL.md actualizado por última vez: 07 agosto 2026**
