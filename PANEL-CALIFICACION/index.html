@@ -422,7 +422,23 @@
       // -- antes se pedía recién dentro de renderCopiasCategoriasCalificacion()
       // (llamada desde componentsLoaded), así que las tarjetas de categoría
       // copia siempre aparecían notoriamente después que las reales.
-      window._nombresCopiaPromise = fetch(CONFIG.GAS_URL() + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()).catch(() => ({}));
+      //
+      // Cache-first: en visitas repetidas del mismo dispositivo, se aplica
+      // de una la última respuesta conocida (sin esperar red) y se
+      // revalida en segundo plano -- ver aplicarCategoriasActivasCalificacion.
+      window._leerCache = function(key){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):null; }catch(e){ return null; } };
+      window._guardarCache = function(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} };
+      const NOMBRES_COPIA_CACHE_KEY = 'sucrebot_cache_nombres_copia_calif';
+      const _nombresCopiaCacheInicial = window._leerCache(NOMBRES_COPIA_CACHE_KEY);
+      const _nombresCopiaFetch = fetch(CONFIG.GAS_URL() + '?action=getNombresCategorias', { cache: 'no-store' }).then(r => r.json()).catch(() => null);
+      window._nombresCopiaPromise = _nombresCopiaCacheInicial ? Promise.resolve(_nombresCopiaCacheInicial) : _nombresCopiaFetch.then(n => n || {});
+      _nombresCopiaFetch.then(nombres => {
+        if (!nombres) return;
+        window._guardarCache(NOMBRES_COPIA_CACHE_KEY, nombres);
+        if (_nombresCopiaCacheInicial && JSON.stringify(nombres) !== JSON.stringify(_nombresCopiaCacheInicial)) {
+          renderCopiasCategoriasCalificacion().then(aplicarCategoriasActivasCalificacion);
+        }
+      });
       // ── Categorías copia (independientes, mismo flujo que su base) ──
       // Creadas en Code.gs (ver CODIGOS_CATEGORIA_COPIA). El nombre visible
       // se asigna desde CONFIGURACION — una copia sin nombre asignado
@@ -809,16 +825,29 @@ const CAT_NOMBRES = { bai:'Bailarín', dev:'Impacto Tecnológico', lk:'Lego Kids
 // marcó como activas para la edición actual (CONFIGURACION → Ediciones).
 // Corre DESPUÉS de renderCopiasCategoriasCalificacion() -- así ya existen
 // en el DOM tanto las 3 originales como las copias con nombre asignado.
+const CATS_ACTIVAS_CACHE_KEY='sucrebot_cache_cats_activas_calif';
+function aplicarListaCategoriasCalificacion(activas){
+  if(!activas||!activas.length)return;
+  const set=new Set(activas);
+  document.querySelectorAll('.cat-cards-grid .cat-card[data-catcodigo]').forEach(el=>{
+    const nombreCompleto=CAT_NOMBRES[el.dataset.catcodigo];
+    if(nombreCompleto)el.style.display=set.has(nombreCompleto)?'':'none';
+  });
+}
+// Cache-first (mismo principio que _nombresCopiaPromise): aplica de una
+// la última respuesta conocida sin esperar red, revalida en segundo
+// plano por si cambió.
 async function aplicarCategoriasActivasCalificacion(){
+  const cache=window._leerCache(CATS_ACTIVAS_CACHE_KEY);
+  if(cache)aplicarListaCategoriasCalificacion(cache);
   try{
     const info=await fetch(CONFIG.GAS_URL()+'?action=getInfoEdicion',{cache:'no-store'}).then(r=>r.json());
-    const activas=Array.isArray(info.categorias_activas)?new Set(info.categorias_activas):null;
-    if(!activas||!activas.size)return;
-    document.querySelectorAll('.cat-cards-grid .cat-card[data-catcodigo]').forEach(el=>{
-      const nombreCompleto=CAT_NOMBRES[el.dataset.catcodigo];
-      if(nombreCompleto&&!activas.has(nombreCompleto))el.style.display='none';
-    });
-  }catch(e){ /* sin info de edición, se muestran todas */ }
+    const activas=Array.isArray(info.categorias_activas)?info.categorias_activas:null;
+    if(activas&&activas.length){
+      aplicarListaCategoriasCalificacion(activas);
+      window._guardarCache(CATS_ACTIVAS_CACHE_KEY,activas);
+    }
+  }catch(e){ /* sin conexión, se queda con el cache (o todas visibles si no había) */ }
 }
 
 // Nombre a mostrar en pantalla (títulos, toasts, confirmaciones) -- para
@@ -2996,16 +3025,18 @@ async function intentarRestaurarSesionCal() {
 document.addEventListener('componentsLoaded', async () => {
   const savedUser = localStorage.getItem('sucrebot_user');
   if (!savedUser) { window.location.href = '../INICIO/'; return; }
-  // Overlay de carga (logo SucreBot, ya mostrado por defecto desde el HTML)
-  // tapando todo mientras se arma el selector de categorías -- evita el
-  // flash de categorías sin filtrar que se veía antes de que llegara la
-  // respuesta de getInfoEdicion. loading(false) al final de este bloque
-  // es lo que la destapa.
-  setTimeout(() => loading(false), 4000); // resguardo: si algo falla, no se queda tapado para siempre
+  // Si este dispositivo ya visitó la página antes, sabemos de la vez
+  // pasada qué categorías van activas/con nombre -- se aplica de una,
+  // sin tapar nada con el overlay (ya mostrado por defecto desde el
+  // HTML), y se revalida en segundo plano. Solo la primerísima vez en
+  // un dispositivo nuevo hace falta esperar a la red.
+  const huboCache = !!window._leerCache(CATS_ACTIVAS_CACHE_KEY);
+  if (huboCache) loading(false);
+  else setTimeout(() => loading(false), 4000); // resguardo: si algo falla, no se queda tapado para siempre
   if (typeof renderCopiasCategoriasCalificacion === 'function') await renderCopiasCategoriasCalificacion();
   await aplicarCategoriasActivasCalificacion();
+  if (!huboCache) loading(false);
   await intentarRestaurarSesionCal();
-  loading(false);
 });
 </script>
 
