@@ -172,6 +172,7 @@
             <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
             <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
             <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
+            <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
           </div>
 
           <div class="config-panel">
@@ -324,6 +325,26 @@
           <div id="colores-lista" class="color-grid" style="display:none;"></div>
         </div>
 
+        <div class="config-card config-section" data-section="limpiar">
+          <div class="config-card-title">🧹 Limpiar Sheet (edición activa)</div>
+          <div class="config-card-desc">
+            Vacía participantes, resultados, puntuaciones, brackets, torneos de Soccer,
+            podios y estados/jueces activos de la <strong>edición activa</strong> —
+            pensado para dejar todo en cero después de una tanda de pruebas.
+            <strong>No toca</strong> certificados, instituciones, personal ni criterios
+            de calificación (eso no se considera dato de prueba).
+            <strong>Esta acción no se puede deshacer.</strong>
+          </div>
+
+          <div style="background:rgba(220,53,69,.08);border:1px solid rgba(220,53,69,.35);border-radius:10px;padding:14px;margin-top:14px;">
+            <div class="estado-label" style="margin-bottom:8px;">Para confirmar, escribí el código de la edición activa (<strong id="limpiar-edicion-actual">—</strong>):</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="text" id="limpiar-confirmar" class="form-control" style="max-width:160px;" placeholder="Ej. V" oninput="actualizarBotonLimpiar()">
+              <button class="btn-toggle cerrar" id="btn-limpiar-sheet" onclick="limpiarSheetPruebasUI()" disabled>🧹 Limpiar Sheet</button>
+            </div>
+          </div>
+        </div>
+
           </div><!-- /config-panel -->
         </div><!-- /config-shell -->
 
@@ -340,6 +361,7 @@
   <script>
   const GAS_URL = CONFIG.GAS_URL();
   let _abiertoActual = null;
+  let _edicionActualCodigo = '';
 
   // Cuentas institucionales que el backend (guardarPersonal/eliminarPersonal
   // en Code.gs) siempre fuerza a rol Admin -- acá se bloquean los controles
@@ -662,6 +684,9 @@
       renderCategoriasEdicion(Array.isArray(info.categorias_activas) ? info.categorias_activas : CATEGORIAS);
       document.getElementById('edic-loading').style.display = 'none';
       document.getElementById('edic-contenido').style.display = 'block';
+
+      _edicionActualCodigo = info.edicion_actual || '';
+      document.getElementById('limpiar-edicion-actual').textContent = _edicionActualCodigo || '—';
     } catch(e) {
       document.getElementById('edic-loading').innerHTML = '⚠️ Error al cargar la edición: ' + e.message;
     }
@@ -749,6 +774,39 @@
       setTimeout(() => location.reload(), 1500);
     } catch(e) {
       showToast('⚠️ Error al activar la edición: ' + e.message, true);
+    }
+  }
+
+  // Botón de "Limpiar Sheet" solo se habilita cuando el texto escrito
+  // coincide exacto (case-insensitive) con el código de la edición activa
+  // -- evita un click accidental que borre datos reales, mismo criterio
+  // que un "escribí DELETE para confirmar" pero con el dato real de la
+  // edición en vez de una palabra fija.
+  function actualizarBotonLimpiar() {
+    const escrito = document.getElementById('limpiar-confirmar').value.trim().toUpperCase();
+    document.getElementById('btn-limpiar-sheet').disabled = !escrito || escrito !== _edicionActualCodigo.toUpperCase();
+  }
+
+  async function limpiarSheetPruebasUI() {
+    const escrito = document.getElementById('limpiar-confirmar').value.trim();
+    if (!confirm(
+      '¿Limpiar la Edición ' + _edicionActualCodigo + '?\n\n' +
+      'Se van a borrar: participantes, resultados, puntuaciones, brackets, torneo de Soccer, ' +
+      'podios y estados/jueces activos.\n\n' +
+      'NO se tocan: certificados, instituciones, personal ni criterios de calificación.\n\n' +
+      'Esta acción NO se puede deshacer. ¿Confirmás?'
+    )) return;
+    const btn = document.getElementById('btn-limpiar-sheet');
+    btn.disabled = true;
+    try {
+      const resp = await gasPost({ action: 'limpiarSheetPruebas', confirmarEdicion: escrito });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Edición ' + _edicionActualCodigo + ' limpiada');
+      document.getElementById('limpiar-confirmar').value = '';
+    } catch(e) {
+      showToast('⚠️ Error al limpiar: ' + e.message, true);
+    } finally {
+      actualizarBotonLimpiar();
     }
   }
 
