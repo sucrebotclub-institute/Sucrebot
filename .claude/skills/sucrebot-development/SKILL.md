@@ -1458,5 +1458,60 @@ Disparado por el color provisional de Drones (`#4A5568`, sin manilla física asi
 
 ---
 
+### Sprint 08 ago 2026 — botón Limpiar Sheet, panel de categorías sin separadores, y sistema completo de Auspiciantes
+
+**Contexto**: sesión encadenada de 3 pedidos independientes: un botón de limpieza rápida para pruebas (Admin-only), un ajuste visual chico en PARTICIPANTES_REGISTRADOS, y la feature más grande del día — auspiciantes dejaron de ser un array hardcodeado en el repo para pasar a gestionarse por completo desde CONFIGURACION (agregar/editar/ocultar/eliminar, con subida de logo a Drive).
+
+#### CONFIGURACION → 🧹 Limpiar Sheet
+Botón Admin-only para vaciar la edición activa después de una tanda de pruebas, sin tener que generar una edición nueva:
+- **Hojas que vacía** (mantiene headers): `participantes`, `resultados`, `activo`, `categorias_activas`, `puntuaciones`, `bracket_general`, `soccer_torneo`, `soccer_avance_manual`, `podio_manual`, `podio_publicado`, `resultados_publicados`. En `estados` borra todo **menos** las filas `config_*` (nombres/colores de categoría copia, config de registro).
+- **No toca**: `certificados`, `instituciones`, `personal`, `criterios_calificacion` (no se consideran dato de prueba).
+- **Doble confirmación**: hay que escribir el código exacto de la edición activa (case-insensitive) para habilitar el botón — el backend valida el mismo código de nuevo antes de ejecutar (`data.confirmarEdicion !== EDICION_ACTUAL` → rechaza), no es solo un gate de UI.
+- Acción nueva `limpiarSheetPruebas` (staffToken).
+
+#### PARTICIPANTES_REGISTRADOS — panel de categorías simplificado
+A pedido de Raku viendo el panel lateral de conteo por categoría: se sacaron los separadores "AMATEUR/PRO/OPEN/COPIAS" (ahora es una lista plana) y las categorías copia ya no muestran el sufijo " (copia)" al lado del nombre asignado (antes "COPIA DE INSECTOS (copia)", ahora solo "COPIA DE INSECTOS"). Cambio puramente de `renderizarCategorias()`, sin tocar backend.
+
+#### Auspiciantes — de array hardcodeado a sistema gestionable (feature grande)
+**Motivación**: hasta ahora, agregar/quitar un auspiciante requería editar `shared/js/auspiciantes.js` (y antes de la reescritura de certificados del 24-jul, también `certificados.js`) y commitear — Raku pidió poder hacerlo él mismo sin tocar código, desde los distintos lugares donde aparecen (INICIO, INSTITUCION, RESULTADOS, certificados).
+
+**Decisiones de diseño acordadas antes de programar** (vía preguntas explícitas, no asumidas):
+- Subida de logo **desde CONFIGURACION** (sube a Drive, mismo patrón que `uploadLogo` de equipos en REGISTRO) — no pegar una URL externa a mano.
+- Nueva sección en CONFIGURACION, mismo gate de Admin que el resto de la página.
+- Los auspiciantes **se copian tal cual a una edición nueva** (como personal/instituciones/colores) — son branding del club, no dato del torneo.
+
+**Backend (`Code.gs`)**:
+- Nueva hoja `auspiciantes` (9 columnas: `id, nombre, logoUrl, url, tooltip, cartaImg, mostrarEnCertificados, timestamp, oculto`) — se crea y se **auto-siembra** con los 15 auspiciantes que ya existían (logoUrl apuntando al `raw.githubusercontent.com` de siempre, sin migrar archivos) la primera vez que se llama `getAuspiciantes`, sin ningún paso manual de migración.
+- Acciones: `getAuspiciantes` (GET, pública — la consumen páginas sin sesión de staff), `uploadLogoAuspiciante`, `guardarAuspiciante` (upsert por id, id nuevo autoincremental `aus-NNN` por máximo ya usado, no por posición de fila), `eliminarAuspiciante` (las 3 con staffToken).
+- Agregada a la lista de hojas que `generarNuevaEdicionHelper` copia tal cual (junto a `personal`/`instituciones`) — con un cuidado extra: usa `getOrCreateSheet(nombreHoja, SS)` en vez de `SS.getSheetByName(...)` a secas para ese loop, porque la primera vez que se genera una edición nueva después de este cambio, `auspiciantes` podía no existir todavía en la edición actual — así se crea+siembra ahí primero antes de copiar, nunca duplica una hoja vacía sin headers.
+- Columna `oculto` (9) se agregó en una segunda pasada, **después** de que la hoja ya estaba en producción con 8 columnas — mismo patrón de auto-reparación que `reglamentos_config` (`asegurarColumnaOcultoAuspiciantes`, agrega el header si falta, sin tocar filas existentes).
+
+**Frontend**:
+- `shared/js/auspiciantes.js` reescrito de array `const AUSPICIANTES` a `let AUSPICIANTES` cargado por fetch, con **patrón cache-first** (aplica el último valor conocido de `localStorage` de forma síncrona apenas se parsea el script, revalida en segundo plano, dispara `auspiciantesListos` si cambió algo) — mismo principio que categorías/nav del sprint 06-ago. `ausLogoUrl()`/`ausCartaUrl()` ya no concatenan una base URL (antes `AUSPICIANTES_BASE_URL + item.logo`); ahora `logoUrl`/`cartaImg` vienen como URL absoluta completa desde el backend, sea `raw.githubusercontent.com` (los 15 originales) o Drive (los nuevos).
+- `window.ausCargarPromise` expuesto para páginas que necesitan estar seguras de tener datos reales antes de renderizar (ej. certificados, que se generan bajo demanda tiempo después de cargar la página).
+- **INICIO/INSTITUCION/RESULTADOS/`auspiciantes-splash.js`**: cada uno escucha `auspiciantesListos` y vuelve a pintar (carrusel/hero strip/splash) cuando llegan datos reales — necesario porque `AUSPICIANTES` puede arrancar vacío en la primera visita sin cache.
+- `certificados.js`: la lista curada a mano `CERT_SPONSORS_RIGHT` (15 nombres hardcodeados) desapareció — reemplazada por `certSponsorsParaCertificado()`, que en su versión final es simplemente `ausVisibles()` (ver más abajo).
+
+**CONFIGURACION → 🤝 Auspiciantes**: formulario de alta (nombre, link, tooltip, archivo de logo obligatorio, archivo de carta de presentación opcional) + grid de tarjetas editables (nombre/link/tooltip editables inline, click en el logo para reemplazarlo, botón Eliminar con confirm explicando que el logo en Drive no se borra solo).
+
+**Iteración de diseño del checkbox de visibilidad** (2 rondas, a pedido de Raku viendo el resultado en vivo):
+1. Primera versión: dos checkboxes independientes — "Mostrar en certificados" y "Ocultar de INICIO/INSTITUCION/RESULTADOS" (`oculto`, campo nuevo).
+2. Raku lo vio consumado (texto largo, cajitas apretadas, se veía mal) y pidió **un solo checkbox** "Ocultar auspiciante" que controle todo a la vez. Se sacó `mostrarEnCertificados` de la UI y de los payloads de guardado (el backend lo sigue defaulteando a `true`, la columna queda en la hoja sin usarse — no se hizo migración de esquema, no valía la pena el churn); `certSponsorsParaCertificado()` pasó a ser un alias de `ausVisibles()` (mismo filtro `!a.oculto` que usan INICIO/INSTITUCION/RESULTADOS). CONFIGURACION sigue mostrando **todos** los auspiciantes (incluidos los ocultos) para poder destaparlos de nuevo — el filtro vive en el frontend consumidor, no en el backend.
+
+**Bug real 1 — `ok:true` faltante**: `uploadLogoAuspiciante` y `guardarAuspiciante` devolvían `res({...})` sin el campo `ok:true` que el frontend siempre chequea (`if (!resp.ok) throw ...`) — a diferencia de `ok()`/`err()` (helpers que sí lo agregan solos), `res(d)` serializa `d` tal cual, sin agregar nada. Resultado: "Error al subir la imagen" en el toast pese a que la subida a Drive funcionaba perfecto (confirmado probando la acción directo por API, devolvía la URL real). Fix: `res({ ok: true, ... })` explícito en ambas acciones. **Principio**: `res()` nunca agrega `ok:true` solo — cualquier acción nueva que el frontend vaya a chequear con `resp.ok` tiene que incluirlo a mano en el objeto que le pasa a `res()`.
+
+**Bug real 2 — logo bloqueado por Google al incrustarlo como `<img>` externo**: `https://drive.google.com/uc?export=view&id=FILEID` (mismo formato que ya usa `uploadLogo` para logos de equipo) carga perfecto al **navegar directo** a la URL, pero Google lo **bloquea** cuando se pide como `<img src>` desde un dominio distinto (confirmado en vivo: `onerror` disparaba al cargarlo desde `sucrebotclub-institute.github.io`, mientras que navegar a la misma URL en una pestaña nueva mostraba la imagen sin problema — la diferencia es top-level navigation vs. subresource cross-origin). **Fix**: cambiar el formato de URL a `https://lh3.googleusercontent.com/d/FILEID` (CDN de fotos de Google, sí soporta hotlinking normal como `<img>`) — confirmado con una prueba real de carga cross-origin antes y después del cambio. Aplicado solo a `uploadLogoAuspiciante` por ahora.
+⚠️ **Mismo bug pendiente en `uploadLogo`** (logos de equipo, usados en REGISTRO/certificados) — comparte el formato de URL roto, probablemente afecta certificados reales en producción hoy (no confirmado con un caso real, solo señalado como hallazgo de paso; Raku no pidió tocarlo esta sesión, queda pendiente si se quiere confirmar/corregir).
+
+**Verificación**: `node --check` en todos los archivos tocados; navegador de pruebas con datos simulados para renderizar tarjetas/carrusel/splash sin depender de red; cada acción nueva de `Code.gs` probada contra el endpoint real (`node -e "fetch(...)"`, más confiable que `curl -L` para POSTs a Apps Script — el redirect 302→303 de GAS con `curl -L` en un POST puede perder el body y devolver 411, mientras que `fetch` de Node lo maneja bien igual que un browser real) antes de dar cada deploy por bueno; datos `[DEV]` de prueba limpiados por API después de cada verificación.
+
+#### Principios nuevos
+- **`res(d)` (helper de `Code.gs`) nunca agrega `ok:true` automáticamente** — a diferencia de `ok()`, que sí. Cualquier acción nueva devuelta con `res({...})` que el frontend vaya a chequear con `.ok` necesita incluirlo explícito en el objeto.
+- **Un logo/imagen de Drive servido como `drive.google.com/uc?export=view&id=X` puede fallar específicamente al incrustarse como `<img>` cross-origin, aunque la misma URL cargue perfecto navegando directo** — probarlo así (`<img>` inyectada desde el dominio real, no solo pegar la URL en la barra de direcciones) antes de dar por buena una integración con Drive como CDN de imágenes. `lh3.googleusercontent.com/d/FILEID` es la alternativa que sí soporta hotlinking.
+- **Cuando el usuario pide simplificar una UI que uno mismo diseñó con más opciones de las pedidas, no defender la versión anterior** — el primer diseño (2 checkboxes) técnicamente daba más control, pero Raku pidió explícitamente "un solo check"; se implementó tal cual sin tratar de colar de nuevo la granularidad extra.
+- **`curl -L` no es confiable para reproducir un POST a Apps Script** (el redirect 302 intermedio de `script.google.com` pierde el body/Content-Length en el segundo salto) — usar `fetch` de Node (o el navegador real) para probar acciones POST nuevas contra el endpoint en vivo.
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 07 agosto 2026**
+**SKILL.md actualizado por última vez: 08 agosto 2026**
