@@ -353,11 +353,11 @@ function obtenerSelloSVG(tipo) {
 // ── AUSPICIANTES: todos en la barra lateral derecha ────────────────────────
 // (requiere shared/js/auspiciantes.js cargado antes que este archivo)
 // Quién aparece en el certificado ya no es una lista curada aparte -- es el
-// checkbox "Mostrar en certificados" de cada auspiciante en CONFIGURACION →
-// Auspiciantes (por defecto activado al agregar uno nuevo).
+// mismo checkbox "Ocultar auspiciante" de CONFIGURACION → Auspiciantes que
+// también controla INICIO/INSTITUCION/RESULTADOS (un solo flag para todo).
 function certSponsorsParaCertificado() {
-  if (typeof AUSPICIANTES === 'undefined') return [];
-  return AUSPICIANTES.filter(function(a) { return a.mostrarEnCertificados !== false; });
+  if (typeof ausVisibles !== 'function') return [];
+  return ausVisibles();
 }
 
 function certSponsorPill(a, vertical) {
