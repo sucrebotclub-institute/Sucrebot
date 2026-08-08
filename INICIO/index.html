@@ -191,7 +191,7 @@ div.ausp-pill{cursor:default;}
   if (typeof AUSPICIANTES === 'undefined') return;
   const track   = document.getElementById('auspMarqueeTrack');
   const wrapper = track ? track.closest('.ausp-marquee-wrapper') : null;
-  if (!track || !wrapper || !AUSPICIANTES.length) return;
+  if (!track || !wrapper) return;
 
   const SPEED_PX_S = 22; // velocidad constante del carrusel, sin importar cuántos auspiciantes haya
 
@@ -222,7 +222,14 @@ div.ausp-pill{cursor:default;}
     track.style.animationDelay = '';
   }
 
-  construirCarrusel();
+  if (AUSPICIANTES.length) construirCarrusel();
+
+  // Primera visita sin cache todavía (AUSPICIANTES arranca vacío) o lista
+  // actualizada desde CONFIGURACION en otra pestaña -- reconstruye el
+  // carrusel cuando auspiciantes.js termine de traer datos reales.
+  document.addEventListener('auspiciantesListos', function() {
+    if (AUSPICIANTES.length) construirCarrusel();
+  });
 
   let resizeTimer;
   window.addEventListener('resize', function() {

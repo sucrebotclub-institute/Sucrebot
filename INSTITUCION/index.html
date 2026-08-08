@@ -381,8 +381,9 @@
 (function() {
   if (typeof AUSPICIANTES === 'undefined') return;
 
-  const heroBox = document.getElementById('instHeroAuspLogos');
-  if (heroBox) {
+  function renderHeroAusp() {
+    const heroBox = document.getElementById('instHeroAuspLogos');
+    if (!heroBox) return;
     const orden = typeof ausSinAdyacentesDuplicados === 'function'
       ? ausSinAdyacentesDuplicados(AUSPICIANTES)
       : AUSPICIANTES;
@@ -390,6 +391,11 @@
       return ausRenderPill(a, 'inst-hero-ausp-pill', '');
     }).join('');
   }
+
+  renderHeroAusp();
+  // Primera visita sin cache todavía, o lista actualizada desde
+  // CONFIGURACION -- vuelve a pintar cuando lleguen datos reales.
+  document.addEventListener('auspiciantesListos', renderHeroAusp);
 })();
 </script>
 

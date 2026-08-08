@@ -352,17 +352,15 @@ function obtenerSelloSVG(tipo) {
 
 // ── AUSPICIANTES: todos en la barra lateral derecha ────────────────────────
 // (requiere shared/js/auspiciantes.js cargado antes que este archivo)
-// Nota: 'BYD Auto Ec' se excluye intencionalmente por ser el mismo logo que 'BYD'
-const CERT_SPONSORS_RIGHT = [
-  'BYD', 'JEP Cooperativa', 'AX-TEC', 'daly bella', 'NEO-MAKER LAB',
-  'Eléctrica GRM', "Cytronic's Plant", 'InnovArte STEAM', 'Peluditos Glam',
-  'Maker CK3D', 'CELIT', 'Microtero Electronic', '3DIMAX', 'INGCO Ecuador',
-  'PROCOINEEC'
-];
+// Quién aparece en el certificado ya no es una lista curada aparte -- es el
+// checkbox "Mostrar en certificados" de cada auspiciante en CONFIGURACION →
+// Auspiciantes (por defecto activado al agregar uno nuevo).
+function certSponsorsParaCertificado() {
+  if (typeof AUSPICIANTES === 'undefined') return [];
+  return AUSPICIANTES.filter(function(a) { return a.mostrarEnCertificados !== false; });
+}
 
-function certSponsorPill(nombre, vertical) {
-  if (typeof AUSPICIANTES === 'undefined') return '';
-  const a = AUSPICIANTES.find(function(x) { return x.nombre === nombre; });
+function certSponsorPill(a, vertical) {
   if (!a) return '';
   const cls = vertical ? 'cert-sp-pill-v' : 'cert-sp-pill';
   return `<div class="${cls}"><img src="${logoSrc(ausLogoUrl(a))}" alt="${a.nombre}"/></div>`;
@@ -371,7 +369,7 @@ function certSponsorPill(nombre, vertical) {
 function renderCertSponsors(root) {
   const scope = root || document;
   const right = scope.querySelector('#certSponsorsRight');
-  if (right) right.innerHTML = CERT_SPONSORS_RIGHT.map(function(n) { return certSponsorPill(n, true); }).join('');
+  if (right) right.innerHTML = certSponsorsParaCertificado().map(function(a) { return certSponsorPill(a, true); }).join('');
 }
 
 // ── PRECARGA DE LOGOS A DATA-URI ────────────────────────────────────────────
@@ -415,14 +413,13 @@ function logoSrc(url) {
 // puntual falla de verdad, no bloquea a los demás — ese caerá de vuelta a
 // pedirse por red como antes, el resto ya queda servido desde el cache.
 let _logosPrecargados = null;
-function precargarLogosCertificado() {
+async function precargarLogosCertificado() {
   if (_logosPrecargados) return _logosPrecargados;
-  const urls = [LOGO_CLUB, LOGO_SUCRE].concat(
-    CERT_SPONSORS_RIGHT
-      .map(function(n) { return (typeof AUSPICIANTES !== 'undefined') ? AUSPICIANTES.find(function(a) { return a.nombre === n; }) : null; })
-      .filter(Boolean)
-      .map(ausLogoUrl)
-  );
+  // Espera a que auspiciantes.js termine de traer la lista real (no solo
+  // el cache local) antes de armar las URLs a precargar -- en frío, sin
+  // cache todavía, AUSPICIANTES podría estar vacío en este instante.
+  if (window.ausCargarPromise) { try { await window.ausCargarPromise; } catch (e) {} }
+  const urls = [LOGO_CLUB, LOGO_SUCRE].concat(certSponsorsParaCertificado().map(ausLogoUrl));
   _logosPrecargados = Promise.allSettled(urls.map(urlToDataURI));
   return _logosPrecargados;
 }

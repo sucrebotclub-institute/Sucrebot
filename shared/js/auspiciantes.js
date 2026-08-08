@@ -1,118 +1,75 @@
 // ════════════════════════════════════════════════════════════════
 //  SUCREBOT 2026 — Auspiciantes (fuente única de verdad)
 //  Usado por: INICIO (carrusel), INSTITUCION (hero strip + sidebar),
-//             RESULTADOS (splash de carga)
+//             RESULTADOS (splash de carga), certificados.js (barra lateral)
 //
-//  Para agregar un auspiciante nuevo:
-//    1. Subir el logo a shared/images/auspiciantes/
-//    2. Agregar un objeto al array AUSPICIANTES de abajo
-//    3. Commit — se refleja automáticamente en las 4 zonas
+//  Ya NO es un array hardcodeado -- se gestiona desde CONFIGURACION →
+//  Auspiciantes (agregar/editar/eliminar, con subida de logo a Drive).
+//  Ver acciones getAuspiciantes/guardarAuspiciante/eliminarAuspiciante/
+//  uploadLogoAuspiciante en Code.gs.
+//
+//  Patrón cache-first (mismo que selectores de categoría/nav, sprint
+//  06-ago-2026): la última respuesta conocida se aplica de forma
+//  SÍNCRONA desde localStorage apenas este script se parsea (antes de
+//  cualquier fetch), para que el carrusel/splash/hero strip no arranquen
+//  vacíos en la carga inicial. Se revalida en segundo plano y, si algo
+//  cambió, se dispara el evento 'auspiciantesListos' para que cada
+//  página vuelva a pintar.
 //
 //  Campo opcional `cartaImg`: si el auspiciante no tiene `url` pero sí
-//  tiene una carta de presentación (imagen), agrega su ruta relativa
-//  (ej. 'cartas/nombre-carta.jpg') dentro de shared/images/auspiciantes/.
-//  Al hacer clic en el logo se abre un modal mostrando esa imagen, en
-//  vez de quedar sin ninguna acción. Si el auspiciante tiene `url`,
-//  esta tiene prioridad y el clic abre el link en vez del modal.
+//  tiene una carta de presentación (imagen), su URL completa (Drive o
+//  cualquier otra) hace que el clic en el logo abra un modal mostrando
+//  esa imagen, en vez de quedar sin ninguna acción. Si el auspiciante
+//  tiene `url`, esta tiene prioridad y el clic abre el link en vez del
+//  modal.
 // ════════════════════════════════════════════════════════════════
 
-const AUSPICIANTES_BASE_URL = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/auspiciantes/';
+const AUSP_CACHE_KEY = 'sucrebot_auspiciantes_cache';
 
-const AUSPICIANTES = [
-  {
-    nombre: 'BYD',
-    logo: 'byd.png',
-    url: 'https://www.instagram.com/byd_ecuador/',
-    tooltip: '@byd_ecuador'
-  },
-  {
-    nombre: 'JEP Cooperativa',
-    logo: 'jep.png',
-    url: 'https://www.jep.coop/'
-  },
-  {
-    nombre: 'INGCO Ecuador',
-    logo: 'ingco.png',
-    url: 'https://www.facebook.com/IngcoEcuadorOficial'
-  },
-  {
-    nombre: 'Microtero Electronic',
-    logo: 'microtero.png',
-    url: 'https://www.facebook.com/share/1JzEKcK884/'
-  },
-  {
-    nombre: 'Eléctrica GRM',
-    logo: 'electricagrm.png',
-    url: 'https://electricagrm.com/'
-  },
-  {
-    nombre: 'AX-TEC',
-    logo: 'axtec.png',
-    url: 'https://www.tiktok.com/@axtec.ec',
-    tooltip: '@axtec.ec'
-  },
-  {
-    nombre: 'CELIT',
-    logo: 'celit.png',
-    url: 'https://www.celitecuador.com'
-  },
-  {
-    nombre: 'NEO-MAKER LAB',
-    logo: 'neomaker.png',
-    url: 'https://www.instagram.com/neo_makerlab',
-    tooltip: '@neo_makerlab',
-    cartaImg: 'cartas/neomaker-carta.jpg'
-  },
-  {
-    nombre: 'Maker CK3D',
-    logo: 'makerck3d.png',
-    url: 'https://share.google/jNQIpqjdwLw8N6ggB'
-  },
-  {
-    nombre: '3DIMAX',
-    logo: '3dimax.png',
-    url: 'https://vt.tiktok.com/ZSCHxho8V/'
-  },
-  {
-    nombre: 'daly bella',
-    logo: 'dalybella.png',
-    url: 'https://www.tiktok.com/@daly_bella0?_r=1&_t=ZS-9868v9WdHG8',
-    tooltip: '@daly_bella0',
-    cartaImg: 'cartas/dalybella-carta.jpg'
-  },
-  {
-    nombre: "Cytronic's Plant",
-    logo: 'cytronics.png',
-    url: null,
-    cartaImg: 'cartas/cytronics-carta.jpg'
-  },
-  {
-    nombre: 'InnovArte STEAM',
-    logo: 'innovarte.png',
-    url: 'https://www.instagram.com/innovartesteam/',
-    tooltip: '@innovartesteam'
-  },
-  {
-    nombre: 'Peluditos Glam',
-    logo: 'peluditosglam.png',
-    url: 'https://instagram.com/peluditosglam',
-    cartaImg: 'cartas/peluditosglam-carta.jpg'
-  },
-  {
-    nombre: 'PROCOINEEC',
-    logo: 'procoineec.png',
-    url: 'https://www.facebook.com/Procoineec'
-  }
-];
+let AUSPICIANTES = [];
+(function ausAplicarCacheSincrono() {
+  try {
+    const cached = localStorage.getItem(AUSP_CACHE_KEY);
+    if (cached) {
+      const arr = JSON.parse(cached);
+      if (Array.isArray(arr)) AUSPICIANTES = arr;
+    }
+  } catch (e) {}
+})();
 
-// Devuelve la URL completa del logo
+// Descarga la lista real desde GAS, actualiza el cache local y AUSPICIANTES,
+// y dispara 'auspiciantesListos' si el contenido cambió respecto al cache
+// -- cada página que renderiza auspiciantes debe escuchar ese evento
+// además de su propio render inicial (con el cache o vacío), igual que ya
+// hacen los selectores de categoría con 'componentsLoaded'.
+function ausCargar() {
+  if (typeof CONFIG === 'undefined') return Promise.resolve();
+  return fetch(CONFIG.GAS_URL() + '?action=getAuspiciantes', { cache: 'no-store' })
+    .then(function(r) { return r.json(); })
+    .then(function(arr) {
+      if (!Array.isArray(arr)) return;
+      const cambio = JSON.stringify(arr) !== JSON.stringify(AUSPICIANTES);
+      AUSPICIANTES = arr;
+      try { localStorage.setItem(AUSP_CACHE_KEY, JSON.stringify(arr)); } catch (e) {}
+      if (cambio) document.dispatchEvent(new CustomEvent('auspiciantesListos'));
+    })
+    .catch(function() {});
+}
+// Expuesta para páginas que necesitan estar SEGURAS de tener la lista real
+// antes de renderizar (ej. certificados.js, que arma la barra de auspiciantes
+// del diploma) -- pueden hacer `await window.ausCargarPromise` en vez de
+// confiar únicamente en el cache/evento.
+window.ausCargarPromise = ausCargar();
+
+// logoUrl/cartaImg ya vienen como URL absoluta completa desde el backend
+// (raw.githubusercontent.com para los auspiciantes originales, Drive para
+// los agregados desde CONFIGURACION) -- no hace falta concatenar nada acá.
 function ausLogoUrl(item) {
-  return AUSPICIANTES_BASE_URL + item.logo;
+  return item.logoUrl;
 }
 
-// Devuelve la URL completa de la carta de presentación (si existe)
 function ausCartaUrl(item) {
-  return AUSPICIANTES_BASE_URL + item.cartaImg;
+  return item.cartaImg;
 }
 
 // Reordena una lista para que dos entradas con el mismo logo (ej. BYD + BYD Auto Ec)

@@ -173,6 +173,7 @@
             <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
             <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
             <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
+            <button class="config-nav-item" data-section="auspiciantes" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
           </div>
 
           <div class="config-panel">
@@ -345,6 +346,39 @@
           </div>
         </div>
 
+        <div class="config-card config-section" data-section="auspiciantes">
+          <div class="config-card-title">🤝 Auspiciantes</div>
+          <div class="config-card-desc">
+            Se usan en INICIO (carrusel), INSTITUCION, RESULTADOS (splash de carga) y en la
+            barra lateral de los certificados. Agregar uno nuevo sube el logo directo a Drive
+            — no hace falta commitear ni tocar código.
+          </div>
+
+          <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;margin-bottom:20px;">
+            <div class="estado-label" style="margin-bottom:10px;">Agregar auspiciante nuevo</div>
+            <div style="display:flex;flex-direction:column;gap:8px;max-width:420px;">
+              <input type="text" id="aus-nombre" class="form-control" placeholder="Nombre *">
+              <input type="text" id="aus-url" class="form-control" placeholder="Link (Instagram/Facebook/web) — opcional">
+              <input type="text" id="aus-tooltip" class="form-control" placeholder="Tooltip (ej. @usuario) — opcional">
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.7rem;">Logo * (fondo transparente o blanco recomendado)</div>
+                <input type="file" id="aus-logo-file" accept="image/*" class="form-control">
+              </div>
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.7rem;">Carta de presentación — opcional (se abre en un modal al hacer clic, solo si no hay link)</div>
+                <input type="file" id="aus-carta-file" accept="image/*" class="form-control">
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#c8d8f0;cursor:pointer;">
+                <input type="checkbox" id="aus-mostrar-cert" checked> Mostrar también en certificados
+              </label>
+              <button class="btn-personal-add" id="btn-aus-agregar" onclick="agregarAuspicianteUI()">➕ Agregar auspiciante</button>
+            </div>
+          </div>
+
+          <div id="aus-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
+          <div id="aus-lista" class="color-grid" style="display:none;"></div>
+        </div>
+
           </div><!-- /config-panel -->
         </div><!-- /config-shell -->
 
@@ -387,6 +421,7 @@
     cargarEstado();
     cargarPersonal();
     cargarInfoEdicion();
+    cargarAuspiciantes();
   });
 
   function mostrarSeccion(id) {
@@ -1138,6 +1173,185 @@
       showToast('⚠️ Error al guardar: ' + e.message, true);
     }
     btnEl.disabled = false;
+  }
+
+  // ── Auspiciantes ──────────────────────────────────────────────────
+  let _auspiciantesCache = [];
+
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload  = () => resolve(r.result.split(',')[1]);
+      r.onerror = () => reject(new Error('No se pudo leer el archivo "' + file.name + '"'));
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function subirImagenAuspiciante(file) {
+    const base64 = await toBase64(file);
+    const resp = await gasPost({ action: 'uploadLogoAuspiciante', base64, mimeType: file.type, fileName: file.name });
+    if (!resp.ok || !resp.url) throw new Error(resp.error || 'Error al subir la imagen');
+    return resp.url;
+  }
+
+  async function cargarAuspiciantes() {
+    try {
+      const lista = await gasGet({ action: 'getAuspiciantes' });
+      _auspiciantesCache = Array.isArray(lista) ? lista : [];
+    } catch (e) {
+      _auspiciantesCache = [];
+      showToast('⚠️ Error al cargar auspiciantes', true);
+    }
+    renderAuspiciantesUI();
+    document.getElementById('aus-loading').style.display = 'none';
+    document.getElementById('aus-lista').style.display = 'grid';
+  }
+
+  function renderAuspiciantesUI() {
+    const cont = document.getElementById('aus-lista');
+    cont.innerHTML = '';
+    if (!_auspiciantesCache.length) {
+      cont.innerHTML = '<div class="config-card-desc">Todavía no hay ningún auspiciante cargado.</div>';
+      return;
+    }
+    _auspiciantesCache.forEach(a => {
+      const card = document.createElement('div');
+      card.className = 'color-card';
+      card.style.gap = '6px';
+
+      const img = document.createElement('img');
+      img.src = a.logoUrl; img.alt = a.nombre;
+      img.title = 'Click para reemplazar el logo';
+      img.style.cssText = 'max-width:100%;max-height:50px;object-fit:contain;background:#fff;border-radius:6px;padding:6px;cursor:pointer;';
+
+      const fileLogo = document.createElement('input');
+      fileLogo.type = 'file'; fileLogo.accept = 'image/*'; fileLogo.style.display = 'none';
+      img.addEventListener('click', () => fileLogo.click());
+      fileLogo.addEventListener('change', async () => {
+        const f = fileLogo.files[0];
+        if (!f) return;
+        img.style.opacity = '.4';
+        try {
+          const nuevaUrl = await subirImagenAuspiciante(f);
+          const resp = await gasPost({
+            action: 'guardarAuspiciante', id: a.id, nombre: nombreInput.value.trim(),
+            url: urlInput.value.trim(), tooltip: tooltipInput.value.trim(),
+            logoUrl: nuevaUrl, cartaImg: a.cartaImg || '', mostrarEnCertificados: certCheck.checked
+          });
+          if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+          showToast('✅ Logo actualizado');
+          await cargarAuspiciantes();
+        } catch (e) {
+          showToast('⚠️ Error al reemplazar el logo: ' + e.message, true);
+          img.style.opacity = '';
+        }
+      });
+
+      const nombreInput = document.createElement('input');
+      nombreInput.className = 'form-control'; nombreInput.value = a.nombre; nombreInput.placeholder = 'Nombre';
+
+      const urlInput = document.createElement('input');
+      urlInput.className = 'form-control'; urlInput.value = a.url || ''; urlInput.placeholder = 'Link (opcional)';
+
+      const tooltipInput = document.createElement('input');
+      tooltipInput.className = 'form-control'; tooltipInput.value = a.tooltip || ''; tooltipInput.placeholder = 'Tooltip (opcional)';
+
+      const certLabel = document.createElement('label');
+      certLabel.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:.72rem;color:#c8d8f0;cursor:pointer;';
+      const certCheck = document.createElement('input');
+      certCheck.type = 'checkbox'; certCheck.checked = a.mostrarEnCertificados !== false;
+      certLabel.appendChild(certCheck);
+      certLabel.appendChild(document.createTextNode('En certificados'));
+
+      const btnGuardar = document.createElement('button');
+      btnGuardar.className = 'btn-personal-add'; btnGuardar.textContent = '💾 Guardar';
+      btnGuardar.addEventListener('click', () => guardarAuspicianteExistenteUI(a, nombreInput, urlInput, tooltipInput, certCheck, btnGuardar));
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn-toggle cerrar';
+      btnDel.style.cssText = 'width:100%;padding:6px;font-size:.72rem;';
+      btnDel.textContent = '🗑️ Eliminar';
+      btnDel.addEventListener('click', () => eliminarAuspicianteUI(a.id, a.nombre, card));
+
+      [img, fileLogo, nombreInput, urlInput, tooltipInput, certLabel, btnGuardar, btnDel].forEach(el => card.appendChild(el));
+      cont.appendChild(card);
+    });
+  }
+
+  async function guardarAuspicianteExistenteUI(a, nombreInput, urlInput, tooltipInput, certCheck, btnEl) {
+    const nombre = nombreInput.value.trim();
+    if (!nombre) { showToast('⚠️ El nombre es obligatorio', true); return; }
+    btnEl.disabled = true;
+    try {
+      const resp = await gasPost({
+        action: 'guardarAuspiciante', id: a.id, nombre,
+        url: urlInput.value.trim(), tooltip: tooltipInput.value.trim(),
+        logoUrl: a.logoUrl, cartaImg: a.cartaImg || '', mostrarEnCertificados: certCheck.checked
+      });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Auspiciante actualizado');
+      await cargarAuspiciantes();
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    }
+    btnEl.disabled = false;
+  }
+
+  async function eliminarAuspicianteUI(id, nombre, cardEl) {
+    if (!confirm(
+      '¿Eliminar el auspiciante "' + nombre + '"?\n\n' +
+      'Deja de aparecer en INICIO, INSTITUCION, RESULTADOS y certificados. ' +
+      'El logo ya subido a Drive no se borra (queda huérfano, se puede limpiar a mano si hace falta).'
+    )) return;
+    try {
+      const resp = await gasPost({ action: 'eliminarAuspiciante', id });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Auspiciante eliminado');
+      cardEl.remove();
+      _auspiciantesCache = _auspiciantesCache.filter(a => a.id !== id);
+    } catch (e) {
+      showToast('⚠️ Error al eliminar: ' + e.message, true);
+    }
+  }
+
+  async function agregarAuspicianteUI() {
+    const nombre = document.getElementById('aus-nombre').value.trim();
+    const url = document.getElementById('aus-url').value.trim();
+    const tooltip = document.getElementById('aus-tooltip').value.trim();
+    const mostrarCert = document.getElementById('aus-mostrar-cert').checked;
+    const logoFile = document.getElementById('aus-logo-file').files[0];
+    const cartaFile = document.getElementById('aus-carta-file').files[0];
+    if (!nombre) { showToast('⚠️ El nombre es obligatorio', true); return; }
+    if (!logoFile) { showToast('⚠️ Seleccioná un logo', true); return; }
+
+    const btn = document.getElementById('btn-aus-agregar');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true;
+    try {
+      btn.textContent = '⏳ Subiendo logo...';
+      const logoUrl = await subirImagenAuspiciante(logoFile);
+      let cartaImg = '';
+      if (cartaFile) {
+        btn.textContent = '⏳ Subiendo carta...';
+        cartaImg = await subirImagenAuspiciante(cartaFile);
+      }
+      btn.textContent = '⏳ Guardando...';
+      const resp = await gasPost({ action: 'guardarAuspiciante', nombre, url, tooltip, logoUrl, cartaImg, mostrarEnCertificados: mostrarCert });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Auspiciante agregado');
+      document.getElementById('aus-nombre').value = '';
+      document.getElementById('aus-url').value = '';
+      document.getElementById('aus-tooltip').value = '';
+      document.getElementById('aus-logo-file').value = '';
+      document.getElementById('aus-carta-file').value = '';
+      document.getElementById('aus-mostrar-cert').checked = true;
+      await cargarAuspiciantes();
+    } catch (e) {
+      showToast('⚠️ Error: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
+    }
   }
   </script>
 </body>
