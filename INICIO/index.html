@@ -197,7 +197,7 @@ div.ausp-pill{cursor:default;}
 
   function construirCarrusel() {
     // 1. Renderizar un solo set para medir su ancho real
-    const setHTML = ausSinAdyacentesDuplicados(AUSPICIANTES).map(function(a) { return ausRenderPill(a, 'ausp-pill', ''); }).join('');
+    const setHTML = ausSinAdyacentesDuplicados(ausVisibles()).map(function(a) { return ausRenderPill(a, 'ausp-pill', ''); }).join('');
     track.style.animation = 'none';
     track.innerHTML = setHTML;
     const setWidth     = track.scrollWidth || 1;
@@ -222,13 +222,13 @@ div.ausp-pill{cursor:default;}
     track.style.animationDelay = '';
   }
 
-  if (AUSPICIANTES.length) construirCarrusel();
+  if (ausVisibles().length) construirCarrusel();
 
   // Primera visita sin cache todavía (AUSPICIANTES arranca vacío) o lista
   // actualizada desde CONFIGURACION en otra pestaña -- reconstruye el
   // carrusel cuando auspiciantes.js termine de traer datos reales.
   document.addEventListener('auspiciantesListos', function() {
-    if (AUSPICIANTES.length) construirCarrusel();
+    if (ausVisibles().length) construirCarrusel();
   });
 
   let resizeTimer;

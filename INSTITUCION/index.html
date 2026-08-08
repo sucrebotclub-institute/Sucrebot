@@ -384,9 +384,10 @@
   function renderHeroAusp() {
     const heroBox = document.getElementById('instHeroAuspLogos');
     if (!heroBox) return;
+    const visibles = typeof ausVisibles === 'function' ? ausVisibles() : AUSPICIANTES;
     const orden = typeof ausSinAdyacentesDuplicados === 'function'
-      ? ausSinAdyacentesDuplicados(AUSPICIANTES)
-      : AUSPICIANTES;
+      ? ausSinAdyacentesDuplicados(visibles)
+      : visibles;
     heroBox.innerHTML = orden.map(function(a) {
       return ausRenderPill(a, 'inst-hero-ausp-pill', '');
     }).join('');

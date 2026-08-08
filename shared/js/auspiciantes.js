@@ -72,6 +72,15 @@ function ausCartaUrl(item) {
   return item.cartaImg;
 }
 
+// Auspiciantes con el checkbox "Ocultar" activado en CONFIGURACION no
+// aparecen en INICIO/INSTITUCION/RESULTADOS -- independiente del checkbox
+// "Mostrar en certificados" (uno controla el sitio, el otro los diplomas).
+// CONFIGURACION sigue viendo TODOS (incluidos los ocultos) para poder
+// destaparlos de nuevo, por eso el filtro vive acá y no en el backend.
+function ausVisibles() {
+  return AUSPICIANTES.filter(function(a) { return !a.oculto; });
+}
+
 // Reordena una lista para que dos entradas con el mismo logo (ej. BYD + BYD Auto Ec)
 // nunca queden adyacentes. Útil para el carrusel. Funciona con cualquier cantidad
 // de duplicados que puedan aparecer a futuro (actualmente no hay ninguno).

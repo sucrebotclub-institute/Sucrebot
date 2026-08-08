@@ -61,13 +61,15 @@
   }
 
   function mostrarSplashAuspiciante() {
-    if (typeof AUSPICIANTES === 'undefined' || !AUSPICIANTES.length) return;
+    if (typeof AUSPICIANTES === 'undefined') return;
+    const visibles = typeof ausVisibles === 'function' ? ausVisibles() : AUSPICIANTES;
+    if (!visibles.length) return;
     inyectarOverlay();
 
     let idx = 0;
     try { idx = parseInt(localStorage.getItem(AUSP_SPLASH_KEY) || '0', 10) || 0; } catch(e) {}
-    const a = AUSPICIANTES[idx % AUSPICIANTES.length];
-    try { localStorage.setItem(AUSP_SPLASH_KEY, String((idx + 1) % AUSPICIANTES.length)); } catch(e) {}
+    const a = visibles[idx % visibles.length];
+    try { localStorage.setItem(AUSP_SPLASH_KEY, String((idx + 1) % visibles.length)); } catch(e) {}
 
     const overlay = document.getElementById('auspSplashOverlay');
     const logoBox = document.getElementById('auspSplashLogoBox');

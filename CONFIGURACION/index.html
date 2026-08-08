@@ -368,8 +368,12 @@
                 <div class="estado-label" style="margin-bottom:4px;font-size:.7rem;">Carta de presentación — opcional (se abre en un modal al hacer clic, solo si no hay link)</div>
                 <input type="file" id="aus-carta-file" accept="image/*" class="form-control">
               </div>
+              <div class="estado-label" style="margin-top:4px;margin-bottom:-2px;font-size:.7rem;">Visibilidad</div>
               <label style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#c8d8f0;cursor:pointer;">
                 <input type="checkbox" id="aus-mostrar-cert" checked> Mostrar también en certificados
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#c8d8f0;cursor:pointer;">
+                <input type="checkbox" id="aus-ocultar"> Ocultar de INICIO / INSTITUCION / RESULTADOS
               </label>
               <button class="btn-personal-add" id="btn-aus-agregar" onclick="agregarAuspicianteUI()">➕ Agregar auspiciante</button>
             </div>
@@ -1236,7 +1240,8 @@
           const resp = await gasPost({
             action: 'guardarAuspiciante', id: a.id, nombre: nombreInput.value.trim(),
             url: urlInput.value.trim(), tooltip: tooltipInput.value.trim(),
-            logoUrl: nuevaUrl, cartaImg: a.cartaImg || '', mostrarEnCertificados: certCheck.checked
+            logoUrl: nuevaUrl, cartaImg: a.cartaImg || '',
+            mostrarEnCertificados: certCheck.checked, oculto: ocultarCheck.checked
           });
           if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
           showToast('✅ Logo actualizado');
@@ -1256,6 +1261,11 @@
       const tooltipInput = document.createElement('input');
       tooltipInput.className = 'form-control'; tooltipInput.value = a.tooltip || ''; tooltipInput.placeholder = 'Tooltip (opcional)';
 
+      const visLabel = document.createElement('div');
+      visLabel.className = 'color-cat-hex';
+      visLabel.style.cssText = 'margin-top:2px;';
+      visLabel.textContent = 'Visibilidad';
+
       const certLabel = document.createElement('label');
       certLabel.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:.72rem;color:#c8d8f0;cursor:pointer;';
       const certCheck = document.createElement('input');
@@ -1263,9 +1273,16 @@
       certLabel.appendChild(certCheck);
       certLabel.appendChild(document.createTextNode('En certificados'));
 
+      const ocultarLabel = document.createElement('label');
+      ocultarLabel.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:.72rem;color:#c8d8f0;cursor:pointer;';
+      const ocultarCheck = document.createElement('input');
+      ocultarCheck.type = 'checkbox'; ocultarCheck.checked = a.oculto === true;
+      ocultarLabel.appendChild(ocultarCheck);
+      ocultarLabel.appendChild(document.createTextNode('Ocultar de INICIO/INSTITUCION/RESULTADOS'));
+
       const btnGuardar = document.createElement('button');
       btnGuardar.className = 'btn-personal-add'; btnGuardar.textContent = '💾 Guardar';
-      btnGuardar.addEventListener('click', () => guardarAuspicianteExistenteUI(a, nombreInput, urlInput, tooltipInput, certCheck, btnGuardar));
+      btnGuardar.addEventListener('click', () => guardarAuspicianteExistenteUI(a, nombreInput, urlInput, tooltipInput, certCheck, ocultarCheck, btnGuardar));
 
       const btnDel = document.createElement('button');
       btnDel.className = 'btn-toggle cerrar';
@@ -1273,12 +1290,12 @@
       btnDel.textContent = '🗑️ Eliminar';
       btnDel.addEventListener('click', () => eliminarAuspicianteUI(a.id, a.nombre, card));
 
-      [img, fileLogo, nombreInput, urlInput, tooltipInput, certLabel, btnGuardar, btnDel].forEach(el => card.appendChild(el));
+      [img, fileLogo, nombreInput, urlInput, tooltipInput, visLabel, certLabel, ocultarLabel, btnGuardar, btnDel].forEach(el => card.appendChild(el));
       cont.appendChild(card);
     });
   }
 
-  async function guardarAuspicianteExistenteUI(a, nombreInput, urlInput, tooltipInput, certCheck, btnEl) {
+  async function guardarAuspicianteExistenteUI(a, nombreInput, urlInput, tooltipInput, certCheck, ocultarCheck, btnEl) {
     const nombre = nombreInput.value.trim();
     if (!nombre) { showToast('⚠️ El nombre es obligatorio', true); return; }
     btnEl.disabled = true;
@@ -1286,7 +1303,8 @@
       const resp = await gasPost({
         action: 'guardarAuspiciante', id: a.id, nombre,
         url: urlInput.value.trim(), tooltip: tooltipInput.value.trim(),
-        logoUrl: a.logoUrl, cartaImg: a.cartaImg || '', mostrarEnCertificados: certCheck.checked
+        logoUrl: a.logoUrl, cartaImg: a.cartaImg || '',
+        mostrarEnCertificados: certCheck.checked, oculto: ocultarCheck.checked
       });
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
       showToast('✅ Auspiciante actualizado');
@@ -1319,6 +1337,7 @@
     const url = document.getElementById('aus-url').value.trim();
     const tooltip = document.getElementById('aus-tooltip').value.trim();
     const mostrarCert = document.getElementById('aus-mostrar-cert').checked;
+    const ocultar = document.getElementById('aus-ocultar').checked;
     const logoFile = document.getElementById('aus-logo-file').files[0];
     const cartaFile = document.getElementById('aus-carta-file').files[0];
     if (!nombre) { showToast('⚠️ El nombre es obligatorio', true); return; }
@@ -1336,7 +1355,7 @@
         cartaImg = await subirImagenAuspiciante(cartaFile);
       }
       btn.textContent = '⏳ Guardando...';
-      const resp = await gasPost({ action: 'guardarAuspiciante', nombre, url, tooltip, logoUrl, cartaImg, mostrarEnCertificados: mostrarCert });
+      const resp = await gasPost({ action: 'guardarAuspiciante', nombre, url, tooltip, logoUrl, cartaImg, mostrarEnCertificados: mostrarCert, oculto: ocultar });
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
       showToast('✅ Auspiciante agregado');
       document.getElementById('aus-nombre').value = '';
@@ -1345,6 +1364,7 @@
       document.getElementById('aus-logo-file').value = '';
       document.getElementById('aus-carta-file').value = '';
       document.getElementById('aus-mostrar-cert').checked = true;
+      document.getElementById('aus-ocultar').checked = false;
       await cargarAuspiciantes();
     } catch (e) {
       showToast('⚠️ Error: ' + e.message, true);
