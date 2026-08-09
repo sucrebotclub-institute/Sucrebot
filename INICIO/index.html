@@ -10,6 +10,7 @@
   <script src="../shared/js/config.js"></script>
   <script src="../shared/js/auspiciantes.js"></script>
   <script src="../shared/js/auspiciantes-splash.js"></script>
+  <script src="../shared/js/clubes.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
 </head>
@@ -618,34 +619,7 @@ div.ausp-pill{cursor:default;}
 </div>
 <div style="width:64px;height:2px;background:var(--cyan);margin:12px auto 36px;border-radius:1px;"></div>
 
-<div class="clubes-grid">
-  <div class="club-tile"><img src="../shared/images/clubes/club-01.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-02.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-03.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-04.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-05.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-06.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-07.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-08.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-09.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-10.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-11.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-12.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-13.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-14.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-15.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-16.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-17.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-18.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-20.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-21.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-22.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-23.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-24.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-25.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-26.png" alt="Club participante" loading="lazy"></div>
-  <div class="club-tile"><img src="../shared/images/clubes/club-28.png" alt="Club participante" loading="lazy"></div>
-</div>
+<div class="clubes-grid" id="clubes-grid"></div>
 
 </div><!-- /seccion blanca -->
 
@@ -700,6 +674,14 @@ div.ausp-pill{cursor:default;}
 
   // Cache expirado o inexistente → llamar GAS
   fetchStats();
+})();
+</script>
+
+<script>
+(function() {
+  const grid = document.getElementById('clubes-grid');
+  clubRenderGrid(grid); // pinta de una con el cache síncrono (o vacío la primera visita)
+  document.addEventListener('clubesListos', function() { clubRenderGrid(grid); });
 })();
 </script>
 </body>

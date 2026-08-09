@@ -174,6 +174,7 @@
             <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
             <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
             <button class="config-nav-item" data-section="auspiciantes" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
+            <button class="config-nav-item" data-section="clubes" onclick="mostrarSeccion('clubes')"><span class="config-nav-icon">🏟️</span> Clubes</button>
           </div>
 
           <div class="config-panel">
@@ -379,6 +380,33 @@
           <div id="aus-lista" class="color-grid" style="display:none;"></div>
         </div>
 
+        <div class="config-card config-section" data-section="clubes">
+          <div class="config-card-title">🏟️ Clubes participantes</div>
+          <div class="config-card-desc">
+            Grid "Clubes participantes" de INICIO. Agregar uno nuevo sube el logo directo a
+            Drive — no hace falta commitear ni tocar código. Los 26 clubes que ya estaban en
+            el sitio se cargaron sin nombre — completalo acá para identificarlos.
+          </div>
+
+          <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;margin-bottom:20px;">
+            <div class="estado-label" style="margin-bottom:10px;">Agregar club nuevo</div>
+            <div style="display:flex;flex-direction:column;gap:8px;max-width:420px;">
+              <input type="text" id="club-nombre" class="form-control" placeholder="Nombre del club (opcional)">
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.7rem;">Logo * (fondo transparente o blanco recomendado)</div>
+                <input type="file" id="club-logo-file" accept="image/*" class="form-control">
+              </div>
+              <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:12px 14px;">
+                <input type="checkbox" id="club-ocultar" style="width:16px;height:16px;flex-shrink:0;"> Ocultar club
+              </label>
+              <button class="btn-personal-add" id="btn-club-agregar" onclick="agregarClubUI()">➕ Agregar club</button>
+            </div>
+          </div>
+
+          <div id="club-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
+          <div id="club-lista" class="color-grid" style="display:none;"></div>
+        </div>
+
           </div><!-- /config-panel -->
         </div><!-- /config-shell -->
 
@@ -422,6 +450,7 @@
     cargarPersonal();
     cargarInfoEdicion();
     cargarAuspiciantes();
+    cargarClubes();
   });
 
   function mostrarSeccion(id) {
@@ -1349,6 +1378,155 @@
       document.getElementById('aus-carta-file').value = '';
       document.getElementById('aus-ocultar').checked = false;
       await cargarAuspiciantes();
+    } catch (e) {
+      showToast('⚠️ Error: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
+    }
+  }
+
+  // ── Clubes participantes ────────────────────────────────────────────
+  let _clubesCache = [];
+
+  async function subirImagenClub(file) {
+    const base64 = await toBase64(file);
+    const resp = await gasPost({ action: 'uploadLogoClub', base64, mimeType: file.type, fileName: file.name });
+    if (!resp.ok || !resp.url) throw new Error(resp.error || 'Error al subir la imagen');
+    return resp.url;
+  }
+
+  async function cargarClubes() {
+    try {
+      const lista = await gasGet({ action: 'getClubes' });
+      _clubesCache = Array.isArray(lista) ? lista : [];
+    } catch (e) {
+      _clubesCache = [];
+      showToast('⚠️ Error al cargar clubes', true);
+    }
+    renderClubesUI();
+    document.getElementById('club-loading').style.display = 'none';
+    document.getElementById('club-lista').style.display = 'grid';
+  }
+
+  function renderClubesUI() {
+    const cont = document.getElementById('club-lista');
+    cont.innerHTML = '';
+    if (!_clubesCache.length) {
+      cont.innerHTML = '<div class="config-card-desc">Todavía no hay ningún club cargado.</div>';
+      return;
+    }
+    _clubesCache.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'color-card';
+      card.style.gap = '6px';
+
+      const img = document.createElement('img');
+      img.src = c.logoUrl; img.alt = c.nombre || 'Club participante';
+      img.title = 'Click para reemplazar el logo';
+      img.style.cssText = 'max-width:100%;max-height:50px;object-fit:contain;background:#fff;border-radius:6px;padding:6px;cursor:pointer;';
+
+      const fileLogo = document.createElement('input');
+      fileLogo.type = 'file'; fileLogo.accept = 'image/*'; fileLogo.style.display = 'none';
+      img.addEventListener('click', () => fileLogo.click());
+      fileLogo.addEventListener('change', async () => {
+        const f = fileLogo.files[0];
+        if (!f) return;
+        img.style.opacity = '.4';
+        try {
+          const nuevaUrl = await subirImagenClub(f);
+          const resp = await gasPost({
+            action: 'guardarClub', id: c.id, nombre: nombreInput.value.trim(),
+            logoUrl: nuevaUrl, oculto: ocultarCheck.checked
+          });
+          if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+          showToast('✅ Logo actualizado');
+          await cargarClubes();
+        } catch (e) {
+          showToast('⚠️ Error al reemplazar el logo: ' + e.message, true);
+          img.style.opacity = '';
+        }
+      });
+
+      const nombreInput = document.createElement('input');
+      nombreInput.className = 'form-control'; nombreInput.value = c.nombre || ''; nombreInput.placeholder = 'Nombre del club';
+
+      const ocultarLabel = document.createElement('label');
+      ocultarLabel.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:.78rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:8px 10px;width:100%;box-sizing:border-box;';
+      const ocultarCheck = document.createElement('input');
+      ocultarCheck.type = 'checkbox'; ocultarCheck.style.cssText = 'width:15px;height:15px;flex-shrink:0;';
+      ocultarCheck.checked = c.oculto === true;
+      ocultarLabel.appendChild(ocultarCheck);
+      ocultarLabel.appendChild(document.createTextNode('Ocultar club'));
+
+      const btnGuardar = document.createElement('button');
+      btnGuardar.className = 'btn-personal-add'; btnGuardar.textContent = '💾 Guardar';
+      btnGuardar.addEventListener('click', () => guardarClubExistenteUI(c, nombreInput, ocultarCheck, btnGuardar));
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn-toggle cerrar';
+      btnDel.style.cssText = 'width:100%;padding:6px;font-size:.72rem;';
+      btnDel.textContent = '🗑️ Eliminar';
+      btnDel.addEventListener('click', () => eliminarClubUI(c.id, c.nombre || '(sin nombre)', card));
+
+      [img, fileLogo, nombreInput, ocultarLabel, btnGuardar, btnDel].forEach(el => card.appendChild(el));
+      cont.appendChild(card);
+    });
+  }
+
+  async function guardarClubExistenteUI(c, nombreInput, ocultarCheck, btnEl) {
+    btnEl.disabled = true;
+    try {
+      const resp = await gasPost({
+        action: 'guardarClub', id: c.id, nombre: nombreInput.value.trim(),
+        logoUrl: c.logoUrl, oculto: ocultarCheck.checked
+      });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Club actualizado');
+      await cargarClubes();
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    }
+    btnEl.disabled = false;
+  }
+
+  async function eliminarClubUI(id, nombre, cardEl) {
+    if (!confirm(
+      '¿Eliminar el club "' + nombre + '"?\n\n' +
+      'Deja de aparecer en INICIO. El logo ya subido a Drive no se borra ' +
+      '(queda huérfano, se puede limpiar a mano si hace falta).'
+    )) return;
+    try {
+      const resp = await gasPost({ action: 'eliminarClub', id });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Club eliminado');
+      cardEl.remove();
+      _clubesCache = _clubesCache.filter(c => c.id !== id);
+    } catch (e) {
+      showToast('⚠️ Error al eliminar: ' + e.message, true);
+    }
+  }
+
+  async function agregarClubUI() {
+    const nombre = document.getElementById('club-nombre').value.trim();
+    const ocultar = document.getElementById('club-ocultar').checked;
+    const logoFile = document.getElementById('club-logo-file').files[0];
+    if (!logoFile) { showToast('⚠️ Seleccioná un logo', true); return; }
+
+    const btn = document.getElementById('btn-club-agregar');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true;
+    try {
+      btn.textContent = '⏳ Subiendo logo...';
+      const logoUrl = await subirImagenClub(logoFile);
+      btn.textContent = '⏳ Guardando...';
+      const resp = await gasPost({ action: 'guardarClub', nombre, logoUrl, oculto: ocultar });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Club agregado');
+      document.getElementById('club-nombre').value = '';
+      document.getElementById('club-logo-file').value = '';
+      document.getElementById('club-ocultar').checked = false;
+      await cargarClubes();
     } catch (e) {
       showToast('⚠️ Error: ' + e.message, true);
     } finally {
