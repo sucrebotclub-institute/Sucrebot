@@ -194,6 +194,17 @@
     }
 
     /* ── GALERÍA ── */
+    .gal-grupo { margin-bottom: 28px; }
+    .gal-grupo:last-child { margin-bottom: 0; }
+    .gal-grupo-titulo {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1.5px;
+      color: #1a3a6e; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .gal-grupo-titulo::after {
+      content: ''; flex: 1; height: 2px;
+      background: linear-gradient(90deg, rgba(26,92,168,0.25), transparent);
+    }
     .gal-filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
     .gal-filtro-btn {
       font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700;
@@ -470,7 +481,7 @@
       <div class="inst-divider"></div>
       <p style="color:#4a5a7a;font-family:'Exo 2',sans-serif;font-size:14px;margin-bottom:16px;">Imágenes de ediciones anteriores del torneo SucreBot.</p>
       <div class="gal-filtros" id="gal-filtros" style="display:none;"></div>
-      <div class="gal-grid" id="gal-grid"></div>
+      <div id="gal-grid"></div>
 
       <div class="inst-add-wrap">
         <button class="inst-btn-add" onclick="abrirModalFoto()">➕ Agregar foto</button>
@@ -663,6 +674,32 @@
     return vistas;
   }
 
+  // Convierte un código de edición tipo "IV"/"V" al mismo formato ordinal
+  // que ya usa el stat "Edición del torneo" ("4ta"/"5ta") -- mismo algoritmo
+  // que edicionOrdinal() en Code.gs, portado a JS. Si el código no es un
+  // numeral romano válido (ej. alguien escribió "2024" o un nombre libre),
+  // se muestra tal cual, sin inventar un ordinal.
+  const ROMANOS = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+  const ORDINALES_ES = {
+    1: '1ra', 2: '2da', 3: '3ra', 4: '4ta', 5: '5ta', 6: '6ta', 7: '7ma', 8: '8va', 9: '9na', 10: '10ma',
+    11: '11va', 12: '12va', 13: '13va', 14: '14va', 15: '15va', 16: '16va', 17: '17va', 18: '18va', 19: '19va', 20: '20va'
+  };
+  function romanANumero(roman) {
+    const s = String(roman).toUpperCase();
+    let total = 0;
+    for (let i = 0; i < s.length; i++) {
+      const actual = ROMANOS[s[i]] || 0;
+      const siguiente = ROMANOS[s[i + 1]] || 0;
+      total += actual < siguiente ? -actual : actual;
+    }
+    return total;
+  }
+  function tituloEdicion(codigo) {
+    const n = romanANumero(codigo);
+    if (!n) return codigo + ' Edición';
+    return (ORDINALES_ES[n] || (n + 'va')) + ' Edición';
+  }
+
   function renderFiltrosGaleria() {
     const cont = document.getElementById('gal-filtros');
     const ediciones = ediccionesEnOrden();
@@ -671,7 +708,7 @@
     const opciones = ['todas'].concat(ediciones);
     if (opciones.indexOf(filtroEdicion) === -1) filtroEdicion = 'todas';
     cont.innerHTML = opciones.map(function(op) {
-      const label = op === 'todas' ? 'Todas' : op;
+      const label = op === 'todas' ? 'Todas' : tituloEdicion(op);
       const activa = op === filtroEdicion ? ' active' : '';
       return '<button class="gal-filtro-btn' + activa + '" data-ed="' + op + '">' + label + '</button>';
     }).join('');
@@ -685,22 +722,40 @@
     });
   }
 
-  function renderGaleria() {
-    const grid = document.getElementById('gal-grid');
-    // body.staff-mode ve TODAS las fotos (incluidas las ocultas, atenuadas)
-    // para poder destaparlas de nuevo; el público solo ve las visibles.
-    const enStaffMode = document.body.classList.contains('staff-mode');
-    const base = enStaffMode ? galeria : galeria.filter(function(g) { return !g.oculto; });
-    const filtradas = filtroEdicion === 'todas' ? base : base.filter(function(g) { return g.edicion === filtroEdicion; });
-    grid.innerHTML = filtradas.map(function(g) {
+  function renderGalGridHTML(lista) {
+    return '<div class="gal-grid">' + lista.map(function(g) {
       const alt = g.caption ? g.caption.replace(/"/g, '&quot;') : 'SucreBot foto';
       const opacidad = g.oculto ? 'opacity:.45;' : '';
       return '<div class="inst-gal-item-wrap" data-id="' + g.id + '">' +
         '<a class="gal-item" href="' + g.url + '" target="_blank" style="' + opacidad + '"><img src="' + g.url + '" alt="' + alt + '" loading="lazy"></a>' +
         '<button class="inst-gal-editar" title="Editar">✏️</button>' +
       '</div>';
-    }).join('');
-    grid.querySelectorAll('.inst-gal-item-wrap').forEach(function(wrap) {
+    }).join('') + '</div>';
+  }
+
+  function renderGaleria() {
+    const cont = document.getElementById('gal-grid');
+    // body.staff-mode ve TODAS las fotos (incluidas las ocultas, atenuadas)
+    // para poder destaparlas de nuevo; el público solo ve las visibles.
+    const enStaffMode = document.body.classList.contains('staff-mode');
+    const base = enStaffMode ? galeria : galeria.filter(function(g) { return !g.oculto; });
+
+    if (filtroEdicion === 'todas') {
+      // Agrupadas por edición con su propio título (ej. "4ta Edición"),
+      // en el mismo orden en que aparecen las ediciones (más vieja primero,
+      // porque ese es el orden en que se van agregando fotos nuevas).
+      const ediciones = ediccionesEnOrden();
+      cont.innerHTML = ediciones.map(function(ed) {
+        const fotosEd = base.filter(function(g) { return g.edicion === ed; });
+        if (!fotosEd.length) return '';
+        return '<div class="gal-grupo"><div class="gal-grupo-titulo">' + tituloEdicion(ed) + '</div>' + renderGalGridHTML(fotosEd) + '</div>';
+      }).join('');
+    } else {
+      const filtradas = base.filter(function(g) { return g.edicion === filtroEdicion; });
+      cont.innerHTML = renderGalGridHTML(filtradas);
+    }
+
+    cont.querySelectorAll('.inst-gal-item-wrap').forEach(function(wrap) {
       wrap.querySelector('.inst-gal-editar').addEventListener('click', function(e) {
         e.preventDefault();
         abrirModalFoto(wrap.dataset.id);
