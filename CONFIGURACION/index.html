@@ -136,30 +136,6 @@
     .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px); background: #0f2035; border: 1px solid rgba(91,200,240,0.4); border-radius: 10px; padding: 14px 22px; font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #c8d8f0; box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 99999; max-width: calc(100vw - 40px); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast.error { border-color: rgba(248,113,113,0.5); color: #f87171; }
-
-    .txt-preview {
-      background: rgba(0,0,0,.15); border: 1px solid var(--border,#2a3550); border-radius: 8px;
-      padding: 12px 14px; color: #c8d8f0; font-size: .82rem; line-height: 1.55;
-      max-height: 90px; overflow: hidden; white-space: pre-wrap; cursor: default;
-    }
-    .txt-preview:empty::before { content: '(vacío)'; color: #5a6a8a; font-style: italic; }
-
-    .txt-editor-overlay {
-      display: none; position: fixed; inset: 0; z-index: 100000;
-      background: rgba(5,10,20,.82); align-items: center; justify-content: center; padding: 20px;
-    }
-    .txt-editor-overlay.show { display: flex; }
-    .txt-editor-box {
-      background: #0f1a2e; border: 1px solid var(--border,#2a3550); border-radius: 12px;
-      width: 100%; max-width: 640px; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5);
-    }
-    .txt-editor-box h3 { margin: 0 0 14px; color: #fff; font-size: 1rem; }
-    .txt-editor-box textarea {
-      width: 100%; box-sizing: border-box; min-height: 260px; resize: vertical;
-      background: rgba(255,255,255,.04); border: 1px solid var(--border,#2a3550); border-radius: 8px;
-      color: #e8f0ff; font-size: .88rem; line-height: 1.6; padding: 12px; font-family: inherit;
-    }
-    .txt-editor-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
   </style>
 </head>
 <body>
@@ -173,7 +149,7 @@
       <div id="acceso-denegado" style="display:none;">
         <div class="acceso-denegado">
           <h3>🔒 Acceso restringido</h3>
-          <p>Solo personal del staff puede ver esta página.</p>
+          <p>Solo administradores pueden ver esta página.</p>
         </div>
       </div>
 
@@ -182,24 +158,23 @@
         <div class="page-hero">
           <div class="page-hero-badge">
             <span class="page-hero-badge-dot"></span>
-            <span id="config-badge-texto">ADMIN ONLY</span>
+            ADMIN ONLY
           </div>
           <h2>CONFIGURACIÓN <span>SUCREBOT</span></h2>
         </div>
 
         <div class="config-shell">
           <div class="config-sidebar" id="config-sidebar">
-            <button class="config-nav-item" data-section="registro" data-admin-only="true" onclick="mostrarSeccion('registro')"><span class="config-nav-icon">📋</span> Registro</button>
-            <button class="config-nav-item" data-section="categorias" data-admin-only="true" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
-            <button class="config-nav-item" data-section="personal" data-admin-only="true" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
-            <button class="config-nav-item" data-section="ediciones" data-admin-only="true" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
-            <button class="config-nav-item" data-section="cambcat" data-admin-only="true" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
-            <button class="config-nav-item" data-section="dupcat" data-admin-only="true" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
-            <button class="config-nav-item" data-section="colores" data-admin-only="true" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
-            <button class="config-nav-item" data-section="limpiar" data-admin-only="true" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
-            <button class="config-nav-item" data-section="auspiciantes" data-admin-only="true" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
-            <button class="config-nav-item" data-section="clubes" data-admin-only="true" onclick="mostrarSeccion('clubes')"><span class="config-nav-icon">🏟️</span> Clubes</button>
-            <button class="config-nav-item" data-section="institucion" onclick="mostrarSeccion('institucion')"><span class="config-nav-icon">🏛️</span> Institución</button>
+            <button class="config-nav-item" data-section="registro" onclick="mostrarSeccion('registro')"><span class="config-nav-icon">📋</span> Registro</button>
+            <button class="config-nav-item" data-section="categorias" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
+            <button class="config-nav-item" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
+            <button class="config-nav-item" data-section="ediciones" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
+            <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
+            <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
+            <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
+            <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
+            <button class="config-nav-item" data-section="auspiciantes" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
+            <button class="config-nav-item" data-section="clubes" onclick="mostrarSeccion('clubes')"><span class="config-nav-icon">🏟️</span> Clubes</button>
           </div>
 
           <div class="config-panel">
@@ -432,85 +407,6 @@
           <div id="club-lista" class="color-grid" style="display:none;"></div>
         </div>
 
-        <div class="config-card config-section" data-section="institucion">
-          <div class="config-card-title">🏛️ Página Institución</div>
-          <div class="config-card-desc">
-            Contenido de la página INSTITUCION: texto de "¿Quiénes somos?" (con imágenes),
-            Misión y Visión, Nuestros valores, y la Galería de fotos por edición.
-          </div>
-
-          <div id="inst-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
-
-          <div id="inst-contenido" style="display:none;">
-
-            <!-- Quiénes somos -->
-            <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;margin-bottom:20px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
-                <div class="estado-label" style="margin:0;">¿Quiénes somos?</div>
-                <button class="btn-personal-add" style="width:auto;padding:6px 14px;font-size:.72rem;" onclick="abrirEditorTexto('inst-quienes-texto','¿Quiénes somos?')">✏️ Editar texto</button>
-              </div>
-              <textarea id="inst-quienes-texto" style="display:none;"></textarea>
-              <div id="inst-quienes-texto-preview" class="txt-preview"></div>
-
-              <div class="estado-label" style="margin:16px 0 8px;font-size:.7rem;">Imágenes de esta sección</div>
-              <div id="inst-quienes-imgs" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;"></div>
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <input type="file" id="inst-quienes-img-file" accept="image/*" class="form-control" style="max-width:280px;">
-                <button class="btn-personal-add" id="btn-inst-quienes-img-agregar" onclick="agregarImagenQuienesSomosUI()" style="width:auto;padding:8px 16px;">➕ Agregar imagen</button>
-              </div>
-            </div>
-
-            <!-- Misión y Visión -->
-            <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;margin-bottom:20px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
-                <div class="estado-label" style="margin:0;">Misión</div>
-                <button class="btn-personal-add" style="width:auto;padding:6px 14px;font-size:.72rem;" onclick="abrirEditorTexto('inst-mision','Misión')">✏️ Editar</button>
-              </div>
-              <textarea id="inst-mision" style="display:none;"></textarea>
-              <div id="inst-mision-preview" class="txt-preview" style="margin-bottom:16px;"></div>
-
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
-                <div class="estado-label" style="margin:0;">Visión</div>
-                <button class="btn-personal-add" style="width:auto;padding:6px 14px;font-size:.72rem;" onclick="abrirEditorTexto('inst-vision','Visión')">✏️ Editar</button>
-              </div>
-              <textarea id="inst-vision" style="display:none;"></textarea>
-              <div id="inst-vision-preview" class="txt-preview"></div>
-            </div>
-
-            <!-- Valores -->
-            <div class="estado-label" style="margin:8px 0 10px;font-size:.85rem;">Nuestros valores</div>
-            <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;margin-bottom:16px;">
-              <div style="display:flex;flex-direction:column;gap:8px;max-width:420px;">
-                <input type="text" id="valor-icono" class="form-control" placeholder="Icono (emoji, ej. ⚙️)">
-                <input type="text" id="valor-titulo" class="form-control" placeholder="Título *">
-                <textarea id="valor-desc" class="form-control" rows="2" placeholder="Descripción"></textarea>
-                <button class="btn-personal-add" id="btn-valor-agregar" onclick="agregarValorUI()">➕ Agregar valor</button>
-              </div>
-            </div>
-            <div id="valor-lista" class="color-grid" style="margin-bottom:28px;"></div>
-
-            <!-- Galería -->
-            <div class="estado-label" style="margin:8px 0 10px;font-size:.85rem;">Galería de fotos</div>
-            <div class="config-card-desc" style="margin-bottom:14px;">
-              Cada foto queda etiquetada con su edición (ej. "IV", "V", "VI"). En INSTITUCION se
-              pueden ver todas juntas o filtrar por edición.
-            </div>
-            <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;margin-bottom:16px;">
-              <div style="display:flex;flex-direction:column;gap:8px;max-width:420px;">
-                <input type="text" id="gal-edicion" class="form-control" placeholder="Edición (ej. V) *">
-                <input type="text" id="gal-caption" class="form-control" placeholder="Descripción de la foto — opcional">
-                <input type="file" id="gal-foto-file" accept="image/*" class="form-control">
-                <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:12px 14px;">
-                  <input type="checkbox" id="gal-ocultar" style="width:16px;height:16px;flex-shrink:0;"> Ocultar foto
-                </label>
-                <button class="btn-personal-add" id="btn-gal-agregar" onclick="agregarFotoGaleriaUI()">➕ Agregar foto</button>
-              </div>
-            </div>
-            <div id="gal-lista" class="color-grid"></div>
-
-          </div>
-        </div>
-
           </div><!-- /config-panel -->
         </div><!-- /config-shell -->
 
@@ -519,17 +415,6 @@
   </main>
 
   <div class="toast" id="toast"></div>
-
-  <div class="txt-editor-overlay" id="txt-editor-overlay">
-    <div class="txt-editor-box">
-      <h3 id="txt-editor-titulo">Editar texto</h3>
-      <textarea id="txt-editor-textarea" placeholder="Podés dejar líneas en blanco entre párrafos"></textarea>
-      <div class="txt-editor-actions">
-        <button class="btn-cambcat-cancelar" onclick="cerrarEditorTexto()">Cancelar</button>
-        <button class="btn-personal-add" style="width:auto;padding:10px 20px;" onclick="guardarEditorTexto()">💾 Guardar</button>
-      </div>
-    </div>
-  </div>
 
   <div data-include="../shared/components/footer.html"></div>
   <script src="../shared/js/load-components.js"></script>
@@ -556,43 +441,19 @@
 
   function show(id) { document.getElementById(id).style.display = 'block'; }
 
-  // El resto de CONFIGURACION sigue siendo Admin-only (Personal, Ediciones,
-  // Limpiar Sheet, etc. -- acciones destructivas/sensibles). La pestaña
-  // "Institución" es la única excepción: Staff completo también puede
-  // editar el contenido de la página INSTITUCION (Quiénes somos/Misión y
-  // Visión/Valores/Galería), a pedido explícito de Raku -- ver [data-admin-only].
-  let _esAdminReal = false;
-
   document.addEventListener('componentsLoaded', async () => {
     if (window.esperarRol) await window.esperarRol();
-    if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
-    _esAdminReal = !!(window.esAdmin && window.esAdmin());
+    if (!window.esAdmin || !window.esAdmin()) { show('acceso-denegado'); return; }
     show('contenido-staff');
-
-    if (!_esAdminReal) {
-      document.getElementById('config-badge-texto').textContent = 'STAFF';
-      document.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = 'none');
-    }
-
-    const seccionGuardada = localStorage.getItem('sucrebot_config_seccion') || 'registro';
-    // Un staff sin permiso admin no puede aterrizar en una sección oculta
-    // (ej. quedó guardada de una sesión previa como admin en el mismo navegador).
-    const seccionInicial = (_esAdminReal || seccionGuardada === 'institucion') ? seccionGuardada : 'institucion';
-    mostrarSeccion(seccionInicial);
-
-    cargarInstitucion();
-
-    if (_esAdminReal) {
-      cargarEstado();
-      cargarPersonal();
-      cargarInfoEdicion();
-      cargarAuspiciantes();
-      cargarClubes();
-    }
+    mostrarSeccion(localStorage.getItem('sucrebot_config_seccion') || 'registro');
+    cargarEstado();
+    cargarPersonal();
+    cargarInfoEdicion();
+    cargarAuspiciantes();
+    cargarClubes();
   });
 
   function mostrarSeccion(id) {
-    if (!_esAdminReal && id !== 'institucion') id = 'institucion';
     document.querySelectorAll('.config-section').forEach(s => s.classList.toggle('active', s.dataset.section === id));
     document.querySelectorAll('.config-nav-item').forEach(b => b.classList.toggle('active', b.dataset.section === id));
     localStorage.setItem('sucrebot_config_seccion', id);
@@ -1666,364 +1527,6 @@
       document.getElementById('club-logo-file').value = '';
       document.getElementById('club-ocultar').checked = false;
       await cargarClubes();
-    } catch (e) {
-      showToast('⚠️ Error: ' + e.message, true);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = textoOriginal;
-    }
-  }
-
-  // ── Institución (Quiénes somos / Misión y Visión / Valores / Galería) ──
-  let _instConfig = { quienesSomosTexto: '', quienesSomosImagenes: [], mision: '', vision: '' };
-  let _valoresCache = [];
-  let _galeriaCache = [];
-
-  async function cargarInstitucion() {
-    try {
-      const [config, valores, galeria] = await Promise.all([
-        gasGet({ action: 'getInstitucionConfig' }),
-        gasGet({ action: 'getValores' }),
-        gasGet({ action: 'getGaleria' })
-      ]);
-      // Mismo hallazgo que en INSTITUCION: un backend sin esta acción
-      // desplegada responde '{}' válido sin 'error' -- chequear la forma
-      // real antes de pisar el estado con algo vacío.
-      _instConfig = (config && typeof config.mision === 'string') ? config : _instConfig;
-      _valoresCache = Array.isArray(valores) ? valores : [];
-      _galeriaCache = Array.isArray(galeria) ? galeria : [];
-    } catch (e) {
-      showToast('⚠️ Error al cargar Institución', true);
-    }
-    document.getElementById('inst-quienes-texto').value = _instConfig.quienesSomosTexto || '';
-    document.getElementById('inst-mision').value = _instConfig.mision || '';
-    document.getElementById('inst-vision').value = _instConfig.vision || '';
-    actualizarPreviewTexto('inst-quienes-texto');
-    actualizarPreviewTexto('inst-mision');
-    actualizarPreviewTexto('inst-vision');
-    renderInstQuienesImgs();
-    renderValoresUI();
-    renderGaleriaUI();
-    document.getElementById('inst-loading').style.display = 'none';
-    document.getElementById('inst-contenido').style.display = 'block';
-  }
-
-  // ── Editor de texto en modal (Quiénes somos / Misión / Visión) ──────
-  // Los 3 campos son textareas ocultos (siguen siendo la fuente real que
-  // lee guardarInstitucionUI) -- el modal es solo una superficie más grande
-  // para editarlos cómodamente, evita la cajita chica difícil de usar.
-  let _txtEditorTargetId = null;
-
-  function actualizarPreviewTexto(targetId) {
-    const preview = document.getElementById(targetId + '-preview');
-    if (!preview) return;
-    preview.textContent = document.getElementById(targetId).value || '';
-  }
-
-  function abrirEditorTexto(targetId, titulo) {
-    _txtEditorTargetId = targetId;
-    document.getElementById('txt-editor-titulo').textContent = titulo;
-    document.getElementById('txt-editor-textarea').value = document.getElementById(targetId).value || '';
-    document.getElementById('txt-editor-overlay').classList.add('show');
-    document.getElementById('txt-editor-textarea').focus();
-  }
-
-  function cerrarEditorTexto() {
-    document.getElementById('txt-editor-overlay').classList.remove('show');
-    _txtEditorTargetId = null;
-  }
-
-  async function guardarEditorTexto() {
-    if (!_txtEditorTargetId) return;
-    document.getElementById(_txtEditorTargetId).value = document.getElementById('txt-editor-textarea').value;
-    actualizarPreviewTexto(_txtEditorTargetId);
-    cerrarEditorTexto();
-    await guardarInstitucionUI(true);
-  }
-
-  function renderInstQuienesImgs() {
-    const cont = document.getElementById('inst-quienes-imgs');
-    const imgs = _instConfig.quienesSomosImagenes || [];
-    if (!imgs.length) { cont.innerHTML = '<div class="config-card-desc">Sin imágenes todavía.</div>'; return; }
-    cont.innerHTML = '';
-    imgs.forEach(url => {
-      const box = document.createElement('div');
-      box.style.cssText = 'position:relative;width:110px;';
-      const img = document.createElement('img');
-      img.src = url;
-      img.style.cssText = 'width:110px;height:80px;object-fit:cover;border-radius:8px;background:#fff;';
-      const btnX = document.createElement('button');
-      btnX.textContent = '✕';
-      btnX.title = 'Quitar imagen';
-      btnX.style.cssText = 'position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:#dc3545;color:#fff;border:none;cursor:pointer;font-size:12px;line-height:1;';
-      btnX.addEventListener('click', () => quitarImagenQuienesSomosUI(url));
-      box.appendChild(img);
-      box.appendChild(btnX);
-      cont.appendChild(box);
-    });
-  }
-
-  async function subirImagenInstitucion(file) {
-    const base64 = await toBase64(file);
-    const resp = await gasPost({ action: 'uploadImagenInstitucion', base64, mimeType: file.type, fileName: file.name });
-    if (!resp.ok || !resp.url) throw new Error(resp.error || 'Error al subir la imagen');
-    return resp.url;
-  }
-
-  async function agregarImagenQuienesSomosUI() {
-    const file = document.getElementById('inst-quienes-img-file').files[0];
-    if (!file) { showToast('⚠️ Seleccioná una imagen', true); return; }
-    const btn = document.getElementById('btn-inst-quienes-img-agregar');
-    const textoOriginal = btn.textContent;
-    btn.disabled = true;
-    try {
-      btn.textContent = '⏳ Subiendo...';
-      const url = await subirImagenInstitucion(file);
-      _instConfig.quienesSomosImagenes = (_instConfig.quienesSomosImagenes || []).concat([url]);
-      await guardarInstitucionUI(true);
-      document.getElementById('inst-quienes-img-file').value = '';
-    } catch (e) {
-      showToast('⚠️ Error: ' + e.message, true);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = textoOriginal;
-    }
-  }
-
-  async function quitarImagenQuienesSomosUI(url) {
-    if (!confirm('¿Quitar esta imagen de "Quiénes somos"?')) return;
-    _instConfig.quienesSomosImagenes = (_instConfig.quienesSomosImagenes || []).filter(u => u !== url);
-    await guardarInstitucionUI(true);
-  }
-
-  async function guardarInstitucionUI(silencioso) {
-    const btn = document.getElementById('btn-inst-guardar');
-    const textoOriginal = btn ? btn.textContent : '';
-    if (btn && !silencioso) { btn.disabled = true; btn.textContent = '⏳ Guardando...'; }
-    try {
-      const payload = {
-        action: 'guardarInstitucionConfig',
-        quienesSomosTexto: document.getElementById('inst-quienes-texto').value,
-        quienesSomosImagenes: _instConfig.quienesSomosImagenes || [],
-        mision: document.getElementById('inst-mision').value,
-        vision: document.getElementById('inst-vision').value
-      };
-      const resp = await gasPost(payload);
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      _instConfig.quienesSomosTexto = payload.quienesSomosTexto;
-      _instConfig.mision = payload.mision;
-      _instConfig.vision = payload.vision;
-      renderInstQuienesImgs();
-      showToast('✅ Guardado');
-    } catch (e) {
-      showToast('⚠️ Error al guardar: ' + e.message, true);
-    } finally {
-      if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
-    }
-  }
-
-  // ── Valores ──────────────────────────────────────────────────────
-  function renderValoresUI() {
-    const cont = document.getElementById('valor-lista');
-    cont.innerHTML = '';
-    if (!_valoresCache.length) {
-      cont.innerHTML = '<div class="config-card-desc">Todavía no hay ningún valor cargado.</div>';
-      return;
-    }
-    _valoresCache.forEach(v => {
-      const card = document.createElement('div');
-      card.className = 'color-card';
-      card.style.gap = '6px';
-
-      const iconoInput = document.createElement('input');
-      iconoInput.className = 'form-control'; iconoInput.value = v.icono || ''; iconoInput.placeholder = 'Icono';
-      iconoInput.style.textAlign = 'center'; iconoInput.style.fontSize = '1.3rem';
-
-      const tituloInput = document.createElement('input');
-      tituloInput.className = 'form-control'; tituloInput.value = v.titulo || ''; tituloInput.placeholder = 'Título';
-
-      const descInput = document.createElement('textarea');
-      descInput.className = 'form-control'; descInput.rows = 3; descInput.value = v.descripcion || ''; descInput.placeholder = 'Descripción';
-      descInput.style.width = '100%'; descInput.style.boxSizing = 'border-box'; descInput.style.resize = 'vertical';
-
-      const btnGuardar = document.createElement('button');
-      btnGuardar.className = 'btn-personal-add'; btnGuardar.textContent = '💾 Guardar';
-      btnGuardar.addEventListener('click', () => guardarValorExistenteUI(v.id, iconoInput, tituloInput, descInput, btnGuardar));
-
-      const btnDel = document.createElement('button');
-      btnDel.className = 'btn-toggle cerrar';
-      btnDel.style.cssText = 'width:100%;padding:6px;font-size:.72rem;';
-      btnDel.textContent = '🗑️ Eliminar';
-      btnDel.addEventListener('click', () => eliminarValorUI(v.id, v.titulo || '(sin título)', card));
-
-      [iconoInput, tituloInput, descInput, btnGuardar, btnDel].forEach(el => card.appendChild(el));
-      cont.appendChild(card);
-    });
-  }
-
-  async function guardarValorExistenteUI(id, iconoInput, tituloInput, descInput, btnEl) {
-    const titulo = tituloInput.value.trim();
-    if (!titulo) { showToast('⚠️ El título es obligatorio', true); return; }
-    btnEl.disabled = true;
-    try {
-      const resp = await gasPost({ action: 'guardarValor', id, icono: iconoInput.value.trim(), titulo, descripcion: descInput.value.trim() });
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      showToast('✅ Valor actualizado');
-      const v = _valoresCache.find(x => x.id === id);
-      if (v) { v.icono = iconoInput.value.trim(); v.titulo = titulo; v.descripcion = descInput.value.trim(); }
-    } catch (e) {
-      showToast('⚠️ Error al guardar: ' + e.message, true);
-    }
-    btnEl.disabled = false;
-  }
-
-  async function eliminarValorUI(id, titulo, cardEl) {
-    if (!confirm('¿Eliminar el valor "' + titulo + '"?')) return;
-    try {
-      const resp = await gasPost({ action: 'eliminarValor', id });
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      showToast('✅ Valor eliminado');
-      cardEl.remove();
-      _valoresCache = _valoresCache.filter(v => v.id !== id);
-    } catch (e) {
-      showToast('⚠️ Error al eliminar: ' + e.message, true);
-    }
-  }
-
-  async function agregarValorUI() {
-    const icono = document.getElementById('valor-icono').value.trim();
-    const titulo = document.getElementById('valor-titulo').value.trim();
-    const descripcion = document.getElementById('valor-desc').value.trim();
-    if (!titulo) { showToast('⚠️ El título es obligatorio', true); return; }
-
-    const btn = document.getElementById('btn-valor-agregar');
-    const textoOriginal = btn.textContent;
-    btn.disabled = true;
-    try {
-      const resp = await gasPost({ action: 'guardarValor', icono, titulo, descripcion });
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      showToast('✅ Valor agregado');
-      document.getElementById('valor-icono').value = '';
-      document.getElementById('valor-titulo').value = '';
-      document.getElementById('valor-desc').value = '';
-      _valoresCache.push({ id: resp.id, icono, titulo, descripcion });
-      renderValoresUI();
-    } catch (e) {
-      showToast('⚠️ Error: ' + e.message, true);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = textoOriginal;
-    }
-  }
-
-  // ── Galería ──────────────────────────────────────────────────────
-  async function subirFotoGaleria(file) {
-    const base64 = await toBase64(file);
-    const resp = await gasPost({ action: 'uploadFotoGaleria', base64, mimeType: file.type, fileName: file.name });
-    if (!resp.ok || !resp.url) throw new Error(resp.error || 'Error al subir la foto');
-    return resp.url;
-  }
-
-  function renderGaleriaUI() {
-    const cont = document.getElementById('gal-lista');
-    cont.innerHTML = '';
-    if (!_galeriaCache.length) {
-      cont.innerHTML = '<div class="config-card-desc">Todavía no hay ninguna foto cargada.</div>';
-      return;
-    }
-    // Más recientes primero -- más cómodo para revisar lo recién subido.
-    [..._galeriaCache].reverse().forEach(g => {
-      const card = document.createElement('div');
-      card.className = 'color-card';
-      card.style.gap = '6px';
-
-      const img = document.createElement('img');
-      img.src = g.url; img.alt = g.caption || 'Foto galería';
-      img.style.cssText = 'width:100%;max-height:110px;object-fit:cover;border-radius:6px;background:#fff;';
-
-      const edicionInput = document.createElement('input');
-      edicionInput.className = 'form-control'; edicionInput.value = g.edicion || ''; edicionInput.placeholder = 'Edición (ej. V)';
-
-      const captionInput = document.createElement('input');
-      captionInput.className = 'form-control'; captionInput.value = g.caption || ''; captionInput.placeholder = 'Descripción (opcional)';
-
-      const ocultarLabel = document.createElement('label');
-      ocultarLabel.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:.78rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:8px 10px;width:100%;box-sizing:border-box;';
-      const ocultarCheck = document.createElement('input');
-      ocultarCheck.type = 'checkbox'; ocultarCheck.style.cssText = 'width:15px;height:15px;flex-shrink:0;';
-      ocultarCheck.checked = g.oculto === true;
-      ocultarLabel.appendChild(ocultarCheck);
-      ocultarLabel.appendChild(document.createTextNode('Ocultar foto'));
-
-      const btnGuardar = document.createElement('button');
-      btnGuardar.className = 'btn-personal-add'; btnGuardar.textContent = '💾 Guardar';
-      btnGuardar.addEventListener('click', () => guardarFotoGaleriaExistenteUI(g, edicionInput, captionInput, ocultarCheck, btnGuardar));
-
-      const btnDel = document.createElement('button');
-      btnDel.className = 'btn-toggle cerrar';
-      btnDel.style.cssText = 'width:100%;padding:6px;font-size:.72rem;';
-      btnDel.textContent = '🗑️ Eliminar';
-      btnDel.addEventListener('click', () => eliminarFotoGaleriaUI(g.id, card));
-
-      [img, edicionInput, captionInput, ocultarLabel, btnGuardar, btnDel].forEach(el => card.appendChild(el));
-      cont.appendChild(card);
-    });
-  }
-
-  async function guardarFotoGaleriaExistenteUI(g, edicionInput, captionInput, ocultarCheck, btnEl) {
-    const edicion = edicionInput.value.trim();
-    if (!edicion) { showToast('⚠️ La edición es obligatoria', true); return; }
-    btnEl.disabled = true;
-    try {
-      const resp = await gasPost({
-        action: 'guardarFotoGaleria', id: g.id, edicion, url: g.url,
-        caption: captionInput.value.trim(), oculto: ocultarCheck.checked
-      });
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      showToast('✅ Foto actualizada');
-      g.edicion = edicion; g.caption = captionInput.value.trim(); g.oculto = ocultarCheck.checked;
-    } catch (e) {
-      showToast('⚠️ Error al guardar: ' + e.message, true);
-    }
-    btnEl.disabled = false;
-  }
-
-  async function eliminarFotoGaleriaUI(id, cardEl) {
-    if (!confirm('¿Eliminar esta foto de la galería?\n\nLa foto ya subida a Drive no se borra (queda huérfana, se puede limpiar a mano si hace falta).')) return;
-    try {
-      const resp = await gasPost({ action: 'eliminarFotoGaleria', id });
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      showToast('✅ Foto eliminada');
-      cardEl.remove();
-      _galeriaCache = _galeriaCache.filter(g => g.id !== id);
-    } catch (e) {
-      showToast('⚠️ Error al eliminar: ' + e.message, true);
-    }
-  }
-
-  async function agregarFotoGaleriaUI() {
-    const edicion = document.getElementById('gal-edicion').value.trim();
-    const caption = document.getElementById('gal-caption').value.trim();
-    const ocultar = document.getElementById('gal-ocultar').checked;
-    const file = document.getElementById('gal-foto-file').files[0];
-    if (!edicion) { showToast('⚠️ La edición es obligatoria', true); return; }
-    if (!file) { showToast('⚠️ Seleccioná una foto', true); return; }
-
-    const btn = document.getElementById('btn-gal-agregar');
-    const textoOriginal = btn.textContent;
-    btn.disabled = true;
-    try {
-      btn.textContent = '⏳ Subiendo foto...';
-      const url = await subirFotoGaleria(file);
-      btn.textContent = '⏳ Guardando...';
-      const resp = await gasPost({ action: 'guardarFotoGaleria', edicion, url, caption, oculto: ocultar });
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      showToast('✅ Foto agregada');
-      document.getElementById('gal-caption').value = '';
-      document.getElementById('gal-foto-file').value = '';
-      document.getElementById('gal-ocultar').checked = false;
-      _galeriaCache.push({ id: resp.id, edicion, url, caption, oculto: ocultar });
-      renderGaleriaUI();
     } catch (e) {
       showToast('⚠️ Error: ' + e.message, true);
     } finally {

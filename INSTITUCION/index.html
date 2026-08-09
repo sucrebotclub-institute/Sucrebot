@@ -75,6 +75,7 @@
       box-shadow: 0 2px 16px rgba(26,92,168,0.08);
       border: 1px solid rgba(26,92,168,0.08);
       scroll-margin-top: 200px;
+      position: relative;
     }
     .inst-section-badge {
       display: inline-flex; align-items: center; gap: 6px;
@@ -134,6 +135,7 @@
       border-radius: 14px; padding: 24px 20px;
       text-align: center;
       transition: transform 0.18s, box-shadow 0.18s;
+      position: relative;
     }
     .valor-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(26,92,168,0.12); }
     .valor-icon { font-size: 1.8rem; margin-bottom: 10px; }
@@ -255,6 +257,127 @@
       .inst-hero-ausp-pill img { max-height: 46px; }
     }
 
+    /* ── Edición inline (solo visible para staff logueado) ──────────────
+       Mismo patrón que REGLAMENTO: body.staff-mode revela los controles,
+       nunca se cargan datos de edición hasta confirmar el rol. ── */
+    .btn-inst-editar {
+      display: none;
+      position: absolute; top: 24px; right: 24px;
+      background: #e8f0ff; color: #1a5ca8; border: 1px solid rgba(26,92,168,0.25);
+      border-radius: 6px; padding: 6px 14px;
+      font-family: 'Exo 2', sans-serif; font-size: 11px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; z-index: 2;
+    }
+    .btn-inst-editar:hover { background: #d8e6ff; }
+    body.staff-mode .btn-inst-editar { display: inline-flex; }
+    @media (max-width: 640px) {
+      .btn-inst-editar { position: static; margin-bottom: 14px; }
+    }
+
+    .inst-valor-editar, .inst-gal-editar {
+      display: none;
+      position: absolute; top: 8px; right: 8px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(26,92,168,0.92); color: #fff; border: none;
+      font-size: 12px; cursor: pointer; align-items: center; justify-content: center;
+      z-index: 2;
+    }
+    body.staff-mode .inst-valor-editar,
+    body.staff-mode .inst-gal-editar { display: flex; }
+    .inst-gal-item-wrap { position: relative; }
+
+    .inst-add-wrap { display: none; }
+    body.staff-mode .inst-add-wrap { display: block; margin-top: 18px; }
+    .inst-btn-add {
+      background: #1a5ca8; color: #fff; border: 1px solid #00d4ff;
+      border-radius: 8px; padding: 12px 20px;
+      font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: .9rem;
+      cursor: pointer; width: 100%;
+    }
+    .inst-btn-add:hover { background: #1e6ec0; }
+
+    .inst-quienes-galeria-admin {
+      display: none; flex-wrap: wrap; gap: 10px; margin: 10px 0 16px;
+    }
+    body.staff-mode .inst-quienes-galeria-admin { display: flex; }
+    .inst-quienes-thumb { position: relative; width: 90px; }
+    .inst-quienes-thumb img { width: 90px; height: 66px; object-fit: cover; border-radius: 8px; display: block; }
+    .inst-quienes-thumb button {
+      position: absolute; top: -7px; right: -7px; width: 20px; height: 20px;
+      border-radius: 50%; background: #dc3545; color: #fff; border: none;
+      font-size: 11px; line-height: 1; cursor: pointer;
+    }
+
+    /* ── Modales de edición ── */
+    .inst-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(14,18,30,0.7); backdrop-filter: blur(4px);
+      z-index: 99999; align-items: center; justify-content: center; padding: 20px;
+    }
+    .inst-modal-overlay.show { display: flex; }
+    .inst-modal {
+      background: #fff; border-radius: 14px;
+      width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+      padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .inst-modal h4 {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+      letter-spacing: 1px; color: #1a3a6e; margin: 0 0 18px;
+    }
+    .inst-modal label {
+      display: block;
+      font-family: 'Orbitron', monospace; font-size: .62rem;
+      letter-spacing: 1.5px; color: #1a5ca8; text-transform: uppercase;
+      margin: 14px 0 6px;
+    }
+    .inst-modal label:first-of-type { margin-top: 0; }
+    .inst-modal input[type="text"],
+    .inst-modal input[type="file"],
+    .inst-modal textarea {
+      display: block; width: 100%; box-sizing: border-box;
+      border: 1px solid #d5dae5; border-radius: 8px;
+      padding: 10px 12px; font-family: 'Exo 2', sans-serif;
+      font-size: .9rem; color: #1a1c28; background: #fff;
+    }
+    .inst-modal textarea { resize: vertical; font-family: inherit; }
+    .inst-modal-check {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Exo 2', sans-serif; font-size: .88rem; color: #1a1c28;
+      margin-top: 14px; cursor: pointer;
+    }
+    .inst-modal-seccion { border-top: 1px solid #eef1f7; padding-top: 14px; margin-top: 16px; }
+    .inst-modal-guardar-wrap { border-top: 1px solid #eef1f7; padding-top: 18px; margin-top: 18px; }
+    .inst-btn-guardar-todo {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #1a5ca8, #2472c8);
+      color: #fff; font-family: 'Exo 2', sans-serif; font-weight: 800;
+      font-size: .95rem; letter-spacing: .3px; cursor: pointer;
+      box-shadow: 0 6px 16px rgba(26,92,168,0.35);
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .inst-btn-guardar-todo:hover {
+      background: linear-gradient(135deg, #1e6ec0, #2d8bf0);
+      box-shadow: 0 8px 20px rgba(26,92,168,0.45); transform: translateY(-1px);
+    }
+    .inst-btn-guardar-todo:disabled { opacity: .6; cursor: default; transform: none; box-shadow: none; }
+    .inst-btn-guardar-todo.inst-btn-guardado {
+      background: linear-gradient(135deg, #1e9e5a, #27ae60);
+      box-shadow: 0 6px 16px rgba(39,174,96,0.4);
+    }
+    .inst-modal-cerrar {
+      width: 100%; margin-top: 10px; padding: 12px;
+      border-radius: 8px; background: #ffffff; color: #1a5ca8;
+      border: 2px solid #1a5ca8; font-family: 'Exo 2', sans-serif; font-weight: 700;
+      font-size: .88rem; cursor: pointer;
+    }
+    .inst-modal-cerrar:hover { background: #1a5ca8; color: #ffffff; }
+    .inst-btn-quitar {
+      width: 100%; margin-top: 10px; padding: 10px; border: none; border-radius: 8px;
+      background: #fdecec; color: #c0392b; font-family: 'Exo 2', sans-serif;
+      font-weight: 700; font-size: .82rem; cursor: pointer;
+    }
+    .inst-btn-quitar:hover { background: #fbdada; }
+
   </style>
 </head>
 <body>
@@ -286,6 +409,7 @@
 
     <!-- QUIÉNES SOMOS -->
     <div class="inst-section" id="quienes-somos">
+      <button class="btn-inst-editar" onclick="abrirModalContenido()">🔧 Editar contenido</button>
       <div class="inst-section-badge">🤖 Nosotros</div>
       <h2>¿QUIÉNES <span>SOMOS?</span></h2>
       <div class="inst-divider"></div>
@@ -306,6 +430,7 @@
 
     <!-- MISIÓN Y VISIÓN -->
     <div class="inst-section" id="mision-vision">
+      <button class="btn-inst-editar" onclick="abrirModalContenido()">🔧 Editar</button>
       <div class="inst-section-badge">🎯 Filosofía</div>
       <h2>MISIÓN <span>Y VISIÓN</span></h2>
       <div class="inst-divider"></div>
@@ -331,6 +456,10 @@
       <div class="inst-divider"></div>
 
       <div class="valores-grid" id="inst-valores-grid"></div>
+
+      <div class="inst-add-wrap">
+        <button class="inst-btn-add" onclick="abrirModalValor()">➕ Agregar valor</button>
+      </div>
     </div>
 
 
@@ -342,10 +471,87 @@
       <p style="color:#4a5a7a;font-family:'Exo 2',sans-serif;font-size:14px;margin-bottom:16px;">Imágenes de ediciones anteriores del torneo SucreBot.</p>
       <div class="gal-filtros" id="gal-filtros" style="display:none;"></div>
       <div class="gal-grid" id="gal-grid"></div>
+
+      <div class="inst-add-wrap">
+        <button class="inst-btn-add" onclick="abrirModalFoto()">➕ Agregar foto</button>
+      </div>
     </div>
 
   </div>
 </main>
+
+<!-- Modal: Quiénes somos / Imágenes / Misión / Visión -->
+<div class="inst-modal-overlay" id="instModalContenido">
+  <div class="inst-modal">
+    <h4>Editar contenido</h4>
+
+    <label>¿Quiénes somos?</label>
+    <textarea id="modalQuienesTexto" rows="7" placeholder="Podés dejar líneas en blanco entre párrafos"></textarea>
+
+    <label>Imágenes de esta sección</label>
+    <div class="inst-quienes-galeria-admin" id="modalQuienesImgs"></div>
+    <input type="file" id="modalQuienesImgFile" accept="image/*">
+    <div class="inst-modal-seccion">
+      <button class="inst-btn-add" style="width:auto;padding:8px 16px;" onclick="agregarImagenQuienesSomosModal()">➕ Agregar imagen</button>
+    </div>
+
+    <div class="inst-modal-seccion">
+      <label>Misión</label>
+      <textarea id="modalMision" rows="4"></textarea>
+      <label>Visión</label>
+      <textarea id="modalVision" rows="4"></textarea>
+    </div>
+
+    <div class="inst-modal-guardar-wrap">
+      <button class="inst-btn-guardar-todo" id="btnGuardarContenido" onclick="guardarModalContenido()">💾 Guardar cambios</button>
+    </div>
+    <button class="inst-modal-cerrar" onclick="cerrarModal('instModalContenido')">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal: Nuestros valores (agregar/editar) -->
+<div class="inst-modal-overlay" id="instModalValor">
+  <div class="inst-modal">
+    <h4 id="modalValorTitulo">Agregar valor</h4>
+    <label>Icono (emoji)</label>
+    <input type="text" id="modalValorIcono" placeholder="Ej. ⚙️">
+    <label>Título</label>
+    <input type="text" id="modalValorTitulo2" placeholder="Título del valor">
+    <label>Descripción</label>
+    <textarea id="modalValorDesc" rows="3"></textarea>
+
+    <div class="inst-modal-guardar-wrap">
+      <button class="inst-btn-guardar-todo" id="btnGuardarValor" onclick="guardarModalValor()">💾 Guardar</button>
+    </div>
+    <button class="inst-btn-quitar" id="btnEliminarValor" style="display:none;" onclick="eliminarModalValor()">🗑️ Eliminar este valor</button>
+    <button class="inst-modal-cerrar" onclick="cerrarModal('instModalValor')">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal: Galería (agregar/editar foto) -->
+<div class="inst-modal-overlay" id="instModalFoto">
+  <div class="inst-modal">
+    <h4 id="modalFotoTitulo">Agregar foto</h4>
+    <label>Edición (ej. V)</label>
+    <input type="text" id="modalFotoEdicion" placeholder="Edición">
+    <label>Descripción — opcional</label>
+    <input type="text" id="modalFotoCaption" placeholder="Descripción de la foto">
+    <div id="modalFotoActualWrap" style="display:none;margin-top:10px;">
+      <img id="modalFotoActual" style="max-width:100%;max-height:160px;border-radius:8px;display:block;">
+    </div>
+    <label id="modalFotoFileLabel">Foto</label>
+    <input type="file" id="modalFotoFile" accept="image/*">
+    <label class="inst-modal-check">
+      <input type="checkbox" id="modalFotoOcultar"> Ocultar esta foto
+    </label>
+
+    <div class="inst-modal-guardar-wrap">
+      <button class="inst-btn-guardar-todo" id="btnGuardarFoto" onclick="guardarModalFoto()">💾 Guardar</button>
+    </div>
+    <button class="inst-btn-quitar" id="btnEliminarFoto" style="display:none;" onclick="eliminarModalFoto()">🗑️ Eliminar esta foto</button>
+    <button class="inst-modal-cerrar" onclick="cerrarModal('instModalFoto')">Cerrar</button>
+  </div>
+</div>
 
 <div data-include="../shared/components/footer.html"></div>
 
@@ -377,10 +583,12 @@
 
 <script>
 // ── Contenido de INSTITUCION (Quiénes somos / Misión y Visión / Valores /
-// Galería), gestionable desde CONFIGURACION → Institución. Patrón
-// cache-first: se pinta con la última respuesta conocida (localStorage) de
-// forma síncrona apenas carga el script, y se revalida en segundo plano --
-// mismo principio que auspiciantes.js/clubes.js/selectores de categoría.
+// Galería), editable en la misma página por staff logueado (mismo patrón
+// que REGLAMENTO: body.staff-mode revela botones "🔧 Editar" que abren un
+// modal con un solo botón "Guardar cambios" -- no vive en CONFIGURACION).
+// Patrón cache-first: se pinta con la última respuesta conocida
+// (localStorage) de forma síncrona apenas carga el script, y se revalida
+// en segundo plano -- mismo principio que auspiciantes.js/clubes.js.
 (function() {
   const CACHE_CONFIG  = 'sucrebot_inst_config_cache';
   const CACHE_VALORES = 'sucrebot_inst_valores_cache';
@@ -431,17 +639,19 @@
     const grid = document.getElementById('inst-valores-grid');
     grid.innerHTML = valores.map(function(v) {
       return '<div class="valor-card">' +
+        '<button class="inst-valor-editar" title="Editar">✏️</button>' +
         '<div class="valor-icon">' + (v.icono || '💡') + '</div>' +
         '<div class="valor-title"></div>' +
         '<div class="valor-desc"></div>' +
       '</div>';
     }).join('');
     // título/descripción por textContent (no innerHTML) para no interpretar
-    // como HTML lo que se escribió en CONFIGURACION como texto plano.
+    // como HTML lo que se escribió como texto plano.
     const cards = grid.querySelectorAll('.valor-card');
     valores.forEach(function(v, i) {
       cards[i].querySelector('.valor-title').textContent = v.titulo || '';
       cards[i].querySelector('.valor-desc').textContent = v.descripcion || '';
+      cards[i].querySelector('.inst-valor-editar').addEventListener('click', function() { abrirModalValor(v.id); });
     });
   }
 
@@ -477,12 +687,25 @@
 
   function renderGaleria() {
     const grid = document.getElementById('gal-grid');
-    const visibles = galeria.filter(function(g) { return !g.oculto; });
-    const filtradas = filtroEdicion === 'todas' ? visibles : visibles.filter(function(g) { return g.edicion === filtroEdicion; });
+    // body.staff-mode ve TODAS las fotos (incluidas las ocultas, atenuadas)
+    // para poder destaparlas de nuevo; el público solo ve las visibles.
+    const enStaffMode = document.body.classList.contains('staff-mode');
+    const base = enStaffMode ? galeria : galeria.filter(function(g) { return !g.oculto; });
+    const filtradas = filtroEdicion === 'todas' ? base : base.filter(function(g) { return g.edicion === filtroEdicion; });
     grid.innerHTML = filtradas.map(function(g) {
       const alt = g.caption ? g.caption.replace(/"/g, '&quot;') : 'SucreBot foto';
-      return '<a class="gal-item" href="' + g.url + '" target="_blank"><img src="' + g.url + '" alt="' + alt + '" loading="lazy"></a>';
+      const opacidad = g.oculto ? 'opacity:.45;' : '';
+      return '<div class="inst-gal-item-wrap" data-id="' + g.id + '">' +
+        '<a class="gal-item" href="' + g.url + '" target="_blank" style="' + opacidad + '"><img src="' + g.url + '" alt="' + alt + '" loading="lazy"></a>' +
+        '<button class="inst-gal-editar" title="Editar">✏️</button>' +
+      '</div>';
     }).join('');
+    grid.querySelectorAll('.inst-gal-item-wrap').forEach(function(wrap) {
+      wrap.querySelector('.inst-gal-editar').addEventListener('click', function(e) {
+        e.preventDefault();
+        abrirModalFoto(wrap.dataset.id);
+      });
+    });
   }
 
   function aplicarStats(s) {
@@ -549,6 +772,269 @@
         guardarCache(CACHE_STATS, { s: data, ts: Date.now() });
       }).catch(function() {});
   }
+
+  // ── Edición inline para staff (mismo patrón que REGLAMENTO) ─────────
+  function gasPostInst(body) {
+    return fetch(CONFIG.GAS_URL(), {
+      method: 'POST',
+      body: JSON.stringify(Object.assign({}, body, { staffToken: localStorage.getItem('sucrebot_staff_token') || '' })),
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    }).then(function(r) { return r.json(); });
+  }
+
+  function toBase64Inst(file) {
+    return new Promise(function(resolve, reject) {
+      const r = new FileReader();
+      r.onload = function() { resolve(r.result.split(',')[1]); };
+      r.onerror = function() { reject(new Error('No se pudo leer el archivo "' + file.name + '"')); };
+      r.readAsDataURL(file);
+    });
+  }
+
+  function cerrarModal(id) {
+    document.getElementById(id).classList.remove('show');
+  }
+
+  function botonExito(btn, textoOriginal) {
+    btn.textContent = '✅ Guardado';
+    btn.classList.add('inst-btn-guardado');
+    setTimeout(function() {
+      btn.textContent = textoOriginal;
+      btn.classList.remove('inst-btn-guardado');
+      btn.disabled = false;
+    }, 1400);
+  }
+
+  // -- Modal: Quiénes somos / Imágenes / Misión / Visión --
+  function renderModalQuienesImgs() {
+    const cont = document.getElementById('modalQuienesImgs');
+    const imgs = config.quienesSomosImagenes || [];
+    cont.innerHTML = imgs.map(function(url) {
+      return '<div class="inst-quienes-thumb"><img src="' + url + '"><button title="Quitar" data-url="' + url.replace(/"/g, '&quot;') + '">✕</button></div>';
+    }).join('');
+    cont.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() { quitarImagenQuienesSomosModal(btn.dataset.url); });
+    });
+  }
+
+  function abrirModalContenido() {
+    document.getElementById('modalQuienesTexto').value = config.quienesSomosTexto || '';
+    document.getElementById('modalMision').value = config.mision || '';
+    document.getElementById('modalVision').value = config.vision || '';
+    renderModalQuienesImgs();
+    document.getElementById('instModalContenido').classList.add('show');
+  }
+
+  async function agregarImagenQuienesSomosModal() {
+    const fileInput = document.getElementById('modalQuienesImgFile');
+    const file = fileInput.files[0];
+    if (!file) { alert('Seleccioná una imagen'); return; }
+    try {
+      const base64 = await toBase64Inst(file);
+      const resp = await gasPostInst({ action: 'uploadImagenInstitucion', base64: base64, mimeType: file.type, fileName: file.name });
+      if (!resp.ok || !resp.url) throw new Error(resp.error || 'Error al subir la imagen');
+      config.quienesSomosImagenes = (config.quienesSomosImagenes || []).concat([resp.url]);
+      fileInput.value = '';
+      renderModalQuienesImgs();
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  }
+
+  function quitarImagenQuienesSomosModal(url) {
+    config.quienesSomosImagenes = (config.quienesSomosImagenes || []).filter(function(u) { return u !== url; });
+    renderModalQuienesImgs();
+  }
+
+  async function guardarModalContenido() {
+    const btn = document.getElementById('btnGuardarContenido');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const payload = {
+        action: 'guardarInstitucionConfig',
+        quienesSomosTexto: document.getElementById('modalQuienesTexto').value,
+        quienesSomosImagenes: config.quienesSomosImagenes || [],
+        mision: document.getElementById('modalMision').value,
+        vision: document.getElementById('modalVision').value
+      };
+      const resp = await gasPostInst(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      config.quienesSomosTexto = payload.quienesSomosTexto;
+      config.mision = payload.mision;
+      config.vision = payload.vision;
+      guardarCache(CACHE_CONFIG, config);
+      renderQuienesSomos();
+      renderMisionVision();
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error al guardar: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  // -- Modal: Nuestros valores --
+  let _valorEditId = null;
+
+  function abrirModalValor(id) {
+    _valorEditId = id || null;
+    const v = id ? valores.find(function(x) { return x.id === id; }) : null;
+    document.getElementById('modalValorTitulo').textContent = v ? 'Editar valor' : 'Agregar valor';
+    document.getElementById('modalValorIcono').value = v ? (v.icono || '') : '';
+    document.getElementById('modalValorTitulo2').value = v ? (v.titulo || '') : '';
+    document.getElementById('modalValorDesc').value = v ? (v.descripcion || '') : '';
+    document.getElementById('btnEliminarValor').style.display = v ? 'block' : 'none';
+    document.getElementById('instModalValor').classList.add('show');
+  }
+
+  async function guardarModalValor() {
+    const titulo = document.getElementById('modalValorTitulo2').value.trim();
+    if (!titulo) { alert('El título es obligatorio'); return; }
+    const btn = document.getElementById('btnGuardarValor');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const payload = {
+        action: 'guardarValor', id: _valorEditId || undefined,
+        icono: document.getElementById('modalValorIcono').value.trim(),
+        titulo: titulo,
+        descripcion: document.getElementById('modalValorDesc').value.trim()
+      };
+      const resp = await gasPostInst(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      if (_valorEditId) {
+        const v = valores.find(function(x) { return x.id === _valorEditId; });
+        if (v) { v.icono = payload.icono; v.titulo = payload.titulo; v.descripcion = payload.descripcion; }
+      } else {
+        valores.push({ id: resp.id, icono: payload.icono, titulo: payload.titulo, descripcion: payload.descripcion });
+      }
+      guardarCache(CACHE_VALORES, valores);
+      renderValores();
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error al guardar: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  async function eliminarModalValor() {
+    if (!_valorEditId) return;
+    if (!confirm('¿Eliminar este valor?')) return;
+    try {
+      const resp = await gasPostInst({ action: 'eliminarValor', id: _valorEditId });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      valores = valores.filter(function(v) { return v.id !== _valorEditId; });
+      guardarCache(CACHE_VALORES, valores);
+      renderValores();
+      cerrarModal('instModalValor');
+    } catch (e) {
+      alert('Error al eliminar: ' + e.message);
+    }
+  }
+
+  // -- Modal: Galería --
+  let _fotoEditId = null;
+
+  function abrirModalFoto(id) {
+    _fotoEditId = id || null;
+    const g = id ? galeria.find(function(x) { return x.id === id; }) : null;
+    document.getElementById('modalFotoTitulo').textContent = g ? 'Editar foto' : 'Agregar foto';
+    document.getElementById('modalFotoEdicion').value = g ? (g.edicion || '') : filtroEdicion !== 'todas' ? filtroEdicion : '';
+    document.getElementById('modalFotoCaption').value = g ? (g.caption || '') : '';
+    document.getElementById('modalFotoOcultar').checked = g ? g.oculto === true : false;
+    document.getElementById('modalFotoFile').value = '';
+    document.getElementById('modalFotoFileLabel').textContent = g ? 'Reemplazar foto (opcional)' : 'Foto';
+    const actualWrap = document.getElementById('modalFotoActualWrap');
+    if (g) {
+      actualWrap.style.display = 'block';
+      document.getElementById('modalFotoActual').src = g.url;
+    } else {
+      actualWrap.style.display = 'none';
+    }
+    document.getElementById('btnEliminarFoto').style.display = g ? 'block' : 'none';
+    document.getElementById('instModalFoto').classList.add('show');
+  }
+
+  async function guardarModalFoto() {
+    const edicion = document.getElementById('modalFotoEdicion').value.trim();
+    if (!edicion) { alert('La edición es obligatoria'); return; }
+    const file = document.getElementById('modalFotoFile').files[0];
+    if (!_fotoEditId && !file) { alert('Seleccioná una foto'); return; }
+
+    const btn = document.getElementById('btnGuardarFoto');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      let url = _fotoEditId ? galeria.find(function(x) { return x.id === _fotoEditId; }).url : null;
+      if (file) {
+        btn.textContent = 'Subiendo foto...';
+        const base64 = await toBase64Inst(file);
+        const respUp = await gasPostInst({ action: 'uploadFotoGaleria', base64: base64, mimeType: file.type, fileName: file.name });
+        if (!respUp.ok || !respUp.url) throw new Error(respUp.error || 'Error al subir la foto');
+        url = respUp.url;
+      }
+      btn.textContent = 'Guardando...';
+      const payload = {
+        action: 'guardarFotoGaleria', id: _fotoEditId || undefined,
+        edicion: edicion, url: url,
+        caption: document.getElementById('modalFotoCaption').value.trim(),
+        oculto: document.getElementById('modalFotoOcultar').checked
+      };
+      const resp = await gasPostInst(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      if (_fotoEditId) {
+        const g = galeria.find(function(x) { return x.id === _fotoEditId; });
+        if (g) { g.edicion = edicion; g.url = url; g.caption = payload.caption; g.oculto = payload.oculto; }
+      } else {
+        galeria.push({ id: resp.id, edicion: edicion, url: url, caption: payload.caption, oculto: payload.oculto });
+      }
+      guardarCache(CACHE_GALERIA, galeria);
+      renderFiltrosGaleria();
+      renderGaleria();
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  async function eliminarModalFoto() {
+    if (!_fotoEditId) return;
+    if (!confirm('¿Eliminar esta foto de la galería?\n\nLa foto ya subida a Drive no se borra (queda huérfana).')) return;
+    try {
+      const resp = await gasPostInst({ action: 'eliminarFotoGaleria', id: _fotoEditId });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      galeria = galeria.filter(function(g) { return g.id !== _fotoEditId; });
+      guardarCache(CACHE_GALERIA, galeria);
+      renderFiltrosGaleria();
+      renderGaleria();
+      cerrarModal('instModalFoto');
+    } catch (e) {
+      alert('Error al eliminar: ' + e.message);
+    }
+  }
+
+  // -- Detección de staff (mismo patrón que REGLAMENTO) --
+  window.abrirModalContenido = abrirModalContenido;
+  window.agregarImagenQuienesSomosModal = agregarImagenQuienesSomosModal;
+  window.quitarImagenQuienesSomosModal = quitarImagenQuienesSomosModal;
+  window.guardarModalContenido = guardarModalContenido;
+  window.abrirModalValor = abrirModalValor;
+  window.guardarModalValor = guardarModalValor;
+  window.eliminarModalValor = eliminarModalValor;
+  window.abrirModalFoto = abrirModalFoto;
+  window.guardarModalFoto = guardarModalFoto;
+  window.eliminarModalFoto = eliminarModalFoto;
+  window.cerrarModal = cerrarModal;
+
+  (async function() {
+    if (window.esperarRol) await window.esperarRol();
+    if (window.esStaffCompleto && window.esStaffCompleto()) {
+      document.body.classList.add('staff-mode');
+      renderGaleria(); // re-pinta para mostrar también las fotos ocultas (atenuadas) a staff
+    }
+  })();
 })();
 </script>
 
