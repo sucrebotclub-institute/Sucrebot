@@ -20,8 +20,12 @@
 
     /* ── HERO ── */
     .inst-hero {
+      /* --inst-hero-img: URL de fondo, editable desde la propia página
+         (staff) -- este valor es el de respaldo hasta que JS/cache lo
+         pisen con el real (getInstitucionConfig). */
+      --inst-hero-img: url('https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/WhatsApp%20Image%202026-03-11%20at%208.59.39%20PM%20(2).jpeg');
       background: linear-gradient(135deg, rgba(10,25,60,0.88) 0%, rgba(26,92,168,0.80) 50%, rgba(10,25,60,0.88) 100%),
-        url('https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/WhatsApp%20Image%202026-03-11%20at%208.59.39%20PM%20(2).jpeg') center center / cover no-repeat;
+        var(--inst-hero-img) center center / cover no-repeat;
       border-radius: 20px;
       padding: 120px 48px;
       margin-bottom: 40px;
@@ -281,6 +285,12 @@
     }
     .btn-inst-editar:hover { background: #d8e6ff; }
     body.staff-mode .btn-inst-editar { display: inline-flex; }
+    /* Variante clara sobre el fondo oscuro del hero */
+    .btn-inst-editar.inst-hero-editar {
+      background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.35);
+      z-index: 3;
+    }
+    .btn-inst-editar.inst-hero-editar:hover { background: rgba(255,255,255,0.28); }
     @media (max-width: 640px) {
       .btn-inst-editar { position: static; margin-bottom: 14px; }
     }
@@ -403,13 +413,14 @@
   <div class="wrapper">
 
     <!-- HERO -->
-    <div class="inst-hero">
+    <div class="inst-hero" id="inst-hero">
+      <button class="btn-inst-editar inst-hero-editar" onclick="abrirModalHero()">🔧 Editar portada</button>
       <div class="inst-hero-badge">
         <div class="inst-hero-badge-dot"></div>
         Club de Robótica · Instituto Superior Universitario Sucre
       </div>
-      <h1>CLUB DE ROBÓTICA<br><span>SUCREBOT</span></h1>
-      <p>Impulsamos la innovación tecnológica desde el Instituto Superior Universitario Sucre, formando estudiantes capaces de diseñar, construir y programar robots de competencia a nivel nacional.</p>
+      <h1 id="inst-hero-titulo"></h1>
+      <p id="inst-hero-subtitulo"></p>
 
       <div class="inst-hero-ausp">
         <span class="inst-hero-ausp-lbl">Auspician</span>
@@ -564,6 +575,28 @@
   </div>
 </div>
 
+<!-- Modal: Portada (título/subtítulo/foto de fondo del hero) -->
+<div class="inst-modal-overlay" id="instModalHero">
+  <div class="inst-modal">
+    <h4>Editar portada</h4>
+    <label>Título (una línea por renglón — la última línea sale destacada en celeste)</label>
+    <textarea id="modalHeroTitulo" rows="2"></textarea>
+    <label>Subtítulo</label>
+    <textarea id="modalHeroSubtitulo" rows="3"></textarea>
+
+    <div class="inst-modal-seccion">
+      <label>Foto de fondo</label>
+      <img id="modalHeroImgActual" style="max-width:100%;max-height:160px;border-radius:8px;display:block;margin-bottom:10px;">
+      <input type="file" id="modalHeroImgFile" accept="image/*">
+    </div>
+
+    <div class="inst-modal-guardar-wrap">
+      <button class="inst-btn-guardar-todo" id="btnGuardarHero" onclick="guardarModalHero()">💾 Guardar cambios</button>
+    </div>
+    <button class="inst-modal-cerrar" onclick="cerrarModal('instModalHero')">Cerrar</button>
+  </div>
+</div>
+
 <div data-include="../shared/components/footer.html"></div>
 
 <script src="../shared/js/load-components.js"></script>
@@ -606,7 +639,17 @@
   const CACHE_GALERIA = 'sucrebot_inst_galeria_cache';
   const CACHE_STATS   = 'sucrebot_stats_inicio'; // misma key que INICIO, mismo dato
 
-  let config  = leerCache(CACHE_CONFIG)  || { quienesSomosTexto: '', quienesSomosImagenes: [], mision: '', vision: '' };
+  // Mismos valores que HERO_TITULO_DEFAULT/HERO_SUBTITULO_DEFAULT/
+  // HERO_IMAGEN_DEFAULT en Code.gs -- respaldo hasta que llegue la
+  // respuesta real (o si nunca se editó desde el modal de portada).
+  const HERO_TITULO_DEFAULT = 'CLUB DE ROBÓTICA\nSUCREBOT';
+  const HERO_SUBTITULO_DEFAULT = 'Impulsamos la innovación tecnológica desde el Instituto Superior Universitario Sucre, formando estudiantes capaces de diseñar, construir y programar robots de competencia a nivel nacional.';
+  const HERO_IMAGEN_DEFAULT = 'https://raw.githubusercontent.com/sucrebotclub-institute/Sucrebot/main/shared/images/WhatsApp%20Image%202026-03-11%20at%208.59.39%20PM%20(2).jpeg';
+
+  let config  = leerCache(CACHE_CONFIG)  || {
+    quienesSomosTexto: '', quienesSomosImagenes: [], mision: '', vision: '',
+    heroTitulo: HERO_TITULO_DEFAULT, heroSubtitulo: HERO_SUBTITULO_DEFAULT, heroImagen: HERO_IMAGEN_DEFAULT
+  };
   let valores = leerCache(CACHE_VALORES) || [];
   let galeria = leerCache(CACHE_GALERIA) || [];
   let filtroEdicion = localStorage.getItem('sucrebot_inst_galeria_filtro') || 'todas';
@@ -616,6 +659,22 @@
   }
   function guardarCache(key, val) {
     try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderHero() {
+    const lineas = (config.heroTitulo || HERO_TITULO_DEFAULT).split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+    const html = lineas.map(function(linea, i) {
+      const esc = escapeHtml(linea);
+      return i === lineas.length - 1 ? '<span>' + esc + '</span>' : esc;
+    }).join('<br>');
+    document.getElementById('inst-hero-titulo').innerHTML = html;
+    document.getElementById('inst-hero-subtitulo').textContent = config.heroSubtitulo || HERO_SUBTITULO_DEFAULT;
+    const heroEl = document.getElementById('inst-hero');
+    const img = config.heroImagen || HERO_IMAGEN_DEFAULT;
+    heroEl.style.setProperty('--inst-hero-img', 'url("' + img.replace(/"/g, '') + '")');
   }
 
   function renderQuienesSomos() {
@@ -769,6 +828,7 @@
   }
 
   function renderTodo() {
+    renderHero();
     renderQuienesSomos();
     renderMisionVision();
     renderValores();
@@ -789,6 +849,7 @@
         if (!data || data.error || typeof data.mision !== 'string') return;
         config = data;
         guardarCache(CACHE_CONFIG, config);
+        renderHero();
         renderQuienesSomos();
         renderMisionVision();
       }).catch(function() {});
@@ -907,12 +968,16 @@
     const textoOriginal = btn.textContent;
     btn.disabled = true; btn.textContent = 'Guardando...';
     try {
+      // guardarInstitucionConfig guarda la fila completa (también portada) --
+      // hay que reenviar los campos de portada tal cual están, si no el
+      // backend los pisa con el valor por defecto (ver guardarInstitucionConfigHelper).
       const payload = {
         action: 'guardarInstitucionConfig',
         quienesSomosTexto: document.getElementById('modalQuienesTexto').value,
         quienesSomosImagenes: config.quienesSomosImagenes || [],
         mision: document.getElementById('modalMision').value,
-        vision: document.getElementById('modalVision').value
+        vision: document.getElementById('modalVision').value,
+        heroTitulo: config.heroTitulo, heroSubtitulo: config.heroSubtitulo, heroImagen: config.heroImagen
       };
       const resp = await gasPostInst(payload);
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
@@ -925,6 +990,57 @@
       botonExito(btn, textoOriginal);
     } catch (e) {
       alert('Error al guardar: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  // -- Modal: Portada (título/subtítulo/foto de fondo) --
+  function abrirModalHero() {
+    document.getElementById('modalHeroTitulo').value = config.heroTitulo || HERO_TITULO_DEFAULT;
+    document.getElementById('modalHeroSubtitulo').value = config.heroSubtitulo || HERO_SUBTITULO_DEFAULT;
+    document.getElementById('modalHeroImgActual').src = config.heroImagen || HERO_IMAGEN_DEFAULT;
+    document.getElementById('modalHeroImgFile').value = '';
+    document.getElementById('instModalHero').classList.add('show');
+  }
+
+  async function guardarModalHero() {
+    const btn = document.getElementById('btnGuardarHero');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      let heroImagen = config.heroImagen || HERO_IMAGEN_DEFAULT;
+      const file = document.getElementById('modalHeroImgFile').files[0];
+      if (file) {
+        btn.textContent = 'Subiendo foto...';
+        const base64 = await toBase64Inst(file);
+        const respUp = await gasPostInst({ action: 'uploadImagenInstitucion', base64: base64, mimeType: file.type, fileName: file.name });
+        if (!respUp.ok || !respUp.url) throw new Error(respUp.error || 'Error al subir la foto');
+        heroImagen = respUp.url;
+      }
+      btn.textContent = 'Guardando...';
+      // Mismo motivo que guardarModalContenido: la acción guarda la fila
+      // completa, hay que reenviar quiénes-somos/misión/visión tal cual.
+      const payload = {
+        action: 'guardarInstitucionConfig',
+        quienesSomosTexto: config.quienesSomosTexto || '',
+        quienesSomosImagenes: config.quienesSomosImagenes || [],
+        mision: config.mision || '', vision: config.vision || '',
+        heroTitulo: document.getElementById('modalHeroTitulo').value,
+        heroSubtitulo: document.getElementById('modalHeroSubtitulo').value,
+        heroImagen: heroImagen
+      };
+      const resp = await gasPostInst(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      config.heroTitulo = payload.heroTitulo;
+      config.heroSubtitulo = payload.heroSubtitulo;
+      config.heroImagen = payload.heroImagen;
+      guardarCache(CACHE_CONFIG, config);
+      renderHero();
+      document.getElementById('modalHeroImgActual').src = heroImagen;
+      document.getElementById('modalHeroImgFile').value = '';
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error: ' + e.message);
       btn.disabled = false; btn.textContent = textoOriginal;
     }
   }
@@ -1081,6 +1197,8 @@
   window.abrirModalFoto = abrirModalFoto;
   window.guardarModalFoto = guardarModalFoto;
   window.eliminarModalFoto = eliminarModalFoto;
+  window.abrirModalHero = abrirModalHero;
+  window.guardarModalHero = guardarModalHero;
   window.cerrarModal = cerrarModal;
 
   (async function() {
