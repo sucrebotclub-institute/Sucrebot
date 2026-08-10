@@ -536,7 +536,7 @@ async function subirFirmadosMasivo(fileList) {
   const validos = [];
   const sinCodigo = [];
   archivos.forEach(f => {
-    const m = f.name.match(/CERT-\d{4}-\d+/);
+    const m = f.name.match(/CERT-[A-Z0-9]+-\d+/);
     const item = m ? mapa[m[0]] : null;
     if (item) validos.push({ file: f, codigo: m[0], item });
     else sinCodigo.push(f.name);
