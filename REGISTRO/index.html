@@ -826,7 +826,7 @@
 
       // Renombrar logo con el ID real del participante
       try {
-        const logoFileId = logoUrl.split('id=')[1];
+        const logoFileId = logoUrl.includes('/d/') ? logoUrl.split('/d/')[1].split(/[/?]/)[0] : logoUrl.split('id=')[1];
         const ext = logoArchivo.name.split('.').pop() || 'png';
         await gasPost({ action: 'renombrarLogo', fileId: logoFileId, nombre: idGenerado + '.' + ext });
       } catch(e) { /* no crítico */ }
