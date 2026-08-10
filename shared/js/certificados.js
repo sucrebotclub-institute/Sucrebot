@@ -32,6 +32,105 @@ function resolverNombreCategoriaCert(categoria) {
 }
 window.precargarNombresCopiaCert = precargarNombresCopiaCert;
 
+// ── DISEÑO DEL CERTIFICADO (editable desde CONFIGURACION → Certificado) ────
+// Antes las 4 frases de logro, la fuente y los colores del texto estaban
+// hardcodeados acá mismo. Ahora se leen de Code.gs (hoja 'certificado_config',
+// una fila) con estos valores como default/fallback -- mismo criterio que
+// HERO_TITULO_DEFAULT de INSTITUCION: si el backend no responde o el campo
+// vino vacío, el certificado se sigue viendo exactamente igual que siempre.
+const CERT_TEXTOS_DEFAULT = {
+  '1er':          { chica: 'Por haber obtenido el', grande: 'PRIMER LUGAR',            resto: 'en la categoría {{categoria}} de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.' },
+  '2do':          { chica: 'Por haber obtenido el', grande: 'SEGUNDO LUGAR',           resto: 'en la categoría {{categoria}} de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.' },
+  '3er':          { chica: 'Por haber obtenido el', grande: 'TERCER LUGAR',            resto: 'en la categoría {{categoria}} de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.' },
+  'participacion':{ chica: 'Por su',                grande: 'DESTACADA PARTICIPACIÓN', resto: 'en la categoría {{categoria}} de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.' }
+};
+
+// Lista cerrada de fuentes ofrecidas en CONFIGURACION -- a propósito NO es
+// texto libre (evita tener que sanear/inyectar un nombre de fuente arbitrario
+// en la URL de Google Fonts). 'css' es el valor real de font-family; 'google'
+// es el segmento de família+pesos para el link de Google Fonts (null = fuente
+// del sistema, no necesita cargar nada de red).
+const CERT_FUENTES = {
+  'EB Garamond':     { css: "'EB Garamond', Georgia, serif",        google: 'EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600' },
+  'Playfair Display':{ css: "'Playfair Display', Georgia, serif",   google: 'Playfair+Display:ital,wght@0,400;0,600;0,700;1,400' },
+  'Merriweather':    { css: "'Merriweather', Georgia, serif",       google: 'Merriweather:ital,wght@0,400;0,700;1,400' },
+  'Georgia (del sistema)': { css: "Georgia, 'Times New Roman', serif", google: null }
+};
+const CERT_CONFIG_DEFAULT = {
+  textos: CERT_TEXTOS_DEFAULT,
+  fuente: 'EB Garamond',
+  colorTexto: '#0a2a5e',
+  colorAcento: '#b8860a',
+  fondoImagenUrl: ''
+};
+
+let _certConfigActual = CERT_CONFIG_DEFAULT;
+const _fuentesCargadas = {};
+
+// Inyecta el <link> de Google Fonts de la fuente elegida (si hace falta) --
+// se cachea por nombre de fuente para no duplicar el <link> si se llama de
+// nuevo (ej. tras guardar cambios en CONFIGURACION).
+function asegurarFuenteCertificadoCargada(fuenteKey) {
+  const conf = CERT_FUENTES[fuenteKey];
+  if (!conf || !conf.google || _fuentesCargadas[fuenteKey]) return;
+  _fuentesCargadas[fuenteKey] = true;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=' + conf.google + '&display=swap';
+  document.head.appendChild(link);
+}
+
+// Cache-first (mismo patrón que auspiciantes.js/clubes.js): aplica de forma
+// síncrona lo último guardado en localStorage apenas se llama, y revalida
+// contra el backend en segundo plano -- así una vista previa o generación
+// disparada muy rápido después de cargar la página ya usa el diseño real
+// guardado, no el default, sin tener que esperar el fetch.
+function _normalizarCertConfig(raw) {
+  if (!raw || typeof raw !== 'object') return CERT_CONFIG_DEFAULT;
+  return {
+    textos: Object.assign({}, CERT_TEXTOS_DEFAULT, raw.textos || {}),
+    fuente: CERT_FUENTES[raw.fuente] ? raw.fuente : CERT_CONFIG_DEFAULT.fuente,
+    colorTexto: raw.colorTexto || CERT_CONFIG_DEFAULT.colorTexto,
+    colorAcento: raw.colorAcento || CERT_CONFIG_DEFAULT.colorAcento,
+    fondoImagenUrl: raw.fondoImagenUrl || ''
+  };
+}
+// Aplica el cache local de forma síncrona -- se llama una vez apenas se
+// parsea este script (ver más abajo), así _certConfigActual ya refleja el
+// último diseño guardado desde el primer render, sin esperar ningún fetch
+// (mismo principio cache-first que categorías/nav, ver SKILL.md 06-ago).
+function _aplicarCertConfigCacheSync() {
+  try {
+    const cached = localStorage.getItem('sucrebot_cert_config_cache');
+    if (cached) _certConfigActual = _normalizarCertConfig(JSON.parse(cached));
+  } catch (e) {}
+  asegurarFuenteCertificadoCargada(_certConfigActual.fuente);
+}
+_aplicarCertConfigCacheSync();
+
+// Revalida contra el backend en segundo plano. Generar un lote real de
+// certificados sí espera esto (await) para no publicar con un diseño
+// desactualizado si Raku acaba de guardar un cambio.
+async function precargarCertificadoConfig() {
+  try {
+    const fresh = await fetch(CONFIG.GAS_URL() + '?action=getCertificadoConfig').then(r => r.json());
+    if (fresh && typeof fresh === 'object' && !fresh.error && fresh.textos) {
+      _certConfigActual = _normalizarCertConfig(fresh);
+      asegurarFuenteCertificadoCargada(_certConfigActual.fuente);
+      localStorage.setItem('sucrebot_cert_config_cache', JSON.stringify(fresh));
+    }
+  } catch (e) {}
+  return _certConfigActual;
+}
+window.precargarCertificadoConfig = precargarCertificadoConfig;
+window.getCertificadoConfigActual = function() { return _certConfigActual; };
+// Usado solo por CONFIGURACION → Certificado para previsualizar cambios
+// todavía no guardados (aplica el borrador en memoria sin tocar localStorage).
+window.setCertificadoConfigDraft = function(draft) {
+  _certConfigActual = _normalizarCertConfig(draft);
+  asegurarFuenteCertificadoCargada(_certConfigActual.fuente);
+};
+
 // Fondo decorativo (triángulos). Se serializa a <img> data-URI en vez de dejarlo
 // como <svg> inline: html2canvas convierte internamente los <svg> inline a imagen
 // para poder dibujarlos, y esa conversión no siempre termina antes de que intente
@@ -62,7 +161,7 @@ function svgToImgTag(svgMarkup, className) {
 }
 
 const CERTIFICADO_TEMPLATE = `
-<div class="cert-outer" id="certificado-preview">
+<div class="cert-outer" id="certificado-preview" style="{{CERT_VARS_STYLE}}">
 
   <div class="cert-top-band"></div>
 
@@ -129,7 +228,11 @@ const CERTIFICADO_TEMPLATE = `
 `;
 
 const CERTIFICADO_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Exo+2:wght@300;400;600;700;800;900&display=swap');
+/* 'Exo 2' es de la letra/UI, no del texto configurable -- se carga siempre.
+   La fuente serif configurable (EB Garamond por defecto, o la que se elija
+   en CONFIGURACION -> Certificado) se inyecta aparte con un <link> dinámico,
+   ver asegurarFuenteCertificadoCargada(). */
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800;900&display=swap');
 
 .cert-outer {
   width: 1122px;
@@ -183,7 +286,8 @@ const CERTIFICADO_CSS = `
 }
 
 .cert-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
-.cert-bg svg, .cert-bg img { width: 100%; height: 100%; }
+.cert-bg svg { width: 100%; height: 100%; }
+.cert-bg img { width: 100%; height: 100%; object-fit: cover; }
 
 .cert-line-l, .cert-line-r {
   position: absolute; top: 0; bottom: 0; width: 3px; z-index: 2;
@@ -219,14 +323,14 @@ const CERTIFICADO_CSS = `
   background: linear-gradient(90deg, transparent, #b8c8dc, transparent);
   margin-bottom: 14px;
 }
-.cert-confiere { font-family: 'EB Garamond', Georgia, serif; font-size: 18px; font-style: italic; color: #4a5568; margin: 0 0 3px; }
-.cert-titulo    { font-family: 'EB Garamond', Georgia, serif; font-size: 38px; font-weight: 700; color: #0a2a5e; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 7px; }
-.cert-nombre    { font-family: 'EB Garamond', Georgia, serif; font-size: 48px; font-weight: 600; color: #0a2a5e; line-height: 1.1; max-width: 800px; text-align: center; margin: 0 0 7px; }
-.cert-logro-chica { font-family: 'EB Garamond', Georgia, serif; font-size: 16px; font-style: italic; color: #4a5568; margin: 0 0 2px; }
-.cert-logro-grande { font-family: 'EB Garamond', Georgia, serif; font-size: 28px; font-weight: 700; color: #b8860a; text-transform: uppercase; letter-spacing: 0.5px; max-width: 700px; text-align: center; margin: 0 0 12px; }
-.cert-logro-grande strong { color: #b8860a; }
-.cert-logro     { font-family: 'EB Garamond', Georgia, serif; font-size: 16.5px; color: #4a5568; line-height: 1.8; max-width: 680px; text-align: center; margin: 0; }
-.cert-logro strong { color: #0a2a5e; font-weight: 700; }
+.cert-confiere { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 18px; font-style: italic; color: #4a5568; margin: 0 0 3px; }
+.cert-titulo    { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 38px; font-weight: 700; color: var(--cert-color-texto, #0a2a5e); letter-spacing: 3px; text-transform: uppercase; margin: 0 0 7px; }
+.cert-nombre    { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 48px; font-weight: 600; color: var(--cert-color-texto, #0a2a5e); line-height: 1.1; max-width: 800px; text-align: center; margin: 0 0 7px; }
+.cert-logro-chica { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 16px; font-style: italic; color: #4a5568; margin: 0 0 2px; }
+.cert-logro-grande { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 28px; font-weight: 700; color: var(--cert-color-acento, #b8860a); text-transform: uppercase; letter-spacing: 0.5px; max-width: 700px; text-align: center; margin: 0 0 12px; }
+.cert-logro-grande strong { color: var(--cert-color-acento, #b8860a); }
+.cert-logro     { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 16.5px; color: #4a5568; line-height: 1.8; max-width: 680px; text-align: center; margin: 0; }
+.cert-logro strong { color: var(--cert-color-texto, #0a2a5e); font-weight: 700; }
 
 /* Sello */
 .cert-sello { position: absolute; bottom: 48px; right: 54px; z-index: 4; }
@@ -239,7 +343,7 @@ const CERTIFICADO_CSS = `
 }
 .cert-firma { text-align: center; min-width: 220px; }
 .cert-firma-linea { width: 190px; height: 1px; background: #2b3a4d; margin: 0 auto 7px; }
-.cert-firma-nombre { font-size: 13px; font-weight: 700; color: #0a2a5e; margin: 0 0 2px; font-family: 'Exo 2', sans-serif; }
+.cert-firma-nombre { font-size: 13px; font-weight: 700; color: var(--cert-color-texto, #0a2a5e); margin: 0 0 2px; font-family: 'Exo 2', sans-serif; }
 .cert-firma-cargo  { font-size: 8.5px; font-weight: 700; color: #5b6677; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.5; font-family: 'Exo 2', sans-serif; margin: 0; }
 
 /* Fecha y código */
@@ -247,7 +351,7 @@ const CERTIFICADO_CSS = `
   position: absolute; bottom: 16px; width: 100%;
   display: flex; justify-content: space-between; padding: 0 90px; z-index: 3;
 }
-.cert-fecha  { font-family: 'EB Garamond', Georgia, serif; font-size: 15px; color: #4a5568; font-style: italic; margin: 0; }
+.cert-fecha  { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 15px; color: #4a5568; font-style: italic; margin: 0; }
 .cert-codigo { font-size: 8.5px; color: #b0b8c4; letter-spacing: 1px; font-family: monospace; margin: 0; }
 
 /* Modal */
@@ -275,13 +379,17 @@ function obtenerTextoLogro(tipo, categoriaOriginal) {
     'participacion':'participacion','PARTICIPACIÓN':'participacion','PARTICIPACION':'participacion'
   };
   const t = norm[tipo] || 'participacion';
-  const textos = {
-    '1er':          { chica: 'Por haber obtenido el',  grande: 'PRIMER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, demostrando excelencia técnica, innovación y espíritu competitivo.` },
-    '2do':          { chica: 'Por haber obtenido el',  grande: 'SEGUNDO LUGAR',           resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, destacando por su desempeño técnico y habilidades en robótica.` },
-    '3er':          { chica: 'Por haber obtenido el',  grande: 'TERCER LUGAR',            resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, reconociendo su dedicación y competencia técnica.` },
-    'participacion':{ chica: 'Por su',               grande: 'DESTACADA PARTICIPACIÓN',    resto: `en la categoría <strong>${categoria}</strong> de la Cuarta Edición del Concurso Nacional de Robótica SucreBot 2026, contribuyendo al desarrollo de la robótica y la innovación tecnológica en Ecuador.` }
+  // Textos editables desde CONFIGURACION -> Certificado (ver
+  // precargarCertificadoConfig). '{{categoria}}' es el placeholder que el
+  // staff deja en el texto guardado para marcar dónde va el nombre de la
+  // categoría -- acá se reemplaza recién al armar el certificado real,
+  // envuelto en <strong> igual que antes cuando el texto era fijo.
+  const base = (_certConfigActual.textos && _certConfigActual.textos[t]) || CERT_TEXTOS_DEFAULT[t];
+  return {
+    chica: base.chica,
+    grande: base.grande,
+    resto: String(base.resto || '').replace(/\{\{categoria\}\}/g, `<strong>${categoria}</strong>`)
   };
-  return textos[t];
 }
 
 function obtenerDatosTipo(tipo) {
@@ -419,7 +527,11 @@ async function precargarLogosCertificado() {
   // el cache local) antes de armar las URLs a precargar -- en frío, sin
   // cache todavía, AUSPICIANTES podría estar vacío en este instante.
   if (window.ausCargarPromise) { try { await window.ausCargarPromise; } catch (e) {} }
+  // Config del certificado (textos/fuente/colores/fondo) -- necesaria antes
+  // de armar la lista para saber si hay que precargar un fondo propio.
+  await precargarCertificadoConfig();
   const urls = [LOGO_CLUB, LOGO_SUCRE].concat(certSponsorsParaCertificado().map(ausLogoUrl));
+  if (_certConfigActual.fondoImagenUrl) urls.push(_certConfigActual.fondoImagenUrl);
   _logosPrecargados = Promise.allSettled(urls.map(urlToDataURI));
   return _logosPrecargados;
 }
@@ -446,11 +558,25 @@ function esperarImagenes(container) {
 
 // ── HTML DEL CERTIFICADO ───────────────────────────────────────────────────────
 
+// Solo se aceptan valores #rgb/#rrggbb (lo único que puede salir de un
+// <input type="color">) antes de inyectarlos en el atributo style -- defensa
+// simple ya que este valor viene de certificado_config y termina en innerHTML.
+function _hexSeguro(hex, fallback) {
+  return /^#[0-9a-fA-F]{3,8}$/.test(String(hex || '')) ? hex : fallback;
+}
+
 function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
   const textoLogro = obtenerTextoLogro(tipo, categoria);
   const sello      = obtenerSelloSVG(tipo);
   const selloImg   = svgToImgTag(sello);
-  const fondoImg   = svgToImgTag(FONDO_DECORATIVO_SVG);
+  const conf       = _certConfigActual;
+  const fondoImg   = conf.fondoImagenUrl
+    ? `<img src="${logoSrc(conf.fondoImagenUrl)}" alt=""/>`
+    : svgToImgTag(FONDO_DECORATIVO_SVG);
+  const fuenteCss  = (CERT_FUENTES[conf.fuente] || CERT_FUENTES['EB Garamond']).css;
+  const varsStyle  = '--cert-fuente:' + fuenteCss + ';'
+    + '--cert-color-texto:' + _hexSeguro(conf.colorTexto, CERT_CONFIG_DEFAULT.colorTexto) + ';'
+    + '--cert-color-acento:' + _hexSeguro(conf.colorAcento, CERT_CONFIG_DEFAULT.colorAcento) + ';';
   return CERTIFICADO_TEMPLATE
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
     .replace(/\{\{TEXTO_LOGRO_CHICA\}\}/g,   textoLogro.chica)
@@ -460,6 +586,7 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
     .replace(/\{\{CODIGO_VERIFICACION\}\}/g,  codigo)
     .replace(/\{\{SELLO\}\}/g,                selloImg)
     .replace(/\{\{FONDO_SVG\}\}/g,            fondoImg)
+    .replace(/\{\{CERT_VARS_STYLE\}\}/g,      varsStyle)
     .replace(/\{\{LOGO_CLUB_SRC\}\}/g,        logoSrc(LOGO_CLUB))
     .replace(/\{\{LOGO_SUCRE_SRC\}\}/g,       logoSrc(LOGO_SUCRE));
 }

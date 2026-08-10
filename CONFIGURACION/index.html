@@ -9,6 +9,9 @@
   <script src="../shared/js/config.js"></script>
   <link rel="stylesheet" href="../shared/css/styles.css">
   <link rel="stylesheet" href="../shared/css/mobile-fix.css">
+  <!-- Solo para la vista previa del certificado en la pestaña "Certificado" -->
+  <script src="../shared/js/auspiciantes.js"></script>
+  <script src="../shared/js/certificados.js"></script>
   <style>
     body { background: #07111e !important; font-family: 'Exo 2', sans-serif; color: #c8d8f0; padding-top: 0 !important; }
     main { padding-top: 120px; min-height: 100vh; background: #07111e; }
@@ -175,6 +178,7 @@
             <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
             <button class="config-nav-item" data-section="auspiciantes" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
             <button class="config-nav-item" data-section="clubes" onclick="mostrarSeccion('clubes')"><span class="config-nav-icon">🏟️</span> Clubes</button>
+            <button class="config-nav-item" data-section="certificado" onclick="mostrarSeccion('certificado')"><span class="config-nav-icon">🎓</span> Certificado</button>
           </div>
 
           <div class="config-panel">
@@ -331,9 +335,9 @@
           <div class="config-card-title">🧹 Limpiar Sheet (edición activa)</div>
           <div class="config-card-desc">
             Vacía participantes, resultados, puntuaciones, brackets, torneos de Soccer,
-            podios y estados/jueces activos de la <strong>edición activa</strong> —
+            podios, certificados y estados/jueces activos de la <strong>edición activa</strong> —
             pensado para dejar todo en cero después de una tanda de pruebas.
-            <strong>No toca</strong> certificados, instituciones, personal ni criterios
+            <strong>No toca</strong> instituciones, personal ni criterios
             de calificación (eso no se considera dato de prueba).
             <strong>Esta acción no se puede deshacer.</strong>
           </div>
@@ -341,7 +345,7 @@
           <div style="background:rgba(220,53,69,.08);border:1px solid rgba(220,53,69,.35);border-radius:10px;padding:14px;margin-top:14px;">
             <div class="estado-label" style="margin-bottom:8px;">Para confirmar, escribí el código de la edición activa (<strong id="limpiar-edicion-actual">—</strong>):</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <input type="text" id="limpiar-confirmar" class="form-control" style="max-width:160px;" placeholder="Ej. V" oninput="actualizarBotonLimpiar()">
+              <input type="text" id="limpiar-confirmar" class="form-control" style="max-width:160px;" placeholder="Ej. IV" oninput="actualizarBotonLimpiar()">
               <button class="btn-toggle cerrar" id="btn-limpiar-sheet" onclick="limpiarSheetPruebasUI()" disabled>🧹 Limpiar Sheet</button>
             </div>
           </div>
@@ -407,6 +411,62 @@
           <div id="club-lista" class="color-grid" style="display:none;"></div>
         </div>
 
+        <div class="config-card config-section" data-section="certificado">
+          <div class="config-card-title">🎓 Diseño del certificado</div>
+          <div class="config-card-desc">
+            Textos de logro, tipografía, colores y fondo del diploma generado desde
+            GENERAR-CERTIFICADOS. El layout (logos, sello, firmas) sigue fijo en el código —
+            esto solo cambia lo que se ve en pantalla, no la estructura.
+          </div>
+
+          <div id="cert-cfg-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
+
+          <div id="cert-cfg-contenido" style="display:none;">
+
+            <div class="estado-label" style="margin:18px 0 10px;">Texto por tipo de logro</div>
+            <div class="estado-label" style="font-size:.72rem;font-weight:400;opacity:.75;margin-bottom:14px;">
+              Usá <code>{{categoria}}</code> en el texto largo donde quieras que aparezca el nombre
+              de la categoría (ej. "Trepador (Pro)") — se reemplaza solo al generar cada diploma.
+            </div>
+
+            <div id="cert-cfg-tipos" style="display:flex;flex-direction:column;gap:14px;"></div>
+
+            <div class="estado-label" style="margin:26px 0 10px;">Tipografía y colores</div>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:8px;">
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Fuente del texto</div>
+                <select id="cert-cfg-fuente" class="form-control"></select>
+              </div>
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color principal (títulos/nombre)</div>
+                <input type="color" id="cert-cfg-color-texto" class="color-swatch">
+              </div>
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color de acento (logro destacado)</div>
+                <input type="color" id="cert-cfg-color-acento" class="color-swatch">
+              </div>
+            </div>
+
+            <div class="estado-label" style="margin:26px 0 10px;">Fondo decorativo</div>
+            <div class="estado-label" style="font-size:.72rem;font-weight:400;opacity:.75;margin-bottom:10px;">
+              Por defecto usa los triángulos celestes del diseño original. Subí una imagen propia
+              para reemplazarlo (se estira a todo el certificado, orientación horizontal recomendada).
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px;">
+              <img id="cert-cfg-fondo-preview" src="" alt="" style="display:none;width:140px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border,#2a3550);">
+              <span id="cert-cfg-fondo-vacio" style="font-size:.8rem;opacity:.7;">Sin imagen propia — usando el fondo por defecto.</span>
+              <input type="file" id="cert-cfg-fondo-file" accept="image/*" class="form-control" style="max-width:260px;">
+              <button class="btn-personal-add" id="btn-cert-cfg-fondo-subir" onclick="subirFondoCertificadoUI()">☁️ Subir</button>
+              <button class="btn-toggle cerrar" id="btn-cert-cfg-fondo-quitar" onclick="quitarFondoCertificadoUI()" style="display:none;">🗑️ Quitar fondo propio</button>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+              <button class="btn-personal-add" id="btn-cert-cfg-guardar" onclick="guardarCertificadoConfigUI()">💾 Guardar cambios</button>
+              <button class="btn-toggle" onclick="previsualizarCertificadoUI()">👁️ Vista previa</button>
+            </div>
+          </div>
+        </div>
+
           </div><!-- /config-panel -->
         </div><!-- /config-shell -->
 
@@ -451,6 +511,7 @@
     cargarInfoEdicion();
     cargarAuspiciantes();
     cargarClubes();
+    cargarCertificadoConfig();
   });
 
   function mostrarSeccion(id) {
@@ -1533,6 +1594,152 @@
       btn.disabled = false;
       btn.textContent = textoOriginal;
     }
+  }
+
+  // ── Certificado ───────────────────────────────────────────────────
+  // CERT_TEXTOS_DEFAULT/CERT_FUENTES los define shared/js/certificados.js
+  // (cargado en el <head>) -- se reusan acá para no duplicar la lista.
+  const CERT_TIPOS_LABEL = { '1er': '🥇 1er Lugar', '2do': '🥈 2do Lugar', '3er': '🥉 3er Lugar', 'participacion': '🎖️ Participación' };
+  let _certCfgActual = null;
+
+  async function cargarCertificadoConfig() {
+    try {
+      _certCfgActual = await gasGet({ action: 'getCertificadoConfig' });
+      if (!_certCfgActual || typeof _certCfgActual !== 'object' || !_certCfgActual.textos) {
+        _certCfgActual = CERT_CONFIG_DEFAULT;
+      }
+    } catch (e) {
+      _certCfgActual = CERT_CONFIG_DEFAULT;
+      showToast('⚠️ Error al cargar el diseño del certificado', true);
+    }
+    renderCertificadoConfigUI();
+    document.getElementById('cert-cfg-loading').style.display = 'none';
+    document.getElementById('cert-cfg-contenido').style.display = 'block';
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function renderCertificadoConfigUI() {
+    const cont = document.getElementById('cert-cfg-tipos');
+    cont.innerHTML = '';
+    Object.keys(CERT_TIPOS_LABEL).forEach(function(tipo) {
+      const t = _certCfgActual.textos[tipo] || CERT_TEXTOS_DEFAULT[tipo];
+      const box = document.createElement('div');
+      box.style.cssText = 'background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:14px;';
+      box.innerHTML = `
+        <div class="estado-label" style="margin-bottom:8px;">${CERT_TIPOS_LABEL[tipo]}</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <input type="text" id="cert-cfg-chica-${tipo}" class="form-control" placeholder="Frase chica (ej. 'Por haber obtenido el')" value="${escHtml(t.chica)}">
+          <input type="text" id="cert-cfg-grande-${tipo}" class="form-control" placeholder="Frase grande (ej. 'PRIMER LUGAR')" value="${escHtml(t.grande)}">
+          <textarea id="cert-cfg-resto-${tipo}" class="form-control" rows="3" placeholder="Texto largo -- usá {{categoria}}">${escHtml(t.resto)}</textarea>
+        </div>
+      `;
+      cont.appendChild(box);
+    });
+
+    const selFuente = document.getElementById('cert-cfg-fuente');
+    selFuente.innerHTML = Object.keys(CERT_FUENTES).map(function(f) {
+      return '<option value="' + f + '">' + f + '</option>';
+    }).join('');
+    selFuente.value = _certCfgActual.fuente || CERT_CONFIG_DEFAULT.fuente;
+
+    document.getElementById('cert-cfg-color-texto').value = _certCfgActual.colorTexto || CERT_CONFIG_DEFAULT.colorTexto;
+    document.getElementById('cert-cfg-color-acento').value = _certCfgActual.colorAcento || CERT_CONFIG_DEFAULT.colorAcento;
+
+    actualizarPreviewFondoCertificado();
+  }
+
+  function actualizarPreviewFondoCertificado() {
+    const img = document.getElementById('cert-cfg-fondo-preview');
+    const vacio = document.getElementById('cert-cfg-fondo-vacio');
+    const btnQuitar = document.getElementById('btn-cert-cfg-fondo-quitar');
+    if (_certCfgActual.fondoImagenUrl) {
+      img.src = _certCfgActual.fondoImagenUrl;
+      img.style.display = 'block';
+      vacio.style.display = 'none';
+      btnQuitar.style.display = 'inline-flex';
+    } else {
+      img.style.display = 'none';
+      vacio.style.display = 'inline';
+      btnQuitar.style.display = 'none';
+    }
+  }
+
+  async function subirFondoCertificadoUI() {
+    const fileInput = document.getElementById('cert-cfg-fondo-file');
+    const file = fileInput.files[0];
+    if (!file) { showToast('⚠️ Elegí una imagen primero', true); return; }
+    const btn = document.getElementById('btn-cert-cfg-fondo-subir');
+    btn.disabled = true; btn.textContent = '⏳ Subiendo...';
+    try {
+      const base64 = await toBase64(file);
+      const resp = await gasPost({ action: 'uploadFondoCertificado', base64, mimeType: file.type, fileName: file.name });
+      if (!resp.ok || !resp.url) throw new Error(resp.error || 'Error al subir la imagen');
+      _certCfgActual.fondoImagenUrl = resp.url;
+      actualizarPreviewFondoCertificado();
+      fileInput.value = '';
+      showToast('✅ Imagen subida -- presioná "Guardar cambios" para aplicarla');
+    } catch (e) {
+      showToast('⚠️ Error: ' + e.message, true);
+    } finally {
+      btn.disabled = false; btn.textContent = '☁️ Subir';
+    }
+  }
+
+  function quitarFondoCertificadoUI() {
+    _certCfgActual.fondoImagenUrl = '';
+    actualizarPreviewFondoCertificado();
+    showToast('Fondo por defecto restaurado -- presioná "Guardar cambios" para aplicarlo');
+  }
+
+  function leerDraftCertificadoDesdeFormulario() {
+    const textos = {};
+    Object.keys(CERT_TIPOS_LABEL).forEach(function(tipo) {
+      textos[tipo] = {
+        chica: document.getElementById('cert-cfg-chica-' + tipo).value.trim(),
+        grande: document.getElementById('cert-cfg-grande-' + tipo).value.trim(),
+        resto: document.getElementById('cert-cfg-resto-' + tipo).value.trim()
+      };
+    });
+    return {
+      textos: textos,
+      fuente: document.getElementById('cert-cfg-fuente').value,
+      colorTexto: document.getElementById('cert-cfg-color-texto').value,
+      colorAcento: document.getElementById('cert-cfg-color-acento').value,
+      fondoImagenUrl: _certCfgActual.fondoImagenUrl || ''
+    };
+  }
+
+  async function guardarCertificadoConfigUI() {
+    const btn = document.getElementById('btn-cert-cfg-guardar');
+    btn.disabled = true;
+    const textoOriginal = btn.textContent;
+    btn.textContent = '⏳ Guardando...';
+    try {
+      const draft = leerDraftCertificadoDesdeFormulario();
+      const resp = await gasPost(Object.assign({ action: 'guardarCertificadoConfig' }, draft));
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      _certCfgActual = draft;
+      if (window.precargarCertificadoConfig) await window.precargarCertificadoConfig();
+      showToast('✅ Diseño del certificado guardado');
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
+    }
+  }
+
+  function previsualizarCertificadoUI() {
+    if (typeof previewCertificado !== 'function' || typeof setCertificadoConfigDraft !== 'function') {
+      showToast('⚠️ No se pudo cargar la vista previa', true);
+      return;
+    }
+    const draft = leerDraftCertificadoDesdeFormulario();
+    setCertificadoConfigDraft(draft);
+    previewCertificado(null, 'Nombre de Ejemplo', { categoria: 'Categoría de Ejemplo' }, 0, '1er', new Date().toLocaleDateString('es-EC'));
   }
   </script>
 </body>

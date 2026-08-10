@@ -251,6 +251,11 @@ document.addEventListener('componentsLoaded', async () => {
   // Nombre visible de categorías copia -- cache compartida con certificados.js
   // (mismo mecanismo que usa el propio texto del diploma).
   await precargarNombresCopiaCert();
+  // Diseño del certificado (textos/fuente/colores/fondo) editable desde
+  // CONFIGURACION -> Certificado -- revalida contra el backend antes de
+  // generar cualquier diploma real (buildCertHTML ya arranca con el cache
+  // local aplicado de forma síncrona, esto solo refresca si cambió algo).
+  await precargarCertificadoConfig();
   cargarDatos().then(irACategoriaDeUrl);
 });
 
