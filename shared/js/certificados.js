@@ -67,7 +67,11 @@ const CERT_CONFIG_DEFAULT = {
   firma1Nombre: 'Ing. Christian Ortega MSc.',
   firma1Cargo: 'PRESIDENTE DEL COMITÉ ORGANIZADOR\nSUCREBOT',
   firma2Nombre: 'Ing. Fabricio Tipantocta MSc.',
-  firma2Cargo: 'RELACIONES INTERINSTITUCIONALES\nDEL COMITÉ ORGANIZADOR SUCREBOT'
+  firma2Cargo: 'RELACIONES INTERINSTITUCIONALES\nDEL COMITÉ ORGANIZADOR SUCREBOT',
+  fuenteLogroDestacado: 'EB Garamond',
+  auspicianFondoColor: '#f8fafd',
+  auspicianTexto: 'Auspician',
+  auspicianColorTexto: '#1a5ca8'
 };
 
 let _certConfigActual = CERT_CONFIG_DEFAULT;
@@ -104,19 +108,28 @@ function _normalizarCertConfig(raw) {
     firma1Nombre: raw.firma1Nombre || CERT_CONFIG_DEFAULT.firma1Nombre,
     firma1Cargo: raw.firma1Cargo || CERT_CONFIG_DEFAULT.firma1Cargo,
     firma2Nombre: raw.firma2Nombre || CERT_CONFIG_DEFAULT.firma2Nombre,
-    firma2Cargo: raw.firma2Cargo || CERT_CONFIG_DEFAULT.firma2Cargo
+    firma2Cargo: raw.firma2Cargo || CERT_CONFIG_DEFAULT.firma2Cargo,
+    fuenteLogroDestacado: CERT_FUENTES[raw.fuenteLogroDestacado] ? raw.fuenteLogroDestacado : CERT_CONFIG_DEFAULT.fuenteLogroDestacado,
+    auspicianFondoColor: raw.auspicianFondoColor || CERT_CONFIG_DEFAULT.auspicianFondoColor,
+    auspicianTexto: raw.auspicianTexto || CERT_CONFIG_DEFAULT.auspicianTexto,
+    auspicianColorTexto: raw.auspicianColorTexto || CERT_CONFIG_DEFAULT.auspicianColorTexto
   };
 }
 // Aplica el cache local de forma síncrona -- se llama una vez apenas se
 // parsea este script (ver más abajo), así _certConfigActual ya refleja el
 // último diseño guardado desde el primer render, sin esperar ningún fetch
 // (mismo principio cache-first que categorías/nav, ver SKILL.md 06-ago).
+function _asegurarFuentesCertConfig() {
+  asegurarFuenteCertificadoCargada(_certConfigActual.fuente);
+  asegurarFuenteCertificadoCargada(_certConfigActual.fuenteLogroDestacado);
+}
+
 function _aplicarCertConfigCacheSync() {
   try {
     const cached = localStorage.getItem('sucrebot_cert_config_cache');
     if (cached) _certConfigActual = _normalizarCertConfig(JSON.parse(cached));
   } catch (e) {}
-  asegurarFuenteCertificadoCargada(_certConfigActual.fuente);
+  _asegurarFuentesCertConfig();
 }
 _aplicarCertConfigCacheSync();
 
@@ -128,7 +141,7 @@ async function precargarCertificadoConfig() {
     const fresh = await fetch(CONFIG.GAS_URL() + '?action=getCertificadoConfig').then(r => r.json());
     if (fresh && typeof fresh === 'object' && !fresh.error && fresh.textos) {
       _certConfigActual = _normalizarCertConfig(fresh);
-      asegurarFuenteCertificadoCargada(_certConfigActual.fuente);
+      _asegurarFuentesCertConfig();
       localStorage.setItem('sucrebot_cert_config_cache', JSON.stringify(fresh));
     }
   } catch (e) {}
@@ -140,7 +153,7 @@ window.getCertificadoConfigActual = function() { return _certConfigActual; };
 // todavía no guardados (aplica el borrador en memoria sin tocar localStorage).
 window.setCertificadoConfigDraft = function(draft) {
   _certConfigActual = _normalizarCertConfig(draft);
-  asegurarFuenteCertificadoCargada(_certConfigActual.fuente);
+  _asegurarFuentesCertConfig();
 };
 
 // Fondo decorativo (triángulos). Se serializa a <img> data-URI en vez de dejarlo
@@ -230,7 +243,7 @@ const CERTIFICADO_TEMPLATE = `
 
     <!-- Sidebar derecha -->
     <div class="cert-sidebar right">
-      <span class="sp-label-v">Auspician</span>
+      <span class="sp-label-v">{{AUSPICIAN_TEXTO}}</span>
       <div class="cert-sidebar-logos" id="certSponsorsRight"></div>
     </div>
 
@@ -268,11 +281,11 @@ const CERTIFICADO_CSS = `
   width: 200px; flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center;
   padding: 22px 14px;
-  border-left: 1px solid #e0eaf5; background: #f8fafd;
+  border-left: 1px solid #e0eaf5; background: var(--cert-auspician-fondo, #f8fafd);
 }
 .sp-label-v {
   font-size: 9px; font-weight: 800; letter-spacing: 2px;
-  color: #1a5ca8; text-transform: uppercase; white-space: nowrap;
+  color: var(--cert-auspician-color, #1a5ca8); text-transform: uppercase; white-space: nowrap;
   margin-bottom: 14px; flex-shrink: 0;
 }
 .cert-sidebar-logos {
@@ -348,7 +361,7 @@ const CERTIFICADO_CSS = `
 .cert-titulo    { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 38px; font-weight: 700; color: var(--cert-color-texto, #0a2a5e); letter-spacing: 3px; text-transform: uppercase; margin: 0 0 7px; }
 .cert-nombre    { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 48px; font-weight: 600; color: var(--cert-color-texto, #0a2a5e); line-height: 1.1; max-width: 800px; text-align: center; margin: 0 0 7px; }
 .cert-logro-chica { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 16px; font-style: italic; color: #4a5568; margin: 0 0 2px; }
-.cert-logro-grande { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 28px; font-weight: 700; color: var(--cert-color-acento, #b8860a); text-transform: uppercase; letter-spacing: 0.5px; max-width: 700px; text-align: center; margin: 0 0 12px; }
+.cert-logro-grande { font-family: var(--cert-fuente-destacado, var(--cert-fuente, 'EB Garamond', Georgia, serif)); font-size: 28px; font-weight: 700; color: var(--cert-color-acento, #b8860a); text-transform: uppercase; letter-spacing: 0.5px; max-width: 700px; text-align: center; margin: 0 0 12px; }
 .cert-logro-grande strong { color: var(--cert-color-acento, #b8860a); }
 .cert-logro     { font-family: var(--cert-fuente, 'EB Garamond', Georgia, serif); font-size: 16.5px; color: #4a5568; line-height: 1.8; max-width: 680px; text-align: center; margin: 0; }
 .cert-logro strong { color: var(--cert-color-texto, #0a2a5e); font-weight: 700; }
@@ -606,9 +619,13 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
     ? `<img src="${logoSrc(conf.fondoImagenUrl)}" alt=""/>`
     : svgToImgTag(FONDO_DECORATIVO_SVG);
   const fuenteCss  = (CERT_FUENTES[conf.fuente] || CERT_FUENTES['EB Garamond']).css;
+  const fuenteDestacadoCss = (CERT_FUENTES[conf.fuenteLogroDestacado] || CERT_FUENTES['EB Garamond']).css;
   const varsStyle  = '--cert-fuente:' + fuenteCss + ';'
+    + '--cert-fuente-destacado:' + fuenteDestacadoCss + ';'
     + '--cert-color-texto:' + _hexSeguro(conf.colorTexto, CERT_CONFIG_DEFAULT.colorTexto) + ';'
-    + '--cert-color-acento:' + _hexSeguro(conf.colorAcento, CERT_CONFIG_DEFAULT.colorAcento) + ';';
+    + '--cert-color-acento:' + _hexSeguro(conf.colorAcento, CERT_CONFIG_DEFAULT.colorAcento) + ';'
+    + '--cert-auspician-fondo:' + _hexSeguro(conf.auspicianFondoColor, CERT_CONFIG_DEFAULT.auspicianFondoColor) + ';'
+    + '--cert-auspician-color:' + _hexSeguro(conf.auspicianColorTexto, CERT_CONFIG_DEFAULT.auspicianColorTexto) + ';';
   const claseHeader = conf.mostrarLogosHeader === false ? ' cert-header-oculto' : '';
   return CERTIFICADO_TEMPLATE
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
@@ -621,6 +638,7 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
     .replace(/\{\{FIRMA1_CARGO\}\}/g,         _conSaltosLinea(conf.firma1Cargo))
     .replace(/\{\{FIRMA2_NOMBRE\}\}/g,        _escHtmlLigero(conf.firma2Nombre))
     .replace(/\{\{FIRMA2_CARGO\}\}/g,         _conSaltosLinea(conf.firma2Cargo))
+    .replace(/\{\{AUSPICIAN_TEXTO\}\}/g,      _escHtmlLigero(conf.auspicianTexto))
     .replace(/\{\{CODIGO_VERIFICACION\}\}/g,  codigo)
     .replace(/\{\{SELLO\}\}/g,                selloImg)
     .replace(/\{\{FONDO_SVG\}\}/g,            fondoImg)

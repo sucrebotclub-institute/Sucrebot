@@ -438,6 +438,10 @@
                 <select id="cert-cfg-fuente" class="form-control"></select>
               </div>
               <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Fuente del logro destacado</div>
+                <select id="cert-cfg-fuente-destacado" class="form-control"></select>
+              </div>
+              <div>
                 <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color principal (títulos/nombre)</div>
                 <input type="color" id="cert-cfg-color-texto" class="color-swatch">
               </div>
@@ -468,6 +472,22 @@
                   <input type="text" id="cert-cfg-firma2-nombre" class="form-control" placeholder="Nombre">
                   <textarea id="cert-cfg-firma2-cargo" class="form-control" rows="2" placeholder="Cargo -- Enter para 2do renglón"></textarea>
                 </div>
+              </div>
+            </div>
+
+            <div class="estado-label" style="margin:26px 0 10px;">Barra de auspiciantes</div>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:20px;">
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Texto de la etiqueta</div>
+                <input type="text" id="cert-cfg-auspician-texto" class="form-control" placeholder="Auspician">
+              </div>
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color de fondo de la barra</div>
+                <input type="color" id="cert-cfg-auspician-fondo" class="color-swatch">
+              </div>
+              <div>
+                <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color del texto de la etiqueta</div>
+                <input type="color" id="cert-cfg-auspician-color" class="color-swatch">
               </div>
             </div>
 
@@ -1672,11 +1692,17 @@
       cont.appendChild(box);
     });
 
-    const selFuente = document.getElementById('cert-cfg-fuente');
-    selFuente.innerHTML = Object.keys(CERT_FUENTES).map(function(f) {
+    const opcionesFuente = Object.keys(CERT_FUENTES).map(function(f) {
       return '<option value="' + f + '">' + f + '</option>';
     }).join('');
+
+    const selFuente = document.getElementById('cert-cfg-fuente');
+    selFuente.innerHTML = opcionesFuente;
     selFuente.value = _certCfgActual.fuente || CERT_CONFIG_DEFAULT.fuente;
+
+    const selFuenteDestacado = document.getElementById('cert-cfg-fuente-destacado');
+    selFuenteDestacado.innerHTML = opcionesFuente;
+    selFuenteDestacado.value = _certCfgActual.fuenteLogroDestacado || CERT_CONFIG_DEFAULT.fuenteLogroDestacado;
 
     document.getElementById('cert-cfg-color-texto').value = _certCfgActual.colorTexto || CERT_CONFIG_DEFAULT.colorTexto;
     document.getElementById('cert-cfg-color-acento').value = _certCfgActual.colorAcento || CERT_CONFIG_DEFAULT.colorAcento;
@@ -1687,6 +1713,10 @@
     document.getElementById('cert-cfg-firma1-cargo').value = _certCfgActual.firma1Cargo || CERT_CONFIG_DEFAULT.firma1Cargo;
     document.getElementById('cert-cfg-firma2-nombre').value = _certCfgActual.firma2Nombre || CERT_CONFIG_DEFAULT.firma2Nombre;
     document.getElementById('cert-cfg-firma2-cargo').value = _certCfgActual.firma2Cargo || CERT_CONFIG_DEFAULT.firma2Cargo;
+
+    document.getElementById('cert-cfg-auspician-texto').value = _certCfgActual.auspicianTexto || CERT_CONFIG_DEFAULT.auspicianTexto;
+    document.getElementById('cert-cfg-auspician-fondo').value = _certCfgActual.auspicianFondoColor || CERT_CONFIG_DEFAULT.auspicianFondoColor;
+    document.getElementById('cert-cfg-auspician-color').value = _certCfgActual.auspicianColorTexto || CERT_CONFIG_DEFAULT.auspicianColorTexto;
 
     actualizarPreviewFondoCertificado();
   }
@@ -1754,7 +1784,11 @@
       firma1Nombre: document.getElementById('cert-cfg-firma1-nombre').value.trim(),
       firma1Cargo: document.getElementById('cert-cfg-firma1-cargo').value.trim(),
       firma2Nombre: document.getElementById('cert-cfg-firma2-nombre').value.trim(),
-      firma2Cargo: document.getElementById('cert-cfg-firma2-cargo').value.trim()
+      firma2Cargo: document.getElementById('cert-cfg-firma2-cargo').value.trim(),
+      fuenteLogroDestacado: document.getElementById('cert-cfg-fuente-destacado').value,
+      auspicianTexto: document.getElementById('cert-cfg-auspician-texto').value.trim(),
+      auspicianFondoColor: document.getElementById('cert-cfg-auspician-fondo').value,
+      auspicianColorTexto: document.getElementById('cert-cfg-auspician-color').value
     };
   }
 
