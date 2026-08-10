@@ -62,7 +62,12 @@ const CERT_CONFIG_DEFAULT = {
   colorTexto: '#0a2a5e',
   colorAcento: '#b8860a',
   fondoImagenUrl: '',
-  mostrarLogosHeader: true
+  mostrarLogosHeader: true,
+  ciudadEvento: 'Quito D.M.',
+  firma1Nombre: 'Ing. Christian Ortega MSc.',
+  firma1Cargo: 'PRESIDENTE DEL COMITÉ ORGANIZADOR\nSUCREBOT',
+  firma2Nombre: 'Ing. Fabricio Tipantocta MSc.',
+  firma2Cargo: 'RELACIONES INTERINSTITUCIONALES\nDEL COMITÉ ORGANIZADOR SUCREBOT'
 };
 
 let _certConfigActual = CERT_CONFIG_DEFAULT;
@@ -94,7 +99,12 @@ function _normalizarCertConfig(raw) {
     colorTexto: raw.colorTexto || CERT_CONFIG_DEFAULT.colorTexto,
     colorAcento: raw.colorAcento || CERT_CONFIG_DEFAULT.colorAcento,
     fondoImagenUrl: raw.fondoImagenUrl || '',
-    mostrarLogosHeader: raw.mostrarLogosHeader !== false
+    mostrarLogosHeader: raw.mostrarLogosHeader !== false,
+    ciudadEvento: raw.ciudadEvento || CERT_CONFIG_DEFAULT.ciudadEvento,
+    firma1Nombre: raw.firma1Nombre || CERT_CONFIG_DEFAULT.firma1Nombre,
+    firma1Cargo: raw.firma1Cargo || CERT_CONFIG_DEFAULT.firma1Cargo,
+    firma2Nombre: raw.firma2Nombre || CERT_CONFIG_DEFAULT.firma2Nombre,
+    firma2Cargo: raw.firma2Cargo || CERT_CONFIG_DEFAULT.firma2Cargo
   };
 }
 // Aplica el cache local de forma síncrona -- se llama una vez apenas se
@@ -201,19 +211,19 @@ const CERTIFICADO_TEMPLATE = `
       <div class="cert-firmas">
         <div class="cert-firma">
           <div class="cert-firma-linea"></div>
-          <p class="cert-firma-nombre">Ing. Christian Ortega MSc.</p>
-          <p class="cert-firma-cargo">PRESIDENTE DEL COMITÉ ORGANIZADOR<br>SUCREBOT</p>
+          <p class="cert-firma-nombre">{{FIRMA1_NOMBRE}}</p>
+          <p class="cert-firma-cargo">{{FIRMA1_CARGO}}</p>
         </div>
         <div class="cert-firma">
           <div class="cert-firma-linea"></div>
-          <p class="cert-firma-nombre">Ing. Fabricio Tipantocta MSc.</p>
-          <p class="cert-firma-cargo">RELACIONES INTERINSTITUCIONALES<br>DEL COMITÉ ORGANIZADOR SUCREBOT</p>
+          <p class="cert-firma-nombre">{{FIRMA2_NOMBRE}}</p>
+          <p class="cert-firma-cargo">{{FIRMA2_CARGO}}</p>
         </div>
       </div>
 
       <!-- Fecha y código -->
       <div class="cert-meta">
-        <p class="cert-fecha">Quito D.M., {{FECHA_EVENTO}}</p>
+        <p class="cert-fecha">{{CIUDAD_EVENTO}}, {{FECHA_EVENTO}}</p>
         <p class="cert-codigo">{{CODIGO_VERIFICACION}}</p>
       </div>
     </div>
@@ -576,6 +586,17 @@ function _hexSeguro(hex, fallback) {
   return /^#[0-9a-fA-F]{3,8}$/.test(String(hex || '')) ? hex : fallback;
 }
 
+// Escape simple antes de insertar texto de certificado_config en innerHTML
+// (viene de un campo editable en CONFIGURACION, confianza de Admin, pero se
+// escapa igual por si acaso). _conSaltosLinea además convierte '\n' en <br>
+// para los cargos de firma, que pueden ocupar 2 renglones.
+function _escHtmlLigero(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function _conSaltosLinea(s) {
+  return _escHtmlLigero(s).replace(/\n/g, '<br>');
+}
+
 function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
   const textoLogro = obtenerTextoLogro(tipo, categoria);
   const sello      = obtenerSelloSVG(tipo);
@@ -595,6 +616,11 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
     .replace(/\{\{TEXTO_LOGRO_GRANDE\}\}/g,  textoLogro.grande)
     .replace(/\{\{TEXTO_LOGRO_RESTO\}\}/g,   textoLogro.resto)
     .replace(/\{\{FECHA_EVENTO\}\}/g,         fechaEvento)
+    .replace(/\{\{CIUDAD_EVENTO\}\}/g,        _escHtmlLigero(conf.ciudadEvento))
+    .replace(/\{\{FIRMA1_NOMBRE\}\}/g,        _escHtmlLigero(conf.firma1Nombre))
+    .replace(/\{\{FIRMA1_CARGO\}\}/g,         _conSaltosLinea(conf.firma1Cargo))
+    .replace(/\{\{FIRMA2_NOMBRE\}\}/g,        _escHtmlLigero(conf.firma2Nombre))
+    .replace(/\{\{FIRMA2_CARGO\}\}/g,         _conSaltosLinea(conf.firma2Cargo))
     .replace(/\{\{CODIGO_VERIFICACION\}\}/g,  codigo)
     .replace(/\{\{SELLO\}\}/g,                selloImg)
     .replace(/\{\{FONDO_SVG\}\}/g,            fondoImg)
