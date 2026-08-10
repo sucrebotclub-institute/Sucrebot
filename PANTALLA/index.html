@@ -440,6 +440,31 @@
     { start:'16:00', end:'17:00', col:null, name:'Premiación',                      tipo:'award'   },
   ];
 
+  // Horarios editables desde CONFIGURACION → Cronograma (Admin/Organizador).
+  // Mismo principio cache-first que los colores de categoría: se aplica de
+  // una vez lo último conocido en localStorage (sin esperar red) para que
+  // no haya flash del horario por defecto -> el guardado, y se revalida en
+  // segundo plano.
+  const HORARIOS_CACHE_KEY = 'sucrebot_cache_cronograma_horarios';
+  function aplicarHorariosCronograma(horarios) {
+    if (!horarios || typeof horarios !== 'object') return;
+    EVENTS.forEach(ev => {
+      const h = horarios[ev.name];
+      if (h && h.start && h.end) { ev.start = h.start; ev.end = h.end; }
+    });
+  }
+  try { aplicarHorariosCronograma(JSON.parse(localStorage.getItem(HORARIOS_CACHE_KEY) || '{}')); } catch (e) {}
+  async function actualizarHorariosCronograma() {
+    try {
+      const resp = await fetch(CONFIG.GAS_URL() + '?action=getHorariosCronograma', { cache: 'no-store' }).then(r => r.json());
+      if (!resp || typeof resp !== 'object') return;
+      aplicarHorariosCronograma(resp);
+      localStorage.setItem(HORARIOS_CACHE_KEY, JSON.stringify(resp));
+      if (document.getElementById('fsOverlay').classList.contains('active')) buildGrid('fsGrid', true);
+      else buildGrid('normalGrid', false);
+    } catch (e) { /* sin conexión, se queda con el cache (o el default del código si no había) */ }
+  }
+
   function toMin(t) { const [h,m]=t.split(':').map(Number); return h*60+m; }
   function getState(ev) {
     const now=new Date(), cur=now.getHours()*60+now.getMinutes();
@@ -588,6 +613,7 @@
   setTimeout(()=>{ buildGrid('normalGrid', false); actualizarHintScroll(); }, 0);
   setTimeout(()=>{ buildGrid('normalGrid', false); actualizarHintScroll(); }, 800);
   actualizarColoresCategoria();
+  actualizarHorariosCronograma();
 </script>
 
 </body>
