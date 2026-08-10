@@ -623,8 +623,8 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
 // y sin código de verificación (nunca se guarda en 'certificados', ver
 // generarYDescargarPDFPersonalizado -- CONFIGURACION -> Certificado lo deja
 // explícito: "no se guarda en el sistema").
-function buildCertHTMLPersonalizado(nombreFinal, rol, palabras, fechaEvento) {
-  const textoLogro = { chica: '', grande: rol, resto: palabras };
+function buildCertHTMLPersonalizado(nombreFinal, chica, rol, palabras, fechaEvento) {
+  const textoLogro = { chica: chica || '', grande: rol, resto: palabras };
   return _renderCertHTML(nombreFinal, textoLogro, '', fechaEvento, '');
 }
 
@@ -665,63 +665,48 @@ function _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, codigo)
 
 // ── MODAL DE PREVIEW ───────────────────────────────────────────────────────────
 
-function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fechaEvento) {
-  precargarLogosCertificado(); // dispara la precarga en segundo plano (no bloquea la preview)
-  const p        = pObj || (typeof participantesAprobados !== 'undefined' && participante !== null ? participantesAprobados[participante] : {});
-  const nombre   = (nombreFinal && String(nombreFinal).trim()) || (p && p.nombre) || '—';
-  const categoria = (p && p.categoria) || '';
-  const fecha    = fechaEvento || (document.getElementById('fecha-evento')?.value || 'julio 2026');
-  const tipoFinal = tipo || 'participacion';
-  const htmlCert = buildCertHTML(nombre, tipoFinal, categoria, fecha, 'CERT-2026-PREVIEW');
-
+function _asegurarModalCertificado() {
   let modal = document.getElementById('cert-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'cert-modal';
-    modal.className = 'cert-modal';
-    const content = document.createElement('div');
-    content.className = 'cert-modal-content';
-    const header = document.createElement('div');
-    header.className = 'cert-modal-header';
-    const title = document.createElement('div');
-    title.className = 'cert-modal-title';
-    title.textContent = '📜 VISTA PREVIA DEL CERTIFICADO';
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'cert-modal-close';
-    closeBtn.textContent = '×';
-    closeBtn.onclick = cerrarModalCertificado;
-    header.appendChild(title);
-    header.appendChild(closeBtn);
-    const previewContainer = document.createElement('div');
-    previewContainer.id = 'cert-preview-container';
-    previewContainer.style.cssText = 'display:flex;justify-content:center;overflow:hidden;';
-    const actions = document.createElement('div');
-    actions.className = 'cert-modal-actions';
-    const saveBtn = document.createElement('button');
-    saveBtn.id = 'btn-guardar-cert';
-    saveBtn.className = 'btn-modal btn-guardar-cert';
-    saveBtn.textContent = '☁️ Guardar en Drive';
-    actions.appendChild(saveBtn);
-    content.appendChild(header);
-    content.appendChild(previewContainer);
-    content.appendChild(actions);
-    modal.appendChild(content);
-    document.body.appendChild(modal);
-  }
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'cert-modal';
+  modal.className = 'cert-modal';
+  const content = document.createElement('div');
+  content.className = 'cert-modal-content';
+  const header = document.createElement('div');
+  header.className = 'cert-modal-header';
+  const title = document.createElement('div');
+  title.className = 'cert-modal-title';
+  title.id = 'cert-modal-title';
+  title.textContent = '📜 VISTA PREVIA DEL CERTIFICADO';
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'cert-modal-close';
+  closeBtn.textContent = '×';
+  closeBtn.onclick = cerrarModalCertificado;
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+  const previewContainer = document.createElement('div');
+  previewContainer.id = 'cert-preview-container';
+  previewContainer.style.cssText = 'display:flex;justify-content:center;overflow:hidden;';
+  const actions = document.createElement('div');
+  actions.className = 'cert-modal-actions';
+  const saveBtn = document.createElement('button');
+  saveBtn.id = 'btn-guardar-cert';
+  saveBtn.className = 'btn-modal btn-guardar-cert';
+  saveBtn.textContent = '☁️ Guardar en Drive';
+  actions.appendChild(saveBtn);
+  content.appendChild(header);
+  content.appendChild(previewContainer);
+  content.appendChild(actions);
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  return modal;
+}
 
+function _mostrarModalCertificado(htmlCert) {
+  const modal = _asegurarModalCertificado();
   document.getElementById('cert-preview-container').innerHTML = htmlCert;
   renderCertSponsors(document.getElementById('cert-preview-container'));
-
-  const saveBtn = document.getElementById('btn-guardar-cert');
-  if (saveBtn) {
-    if (typeof guardarYSubirCertificado === 'function' && participante !== null) {
-      saveBtn.style.display = 'inline-flex';
-      saveBtn.onclick = () => guardarYSubirCertificado(participante, nombre, tipoFinal);
-    } else {
-      saveBtn.style.display = 'none';
-    }
-  }
-
   modal.classList.add('show');
   // La escala se calcula midiendo el tamaño real del certificado, pero si la
   // fuente EB Garamond todavía no cargó, mide con la fuente de reemplazo y
@@ -734,6 +719,47 @@ function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fech
   }
   setTimeout(ajustarCertificadoAPantalla, 500);
 }
+
+function previewCertificado(participante, nombreFinal, pObj, _unused, tipo, fechaEvento) {
+  precargarLogosCertificado(); // dispara la precarga en segundo plano (no bloquea la preview)
+  const p        = pObj || (typeof participantesAprobados !== 'undefined' && participante !== null ? participantesAprobados[participante] : {});
+  const nombre   = (nombreFinal && String(nombreFinal).trim()) || (p && p.nombre) || '—';
+  const categoria = (p && p.categoria) || '';
+  const fecha    = fechaEvento || (document.getElementById('fecha-evento')?.value || 'julio 2026');
+  const tipoFinal = tipo || 'participacion';
+  const htmlCert = buildCertHTML(nombre, tipoFinal, categoria, fecha, 'CERT-2026-PREVIEW');
+
+  _asegurarModalCertificado();
+  document.getElementById('cert-modal-title').textContent = '📜 VISTA PREVIA DEL CERTIFICADO';
+  _mostrarModalCertificado(htmlCert);
+
+  const saveBtn = document.getElementById('btn-guardar-cert');
+  if (saveBtn) {
+    if (typeof guardarYSubirCertificado === 'function' && participante !== null) {
+      saveBtn.style.display = 'inline-flex';
+      saveBtn.onclick = () => guardarYSubirCertificado(participante, nombre, tipoFinal);
+    } else {
+      saveBtn.style.display = 'none';
+    }
+  }
+}
+
+// Vista previa del certificado "para terceros" -- reusa el mismo modal, pero
+// nunca muestra "Guardar en Drive" (este tipo de certificado nunca se
+// persiste, ver generarYDescargarPDFPersonalizado).
+function previewCertificadoPersonalizado(nombreFinal, chica, rol, palabras, fechaEvento) {
+  precargarLogosCertificado();
+  const nombre = (nombreFinal && String(nombreFinal).trim()) || '—';
+  const htmlCert = buildCertHTMLPersonalizado(nombre, chica, rol, palabras, fechaEvento);
+
+  _asegurarModalCertificado();
+  document.getElementById('cert-modal-title').textContent = '📜 VISTA PREVIA DEL CERTIFICADO';
+  _mostrarModalCertificado(htmlCert);
+
+  const saveBtn = document.getElementById('btn-guardar-cert');
+  if (saveBtn) saveBtn.style.display = 'none';
+}
+window.previewCertificadoPersonalizado = previewCertificadoPersonalizado;
 
 function cerrarModalCertificado() {
   const modal = document.getElementById('cert-modal');
@@ -872,12 +898,12 @@ async function generarYSubirPDF(pObj, tipo, fechaEvento, codigoCert, nombreFinal
 // verificación, sin fila en el Sheet, sin subida a Drive) -- pensado para
 // reconocimientos puntuales (auspiciantes, jueces, invitados) que no
 // necesitan quedar en el sistema de certificados de competidores.
-async function generarYDescargarPDFPersonalizado(nombreFinal, rol, palabras, fechaEvento) {
+async function generarYDescargarPDFPersonalizado(nombreFinal, chica, rol, palabras, fechaEvento) {
   if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
     await cargarLibreriasPDF();
   }
   await precargarLogosCertificado();
-  const htmlCert = buildCertHTMLPersonalizado(nombreFinal, rol, palabras, fechaEvento);
+  const htmlCert = buildCertHTMLPersonalizado(nombreFinal, chica, rol, palabras, fechaEvento);
 
   const tempDiv = document.createElement('div');
   tempDiv.style.cssText = 'position:absolute;left:-9999px;top:0;';

@@ -522,16 +522,39 @@
 
             <div class="estado-label" style="margin-bottom:8px;">🎖️ Certificado para terceros (auspiciantes, jueces, etc.)</div>
             <div class="estado-label" style="font-size:.72rem;font-weight:400;opacity:.75;margin-bottom:14px;">
-              Mismo diseño de arriba, pero con nombre/rol/texto completamente libres para alguien
-              que no es participante. Solo se descarga el PDF -- no se guarda en el sistema, no
-              tiene código de verificación.
+              Mismo diseño de arriba, pero para alguien que no es participante. Se descarga como PDF
+              suelto -- no se guarda en el sistema, no tiene código de verificación.
             </div>
+
+            <div class="estado-label" style="margin-bottom:10px;">Roles guardados</div>
+            <div id="cert-roles-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
+            <div id="cert-roles-lista" style="display:none;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+
+            <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:14px;margin-bottom:26px;max-width:520px;">
+              <div class="estado-label" style="margin-bottom:8px;">➕ Agregar rol nuevo</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <input type="text" id="cert-rol-nuevo-nombre" class="form-control" placeholder="Nombre del rol (ej. 'Auspiciante')">
+                <input type="text" id="cert-rol-nuevo-chica" class="form-control" placeholder="Frase chica (ej. 'Se otorga el presente reconocimiento a')">
+                <input type="text" id="cert-rol-nuevo-grande" class="form-control" placeholder="Frase grande (ej. 'AUSPICIANTE OFICIAL')">
+                <textarea id="cert-rol-nuevo-resto" class="form-control" rows="2" placeholder="Texto de reconocimiento"></textarea>
+                <button class="btn-personal-add" id="btn-cert-rol-agregar" onclick="agregarCertificadoRolUI()">➕ Agregar rol</button>
+              </div>
+            </div>
+
+            <div class="estado-label" style="margin-bottom:10px;">Generar certificado</div>
             <div style="display:flex;flex-direction:column;gap:8px;max-width:520px;">
-              <input type="text" id="cert-3ro-nombre" class="form-control" placeholder="Nombre completo">
-              <input type="text" id="cert-3ro-rol" class="form-control" placeholder="Rol (ej. 'AUSPICIANTE OFICIAL', 'JUEZ CALIFICADOR')">
+              <select id="cert-3ro-rol-select" class="form-control" onchange="aplicarRolCertificadoTercero()">
+                <option value="">-- Elegí un rol guardado (opcional) --</option>
+              </select>
+              <input type="text" id="cert-3ro-nombre" class="form-control" placeholder="Nombre completo de la persona/empresa">
+              <input type="text" id="cert-3ro-chica" class="form-control" placeholder="Frase chica">
+              <input type="text" id="cert-3ro-rol" class="form-control" placeholder="Frase grande (rol)">
               <textarea id="cert-3ro-palabras" class="form-control" rows="3" placeholder="Texto de agradecimiento/reconocimiento"></textarea>
               <input type="text" id="cert-3ro-fecha" class="form-control" placeholder="Fecha (ej. '16 de julio de 2026')">
-              <button class="btn-personal-add" id="btn-cert-3ro-descargar" onclick="descargarCertificadoTerceroUI()">📥 Descargar PDF</button>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn-personal-add" id="btn-cert-3ro-descargar" onclick="descargarCertificadoTerceroUI()">📥 Descargar PDF</button>
+                <button class="btn-toggle" onclick="previsualizarCertificadoTerceroUI()">👁️ Vista previa</button>
+              </div>
             </div>
           </div>
         </div>
@@ -581,6 +604,7 @@
     cargarAuspiciantes();
     cargarClubes();
     cargarCertificadoConfig();
+    cargarCertificadoRoles();
   });
 
   function mostrarSeccion(id) {
@@ -1838,12 +1862,19 @@
     previewCertificado(null, 'Nombre de Ejemplo', { categoria: 'Categoría de Ejemplo' }, 0, '1er', new Date().toLocaleDateString('es-EC'));
   }
 
+  function leerDatosCertificadoTercero() {
+    return {
+      nombre: document.getElementById('cert-3ro-nombre').value.trim(),
+      chica: document.getElementById('cert-3ro-chica').value.trim(),
+      rol: document.getElementById('cert-3ro-rol').value.trim(),
+      palabras: document.getElementById('cert-3ro-palabras').value.trim(),
+      fecha: document.getElementById('cert-3ro-fecha').value.trim()
+    };
+  }
+
   async function descargarCertificadoTerceroUI() {
-    const nombre = document.getElementById('cert-3ro-nombre').value.trim();
-    const rol = document.getElementById('cert-3ro-rol').value.trim();
-    const palabras = document.getElementById('cert-3ro-palabras').value.trim();
-    const fecha = document.getElementById('cert-3ro-fecha').value.trim();
-    if (!nombre || !rol || !palabras) {
+    const d = leerDatosCertificadoTercero();
+    if (!d.nombre || !d.rol || !d.palabras) {
       showToast('⚠️ Completá nombre, rol y texto', true);
       return;
     }
@@ -1856,13 +1887,139 @@
     const textoOriginal = btn.textContent;
     btn.textContent = '⏳ Generando...';
     try {
-      await generarYDescargarPDFPersonalizado(nombre, rol, palabras, fecha);
+      await generarYDescargarPDFPersonalizado(d.nombre, d.chica, d.rol, d.palabras, d.fecha);
       showToast('✅ PDF descargado');
     } catch (e) {
       showToast('⚠️ Error: ' + e.message, true);
     } finally {
       btn.disabled = false;
       btn.textContent = textoOriginal;
+    }
+  }
+
+  function previsualizarCertificadoTerceroUI() {
+    const d = leerDatosCertificadoTercero();
+    if (typeof previewCertificadoPersonalizado !== 'function') {
+      showToast('⚠️ No se pudo cargar la vista previa', true);
+      return;
+    }
+    previewCertificadoPersonalizado(d.nombre || 'Nombre de Ejemplo', d.chica, d.rol || 'ROL', d.palabras || 'Texto de reconocimiento', d.fecha || new Date().toLocaleDateString('es-EC'));
+  }
+
+  // ── Roles guardados de certificado para terceros ────────────────────
+  let _certRolesCache = [];
+
+  async function cargarCertificadoRoles() {
+    try {
+      const lista = await gasGet({ action: 'getCertificadoRoles' });
+      _certRolesCache = Array.isArray(lista) ? lista : [];
+    } catch (e) {
+      _certRolesCache = [];
+      showToast('⚠️ Error al cargar roles de certificado', true);
+    }
+    renderCertificadoRolesUI();
+    document.getElementById('cert-roles-loading').style.display = 'none';
+    document.getElementById('cert-roles-lista').style.display = 'flex';
+  }
+
+  function renderCertificadoRolesUI() {
+    const cont = document.getElementById('cert-roles-lista');
+    cont.innerHTML = '';
+    _certRolesCache.forEach(function(rol) {
+      const box = document.createElement('div');
+      box.style.cssText = 'background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:14px;max-width:520px;';
+      box.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <input type="text" class="form-control rol-nombre" placeholder="Nombre del rol" value="${escHtml(rol.nombre)}">
+          <input type="text" class="form-control rol-chica" placeholder="Frase chica" value="${escHtml(rol.chica)}">
+          <input type="text" class="form-control rol-grande" placeholder="Frase grande" value="${escHtml(rol.grande)}">
+          <textarea class="form-control rol-resto" rows="2" placeholder="Texto de reconocimiento">${escHtml(rol.resto)}</textarea>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-personal-add rol-guardar">💾 Guardar</button>
+            <button class="btn-toggle cerrar rol-eliminar">🗑️ Eliminar</button>
+          </div>
+        </div>
+      `;
+      box.querySelector('.rol-guardar').addEventListener('click', function() { guardarCertificadoRolExistenteUI(rol.id, box, this); });
+      box.querySelector('.rol-eliminar').addEventListener('click', function() { eliminarCertificadoRolUI(rol.id, rol.nombre, box); });
+      cont.appendChild(box);
+    });
+    actualizarSelectRolesTercero();
+  }
+
+  function actualizarSelectRolesTercero() {
+    const sel = document.getElementById('cert-3ro-rol-select');
+    const actual = sel.value;
+    sel.innerHTML = '<option value="">-- Elegí un rol guardado (opcional) --</option>' +
+      _certRolesCache.map(function(r) { return '<option value="' + r.id + '">' + escHtml(r.nombre) + '</option>'; }).join('');
+    sel.value = actual;
+  }
+
+  function aplicarRolCertificadoTercero() {
+    const id = document.getElementById('cert-3ro-rol-select').value;
+    const rol = _certRolesCache.find(function(r) { return r.id === id; });
+    if (!rol) return;
+    document.getElementById('cert-3ro-chica').value = rol.chica;
+    document.getElementById('cert-3ro-rol').value = rol.grande;
+    document.getElementById('cert-3ro-palabras').value = rol.resto;
+  }
+
+  async function guardarCertificadoRolExistenteUI(id, box, btnEl) {
+    const nombre = box.querySelector('.rol-nombre').value.trim();
+    if (!nombre) { showToast('⚠️ El nombre del rol es obligatorio', true); return; }
+    btnEl.disabled = true;
+    try {
+      const resp = await gasPost({
+        action: 'guardarCertificadoRol', id: id, nombre: nombre,
+        chica: box.querySelector('.rol-chica').value.trim(),
+        grande: box.querySelector('.rol-grande').value.trim(),
+        resto: box.querySelector('.rol-resto').value.trim()
+      });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Rol "' + nombre + '" guardado');
+      await cargarCertificadoRoles();
+    } catch (e) {
+      showToast('⚠️ Error: ' + e.message, true);
+    } finally {
+      btnEl.disabled = false;
+    }
+  }
+
+  async function eliminarCertificadoRolUI(id, nombre, box) {
+    if (!confirm('¿Eliminar el rol "' + nombre + '"? Esta acción no se puede deshacer.')) return;
+    try {
+      const resp = await gasPost({ action: 'eliminarCertificadoRol', id: id });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('🗑️ Rol eliminado');
+      await cargarCertificadoRoles();
+    } catch (e) {
+      showToast('⚠️ Error: ' + e.message, true);
+    }
+  }
+
+  async function agregarCertificadoRolUI() {
+    const nombre = document.getElementById('cert-rol-nuevo-nombre').value.trim();
+    if (!nombre) { showToast('⚠️ El nombre del rol es obligatorio', true); return; }
+    const btn = document.getElementById('btn-cert-rol-agregar');
+    btn.disabled = true;
+    try {
+      const resp = await gasPost({
+        action: 'guardarCertificadoRol', nombre: nombre,
+        chica: document.getElementById('cert-rol-nuevo-chica').value.trim(),
+        grande: document.getElementById('cert-rol-nuevo-grande').value.trim(),
+        resto: document.getElementById('cert-rol-nuevo-resto').value.trim()
+      });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Rol agregado');
+      document.getElementById('cert-rol-nuevo-nombre').value = '';
+      document.getElementById('cert-rol-nuevo-chica').value = '';
+      document.getElementById('cert-rol-nuevo-grande').value = '';
+      document.getElementById('cert-rol-nuevo-resto').value = '';
+      await cargarCertificadoRoles();
+    } catch (e) {
+      showToast('⚠️ Error: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
     }
   }
   </script>
