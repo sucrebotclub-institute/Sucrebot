@@ -612,8 +612,23 @@ function _conSaltosLinea(s) {
 
 function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
   const textoLogro = obtenerTextoLogro(tipo, categoria);
-  const sello      = obtenerSelloSVG(tipo);
-  const selloImg   = svgToImgTag(sello);
+  const selloImg   = svgToImgTag(obtenerSelloSVG(tipo));
+  return _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, codigo);
+}
+
+// Certificado "para terceros" (auspiciantes, jueces, invitados, etc.) --
+// mismo diseño/plantilla que el de participantes, pero con nombre/rol/texto
+// completamente libres en vez de resolverse por tipo+categoría. Sin sello
+// (ninguno de los 4 diseños de sello -oro/plata/bronce/PARTIC.- aplica acá)
+// y sin código de verificación (nunca se guarda en 'certificados', ver
+// generarYDescargarPDFPersonalizado -- CONFIGURACION -> Certificado lo deja
+// explícito: "no se guarda en el sistema").
+function buildCertHTMLPersonalizado(nombreFinal, rol, palabras, fechaEvento) {
+  const textoLogro = { chica: '', grande: rol, resto: palabras };
+  return _renderCertHTML(nombreFinal, textoLogro, '', fechaEvento, '');
+}
+
+function _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, codigo) {
   const conf       = _certConfigActual;
   const fondoImg   = conf.fondoImagenUrl
     ? `<img src="${logoSrc(conf.fondoImagenUrl)}" alt=""/>`
@@ -850,6 +865,42 @@ async function generarYSubirPDF(pObj, tipo, fechaEvento, codigoCert, nombreFinal
     document.body.removeChild(tempDiv);
   }
 }
+
+// Certificado para terceros -- genera el PDF y lo descarga directo al
+// navegador (pdf.save()), sin llamar a ninguna acción de Code.gs que
+// escriba nada. A propósito no pasa por 'certificados' (sin código de
+// verificación, sin fila en el Sheet, sin subida a Drive) -- pensado para
+// reconocimientos puntuales (auspiciantes, jueces, invitados) que no
+// necesitan quedar en el sistema de certificados de competidores.
+async function generarYDescargarPDFPersonalizado(nombreFinal, rol, palabras, fechaEvento) {
+  if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+    await cargarLibreriasPDF();
+  }
+  await precargarLogosCertificado();
+  const htmlCert = buildCertHTMLPersonalizado(nombreFinal, rol, palabras, fechaEvento);
+
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:absolute;left:-9999px;top:0;';
+  tempDiv.innerHTML = htmlCert;
+  document.body.appendChild(tempDiv);
+  renderCertSponsors(tempDiv);
+
+  try {
+    await document.fonts.ready;
+    await esperarImagenes(tempDiv);
+    const canvas = await html2canvas(tempDiv.firstElementChild, {
+      scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff'
+    });
+    const { jsPDF } = jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, 210);
+    const fileName = 'Certificado_' + nombreFinal.replace(/\s+/g, '_') + '.pdf';
+    pdf.save(fileName);
+  } finally {
+    document.body.removeChild(tempDiv);
+  }
+}
+window.generarYDescargarPDFPersonalizado = generarYDescargarPDFPersonalizado;
 
 // ── CARGAR LIBRERÍAS PDF ───────────────────────────────────────────────────────
 

@@ -517,6 +517,22 @@
               <button class="btn-personal-add" id="btn-cert-cfg-guardar" onclick="guardarCertificadoConfigUI()">💾 Guardar cambios</button>
               <button class="btn-toggle" onclick="previsualizarCertificadoUI()">👁️ Vista previa</button>
             </div>
+
+            <div style="border-top:1px solid var(--border,#2a3550);margin:32px 0 20px;"></div>
+
+            <div class="estado-label" style="margin-bottom:8px;">🎖️ Certificado para terceros (auspiciantes, jueces, etc.)</div>
+            <div class="estado-label" style="font-size:.72rem;font-weight:400;opacity:.75;margin-bottom:14px;">
+              Mismo diseño de arriba, pero con nombre/rol/texto completamente libres para alguien
+              que no es participante. Solo se descarga el PDF -- no se guarda en el sistema, no
+              tiene código de verificación.
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;max-width:520px;">
+              <input type="text" id="cert-3ro-nombre" class="form-control" placeholder="Nombre completo">
+              <input type="text" id="cert-3ro-rol" class="form-control" placeholder="Rol (ej. 'AUSPICIANTE OFICIAL', 'JUEZ CALIFICADOR')">
+              <textarea id="cert-3ro-palabras" class="form-control" rows="3" placeholder="Texto de agradecimiento/reconocimiento"></textarea>
+              <input type="text" id="cert-3ro-fecha" class="form-control" placeholder="Fecha (ej. '16 de julio de 2026')">
+              <button class="btn-personal-add" id="btn-cert-3ro-descargar" onclick="descargarCertificadoTerceroUI()">📥 Descargar PDF</button>
+            </div>
           </div>
         </div>
 
@@ -1820,6 +1836,34 @@
     const draft = leerDraftCertificadoDesdeFormulario();
     setCertificadoConfigDraft(draft);
     previewCertificado(null, 'Nombre de Ejemplo', { categoria: 'Categoría de Ejemplo' }, 0, '1er', new Date().toLocaleDateString('es-EC'));
+  }
+
+  async function descargarCertificadoTerceroUI() {
+    const nombre = document.getElementById('cert-3ro-nombre').value.trim();
+    const rol = document.getElementById('cert-3ro-rol').value.trim();
+    const palabras = document.getElementById('cert-3ro-palabras').value.trim();
+    const fecha = document.getElementById('cert-3ro-fecha').value.trim();
+    if (!nombre || !rol || !palabras) {
+      showToast('⚠️ Completá nombre, rol y texto', true);
+      return;
+    }
+    if (typeof generarYDescargarPDFPersonalizado !== 'function') {
+      showToast('⚠️ No se pudo cargar el generador de PDF', true);
+      return;
+    }
+    const btn = document.getElementById('btn-cert-3ro-descargar');
+    btn.disabled = true;
+    const textoOriginal = btn.textContent;
+    btn.textContent = '⏳ Generando...';
+    try {
+      await generarYDescargarPDFPersonalizado(nombre, rol, palabras, fecha);
+      showToast('✅ PDF descargado');
+    } catch (e) {
+      showToast('⚠️ Error: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
+    }
   }
   </script>
 </body>
