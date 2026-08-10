@@ -161,7 +161,7 @@ function svgToImgTag(svgMarkup, className) {
 }
 
 const CERTIFICADO_TEMPLATE = `
-<div class="cert-outer" id="certificado-preview" style="{{CERT_VARS_STYLE}}">
+<div class="cert-outer{{CERT_CLASE_FONDO}}" id="certificado-preview" style="{{CERT_VARS_STYLE}}">
 
   <div class="cert-top-band"></div>
 
@@ -288,6 +288,15 @@ const CERTIFICADO_CSS = `
 .cert-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .cert-bg svg { width: 100%; height: 100%; }
 .cert-bg img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Con fondo propio (CONFIGURACION -> Certificado) se ocultan la barra de
+   logos y las líneas divisorias del diseño original -- se asume que un
+   fondo personalizado ya trae su propia identidad visual, y esos elementos
+   fijos quedarían pisándose encima. */
+.cert-fondo-personalizado .cert-logos-top,
+.cert-fondo-personalizado .cert-divider,
+.cert-fondo-personalizado .cert-line-l,
+.cert-fondo-personalizado .cert-line-r { display: none; }
 
 .cert-line-l, .cert-line-r {
   position: absolute; top: 0; bottom: 0; width: 3px; z-index: 2;
@@ -577,6 +586,7 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
   const varsStyle  = '--cert-fuente:' + fuenteCss + ';'
     + '--cert-color-texto:' + _hexSeguro(conf.colorTexto, CERT_CONFIG_DEFAULT.colorTexto) + ';'
     + '--cert-color-acento:' + _hexSeguro(conf.colorAcento, CERT_CONFIG_DEFAULT.colorAcento) + ';';
+  const claseFondo = conf.fondoImagenUrl ? ' cert-fondo-personalizado' : '';
   return CERTIFICADO_TEMPLATE
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
     .replace(/\{\{TEXTO_LOGRO_CHICA\}\}/g,   textoLogro.chica)
@@ -587,6 +597,7 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
     .replace(/\{\{SELLO\}\}/g,                selloImg)
     .replace(/\{\{FONDO_SVG\}\}/g,            fondoImg)
     .replace(/\{\{CERT_VARS_STYLE\}\}/g,      varsStyle)
+    .replace(/\{\{CERT_CLASE_FONDO\}\}/g,     claseFondo)
     .replace(/\{\{LOGO_CLUB_SRC\}\}/g,        logoSrc(LOGO_CLUB))
     .replace(/\{\{LOGO_SUCRE_SRC\}\}/g,       logoSrc(LOGO_SUCRE));
 }
