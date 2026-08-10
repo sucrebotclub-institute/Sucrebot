@@ -61,7 +61,8 @@ const CERT_CONFIG_DEFAULT = {
   fuente: 'EB Garamond',
   colorTexto: '#0a2a5e',
   colorAcento: '#b8860a',
-  fondoImagenUrl: ''
+  fondoImagenUrl: '',
+  mostrarLogosHeader: true
 };
 
 let _certConfigActual = CERT_CONFIG_DEFAULT;
@@ -92,7 +93,8 @@ function _normalizarCertConfig(raw) {
     fuente: CERT_FUENTES[raw.fuente] ? raw.fuente : CERT_CONFIG_DEFAULT.fuente,
     colorTexto: raw.colorTexto || CERT_CONFIG_DEFAULT.colorTexto,
     colorAcento: raw.colorAcento || CERT_CONFIG_DEFAULT.colorAcento,
-    fondoImagenUrl: raw.fondoImagenUrl || ''
+    fondoImagenUrl: raw.fondoImagenUrl || '',
+    mostrarLogosHeader: raw.mostrarLogosHeader !== false
   };
 }
 // Aplica el cache local de forma síncrona -- se llama una vez apenas se
@@ -289,14 +291,14 @@ const CERTIFICADO_CSS = `
 .cert-bg svg { width: 100%; height: 100%; }
 .cert-bg img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Con fondo propio (CONFIGURACION -> Certificado) se ocultan la barra de
-   logos y las líneas divisorias del diseño original -- se asume que un
-   fondo personalizado ya trae su propia identidad visual, y esos elementos
-   fijos quedarían pisándose encima. */
-.cert-fondo-personalizado .cert-logos-top,
-.cert-fondo-personalizado .cert-divider,
-.cert-fondo-personalizado .cert-line-l,
-.cert-fondo-personalizado .cert-line-r { display: none; }
+/* Checkbox "Mostrar logos institucionales y líneas divisorias" en
+   CONFIGURACION -> Certificado -- pensado para cuando un fondo propio ya
+   trae su propia identidad visual y estos elementos fijos quedarían
+   pisándose encima, pero es una decisión manual, no automática. */
+.cert-header-oculto .cert-logos-top,
+.cert-header-oculto .cert-divider,
+.cert-header-oculto .cert-line-l,
+.cert-header-oculto .cert-line-r { display: none; }
 
 .cert-line-l, .cert-line-r {
   position: absolute; top: 0; bottom: 0; width: 3px; z-index: 2;
@@ -586,7 +588,7 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
   const varsStyle  = '--cert-fuente:' + fuenteCss + ';'
     + '--cert-color-texto:' + _hexSeguro(conf.colorTexto, CERT_CONFIG_DEFAULT.colorTexto) + ';'
     + '--cert-color-acento:' + _hexSeguro(conf.colorAcento, CERT_CONFIG_DEFAULT.colorAcento) + ';';
-  const claseFondo = conf.fondoImagenUrl ? ' cert-fondo-personalizado' : '';
+  const claseHeader = conf.mostrarLogosHeader === false ? ' cert-header-oculto' : '';
   return CERTIFICADO_TEMPLATE
     .replace(/\{\{NOMBRE_PARTICIPANTE\}\}/g, nombreFinal)
     .replace(/\{\{TEXTO_LOGRO_CHICA\}\}/g,   textoLogro.chica)
@@ -597,7 +599,7 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
     .replace(/\{\{SELLO\}\}/g,                selloImg)
     .replace(/\{\{FONDO_SVG\}\}/g,            fondoImg)
     .replace(/\{\{CERT_VARS_STYLE\}\}/g,      varsStyle)
-    .replace(/\{\{CERT_CLASE_FONDO\}\}/g,     claseFondo)
+    .replace(/\{\{CERT_CLASE_FONDO\}\}/g,     claseHeader)
     .replace(/\{\{LOGO_CLUB_SRC\}\}/g,        logoSrc(LOGO_CLUB))
     .replace(/\{\{LOGO_SUCRE_SRC\}\}/g,       logoSrc(LOGO_SUCRE));
 }

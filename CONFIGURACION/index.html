@@ -460,6 +460,15 @@
               <button class="btn-toggle cerrar" id="btn-cert-cfg-fondo-quitar" onclick="quitarFondoCertificadoUI()" style="display:none;">🗑️ Quitar fondo propio</button>
             </div>
 
+            <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:12px 14px;max-width:520px;margin-bottom:10px;">
+              <input type="checkbox" id="cert-cfg-mostrar-logos" checked style="width:16px;height:16px;flex-shrink:0;">
+              Mostrar logos institucionales y líneas divisorias
+            </label>
+            <div class="estado-label" style="font-size:.72rem;font-weight:400;opacity:.75;margin-bottom:10px;">
+              Desmarcalo si el fondo propio ya incluye su propio diseño/logos y la barra
+              de logos club+Sucre y las líneas quedarían pisándose encima.
+            </div>
+
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
               <button class="btn-personal-add" id="btn-cert-cfg-guardar" onclick="guardarCertificadoConfigUI()">💾 Guardar cambios</button>
               <button class="btn-toggle" onclick="previsualizarCertificadoUI()">👁️ Vista previa</button>
@@ -1647,6 +1656,7 @@
 
     document.getElementById('cert-cfg-color-texto').value = _certCfgActual.colorTexto || CERT_CONFIG_DEFAULT.colorTexto;
     document.getElementById('cert-cfg-color-acento').value = _certCfgActual.colorAcento || CERT_CONFIG_DEFAULT.colorAcento;
+    document.getElementById('cert-cfg-mostrar-logos').checked = _certCfgActual.mostrarLogosHeader !== false;
 
     actualizarPreviewFondoCertificado();
   }
@@ -1708,7 +1718,8 @@
       fuente: document.getElementById('cert-cfg-fuente').value,
       colorTexto: document.getElementById('cert-cfg-color-texto').value,
       colorAcento: document.getElementById('cert-cfg-color-acento').value,
-      fondoImagenUrl: _certCfgActual.fondoImagenUrl || ''
+      fondoImagenUrl: _certCfgActual.fondoImagenUrl || '',
+      mostrarLogosHeader: document.getElementById('cert-cfg-mostrar-logos').checked
     };
   }
 
