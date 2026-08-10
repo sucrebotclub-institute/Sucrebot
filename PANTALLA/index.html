@@ -55,12 +55,14 @@
       padding: 10px 12px; margin-bottom: 8px; flex-wrap: wrap;
     }
     .cron-esc-row input[type=text], .cron-bloque-row input[type=text] { flex: 1 1 140px; min-width: 0; }
-    .cron-bloque-row select { flex: 1 1 150px; min-width: 0; }
-    .cron-bloque-row input[type=time] { width: 100px; flex: 0 0 auto; }
-    .cron-modal input[type=text], .cron-modal select, .cron-modal input[type=time] {
+    .cron-bloque-row select.cron-ancho-select { flex: 1 1 150px; min-width: 0; }
+    .cron-modal input[type=text], .cron-modal select {
       height: 38px; border: 1px solid #d1d9ed; border-radius: 7px; padding: 0 10px;
       font-family: 'Exo 2', sans-serif; font-size: 12px; color: #1a2a4a; background: #fff;
     }
+    .cron-hora-selector { display: inline-flex; align-items: center; gap: 3px; flex: 0 0 auto; }
+    .cron-hora-selector select { width: 56px; padding: 0 4px; text-align: center; }
+    .cron-hora-sep { font-weight: 700; color: #6b7280; }
     .cron-btn-mini { border: none; border-radius: 7px; padding: 0 10px; height: 34px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
     .cron-btn-mini.del { background: #fee2e2; color: #b91c1c; }
     .cron-btn-mini.move { background: #e5e7eb; color: #374151; padding: 0 8px; }
@@ -627,6 +629,49 @@
     renderEscenariosUI();
   }
 
+  // Selector de hora propio (2 <select> hora/minuto) en vez de <input type=time>
+  // -- el reloj nativo del sistema (clock-face) se veía cortado/mal
+  // posicionado en algunos celulares Android, así que esto queda 100%
+  // dentro de la página, sin depender de UI del sistema operativo.
+  function crearSelectorHora(valorInicial, onChange) {
+    const wrap = document.createElement('span');
+    wrap.className = 'cron-hora-selector';
+    const partes = (valorInicial || '09:00').split(':');
+    const hInicial = partes[0], mInicial = partes[1];
+
+    const selH = document.createElement('select');
+    const horasDisponibles = [];
+    for (let h = 8; h <= 17; h++) horasDisponibles.push(String(h).padStart(2, '0'));
+    if (horasDisponibles.indexOf(hInicial) < 0) horasDisponibles.push(hInicial);
+    horasDisponibles.sort();
+    horasDisponibles.forEach(hh => {
+      const opt = document.createElement('option'); opt.value = hh; opt.textContent = hh;
+      selH.appendChild(opt);
+    });
+    selH.value = hInicial;
+
+    const selM = document.createElement('select');
+    const minutosDisponibles = [];
+    for (let m = 0; m < 60; m += 5) minutosDisponibles.push(String(m).padStart(2, '0'));
+    if (minutosDisponibles.indexOf(mInicial) < 0) minutosDisponibles.push(mInicial);
+    minutosDisponibles.sort();
+    minutosDisponibles.forEach(mm => {
+      const opt = document.createElement('option'); opt.value = mm; opt.textContent = mm;
+      selM.appendChild(opt);
+    });
+    selM.value = mInicial;
+
+    function emit() { onChange(selH.value + ':' + selM.value); }
+    selH.addEventListener('change', emit);
+    selM.addEventListener('change', emit);
+
+    const sep = document.createElement('span');
+    sep.className = 'cron-hora-sep'; sep.textContent = ':';
+
+    wrap.appendChild(selH); wrap.appendChild(sep); wrap.appendChild(selM);
+    return wrap;
+  }
+
   function renderBloquesUI() {
     const cont = document.getElementById('cronBloquesLista');
     cont.innerHTML = '';
@@ -639,12 +684,14 @@
       nombre.addEventListener('input', () => { b.nombre = nombre.value; });
 
       const tipoSelect = document.createElement('select');
+      tipoSelect.className = 'cron-ancho-select';
       [['special','Especial (ámbar)'],['break','Receso (verde)'],['award','Premiación (trofeo)']].forEach(par => {
         const opt = document.createElement('option'); opt.value = par[0]; opt.textContent = par[1];
         tipoSelect.appendChild(opt);
       });
 
       const escSelect = document.createElement('select');
+      escSelect.className = 'cron-ancho-select';
       const optTodos = document.createElement('option');
       optTodos.value = ''; optTodos.textContent = 'Todos los escenarios';
       escSelect.appendChild(optTodos);
@@ -664,13 +711,8 @@
       });
       tipoSelect.addEventListener('change', () => { b.tipo = tipoSelect.value; });
 
-      const inicio = document.createElement('input');
-      inicio.type = 'time'; inicio.min = CRONOGRAMA_HORA_MIN; inicio.max = CRONOGRAMA_HORA_MAX; inicio.value = b.start;
-      inicio.addEventListener('input', () => { b.start = inicio.value; });
-
-      const fin = document.createElement('input');
-      fin.type = 'time'; fin.min = CRONOGRAMA_HORA_MIN; fin.max = CRONOGRAMA_HORA_MAX; fin.value = b.end;
-      fin.addEventListener('input', () => { b.end = fin.value; });
+      const inicio = crearSelectorHora(b.start, v => { b.start = v; });
+      const fin = crearSelectorHora(b.end, v => { b.end = v; });
 
       const del = document.createElement('button');
       del.className = 'cron-btn-mini del'; del.type = 'button'; del.textContent = '🗑️';
