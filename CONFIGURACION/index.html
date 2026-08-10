@@ -178,7 +178,8 @@
             <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
             <button class="config-nav-item" data-section="auspiciantes" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
             <button class="config-nav-item" data-section="clubes" onclick="mostrarSeccion('clubes')"><span class="config-nav-icon">🏟️</span> Clubes</button>
-            <button class="config-nav-item" data-section="certificado" onclick="mostrarSeccion('certificado')"><span class="config-nav-icon">🎓</span> Certificado</button>
+            <button class="config-nav-item" data-section="cert-participantes" onclick="mostrarSeccion('cert-participantes')"><span class="config-nav-icon">📜</span> Cert. Participantes</button>
+            <button class="config-nav-item" data-section="cert-terceros" onclick="mostrarSeccion('cert-terceros')"><span class="config-nav-icon">🎖️</span> Cert. Terceros</button>
           </div>
 
           <div class="config-panel">
@@ -411,12 +412,15 @@
           <div id="club-lista" class="color-grid" style="display:none;"></div>
         </div>
 
-        <div class="config-card config-section" data-section="certificado">
-          <div class="config-card-title">🎓 Diseño del certificado</div>
+        <div class="config-card config-section" data-section="cert-participantes">
+          <div class="config-card-title">📜 Certificado de Participantes</div>
           <div class="config-card-desc">
             Textos de logro, fecha, firmas, tipografía, colores y fondo del diploma generado
             desde GENERAR-CERTIFICADOS. El layout (logos, sello) sigue fijo en el código —
             esto solo cambia lo que se ve en pantalla, no la estructura.
+            <strong>Estos mismos ajustes (fuente/colores/firmas/fondo/auspiciantes) también se
+            usan en el certificado para terceros</strong> (pestaña aparte) -- es un solo diseño
+            compartido, no hay uno distinto para cada uno.
           </div>
 
           <div id="cert-cfg-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
@@ -517,14 +521,17 @@
               <button class="btn-personal-add" id="btn-cert-cfg-guardar" onclick="guardarCertificadoConfigUI()">💾 Guardar cambios</button>
               <button class="btn-toggle" onclick="previsualizarCertificadoUI()">👁️ Vista previa</button>
             </div>
+          </div>
+        </div>
 
-            <div style="border-top:1px solid var(--border,#2a3550);margin:32px 0 20px;"></div>
-
-            <div class="estado-label" style="margin-bottom:8px;">🎖️ Certificado para terceros (auspiciantes, jueces, etc.)</div>
-            <div class="estado-label" style="font-size:.72rem;font-weight:400;opacity:.75;margin-bottom:14px;">
-              Mismo diseño de arriba, pero para alguien que no es participante. Se descarga como PDF
-              suelto -- no se guarda en el sistema, no tiene código de verificación.
-            </div>
+        <div class="config-card config-section" data-section="cert-terceros">
+          <div class="config-card-title">🎖️ Certificado para Terceros</div>
+          <div class="config-card-desc">
+            Para auspiciantes, jueces, invitados u otras personas que no son participantes.
+            Usa el mismo diseño (fuente/colores/firmas/fondo) que se configura en
+            "📜 Cert. Participantes" -- acá solo se define el texto y se genera el PDF.
+            Se descarga directo, sin guardarse en el sistema ni tener código de verificación.
+          </div>
 
             <div class="estado-label" style="margin-bottom:10px;">Roles guardados</div>
             <div id="cert-roles-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
