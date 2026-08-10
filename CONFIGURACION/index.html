@@ -149,7 +149,7 @@
       <div id="acceso-denegado" style="display:none;">
         <div class="acceso-denegado">
           <h3>🔒 Acceso restringido</h3>
-          <p>Solo Organizadores y Administradores pueden ver esta página.</p>
+          <p>Solo administradores pueden ver esta página.</p>
         </div>
       </div>
 
@@ -158,39 +158,26 @@
         <div class="page-hero">
           <div class="page-hero-badge">
             <span class="page-hero-badge-dot"></span>
-            <span id="config-badge-rol">ADMIN ONLY</span>
+            ADMIN ONLY
           </div>
           <h2>CONFIGURACIÓN <span>SUCREBOT</span></h2>
         </div>
 
         <div class="config-shell">
           <div class="config-sidebar" id="config-sidebar">
-            <button class="config-nav-item" data-section="cronograma" onclick="mostrarSeccion('cronograma')"><span class="config-nav-icon">🗓️</span> Cronograma</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="registro" onclick="mostrarSeccion('registro')"><span class="config-nav-icon">📋</span> Registro</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="categorias" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="ediciones" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="auspiciantes" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
-            <button class="config-nav-item" data-admin-only="1" data-section="clubes" onclick="mostrarSeccion('clubes')"><span class="config-nav-icon">🏟️</span> Clubes</button>
+            <button class="config-nav-item" data-section="registro" onclick="mostrarSeccion('registro')"><span class="config-nav-icon">📋</span> Registro</button>
+            <button class="config-nav-item" data-section="categorias" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
+            <button class="config-nav-item" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
+            <button class="config-nav-item" data-section="ediciones" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
+            <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
+            <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
+            <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
+            <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
+            <button class="config-nav-item" data-section="auspiciantes" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
+            <button class="config-nav-item" data-section="clubes" onclick="mostrarSeccion('clubes')"><span class="config-nav-icon">🏟️</span> Clubes</button>
           </div>
 
           <div class="config-panel">
-
-        <div class="config-card config-section" data-section="cronograma">
-          <div class="config-card-title">🗓️ Cronograma del evento</div>
-          <div class="config-card-desc">
-            Horarios de la Inauguración, los Recesos, la Premiación y cada bloque de
-            competencia (PANTALLA). Todos los horarios deben estar entre las
-            <strong>08:00</strong> y las <strong>17:00</strong>.
-          </div>
-
-          <div id="cronograma-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
-          <div id="cronograma-lista" style="display:none;"></div>
-        </div>
 
         <div class="config-card config-section" data-section="registro">
           <div class="config-card-title">📋 Registro de participantes</div>
@@ -456,24 +443,14 @@
 
   document.addEventListener('componentsLoaded', async () => {
     if (window.esperarRol) await window.esperarRol();
-    if (!window.esStaffCompleto || !window.esStaffCompleto()) { show('acceso-denegado'); return; }
+    if (!window.esAdmin || !window.esAdmin()) { show('acceso-denegado'); return; }
     show('contenido-staff');
-    const admin = !!(window.esAdmin && window.esAdmin());
-    document.getElementById('config-badge-rol').textContent = admin ? 'ADMIN ONLY' : 'ORGANIZADOR';
-    cargarHorariosCronograma(); // única sección visible para Organizador, siempre se carga
-    if (admin) {
-      mostrarSeccion(localStorage.getItem('sucrebot_config_seccion') || 'registro');
-      cargarEstado();
-      cargarPersonal();
-      cargarInfoEdicion();
-      cargarAuspiciantes();
-      cargarClubes();
-    } else {
-      // Organizador: solo ve Cronograma -- el resto de secciones/botones
-      // del sidebar son admin-only y quedan ocultos.
-      document.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = 'none');
-      mostrarSeccion('cronograma');
-    }
+    mostrarSeccion(localStorage.getItem('sucrebot_config_seccion') || 'registro');
+    cargarEstado();
+    cargarPersonal();
+    cargarInfoEdicion();
+    cargarAuspiciantes();
+    cargarClubes();
   });
 
   function mostrarSeccion(id) {
@@ -1221,110 +1198,6 @@
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
       _coloresCategoria = resp.colores || _coloresCategoria;
       showToast('✅ Color de "' + categoria + '" guardado');
-    } catch (e) {
-      showToast('⚠️ Error al guardar: ' + e.message, true);
-    }
-    btnEl.disabled = false;
-  }
-
-  // ── Cronograma (horarios de PANTALLA) ──────────────────────────────
-  // Lista fija de los 17 bloques del cronograma (mismo orden/nombres que
-  // EVENTS en PANTALLA/index.html) -- solo para agrupar visualmente por
-  // escenario acá; los horarios reales vienen de getHorariosCronograma.
-  const CRONOGRAMA_BLOQUES = [
-    { name: 'Inauguración',                  col: 'Todos los escenarios' },
-    { name: 'Impacto Tecnológico',           col: 'Auditorio' },
-    { name: 'Robot Soccer – Fase de Grupos', col: 'Escenario 1' },
-    { name: 'Seguidor de Línea Amateur',     col: 'Escenario 2' },
-    { name: 'Cubo Rubik',                    col: 'Escenario 3' },
-    { name: 'Trepador Pro',                  col: 'Escenario 4' },
-    { name: 'Insectos',                      col: 'Escenario 1' },
-    { name: 'Seguidor de Línea Pro',         col: 'Escenario 2' },
-    { name: 'MiniSumo RC Pro',               col: 'Escenario 3' },
-    { name: 'Bailarín',                      col: 'Escenario 4' },
-    { name: 'Receso',                        col: 'Todos los escenarios' },
-    { name: 'Lego Kids',                     col: 'Auditorio' },
-    { name: 'Robot Soccer – Finales',        col: 'Escenario 1' },
-    { name: 'Batalla 3Lb',                   col: 'Escenario 2' },
-    { name: 'Minisumo Autónomo',             col: 'Escenario 3' },
-    { name: 'Trepador Amateur',              col: 'Escenario 4' },
-    { name: 'Premiación',                    col: 'Todos los escenarios' }
-  ];
-  const CRONOGRAMA_HORA_MIN = '08:00';
-  const CRONOGRAMA_HORA_MAX = '17:00';
-  let _horariosCronograma = {};
-
-  async function cargarHorariosCronograma() {
-    try { _horariosCronograma = await gasGet({ action: 'getHorariosCronograma' }); }
-    catch (e) { _horariosCronograma = {}; showToast('⚠️ Error al cargar el cronograma', true); }
-    renderHorariosCronograma();
-    document.getElementById('cronograma-loading').style.display = 'none';
-    document.getElementById('cronograma-lista').style.display = 'block';
-  }
-
-  function renderHorariosCronograma() {
-    const cont = document.getElementById('cronograma-lista');
-    cont.innerHTML = '';
-    CRONOGRAMA_BLOQUES.forEach(b => {
-      const h = _horariosCronograma[b.name] || {};
-
-      const row = document.createElement('div');
-      row.className = 'pers-row';
-
-      const info = document.createElement('div');
-      info.className = 'pers-info';
-      const titulo = document.createElement('span');
-      titulo.className = 'pers-correo';
-      titulo.textContent = b.name;
-      const sub = document.createElement('span');
-      sub.className = 'pers-nombre';
-      sub.textContent = b.col;
-      info.appendChild(titulo);
-      info.appendChild(sub);
-
-      const acciones = document.createElement('div');
-      acciones.className = 'pers-acciones';
-
-      const inicio = document.createElement('input');
-      inicio.type = 'time'; inicio.className = 'form-control';
-      inicio.style.width = '110px';
-      inicio.min = CRONOGRAMA_HORA_MIN; inicio.max = CRONOGRAMA_HORA_MAX;
-      inicio.value = h.start || '';
-
-      const fin = document.createElement('input');
-      fin.type = 'time'; fin.className = 'form-control';
-      fin.style.width = '110px';
-      fin.min = CRONOGRAMA_HORA_MIN; fin.max = CRONOGRAMA_HORA_MAX;
-      fin.value = h.end || '';
-
-      const btnGuardar = document.createElement('button');
-      btnGuardar.className = 'btn-personal-add';
-      btnGuardar.textContent = '💾 Guardar';
-      btnGuardar.addEventListener('click', () => guardarHorarioCronogramaUI(b.name, inicio, fin, btnGuardar));
-
-      acciones.appendChild(inicio);
-      acciones.appendChild(fin);
-      acciones.appendChild(btnGuardar);
-      row.appendChild(info);
-      row.appendChild(acciones);
-      cont.appendChild(row);
-    });
-  }
-
-  async function guardarHorarioCronogramaUI(nombreBloque, inicioEl, finEl, btnEl) {
-    const start = inicioEl.value, end = finEl.value;
-    if (!start || !end) { showToast('⚠️ Completá ambas horas antes de guardar', true); return; }
-    if (start < CRONOGRAMA_HORA_MIN || end > CRONOGRAMA_HORA_MAX) {
-      showToast('⚠️ El horario debe estar entre ' + CRONOGRAMA_HORA_MIN + ' y ' + CRONOGRAMA_HORA_MAX, true);
-      return;
-    }
-    if (start >= end) { showToast('⚠️ La hora de inicio debe ser antes que la de fin', true); return; }
-    btnEl.disabled = true;
-    try {
-      const resp = await gasPost({ action: 'guardarHorarioCronograma', nombreBloque, start, end });
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      _horariosCronograma = resp.horarios || _horariosCronograma;
-      showToast('✅ Horario de "' + nombreBloque + '" guardado');
     } catch (e) {
       showToast('⚠️ Error al guardar: ' + e.message, true);
     }

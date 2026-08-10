@@ -15,12 +15,65 @@
 
     /* ── Preview card ── */
     .cronograma-preview {
-      background: white; border-radius: 16px; padding: 32px;
+      background: white; border-radius: 16px; padding: 32px; position: relative;
       box-shadow: 0 4px 24px rgba(26,92,168,0.10); margin-bottom: 24px;
     }
     @media (max-width: 480px) {
       .cronograma-preview { padding: 18px 12px; }
     }
+
+    /* ── Botón "Editar cronograma" (staff-mode, Admin/Organizador) ── */
+    .btn-cronograma-editar {
+      display: none; align-items: center; gap: 6px;
+      position: absolute; top: 28px; right: 32px;
+      background: #1a5ca8; color: #fff !important; border: none; border-radius: 8px;
+      padding: 9px 16px; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: .5px; cursor: pointer;
+    }
+    .btn-cronograma-editar:hover { background: #164e8f; }
+    body.staff-mode .btn-cronograma-editar { display: inline-flex; }
+    @media (max-width: 640px) {
+      .btn-cronograma-editar { position: static; margin-bottom: 14px; }
+    }
+
+    /* ── Modal de edición ── */
+    .cron-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(14,18,30,.6);
+      z-index: 99999; align-items: center; justify-content: center; padding: 24px;
+    }
+    .cron-modal-overlay.show { display: flex; }
+    .cron-modal {
+      background: #fff; border-radius: 16px; max-width: 780px; width: 100%;
+      max-height: 88vh; overflow-y: auto; padding: 28px;
+      font-family: 'Exo 2', sans-serif; color: #1a2a4a;
+    }
+    .cron-modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; color: #1a5ca8; margin-bottom: 4px; }
+    .cron-modal-sub { font-size: 12px; color: #6b7280; margin-bottom: 16px; }
+    .cron-section-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1a5ca8; margin: 22px 0 10px; }
+    .cron-esc-row, .cron-bloque-row {
+      display: flex; align-items: center; gap: 8px; background: #f0f4fb; border-radius: 10px;
+      padding: 10px 12px; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .cron-esc-row input[type=text], .cron-bloque-row input[type=text] { flex: 1 1 140px; min-width: 0; }
+    .cron-bloque-row select { flex: 1 1 150px; min-width: 0; }
+    .cron-bloque-row input[type=time] { width: 100px; flex: 0 0 auto; }
+    .cron-modal input[type=text], .cron-modal select, .cron-modal input[type=time] {
+      height: 38px; border: 1px solid #d1d9ed; border-radius: 7px; padding: 0 10px;
+      font-family: 'Exo 2', sans-serif; font-size: 12px; color: #1a2a4a; background: #fff;
+    }
+    .cron-btn-mini { border: none; border-radius: 7px; padding: 0 10px; height: 34px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+    .cron-btn-mini.del { background: #fee2e2; color: #b91c1c; }
+    .cron-btn-mini.move { background: #e5e7eb; color: #374151; padding: 0 8px; }
+    .cron-btn-add {
+      background: #e8f0fb; color: #1a5ca8; border: 1px dashed #1a5ca8; border-radius: 8px;
+      padding: 9px 14px; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px;
+    }
+    .cron-modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+    .cron-modal-footer button { border: none; border-radius: 8px; padding: 11px 22px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .cron-btn-cancelar { background: #f3f4f6; color: #374151 !important; }
+    .cron-btn-guardar { background: #1a5ca8; color: #fff !important; }
+    .cron-btn-guardar:disabled { opacity: .6; cursor: default; }
+    .cron-modal-error { color: #b91c1c; font-size: 12px; margin-top: 10px; display: none; }
     .preview-header {
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
@@ -209,6 +262,7 @@
 <main>
   <div class="wrapper" style="max-width:1200px;margin:0 auto;padding:40px 20px 60px">
     <div class="cronograma-preview">
+      <button class="btn-cronograma-editar" id="btnCronogramaEditar" onclick="abrirModalCronograma()">🔧 Editar cronograma</button>
       <div style="margin-bottom:28px;">
         <div style="display:inline-flex;align-items:center;gap:8px;background:#1a5ca8;border-radius:20px;padding:5px 14px;margin-bottom:14px;">
           <span style="width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;"></span>
@@ -333,10 +387,33 @@
   </div>
 </div>
 
+<div class="cron-modal-overlay" id="cronModalOverlay">
+  <div class="cron-modal">
+    <h3>🔧 Editar cronograma</h3>
+    <div class="cron-modal-sub">Todos los horarios deben estar entre las <strong>08:00</strong> y las <strong>17:00</strong>. Los cuadros de competencia se acomodan solos según la hora que pongas.</div>
+
+    <div class="cron-section-title">🏟️ Escenarios</div>
+    <div id="cronEscenariosLista"></div>
+    <button class="cron-btn-add" onclick="agregarEscenarioUI()">➕ Agregar escenario</button>
+
+    <div class="cron-section-title">🗓️ Bloques del cronograma</div>
+    <div id="cronBloquesLista"></div>
+    <button class="cron-btn-add" onclick="agregarBloqueUI()">➕ Agregar bloque</button>
+
+    <div class="cron-modal-error" id="cronModalError"></div>
+    <div class="cron-modal-footer">
+      <button class="cron-btn-cancelar" onclick="cerrarModalCronograma()">Cancelar</button>
+      <button class="cron-btn-guardar" id="btnGuardarCronograma" onclick="guardarCronogramaUI()">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
 <script>
-  const COLS = ['Auditorio','Escenario 1','Escenario 2','Escenario 3','Escenario 4'];
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
   // Respaldo si getColoresCategoria falla (sin internet al cargar) -- el
   // color real ahora viene de CONFIGURACION → Colores, mismo origen que
   // MANILLAS/PARTICIPANTES_REGISTRADOS. Antes esta tabla vivía solo acá y
@@ -399,8 +476,8 @@
   // Mini réplica de la manilla física: banda de color + textura + logo
   // Instituto Sucre + logo Club de Robótica (robot) + nombre de categoría.
   function manillaMiniHTML(ev, compact) {
-    const bg = getEvColor(ev.name);
-    const bgFull = getEvBackground(ev.name);
+    const bg = getEvColor(ev.nombre);
+    const bgFull = getEvBackground(ev.nombre);
     const fg = textContrast(bg);
     const h  = compact ? 26 : 22;
     const fs = compact ? '11px' : '9.5px';
@@ -416,53 +493,233 @@
         <path fill="${bg}" d="M19.5 11.5 L15.5 11.5 L19 18.5 Z"/>
       </svg>
       <div class="fs-manilla-div" style="background:${fg};height:${h*0.6}px;"></div>
-      <span class="fs-manilla-text" style="color:${fg};font-size:${fs};">${(ev.name||'').toUpperCase()}</span>
+      <span class="fs-manilla-text" style="color:${fg};font-size:${fs};">${escapeHtml(ev.nombre).toUpperCase()}</span>
     </div>`;
   }
 
-  const EVENTS = [
-    { start:'08:30', end:'09:00', col:null, name:'Inauguración',                  tipo:'special' },
-    { start:'09:00', end:'13:00', col:0,    name:'Impacto Tecnológico',            tipo:'comp'    },
-    { start:'09:00', end:'11:00', col:1,    name:'Robot Soccer – Fase de Grupos',   tipo:'comp'    },
-    { start:'09:00', end:'11:00', col:2,    name:'Seguidor de Línea Amateur',       tipo:'comp'    },
-    { start:'09:00', end:'11:00', col:3,    name:'Cubo Rubik',                          tipo:'comp'    },
-    { start:'09:00', end:'11:00', col:4,    name:'Trepador Pro',                        tipo:'comp'    },
-    { start:'11:00', end:'13:00', col:1,    name:'Insectos',                            tipo:'comp'    },
-    { start:'11:00', end:'13:00', col:2,    name:'Seguidor de Línea Pro',           tipo:'comp'    },
-    { start:'11:00', end:'13:00', col:3,    name:'MiniSumo RC Pro',                     tipo:'comp'    },
-    { start:'11:00', end:'13:00', col:4,    name:'Bailarín',                         tipo:'comp'    },
-    { start:'13:00', end:'14:00', col:null, name:'Receso',                              tipo:'break'   },
-    { start:'14:00', end:'16:00', col:0,    name:'Lego Kids',                           tipo:'comp'    },
-    { start:'14:00', end:'16:00', col:1,    name:'Robot Soccer – Finales',          tipo:'comp'    },
-    { start:'14:00', end:'16:00', col:2,    name:'Batalla 3Lb',                         tipo:'comp'    },
-    { start:'14:00', end:'16:00', col:3,    name:'Minisumo Autónomo',               tipo:'comp'    },
-    { start:'14:00', end:'16:00', col:4,    name:'Trepador Amateur',                    tipo:'comp'    },
-    { start:'16:00', end:'17:00', col:null, name:'Premiación',                      tipo:'award'   },
-  ];
-
-  // Horarios editables desde CONFIGURACION → Cronograma (Admin/Organizador).
-  // Mismo principio cache-first que los colores de categoría: se aplica de
-  // una vez lo último conocido en localStorage (sin esperar red) para que
-  // no haya flash del horario por defecto -> el guardado, y se revalida en
-  // segundo plano.
-  const HORARIOS_CACHE_KEY = 'sucrebot_cache_cronograma_horarios';
-  function aplicarHorariosCronograma(horarios) {
-    if (!horarios || typeof horarios !== 'object') return;
-    EVENTS.forEach(ev => {
-      const h = horarios[ev.name];
-      if (h && h.start && h.end) { ev.start = h.start; ev.end = h.end; }
-    });
+  // ── Escenarios y bloques del cronograma — editables desde esta misma
+  // página (botón "🔧 Editar cronograma", solo Admin/Organizador vía
+  // esStaffCompleto(), mismo criterio que INSTITUCION/REGLAMENTO) ──────
+  const CRONOGRAMA_CACHE_KEY = 'sucrebot_cache_cronograma_config';
+  const CRONOGRAMA_HORA_MIN = '08:00';
+  const CRONOGRAMA_HORA_MAX = '17:00';
+  const CRONOGRAMA_DEFAULT = {
+    escenarios: [
+      { id:'aud',  nombre:'Auditorio' },
+      { id:'esc1', nombre:'Escenario 1' },
+      { id:'esc2', nombre:'Escenario 2' },
+      { id:'esc3', nombre:'Escenario 3' },
+      { id:'esc4', nombre:'Escenario 4' }
+    ],
+    bloques: [
+      { id:'b-inau', nombre:'Inauguración',                  escenarioId:null,   start:'08:30', end:'09:00', tipo:'special' },
+      { id:'b-dev',  nombre:'Impacto Tecnológico',           escenarioId:'aud',  start:'09:00', end:'13:00', tipo:'comp' },
+      { id:'b-soc1', nombre:'Robot Soccer – Fase de Grupos', escenarioId:'esc1', start:'09:00', end:'11:00', tipo:'comp' },
+      { id:'b-sla',  nombre:'Seguidor de Línea Amateur',     escenarioId:'esc2', start:'09:00', end:'11:00', tipo:'comp' },
+      { id:'b-cr',   nombre:'Cubo Rubik',                    escenarioId:'esc3', start:'09:00', end:'11:00', tipo:'comp' },
+      { id:'b-trp',  nombre:'Trepador Pro',                  escenarioId:'esc4', start:'09:00', end:'11:00', tipo:'comp' },
+      { id:'b-ins',  nombre:'Insectos',                      escenarioId:'esc1', start:'11:00', end:'13:00', tipo:'comp' },
+      { id:'b-slp',  nombre:'Seguidor de Línea Pro',         escenarioId:'esc2', start:'11:00', end:'13:00', tipo:'comp' },
+      { id:'b-msrc', nombre:'MiniSumo RC Pro',               escenarioId:'esc3', start:'11:00', end:'13:00', tipo:'comp' },
+      { id:'b-bai',  nombre:'Bailarín',                      escenarioId:'esc4', start:'11:00', end:'13:00', tipo:'comp' },
+      { id:'b-rec',  nombre:'Receso',                        escenarioId:null,   start:'13:00', end:'14:00', tipo:'break' },
+      { id:'b-lk',   nombre:'Lego Kids',                     escenarioId:'aud',  start:'14:00', end:'16:00', tipo:'comp' },
+      { id:'b-socf', nombre:'Robot Soccer – Finales',        escenarioId:'esc1', start:'14:00', end:'16:00', tipo:'comp' },
+      { id:'b-bat',  nombre:'Batalla 3Lb',                   escenarioId:'esc2', start:'14:00', end:'16:00', tipo:'comp' },
+      { id:'b-msa',  nombre:'Minisumo Autónomo',             escenarioId:'esc3', start:'14:00', end:'16:00', tipo:'comp' },
+      { id:'b-trpa', nombre:'Trepador Amateur',              escenarioId:'esc4', start:'14:00', end:'16:00', tipo:'comp' },
+      { id:'b-prem', nombre:'Premiación',                    escenarioId:null,   start:'16:00', end:'17:00', tipo:'award' }
+    ]
+  };
+  let ESCENARIOS = CRONOGRAMA_DEFAULT.escenarios;
+  let EVENTS     = CRONOGRAMA_DEFAULT.bloques;
+  function escenarioIndex(id) { return ESCENARIOS.findIndex(e => e.id === id); }
+  function aplicarCronograma(cfg) {
+    if (!cfg || !Array.isArray(cfg.escenarios) || !Array.isArray(cfg.bloques)) return;
+    ESCENARIOS = cfg.escenarios;
+    EVENTS = cfg.bloques;
   }
-  try { aplicarHorariosCronograma(JSON.parse(localStorage.getItem(HORARIOS_CACHE_KEY) || '{}')); } catch (e) {}
-  async function actualizarHorariosCronograma() {
+  // Cache-first (mismo principio que colores): aplica de una vez lo último
+  // conocido en localStorage (sin esperar red) para que no haya flash del
+  // cronograma por defecto -> el guardado, y revalida en segundo plano.
+  try { aplicarCronograma(JSON.parse(localStorage.getItem(CRONOGRAMA_CACHE_KEY) || 'null')); } catch (e) {}
+  async function actualizarCronograma() {
     try {
-      const resp = await fetch(CONFIG.GAS_URL() + '?action=getHorariosCronograma', { cache: 'no-store' }).then(r => r.json());
-      if (!resp || typeof resp !== 'object') return;
-      aplicarHorariosCronograma(resp);
-      localStorage.setItem(HORARIOS_CACHE_KEY, JSON.stringify(resp));
+      const resp = await fetch(CONFIG.GAS_URL() + '?action=getCronogramaConfig', { cache: 'no-store' }).then(r => r.json());
+      if (!resp || !Array.isArray(resp.escenarios) || !Array.isArray(resp.bloques)) return;
+      aplicarCronograma(resp);
+      localStorage.setItem(CRONOGRAMA_CACHE_KEY, JSON.stringify(resp));
       if (document.getElementById('fsOverlay').classList.contains('active')) buildGrid('fsGrid', true);
       else buildGrid('normalGrid', false);
     } catch (e) { /* sin conexión, se queda con el cache (o el default del código si no había) */ }
+  }
+
+  // ── Modal de edición (staff-mode: Admin u Organizador) ──────────────
+  (async function() {
+    if (window.esperarRol) await window.esperarRol();
+    if (window.esStaffCompleto && window.esStaffCompleto()) document.body.classList.add('staff-mode');
+  })();
+
+  let _cronDraft = null;
+
+  function abrirModalCronograma() {
+    _cronDraft = JSON.parse(JSON.stringify({ escenarios: ESCENARIOS, bloques: EVENTS }));
+    document.getElementById('cronModalError').style.display = 'none';
+    renderEscenariosUI();
+    renderBloquesUI();
+    document.getElementById('cronModalOverlay').classList.add('show');
+  }
+  function cerrarModalCronograma() {
+    document.getElementById('cronModalOverlay').classList.remove('show');
+    _cronDraft = null;
+  }
+
+  function renderEscenariosUI() {
+    const cont = document.getElementById('cronEscenariosLista');
+    cont.innerHTML = '';
+    _cronDraft.escenarios.forEach((esc, idx) => {
+      const row = document.createElement('div');
+      row.className = 'cron-esc-row';
+
+      const up = document.createElement('button');
+      up.className = 'cron-btn-mini move'; up.type = 'button'; up.textContent = '↑'; up.disabled = idx === 0;
+      up.addEventListener('click', () => {
+        const j = idx - 1; if (j < 0) return;
+        const t = _cronDraft.escenarios[idx]; _cronDraft.escenarios[idx] = _cronDraft.escenarios[j]; _cronDraft.escenarios[j] = t;
+        renderEscenariosUI();
+      });
+
+      const down = document.createElement('button');
+      down.className = 'cron-btn-mini move'; down.type = 'button'; down.textContent = '↓'; down.disabled = idx === _cronDraft.escenarios.length - 1;
+      down.addEventListener('click', () => {
+        const j = idx + 1; if (j >= _cronDraft.escenarios.length) return;
+        const t = _cronDraft.escenarios[idx]; _cronDraft.escenarios[idx] = _cronDraft.escenarios[j]; _cronDraft.escenarios[j] = t;
+        renderEscenariosUI();
+      });
+
+      const input = document.createElement('input');
+      input.type = 'text'; input.value = esc.nombre; input.placeholder = 'Nombre del escenario';
+      input.addEventListener('input', () => { esc.nombre = input.value; });
+
+      const del = document.createElement('button');
+      del.className = 'cron-btn-mini del'; del.type = 'button'; del.textContent = '🗑️';
+      del.addEventListener('click', () => {
+        const usados = _cronDraft.bloques.filter(b => b.escenarioId === esc.id).length;
+        if (usados > 0 && !confirm('El escenario "' + (esc.nombre || '(sin nombre)') + '" tiene ' + usados + ' bloque(s) asignado(s). Van a pasar a "Todos los escenarios". ¿Continuar?')) return;
+        _cronDraft.bloques.forEach(b => { if (b.escenarioId === esc.id) b.escenarioId = null; });
+        _cronDraft.escenarios.splice(idx, 1);
+        renderEscenariosUI();
+        renderBloquesUI();
+      });
+
+      row.appendChild(up); row.appendChild(down); row.appendChild(input); row.appendChild(del);
+      cont.appendChild(row);
+    });
+  }
+
+  function agregarEscenarioUI() {
+    _cronDraft.escenarios.push({ id: 'esc-' + Date.now() + '-' + Math.floor(Math.random() * 1000), nombre: '' });
+    renderEscenariosUI();
+  }
+
+  function renderBloquesUI() {
+    const cont = document.getElementById('cronBloquesLista');
+    cont.innerHTML = '';
+    _cronDraft.bloques.forEach((b, idx) => {
+      const row = document.createElement('div');
+      row.className = 'cron-bloque-row';
+
+      const nombre = document.createElement('input');
+      nombre.type = 'text'; nombre.value = b.nombre; nombre.placeholder = 'Nombre del bloque';
+      nombre.addEventListener('input', () => { b.nombre = nombre.value; });
+
+      const tipoSelect = document.createElement('select');
+      [['special','Especial (ámbar)'],['break','Receso (verde)'],['award','Premiación (trofeo)']].forEach(par => {
+        const opt = document.createElement('option'); opt.value = par[0]; opt.textContent = par[1];
+        tipoSelect.appendChild(opt);
+      });
+
+      const escSelect = document.createElement('select');
+      const optTodos = document.createElement('option');
+      optTodos.value = ''; optTodos.textContent = 'Todos los escenarios';
+      escSelect.appendChild(optTodos);
+      _cronDraft.escenarios.forEach(esc => {
+        const opt = document.createElement('option');
+        opt.value = esc.id; opt.textContent = esc.nombre || '(sin nombre)';
+        escSelect.appendChild(opt);
+      });
+      escSelect.value = b.escenarioId || '';
+      tipoSelect.value = (b.tipo === 'break' || b.tipo === 'award') ? b.tipo : 'special';
+      tipoSelect.style.display = b.escenarioId ? 'none' : '';
+
+      escSelect.addEventListener('change', () => {
+        b.escenarioId = escSelect.value || null;
+        if (b.escenarioId) { b.tipo = 'comp'; tipoSelect.style.display = 'none'; }
+        else { b.tipo = tipoSelect.value; tipoSelect.style.display = ''; }
+      });
+      tipoSelect.addEventListener('change', () => { b.tipo = tipoSelect.value; });
+
+      const inicio = document.createElement('input');
+      inicio.type = 'time'; inicio.min = CRONOGRAMA_HORA_MIN; inicio.max = CRONOGRAMA_HORA_MAX; inicio.value = b.start;
+      inicio.addEventListener('input', () => { b.start = inicio.value; });
+
+      const fin = document.createElement('input');
+      fin.type = 'time'; fin.min = CRONOGRAMA_HORA_MIN; fin.max = CRONOGRAMA_HORA_MAX; fin.value = b.end;
+      fin.addEventListener('input', () => { b.end = fin.value; });
+
+      const del = document.createElement('button');
+      del.className = 'cron-btn-mini del'; del.type = 'button'; del.textContent = '🗑️';
+      del.addEventListener('click', () => { _cronDraft.bloques.splice(idx, 1); renderBloquesUI(); });
+
+      row.appendChild(nombre); row.appendChild(escSelect); row.appendChild(tipoSelect);
+      row.appendChild(inicio); row.appendChild(fin); row.appendChild(del);
+      cont.appendChild(row);
+    });
+  }
+
+  function agregarBloqueUI() {
+    _cronDraft.bloques.push({
+      id: 'bloque-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      nombre: '',
+      escenarioId: _cronDraft.escenarios[0] ? _cronDraft.escenarios[0].id : null,
+      start: '09:00', end: '10:00', tipo: 'comp'
+    });
+    renderBloquesUI();
+  }
+
+  async function guardarCronogramaUI() {
+    const errEl = document.getElementById('cronModalError');
+    errEl.style.display = 'none';
+    for (const esc of _cronDraft.escenarios) {
+      if (!esc.nombre || !esc.nombre.trim()) { errEl.textContent = '⚠️ Todos los escenarios necesitan un nombre.'; errEl.style.display = 'block'; return; }
+    }
+    const horaRe = /^([01]\d|2[0-3]):[0-5]\d$/;
+    for (const b of _cronDraft.bloques) {
+      if (!b.nombre || !b.nombre.trim()) { errEl.textContent = '⚠️ Todos los bloques necesitan un nombre.'; errEl.style.display = 'block'; return; }
+      if (!horaRe.test(b.start) || !horaRe.test(b.end)) { errEl.textContent = '⚠️ "' + b.nombre + '": hora inválida.'; errEl.style.display = 'block'; return; }
+      if (b.start < CRONOGRAMA_HORA_MIN || b.end > CRONOGRAMA_HORA_MAX) { errEl.textContent = '⚠️ "' + b.nombre + '" debe estar entre ' + CRONOGRAMA_HORA_MIN + ' y ' + CRONOGRAMA_HORA_MAX + '.'; errEl.style.display = 'block'; return; }
+      if (b.start >= b.end) { errEl.textContent = '⚠️ "' + b.nombre + '": la hora de inicio debe ser antes que la de fin.'; errEl.style.display = 'block'; return; }
+    }
+    const btn = document.getElementById('btnGuardarCronograma');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const token = localStorage.getItem('sucrebot_staff_token');
+      const resp = await fetch(CONFIG.GAS_URL(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'guardarCronogramaConfig', staffToken: token, cronograma: _cronDraft })
+      }).then(r => r.json());
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      aplicarCronograma(resp.cronograma);
+      localStorage.setItem(CRONOGRAMA_CACHE_KEY, JSON.stringify(resp.cronograma));
+      if (document.getElementById('fsOverlay').classList.contains('active')) buildGrid('fsGrid', true);
+      else { buildGrid('normalGrid', false); actualizarHintScroll(); }
+      cerrarModalCronograma();
+    } catch (e) {
+      errEl.textContent = '⚠️ ' + e.message;
+      errEl.style.display = 'block';
+    }
+    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
   }
 
   function toMin(t) { const [h,m]=t.split(':').map(Number); return h*60+m; }
@@ -474,8 +731,9 @@
 
   function buildGrid(targetId, compact) {
     const grid=document.getElementById(targetId); if(!grid) return;
-    const bandKeys=[...new Set(EVENTS.filter(e=>e.col!==null).map(e=>e.start))].sort();
-    const spanEvs=EVENTS.filter(e=>e.col===null), colEvs=EVENTS.filter(e=>e.col!==null);
+    const numCols=Math.max(1,ESCENARIOS.length);
+    const bandKeys=[...new Set(EVENTS.filter(e=>e.escenarioId!==null).map(e=>e.start))].sort();
+    const spanEvs=EVENTS.filter(e=>e.escenarioId===null), colEvs=EVENTS.filter(e=>e.escenarioId!==null);
 
     function rowSpan(ev) {
       const s=toMin(ev.start),en=toMin(ev.end);
@@ -483,7 +741,10 @@
       return Math.max(1,sp);
     }
     const cells={};
-    colEvs.forEach(ev=>{ const r=bandKeys.indexOf(ev.start); if(!cells[r])cells[r]={}; cells[r][ev.col]={ev,span:rowSpan(ev)}; });
+    colEvs.forEach(ev=>{
+      const c=escenarioIndex(ev.escenarioId); if(c<0) return; // escenario eliminado, no debería pasar
+      const r=bandKeys.indexOf(ev.start); if(!cells[r])cells[r]={}; cells[r][c]={ev,span:rowSpan(ev)};
+    });
 
     const allS=[...new Set([...bandKeys,...spanEvs.map(e=>e.start)])].sort();
     let sections=[],cur=[];
@@ -500,7 +761,7 @@
     const rowH  = compact ? `calc((100vh - 265px) / 4)` : `130px`;
 
     let html = `<div class="fs-grid-wrap">`;
-    html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:${gap};margin-bottom:${gap};flex-shrink:0;">${COLS.map(c=>`<div class="fs-col-hdr">${c}</div>`).join('')}</div>`;
+    html += `<div style="display:grid;grid-template-columns:repeat(${numCols},1fr);gap:${gap};margin-bottom:${gap};flex-shrink:0;">${ESCENARIOS.map(e=>`<div class="fs-col-hdr">${escapeHtml(e.nombre)}</div>`).join('')}</div>`;
     html += `<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:${gap};">`;
 
     sections.forEach((sec,secIdx)=>{
@@ -509,7 +770,7 @@
         html += `<div class="fs-span">
           <div class="fs-span-row">
             <div class="fs-span-time">${ev.start}</div>
-            <div class="fs-span-name">${ev.name}</div>
+            <div class="fs-span-name">${escapeHtml(ev.nombre)}</div>
             ${ev.tipo==='award'?'<div style="font-size:18px;">&#127942;</div>':''}
             ${st==='now'?'<div class="now-badge"><div class="now-dot"></div>EN CURSO</div>':''}
           </div>
@@ -518,10 +779,10 @@
         const rows=sec.rows, claimed={};
         const flexVal = compact ? rows.length : 'none';
         const rowHVal = compact ? '1fr' : rowH;
-        html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(${rows.length},${rowHVal});gap:${gap};flex:${flexVal};min-height:0;">`;
+        html += `<div style="display:grid;grid-template-columns:repeat(${numCols},1fr);grid-template-rows:repeat(${rows.length},${rowHVal});gap:${gap};flex:${flexVal};min-height:0;">`;
         for(let r=0;r<rows.length;r++) {
           const rc=cells[bandKeys.indexOf(rows[r])]||{};
-          for(let c=0;c<5;c++) {
+          for(let c=0;c<numCols;c++) {
             if(claimed[r+'-'+c]) continue;
             const cell=rc[c];
             if(!cell) { html+=`<div style="grid-column:${c+1};grid-row:${r+1};"></div>`; continue; }
@@ -533,7 +794,7 @@
             html+=`<div class="fs-ev" style="grid-column:${c+1};${sp}background:#ffffff;border:2px solid #000;padding:${evPad};display:flex;flex-direction:column;height:100%;min-height:0;">
               ${st==='now'?'<div class="now-badge"><div class="now-dot"></div>EN CURSO</div>':''}
               <div style="font-family:Orbitron,monospace;font-size:${compact?'14px':'12px'};font-weight:700;color:#1a5ca8;">${ev.start}</div>
-              <div style="font-size:${evFS};font-weight:700;color:#0e2a5a;margin-top:3px;line-height:${titleLH};min-height:calc(${evFS} * ${titleLH} * 2);">${ev.name}</div>
+              <div style="font-size:${evFS};font-weight:700;color:#0e2a5a;margin-top:3px;line-height:${titleLH};min-height:calc(${evFS} * ${titleLH} * 2);">${escapeHtml(ev.nombre)}</div>
               <div style="font-size:10px;color:rgba(26,92,168,0.65);margin-top:2px;">${ev.end}</div>
               ${manillaMiniHTML(ev, compact)}
             </div>`;
@@ -547,6 +808,10 @@
     html+=`</div>`; // close fs-grid-wrap
 
     grid.innerHTML=html;
+    if(!compact) {
+      const wrap=grid.querySelector('.fs-grid-wrap');
+      if(wrap) wrap.style.minWidth = Math.max(600, numCols*180)+'px';
+    }
   }
 
   function tick() {
@@ -613,7 +878,7 @@
   setTimeout(()=>{ buildGrid('normalGrid', false); actualizarHintScroll(); }, 0);
   setTimeout(()=>{ buildGrid('normalGrid', false); actualizarHintScroll(); }, 800);
   actualizarColoresCategoria();
-  actualizarHorariosCronograma();
+  actualizarCronograma();
 </script>
 
 </body>
