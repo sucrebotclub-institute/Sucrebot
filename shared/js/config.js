@@ -5,7 +5,7 @@
 const CONFIG = {
 
   // ── Google Apps Script ──────────────────────────────────────
-  DEPLOYMENT_ID: 'AKfycbxiksG-zlIZaDsPPDIQjRwl7c-MB7Spk4cSoY9YyY45TgM9X67GNpKCtnHTs2ir8lqtvA',
+  DEPLOYMENT_ID: 'AKfycbzPsUmvQx7YMKkgLb1EY-1EoyYn9_0cNaS4_4IeyPqJbfO30Zo0ZM5kfe2uRF9YOmidSQ',
 
   GAS_URL: function() {
     return 'https://script.google.com/macros/s/' + this.DEPLOYMENT_ID + '/exec';
