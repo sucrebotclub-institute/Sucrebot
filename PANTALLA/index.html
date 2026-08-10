@@ -691,14 +691,33 @@
     const errEl = document.getElementById('cronModalError');
     errEl.style.display = 'none';
     for (const esc of _cronDraft.escenarios) {
-      if (!esc.nombre || !esc.nombre.trim()) { errEl.textContent = '⚠️ Todos los escenarios necesitan un nombre.'; errEl.style.display = 'block'; return; }
+      if (!esc.nombre || !esc.nombre.trim()) { alert('⚠️ Todos los escenarios necesitan un nombre.'); return; }
     }
     const horaRe = /^([01]\d|2[0-3]):[0-5]\d$/;
     for (const b of _cronDraft.bloques) {
-      if (!b.nombre || !b.nombre.trim()) { errEl.textContent = '⚠️ Todos los bloques necesitan un nombre.'; errEl.style.display = 'block'; return; }
-      if (!horaRe.test(b.start) || !horaRe.test(b.end)) { errEl.textContent = '⚠️ "' + b.nombre + '": hora inválida.'; errEl.style.display = 'block'; return; }
-      if (b.start < CRONOGRAMA_HORA_MIN || b.end > CRONOGRAMA_HORA_MAX) { errEl.textContent = '⚠️ "' + b.nombre + '" debe estar entre ' + CRONOGRAMA_HORA_MIN + ' y ' + CRONOGRAMA_HORA_MAX + '.'; errEl.style.display = 'block'; return; }
-      if (b.start >= b.end) { errEl.textContent = '⚠️ "' + b.nombre + '": la hora de inicio debe ser antes que la de fin.'; errEl.style.display = 'block'; return; }
+      if (!b.nombre || !b.nombre.trim()) { alert('⚠️ Todos los bloques necesitan un nombre.'); return; }
+      if (!horaRe.test(b.start) || !horaRe.test(b.end)) { alert('⚠️ "' + b.nombre + '": hora inválida.'); return; }
+      if (b.start < CRONOGRAMA_HORA_MIN || b.end > CRONOGRAMA_HORA_MAX) {
+        alert('⚠️ "' + b.nombre + '" está fuera de horario. Todos los bloques deben estar entre las ' + CRONOGRAMA_HORA_MIN + ' y las ' + CRONOGRAMA_HORA_MAX + '.');
+        return;
+      }
+      if (b.start >= b.end) { alert('⚠️ "' + b.nombre + '": la hora de inicio debe ser antes que la de fin.'); return; }
+    }
+    // Dos bloques no pueden compartir escenario (o ambos ser "todos los
+    // escenarios") con horarios que se pisan -- si no, se dibujan en la
+    // misma celda del grid y uno tapa al otro visualmente.
+    for (let i = 0; i < _cronDraft.bloques.length; i++) {
+      for (let j = i + 1; j < _cronDraft.bloques.length; j++) {
+        const a = _cronDraft.bloques[i], b = _cronDraft.bloques[j];
+        if (a.escenarioId !== b.escenarioId) continue;
+        const seSolapan = toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end);
+        if (seSolapan) {
+          const dondeEsc = _cronDraft.escenarios.find(e => e.id === a.escenarioId);
+          const donde = a.escenarioId ? (dondeEsc ? dondeEsc.nombre : 'ese escenario') : 'Todos los escenarios';
+          alert('⚠️ "' + a.nombre + '" y "' + b.nombre + '" se pisan en horario (' + donde + '). Corregí las horas antes de guardar.');
+          return;
+        }
+      }
     }
     const btn = document.getElementById('btnGuardarCronograma');
     btn.disabled = true; btn.textContent = 'Guardando...';
@@ -716,6 +735,7 @@
       else { buildGrid('normalGrid', false); actualizarHintScroll(); }
       cerrarModalCronograma();
     } catch (e) {
+      alert('⚠️ Error al guardar: ' + e.message);
       errEl.textContent = '⚠️ ' + e.message;
       errEl.style.display = 'block';
     }
