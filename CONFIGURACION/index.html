@@ -418,9 +418,7 @@
             Textos de logro, fecha, firmas, tipografía, colores y fondo del diploma generado
             desde GENERAR-CERTIFICADOS. El layout (logos, sello) sigue fijo en el código —
             esto solo cambia lo que se ve en pantalla, no la estructura.
-            <strong>Estos mismos ajustes (fuente/colores/firmas/fondo/auspiciantes) también se
-            usan en el certificado para terceros</strong> (pestaña aparte) -- es un solo diseño
-            compartido, no hay uno distinto para cada uno.
+            El certificado para terceros (pestaña aparte) tiene su propio diseño independiente.
           </div>
 
           <div id="cert-cfg-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
@@ -522,10 +520,91 @@
           <div class="config-card-title">🎖️ Certificado para Terceros</div>
           <div class="config-card-desc">
             Para auspiciantes, jueces, invitados u otras personas que no son participantes.
-            Usa el mismo diseño (fuente/colores/firmas/fondo) que se configura en
-            "📜 Cert. Participantes" -- acá solo se define el texto y se genera el PDF.
-            Se descarga directo, sin guardarse en el sistema ni tener código de verificación.
+            Tiene su propio diseño (fuente/colores/firmas/fondo/auspiciantes), independiente
+            del de "📜 Cert. Participantes". Se descarga directo, sin guardarse en el sistema
+            ni tener código de verificación.
           </div>
+
+            <div id="cert-cfg3-loading" class="loading-msg"><span class="spinner"></span> Cargando diseño...</div>
+
+            <div id="cert-cfg3-contenido" style="display:none;">
+              <div class="estado-label" style="margin:18px 0 10px;">Tipografía y colores</div>
+              <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:8px;">
+                <div>
+                  <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Fuente del texto</div>
+                  <select id="cert-cfg3-fuente" class="form-control"></select>
+                </div>
+                <div>
+                  <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Fuente del logro destacado</div>
+                  <select id="cert-cfg3-fuente-destacado" class="form-control"></select>
+                </div>
+                <div>
+                  <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color principal (títulos/nombre)</div>
+                  <input type="color" id="cert-cfg3-color-texto" class="color-swatch">
+                </div>
+                <div>
+                  <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color de acento (logro destacado)</div>
+                  <input type="color" id="cert-cfg3-color-acento" class="color-swatch">
+                </div>
+              </div>
+
+              <div class="estado-label" style="margin:26px 0 10px;">Firmas</div>
+              <div style="display:flex;flex-wrap:wrap;gap:16px;">
+                <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:14px;flex:1;min-width:260px;">
+                  <div class="estado-label" style="margin-bottom:8px;">Firma 1</div>
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <input type="text" id="cert-cfg3-firma1-nombre" class="form-control" placeholder="Nombre (ej. 'Ing. Christian Ortega MSc.')">
+                    <textarea id="cert-cfg3-firma1-cargo" class="form-control" rows="2" placeholder="Cargo -- Enter para 2do renglón"></textarea>
+                  </div>
+                </div>
+                <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:14px;flex:1;min-width:260px;">
+                  <div class="estado-label" style="margin-bottom:8px;">Firma 2</div>
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <input type="text" id="cert-cfg3-firma2-nombre" class="form-control" placeholder="Nombre">
+                    <textarea id="cert-cfg3-firma2-cargo" class="form-control" rows="2" placeholder="Cargo -- Enter para 2do renglón"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="estado-label" style="margin:26px 0 10px;">Barra de auspiciantes</div>
+              <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:20px;">
+                <div>
+                  <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Texto de la etiqueta</div>
+                  <input type="text" id="cert-cfg3-auspician-texto" class="form-control" placeholder="Auspician">
+                </div>
+                <div>
+                  <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color de fondo de la barra</div>
+                  <input type="color" id="cert-cfg3-auspician-fondo" class="color-swatch">
+                </div>
+                <div>
+                  <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Color del texto de la etiqueta</div>
+                  <input type="color" id="cert-cfg3-auspician-color" class="color-swatch">
+                </div>
+              </div>
+
+              <div class="estado-label" style="margin:26px 0 10px;">Fondo decorativo</div>
+              <div class="estado-label" style="font-size:.72rem;font-weight:400;opacity:.75;margin-bottom:10px;">
+                Por defecto usa los triángulos celestes del diseño original. Subí una imagen propia
+                para reemplazarlo (se estira a todo el certificado, orientación horizontal recomendada).
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px;">
+                <img id="cert-cfg3-fondo-preview" src="" alt="" style="display:none;width:140px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border,#2a3550);">
+                <span id="cert-cfg3-fondo-vacio" style="font-size:.8rem;opacity:.7;">Sin imagen propia — usando el fondo por defecto.</span>
+                <input type="file" id="cert-cfg3-fondo-file" accept="image/*" class="form-control" style="max-width:260px;">
+                <button class="btn-personal-add" id="btn-cert-cfg3-fondo-subir" onclick="subirFondoCertificadoTercerosUI()">☁️ Subir</button>
+                <button class="btn-toggle cerrar" id="btn-cert-cfg3-fondo-quitar" onclick="quitarFondoCertificadoTercerosUI()" style="display:none;">🗑️ Quitar fondo propio</button>
+              </div>
+
+              <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:12px 14px;max-width:520px;margin-bottom:10px;">
+                <input type="checkbox" id="cert-cfg3-mostrar-logos" checked style="width:16px;height:16px;flex-shrink:0;">
+                Mostrar logos institucionales y líneas divisorias
+              </label>
+
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;margin-bottom:26px;">
+                <button class="btn-personal-add" id="btn-cert-cfg3-guardar" onclick="guardarCertificadoConfigTercerosUI()">💾 Guardar diseño</button>
+                <button class="btn-toggle" onclick="previsualizarDisenoCertificadoTercerosUI()">👁️ Vista previa del diseño</button>
+              </div>
+            </div>
 
             <div class="estado-label" style="margin-bottom:10px;">Roles guardados</div>
             <div id="cert-roles-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
@@ -605,6 +684,7 @@
     cargarAuspiciantes();
     cargarClubes();
     cargarCertificadoConfig();
+    cargarCertificadoConfigTerceros();
     cargarCertificadoRoles();
   });
 
@@ -1865,6 +1945,147 @@
     previewCertificado(null, 'Nombre de Ejemplo', { categoria: 'Categoría de Ejemplo' }, 0, '1er', fechaEdicion || new Date().toLocaleDateString('es-EC'));
   }
 
+  // ── Diseño del certificado para terceros (independiente del de
+  // participantes, ver shared/js/certificados.js: _certConfigTercerosActual) ──
+  let _certCfgTercerosActual = null;
+
+  async function cargarCertificadoConfigTerceros() {
+    try {
+      _certCfgTercerosActual = await gasGet({ action: 'getCertificadoConfigTerceros' });
+      if (!_certCfgTercerosActual || typeof _certCfgTercerosActual !== 'object') {
+        _certCfgTercerosActual = CERT_CONFIG_DEFAULT;
+      }
+    } catch (e) {
+      _certCfgTercerosActual = CERT_CONFIG_DEFAULT;
+      showToast('⚠️ Error al cargar el diseño del certificado para terceros', true);
+    }
+    renderCertificadoConfigTercerosUI();
+    document.getElementById('cert-cfg3-loading').style.display = 'none';
+    document.getElementById('cert-cfg3-contenido').style.display = 'block';
+  }
+
+  function renderCertificadoConfigTercerosUI() {
+    const opcionesFuente = Object.keys(CERT_FUENTES).map(function(f) {
+      return '<option value="' + f + '">' + f + '</option>';
+    }).join('');
+
+    const selFuente = document.getElementById('cert-cfg3-fuente');
+    selFuente.innerHTML = opcionesFuente;
+    selFuente.value = _certCfgTercerosActual.fuente || CERT_CONFIG_DEFAULT.fuente;
+
+    const selFuenteDestacado = document.getElementById('cert-cfg3-fuente-destacado');
+    selFuenteDestacado.innerHTML = opcionesFuente;
+    selFuenteDestacado.value = _certCfgTercerosActual.fuenteLogroDestacado || CERT_CONFIG_DEFAULT.fuenteLogroDestacado;
+
+    document.getElementById('cert-cfg3-color-texto').value = _certCfgTercerosActual.colorTexto || CERT_CONFIG_DEFAULT.colorTexto;
+    document.getElementById('cert-cfg3-color-acento').value = _certCfgTercerosActual.colorAcento || CERT_CONFIG_DEFAULT.colorAcento;
+    document.getElementById('cert-cfg3-mostrar-logos').checked = _certCfgTercerosActual.mostrarLogosHeader !== false;
+
+    document.getElementById('cert-cfg3-firma1-nombre').value = _certCfgTercerosActual.firma1Nombre || CERT_CONFIG_DEFAULT.firma1Nombre;
+    document.getElementById('cert-cfg3-firma1-cargo').value = _certCfgTercerosActual.firma1Cargo || CERT_CONFIG_DEFAULT.firma1Cargo;
+    document.getElementById('cert-cfg3-firma2-nombre').value = _certCfgTercerosActual.firma2Nombre || CERT_CONFIG_DEFAULT.firma2Nombre;
+    document.getElementById('cert-cfg3-firma2-cargo').value = _certCfgTercerosActual.firma2Cargo || CERT_CONFIG_DEFAULT.firma2Cargo;
+
+    document.getElementById('cert-cfg3-auspician-texto').value = _certCfgTercerosActual.auspicianTexto || CERT_CONFIG_DEFAULT.auspicianTexto;
+    document.getElementById('cert-cfg3-auspician-fondo').value = _certCfgTercerosActual.auspicianFondoColor || CERT_CONFIG_DEFAULT.auspicianFondoColor;
+    document.getElementById('cert-cfg3-auspician-color').value = _certCfgTercerosActual.auspicianColorTexto || CERT_CONFIG_DEFAULT.auspicianColorTexto;
+
+    actualizarPreviewFondoCertificadoTerceros();
+  }
+
+  function actualizarPreviewFondoCertificadoTerceros() {
+    const img = document.getElementById('cert-cfg3-fondo-preview');
+    const vacio = document.getElementById('cert-cfg3-fondo-vacio');
+    const btnQuitar = document.getElementById('btn-cert-cfg3-fondo-quitar');
+    if (_certCfgTercerosActual.fondoImagenUrl) {
+      img.src = _certCfgTercerosActual.fondoImagenUrl;
+      img.style.display = 'block';
+      vacio.style.display = 'none';
+      btnQuitar.style.display = 'inline-flex';
+    } else {
+      img.style.display = 'none';
+      vacio.style.display = 'inline';
+      btnQuitar.style.display = 'none';
+    }
+  }
+
+  async function subirFondoCertificadoTercerosUI() {
+    const fileInput = document.getElementById('cert-cfg3-fondo-file');
+    const file = fileInput.files[0];
+    if (!file) { showToast('⚠️ Elegí una imagen primero', true); return; }
+    const btn = document.getElementById('btn-cert-cfg3-fondo-subir');
+    btn.disabled = true; btn.textContent = '⏳ Subiendo...';
+    try {
+      const base64 = await toBase64(file);
+      const resp = await gasPost({ action: 'uploadFondoCertificado', base64, mimeType: file.type, fileName: file.name });
+      if (!resp.ok || !resp.url) throw new Error(resp.error || 'Error al subir la imagen');
+      _certCfgTercerosActual.fondoImagenUrl = resp.url;
+      actualizarPreviewFondoCertificadoTerceros();
+      fileInput.value = '';
+      showToast('✅ Imagen subida -- presioná "Guardar diseño" para aplicarla');
+    } catch (e) {
+      showToast('⚠️ Error: ' + e.message, true);
+    } finally {
+      btn.disabled = false; btn.textContent = '☁️ Subir';
+    }
+  }
+
+  function quitarFondoCertificadoTercerosUI() {
+    _certCfgTercerosActual.fondoImagenUrl = '';
+    actualizarPreviewFondoCertificadoTerceros();
+    showToast('Fondo por defecto restaurado -- presioná "Guardar diseño" para aplicarlo');
+  }
+
+  function leerDraftCertificadoTercerosDesdeFormulario() {
+    return {
+      fuente: document.getElementById('cert-cfg3-fuente').value,
+      colorTexto: document.getElementById('cert-cfg3-color-texto').value,
+      colorAcento: document.getElementById('cert-cfg3-color-acento').value,
+      fondoImagenUrl: _certCfgTercerosActual.fondoImagenUrl || '',
+      mostrarLogosHeader: document.getElementById('cert-cfg3-mostrar-logos').checked,
+      ciudadEvento: (_certCfgTercerosActual && _certCfgTercerosActual.ciudadEvento) || CERT_CONFIG_DEFAULT.ciudadEvento,
+      firma1Nombre: document.getElementById('cert-cfg3-firma1-nombre').value.trim(),
+      firma1Cargo: document.getElementById('cert-cfg3-firma1-cargo').value.trim(),
+      firma2Nombre: document.getElementById('cert-cfg3-firma2-nombre').value.trim(),
+      firma2Cargo: document.getElementById('cert-cfg3-firma2-cargo').value.trim(),
+      fuenteLogroDestacado: document.getElementById('cert-cfg3-fuente-destacado').value,
+      auspicianTexto: document.getElementById('cert-cfg3-auspician-texto').value.trim(),
+      auspicianFondoColor: document.getElementById('cert-cfg3-auspician-fondo').value,
+      auspicianColorTexto: document.getElementById('cert-cfg3-auspician-color').value
+    };
+  }
+
+  async function guardarCertificadoConfigTercerosUI() {
+    const btn = document.getElementById('btn-cert-cfg3-guardar');
+    btn.disabled = true;
+    const textoOriginal = btn.textContent;
+    btn.textContent = '⏳ Guardando...';
+    try {
+      const draft = leerDraftCertificadoTercerosDesdeFormulario();
+      const resp = await gasPost(Object.assign({ action: 'guardarCertificadoConfigTerceros' }, draft));
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      _certCfgTercerosActual = draft;
+      if (window.precargarCertificadoConfigTerceros) await window.precargarCertificadoConfigTerceros();
+      showToast('✅ Diseño del certificado para terceros guardado');
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
+    }
+  }
+
+  function previsualizarDisenoCertificadoTercerosUI() {
+    if (typeof previewCertificadoPersonalizado !== 'function' || typeof setCertificadoConfigDraftTerceros !== 'function') {
+      showToast('⚠️ No se pudo cargar la vista previa', true);
+      return;
+    }
+    const draft = leerDraftCertificadoTercerosDesdeFormulario();
+    setCertificadoConfigDraftTerceros(draft);
+    const fechaEdicion = (document.getElementById('edic-fecha').value || '').trim();
+    previewCertificadoPersonalizado('Nombre de Ejemplo', 'Se otorga el presente reconocimiento a', 'ROL DE EJEMPLO', 'Texto de agradecimiento de ejemplo.', fechaEdicion || new Date().toLocaleDateString('es-EC'));
+  }
+
   function leerDatosCertificadoTercero() {
     return {
       nombre: document.getElementById('cert-3ro-nombre').value.trim(),
@@ -1890,6 +2111,10 @@
     const textoOriginal = btn.textContent;
     btn.textContent = '⏳ Generando...';
     try {
+      // Revalida el diseño contra el backend antes de generar el PDF real --
+      // mismo criterio que GENERAR-CERTIFICADOS con precargarCertificadoConfig,
+      // por si se guardó un cambio de diseño en otra pestaña/sesión.
+      if (window.precargarCertificadoConfigTerceros) await window.precargarCertificadoConfigTerceros();
       await generarYDescargarPDFPersonalizado(d.nombre, d.chica, d.rol, d.palabras, d.fecha);
       showToast('✅ PDF descargado');
     } catch (e) {

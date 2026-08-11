@@ -95,43 +95,61 @@ function asegurarFuenteCertificadoCargada(fuenteKey) {
 // contra el backend en segundo plano -- así una vista previa o generación
 // disparada muy rápido después de cargar la página ya usa el diseño real
 // guardado, no el default, sin tener que esperar el fetch.
-function _normalizarCertConfig(raw) {
-  if (!raw || typeof raw !== 'object') return CERT_CONFIG_DEFAULT;
+function _normalizarCertConfig(raw, defaults) {
+  const def = defaults || CERT_CONFIG_DEFAULT;
+  if (!raw || typeof raw !== 'object') return def;
   return {
     textos: Object.assign({}, CERT_TEXTOS_DEFAULT, raw.textos || {}),
-    fuente: CERT_FUENTES[raw.fuente] ? raw.fuente : CERT_CONFIG_DEFAULT.fuente,
-    colorTexto: raw.colorTexto || CERT_CONFIG_DEFAULT.colorTexto,
-    colorAcento: raw.colorAcento || CERT_CONFIG_DEFAULT.colorAcento,
+    fuente: CERT_FUENTES[raw.fuente] ? raw.fuente : def.fuente,
+    colorTexto: raw.colorTexto || def.colorTexto,
+    colorAcento: raw.colorAcento || def.colorAcento,
     fondoImagenUrl: raw.fondoImagenUrl || '',
     mostrarLogosHeader: raw.mostrarLogosHeader !== false,
-    ciudadEvento: raw.ciudadEvento || CERT_CONFIG_DEFAULT.ciudadEvento,
-    firma1Nombre: raw.firma1Nombre || CERT_CONFIG_DEFAULT.firma1Nombre,
-    firma1Cargo: raw.firma1Cargo || CERT_CONFIG_DEFAULT.firma1Cargo,
-    firma2Nombre: raw.firma2Nombre || CERT_CONFIG_DEFAULT.firma2Nombre,
-    firma2Cargo: raw.firma2Cargo || CERT_CONFIG_DEFAULT.firma2Cargo,
-    fuenteLogroDestacado: CERT_FUENTES[raw.fuenteLogroDestacado] ? raw.fuenteLogroDestacado : CERT_CONFIG_DEFAULT.fuenteLogroDestacado,
-    auspicianFondoColor: raw.auspicianFondoColor || CERT_CONFIG_DEFAULT.auspicianFondoColor,
-    auspicianTexto: raw.auspicianTexto || CERT_CONFIG_DEFAULT.auspicianTexto,
-    auspicianColorTexto: raw.auspicianColorTexto || CERT_CONFIG_DEFAULT.auspicianColorTexto
+    ciudadEvento: raw.ciudadEvento || def.ciudadEvento,
+    firma1Nombre: raw.firma1Nombre || def.firma1Nombre,
+    firma1Cargo: raw.firma1Cargo || def.firma1Cargo,
+    firma2Nombre: raw.firma2Nombre || def.firma2Nombre,
+    firma2Cargo: raw.firma2Cargo || def.firma2Cargo,
+    fuenteLogroDestacado: CERT_FUENTES[raw.fuenteLogroDestacado] ? raw.fuenteLogroDestacado : def.fuenteLogroDestacado,
+    auspicianFondoColor: raw.auspicianFondoColor || def.auspicianFondoColor,
+    auspicianTexto: raw.auspicianTexto || def.auspicianTexto,
+    auspicianColorTexto: raw.auspicianColorTexto || def.auspicianColorTexto
   };
 }
 // Aplica el cache local de forma síncrona -- se llama una vez apenas se
 // parsea este script (ver más abajo), así _certConfigActual ya refleja el
 // último diseño guardado desde el primer render, sin esperar ningún fetch
 // (mismo principio cache-first que categorías/nav, ver SKILL.md 06-ago).
+function _asegurarFuentesDe(conf) {
+  asegurarFuenteCertificadoCargada(conf.fuente);
+  asegurarFuenteCertificadoCargada(conf.fuenteLogroDestacado);
+}
 function _asegurarFuentesCertConfig() {
-  asegurarFuenteCertificadoCargada(_certConfigActual.fuente);
-  asegurarFuenteCertificadoCargada(_certConfigActual.fuenteLogroDestacado);
+  _asegurarFuentesDe(_certConfigActual);
 }
 
 function _aplicarCertConfigCacheSync() {
   try {
     const cached = localStorage.getItem('sucrebot_cert_config_cache');
-    if (cached) _certConfigActual = _normalizarCertConfig(JSON.parse(cached));
+    if (cached) _certConfigActual = _normalizarCertConfig(JSON.parse(cached), CERT_CONFIG_DEFAULT);
   } catch (e) {}
-  _asegurarFuentesCertConfig();
+  _asegurarFuentesDe(_certConfigActual);
 }
 _aplicarCertConfigCacheSync();
+
+// Certificado para terceros -- diseño completamente independiente del de
+// participantes (fuente/colores/fondo/firmas/auspiciantes propios), aunque
+// arranca de los mismos valores por defecto. Mismo patrón cache-first que
+// _certConfigActual, en su propia clave de localStorage.
+let _certConfigTercerosActual = CERT_CONFIG_DEFAULT;
+function _aplicarCertConfigTercerosCacheSync() {
+  try {
+    const cached = localStorage.getItem('sucrebot_cert_config_terceros_cache');
+    if (cached) _certConfigTercerosActual = _normalizarCertConfig(JSON.parse(cached), CERT_CONFIG_DEFAULT);
+  } catch (e) {}
+  _asegurarFuentesDe(_certConfigTercerosActual);
+}
+_aplicarCertConfigTercerosCacheSync();
 
 // Revalida contra el backend en segundo plano. Generar un lote real de
 // certificados sí espera esto (await) para no publicar con un diseño
@@ -140,8 +158,8 @@ async function precargarCertificadoConfig() {
   try {
     const fresh = await fetch(CONFIG.GAS_URL() + '?action=getCertificadoConfig').then(r => r.json());
     if (fresh && typeof fresh === 'object' && !fresh.error && fresh.textos) {
-      _certConfigActual = _normalizarCertConfig(fresh);
-      _asegurarFuentesCertConfig();
+      _certConfigActual = _normalizarCertConfig(fresh, CERT_CONFIG_DEFAULT);
+      _asegurarFuentesDe(_certConfigActual);
       localStorage.setItem('sucrebot_cert_config_cache', JSON.stringify(fresh));
     }
   } catch (e) {}
@@ -152,8 +170,28 @@ window.getCertificadoConfigActual = function() { return _certConfigActual; };
 // Usado solo por CONFIGURACION → Certificado para previsualizar cambios
 // todavía no guardados (aplica el borrador en memoria sin tocar localStorage).
 window.setCertificadoConfigDraft = function(draft) {
-  _certConfigActual = _normalizarCertConfig(draft);
-  _asegurarFuentesCertConfig();
+  _certConfigActual = _normalizarCertConfig(draft, CERT_CONFIG_DEFAULT);
+  _asegurarFuentesDe(_certConfigActual);
+};
+
+// Equivalentes de arriba, para el diseño (independiente) del certificado
+// para terceros -- ver CONFIGURACION → Cert. Terceros.
+async function precargarCertificadoConfigTerceros() {
+  try {
+    const fresh = await fetch(CONFIG.GAS_URL() + '?action=getCertificadoConfigTerceros').then(r => r.json());
+    if (fresh && typeof fresh === 'object' && !fresh.error) {
+      _certConfigTercerosActual = _normalizarCertConfig(fresh, CERT_CONFIG_DEFAULT);
+      _asegurarFuentesDe(_certConfigTercerosActual);
+      localStorage.setItem('sucrebot_cert_config_terceros_cache', JSON.stringify(fresh));
+    }
+  } catch (e) {}
+  return _certConfigTercerosActual;
+}
+window.precargarCertificadoConfigTerceros = precargarCertificadoConfigTerceros;
+window.getCertificadoConfigTercerosActual = function() { return _certConfigTercerosActual; };
+window.setCertificadoConfigDraftTerceros = function(draft) {
+  _certConfigTercerosActual = _normalizarCertConfig(draft, CERT_CONFIG_DEFAULT);
+  _asegurarFuentesDe(_certConfigTercerosActual);
 };
 
 // Fondo decorativo (triángulos). Se serializa a <img> data-URI en vez de dejarlo
@@ -613,23 +651,24 @@ function _conSaltosLinea(s) {
 function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
   const textoLogro = obtenerTextoLogro(tipo, categoria);
   const selloImg   = svgToImgTag(obtenerSelloSVG(tipo));
-  return _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, codigo);
+  return _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, codigo, _certConfigActual);
 }
 
 // Certificado "para terceros" (auspiciantes, jueces, invitados, etc.) --
-// mismo diseño/plantilla que el de participantes, pero con nombre/rol/texto
-// completamente libres en vez de resolverse por tipo+categoría. Sin sello
+// misma plantilla/estructura que el de participantes, pero con diseño
+// (fuente/colores/fondo/firmas/auspiciantes) completamente propio en
+// _certConfigTercerosActual -- ver CONFIGURACION → Cert. Terceros -- y con
+// nombre/rol/texto libres en vez de resolverse por tipo+categoría. Sin sello
 // (ninguno de los 4 diseños de sello -oro/plata/bronce/PARTIC.- aplica acá)
 // y sin código de verificación (nunca se guarda en 'certificados', ver
 // generarYDescargarPDFPersonalizado -- CONFIGURACION -> Certificado lo deja
 // explícito: "no se guarda en el sistema").
 function buildCertHTMLPersonalizado(nombreFinal, chica, rol, palabras, fechaEvento) {
   const textoLogro = { chica: chica || '', grande: rol, resto: palabras };
-  return _renderCertHTML(nombreFinal, textoLogro, '', fechaEvento, '');
+  return _renderCertHTML(nombreFinal, textoLogro, '', fechaEvento, '', _certConfigTercerosActual);
 }
 
-function _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, codigo) {
-  const conf       = _certConfigActual;
+function _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, codigo, conf) {
   const fondoImg   = conf.fondoImagenUrl
     ? `<img src="${logoSrc(conf.fondoImagenUrl)}" alt=""/>`
     : svgToImgTag(FONDO_DECORATIVO_SVG);
