@@ -63,6 +63,7 @@ const CERT_CONFIG_DEFAULT = {
   colorAcento: '#b8860a',
   fondoImagenUrl: '',
   mostrarLogosHeader: true,
+  mostrarSello: false,
   ciudadEvento: 'Quito D.M.',
   firma1Nombre: 'Ing. Christian Ortega MSc.',
   firma1Cargo: 'PRESIDENTE DEL COMITÉ ORGANIZADOR\nSUCREBOT',
@@ -105,6 +106,7 @@ function _normalizarCertConfig(raw, defaults) {
     colorAcento: raw.colorAcento || def.colorAcento,
     fondoImagenUrl: raw.fondoImagenUrl || '',
     mostrarLogosHeader: raw.mostrarLogosHeader !== false,
+    mostrarSello: raw.mostrarSello === true,
     ciudadEvento: raw.ciudadEvento || def.ciudadEvento,
     firma1Nombre: raw.firma1Nombre || def.firma1Nombre,
     firma1Cargo: raw.firma1Cargo || def.firma1Cargo,
@@ -530,6 +532,37 @@ function obtenerSelloSVG(tipo) {
   </svg>`;
 }
 
+// Sello genérico (dorado, sin texto de ranking) para el certificado de
+// terceros -- no tiene tipo 1er/2do/3er/participación como los de
+// participantes, así que reusa el mismo estilo dorado pero sin la leyenda.
+// Controlado por el checkbox "Mostrar sello" de CONFIGURACION → Cert. Terceros.
+function obtenerSelloGenerico() {
+  return `<svg viewBox="0 0 120 158" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="goldG" cx="40%" cy="35%" r="60%">
+        <stop offset="0%" stop-color="#ffe566"/>
+        <stop offset="40%" stop-color="#f0b429"/>
+        <stop offset="100%" stop-color="#b8760a"/>
+      </radialGradient>
+      <linearGradient id="ribG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f0c030"/>
+        <stop offset="50%" stop-color="#c8900a"/>
+        <stop offset="100%" stop-color="#a06808"/>
+      </linearGradient>
+      <filter id="glowG" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="2.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <path d="M44 96 L44 150 L60 140 L76 150 L76 96 Z" fill="url(#ribG)"/>
+    <path d="M44 96 L44 150 L52 145 L52 96 Z" fill="#a06808" opacity="0.6"/>
+    <circle cx="60" cy="56" r="57" fill="none" stroke="#ffe566" stroke-width="1.5" opacity="0.4"/>
+    <circle cx="60" cy="56" r="54" fill="url(#goldG)" stroke="#f0c030" stroke-width="2"/>
+    <circle cx="60" cy="56" r="46" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+    <polygon points="60,18 69,44 96,44 74,60 83,86 60,70 37,86 46,60 24,44 51,44" fill="#ffffff" filter="url(#glowG)"/>
+  </svg>`;
+}
+
 // ── AUSPICIANTES: todos en la barra lateral derecha ────────────────────────
 // (requiere shared/js/auspiciantes.js cargado antes que este archivo)
 // Quién aparece en el certificado ya no es una lista curada aparte -- es el
@@ -665,7 +698,8 @@ function buildCertHTML(nombreFinal, tipo, categoria, fechaEvento, codigo) {
 // explícito: "no se guarda en el sistema").
 function buildCertHTMLPersonalizado(nombreFinal, chica, rol, palabras, fechaEvento) {
   const textoLogro = { chica: chica || '', grande: rol, resto: palabras };
-  return _renderCertHTML(nombreFinal, textoLogro, '', fechaEvento, '', _certConfigTercerosActual);
+  const selloImg = _certConfigTercerosActual.mostrarSello ? svgToImgTag(obtenerSelloGenerico()) : '';
+  return _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, '', _certConfigTercerosActual);
 }
 
 function _renderCertHTML(nombreFinal, textoLogro, selloImg, fechaEvento, codigo, conf) {

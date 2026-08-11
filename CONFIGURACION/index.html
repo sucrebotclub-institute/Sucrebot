@@ -595,9 +595,14 @@
                 <button class="btn-toggle cerrar" id="btn-cert-cfg3-fondo-quitar" onclick="quitarFondoCertificadoTercerosUI()" style="display:none;">🗑️ Quitar fondo propio</button>
               </div>
 
-              <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:12px 14px;max-width:520px;margin-bottom:26px;">
+              <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:12px 14px;max-width:520px;margin-bottom:10px;">
                 <input type="checkbox" id="cert-cfg3-mostrar-logos" checked style="width:16px;height:16px;flex-shrink:0;">
                 Mostrar logos institucionales y líneas divisorias
+              </label>
+
+              <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#c8d8f0;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:8px;padding:12px 14px;max-width:520px;margin-bottom:26px;">
+                <input type="checkbox" id="cert-cfg3-mostrar-sello" style="width:16px;height:16px;flex-shrink:0;">
+                Mostrar sello/insignia dorada
               </label>
 
             <div class="estado-label" style="margin-bottom:10px;">Roles guardados</div>
@@ -677,7 +682,11 @@
     mostrarSeccion(localStorage.getItem('sucrebot_config_seccion') || 'registro');
     cargarEstado();
     cargarPersonal();
-    cargarInfoEdicion();
+    // Se guarda la promesa para que las vistas previa de certificados puedan
+    // esperarla antes de leer #edic-fecha -- si no, tocar "Vista previa" muy
+    // rápido después de cargar la página podía ganarle la carrera a este
+    // fetch y mostrar la fecha de hoy en vez de la real de la edición.
+    window._infoEdicionPromise = cargarInfoEdicion();
     cargarAuspiciantes();
     cargarClubes();
     cargarCertificadoConfig();
@@ -1929,7 +1938,7 @@
     }
   }
 
-  function previsualizarCertificadoUI() {
+  async function previsualizarCertificadoUI() {
     if (typeof previewCertificado !== 'function' || typeof setCertificadoConfigDraft !== 'function') {
       showToast('⚠️ No se pudo cargar la vista previa', true);
       return;
@@ -1938,6 +1947,9 @@
     setCertificadoConfigDraft(draft);
     // Fecha real de la edición activa (la misma que usa GENERAR-CERTIFICADOS) en vez
     // de "hoy" -- evita que la vista previa muestre una fecha distinta a la final.
+    // Espera el fetch de Ediciones si todavía está en curso (ver componentsLoaded)
+    // para no perder la carrera y mostrar la fecha de hoy por error.
+    if (window._infoEdicionPromise) await window._infoEdicionPromise;
     const fechaEdicion = (document.getElementById('edic-fecha').value || '').trim();
     previewCertificado(null, 'Nombre de Ejemplo', { categoria: 'Categoría de Ejemplo' }, 0, '1er', fechaEdicion || new Date().toLocaleDateString('es-EC'));
   }
@@ -1977,6 +1989,7 @@
     document.getElementById('cert-cfg3-color-texto').value = _certCfgTercerosActual.colorTexto || CERT_CONFIG_DEFAULT.colorTexto;
     document.getElementById('cert-cfg3-color-acento').value = _certCfgTercerosActual.colorAcento || CERT_CONFIG_DEFAULT.colorAcento;
     document.getElementById('cert-cfg3-mostrar-logos').checked = _certCfgTercerosActual.mostrarLogosHeader !== false;
+    document.getElementById('cert-cfg3-mostrar-sello').checked = _certCfgTercerosActual.mostrarSello === true;
 
     document.getElementById('cert-cfg3-firma1-nombre').value = _certCfgTercerosActual.firma1Nombre || CERT_CONFIG_DEFAULT.firma1Nombre;
     document.getElementById('cert-cfg3-firma1-cargo').value = _certCfgTercerosActual.firma1Cargo || CERT_CONFIG_DEFAULT.firma1Cargo;
@@ -2040,6 +2053,7 @@
       colorAcento: document.getElementById('cert-cfg3-color-acento').value,
       fondoImagenUrl: _certCfgTercerosActual.fondoImagenUrl || '',
       mostrarLogosHeader: document.getElementById('cert-cfg3-mostrar-logos').checked,
+      mostrarSello: document.getElementById('cert-cfg3-mostrar-sello').checked,
       ciudadEvento: (_certCfgTercerosActual && _certCfgTercerosActual.ciudadEvento) || CERT_CONFIG_DEFAULT.ciudadEvento,
       firma1Nombre: document.getElementById('cert-cfg3-firma1-nombre').value.trim(),
       firma1Cargo: document.getElementById('cert-cfg3-firma1-cargo').value.trim(),
@@ -2115,13 +2129,14 @@ function leerDatosCertificadoTercero() {
   // como está en el formulario ahora mismo (aunque todavía no se haya
   // guardado) sobre los datos reales cargados en "Generar certificado" --
   // cubre tanto revisar el diseño como revisar el contenido con un solo botón.
-  function previsualizarCertificadoTerceroUI() {
+  async function previsualizarCertificadoTerceroUI() {
     const d = leerDatosCertificadoTercero();
     if (typeof previewCertificadoPersonalizado !== 'function' || typeof setCertificadoConfigDraftTerceros !== 'function') {
       showToast('⚠️ No se pudo cargar la vista previa', true);
       return;
     }
     setCertificadoConfigDraftTerceros(leerDraftCertificadoTercerosDesdeFormulario());
+    if (window._infoEdicionPromise) await window._infoEdicionPromise;
     const fechaEdicion = (document.getElementById('edic-fecha').value || '').trim();
     previewCertificadoPersonalizado(d.nombre || 'Nombre de Ejemplo', d.chica, d.rol || 'ROL', d.palabras || 'Texto de reconocimiento', d.fecha || fechaEdicion || new Date().toLocaleDateString('es-EC'));
   }
