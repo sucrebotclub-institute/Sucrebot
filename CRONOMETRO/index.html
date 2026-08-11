@@ -515,12 +515,20 @@
         <div class="col-crono">
           <div class="participante-strip empty" id="participante-strip"><div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner o selección...</div></div><div class="p-badge">—</div></div>
           <div class="crono-display" id="crono-display"><div id="cronometro">00:00:00</div><div class="crono-status" id="crono-status">LISTO</div></div>
-          <div class="card-dark" id="drones-puntos-wrap" style="display:none;text-align:center;">
-            <div class="config-title">PUNTOS — INTENTO ACTUAL</div>
-            <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:8px;">
-              <button class="btn-crono" style="background:#b91c1c;border-color:#b91c1c;color:#fff;min-width:56px;flex:0 0 auto;" onclick="ajustarPuntosDrones(-1)">−1</button>
-              <div id="drones-puntos-valor" style="font-family:'Bebas Neue';font-size:2.2rem;color:var(--text);min-width:64px;">0</div>
-              <button class="btn-crono" style="background:#15803d;border-color:#15803d;color:#fff;min-width:56px;flex:0 0 auto;" onclick="ajustarPuntosDrones(1)">+1</button>
+          <div class="card-dark" id="drones-puntos-wrap" style="display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div class="config-title">PUNTOS — INTENTO ACTUAL</div>
+              <button onclick="toggleEditorCriteriosDrones()" title="Editar criterios" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-dim);cursor:pointer;padding:3px 8px;font-size:.72rem;">⚙️ Editar criterios</button>
+            </div>
+            <div style="text-align:center;margin:6px 0 10px;"><div id="drones-puntos-valor" style="font-family:'Bebas Neue';font-size:2.2rem;color:var(--text);">0</div></div>
+            <div id="drones-criterios-botones" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
+
+            <div id="drones-criterios-editor" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+              <div id="drones-criterios-tbody" style="display:flex;flex-direction:column;gap:6px;"></div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <button class="btn-crono" style="flex:1;background:var(--border);border-color:var(--border);color:var(--text);" onclick="agregarCriterioDrones()">➕ Agregar</button>
+                <button class="btn-crono" style="flex:1;background:#15803d;border-color:#15803d;color:#fff;" onclick="guardarCriteriosDrones()">💾 Guardar</button>
+              </div>
             </div>
           </div>
           <div class="btn-row-crono">
@@ -996,6 +1004,7 @@ async function elegirCategoria(cat,ev){
   loading(true,'Verificando categoría...');
 
   try{
+    if(CATS_PUNTOS.includes(cat))cargarCriteriosDrones();
     if(!modoOffline){
       const bloqueada=await verificarBloqueo(cat);
       const userData=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');
@@ -1181,6 +1190,97 @@ function actualizarPuntosUI(){
   const esDrones=CATS_PUNTOS.includes(categoriaActual);
   wrap.style.display=esDrones?'block':'none';
   if(esDrones)document.getElementById('drones-puntos-valor').textContent=puntosIntentoActual;
+}
+
+// ── DRONES — criterios de puntos editables (nombre + valor) ─────
+// Reusa el mismo backend genérico de criterios de PANEL-CALIFICACION
+// (acciones getCriterios/guardarCriterios, hoja criterios_calificacion)
+// con categoria:'dro' — no requiere tocar Code.gs. A diferencia de
+// PANEL-CALIFICACION (que fuerza peso mínimo 1, son puntos de un
+// puntaje total), acá el peso puede ser negativo (ej. penalización),
+// cada criterio es un botón que suma/resta su valor en vivo.
+const DRONES_CRITERIOS_DEFAULT=[{nombre:'Punto',peso:1},{nombre:'Penalización',peso:-1}];
+let dronesCriterios=DRONES_CRITERIOS_DEFAULT.map(c=>({...c}));
+
+async function cargarCriteriosDrones(){
+  try{
+    const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getCriterios',categoria:'dro'}),{cache:'no-store'});
+    const res=await r.json();
+    dronesCriterios=(res&&res.ok&&Array.isArray(res.criterios)&&res.criterios.length)
+      ?res.criterios.map(c=>({nombre:c.nombre||'',peso:Number(c.peso)||0}))
+      :DRONES_CRITERIOS_DEFAULT.map(c=>({...c}));
+  }catch(e){dronesCriterios=DRONES_CRITERIOS_DEFAULT.map(c=>({...c}));}
+  renderCriteriosBotonesDrones();
+}
+
+function renderCriteriosBotonesDrones(){
+  const wrap=document.getElementById('drones-criterios-botones');
+  if(!wrap)return;
+  if(!dronesCriterios.length){wrap.innerHTML='<span style="color:var(--text-dim);font-size:.8rem;">Sin criterios — presiona ⚙️ Editar criterios para agregar</span>';return;}
+  wrap.innerHTML=dronesCriterios.map(c=>{
+    const positivo=c.peso>=0;
+    const color=positivo?'#15803d':'#b91c1c';
+    const signo=positivo?'+':'';
+    const nombreSafe=(c.nombre||'').replace(/</g,'&lt;');
+    return '<button class="btn-crono" style="background:'+color+';border-color:'+color+';color:#fff;flex:0 0 auto;" onclick="ajustarPuntosDrones('+c.peso+')">'+nombreSafe+' ('+signo+c.peso+')</button>';
+  }).join('');
+}
+
+function toggleEditorCriteriosDrones(){
+  const ed=document.getElementById('drones-criterios-editor');
+  const abrir=ed.style.display==='none';
+  ed.style.display=abrir?'block':'none';
+  if(abrir)renderEditorCriteriosDrones();
+}
+
+// Igual que leerCriteriosConfig()/quitarCriterio() de PANEL-CALIFICACION:
+// agregar/quitar filas edita el DOM directo (nunca vuelve a pintar desde
+// dronesCriterios), para no perder texto ya tipeado en otras filas del
+// editor cuando se quita/agrega una fila distinta.
+function filaCriterioDronesHTML(idx,nombre,peso){
+  return '<div style="display:flex;gap:6px;align-items:center;" data-idx="'+idx+'">'
+    +'<input class="config-input" style="width:auto;flex:1;text-align:left;" data-field="nombre" value="'+(nombre||'').replace(/"/g,'&quot;')+'" placeholder="Nombre del criterio">'
+    +'<input class="config-input" style="width:64px;" data-field="peso" type="number" step="1" value="'+(peso??1)+'">'
+    +'<button onclick="quitarCriterioDrones(this)" style="background:none;border:none;color:#b91c1c;cursor:pointer;font-size:1.1rem;padding:2px 6px;">✕</button>'
+    +'</div>';
+}
+function renderEditorCriteriosDrones(){
+  const tbody=document.getElementById('drones-criterios-tbody');
+  tbody.innerHTML=dronesCriterios.map((c,i)=>filaCriterioDronesHTML(i,c.nombre,c.peso)).join('');
+}
+function agregarCriterioDrones(){
+  document.getElementById('drones-criterios-tbody').insertAdjacentHTML('beforeend',filaCriterioDronesHTML(Date.now(),'',1));
+}
+function quitarCriterioDrones(btnEl){
+  btnEl.closest('div[data-idx]').remove();
+}
+
+function leerEditorCriteriosDrones(){
+  const filas=[...document.querySelectorAll('#drones-criterios-tbody > div')];
+  const criterios=[];
+  filas.forEach(f=>{
+    const nombre=f.querySelector('[data-field="nombre"]').value.trim();
+    const peso=parseFloat(f.querySelector('[data-field="peso"]').value)||0;
+    if(nombre)criterios.push({nombre,peso});
+  });
+  return criterios;
+}
+
+async function guardarCriteriosDrones(){
+  const criterios=leerEditorCriteriosDrones();
+  if(!criterios.length){showToast('⚠️ Define al menos un criterio',true);return;}
+  loading(true,'GUARDANDO CRITERIOS...');
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'guardarCriterios',categoria:'dro',criterios,staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).then(r=>r.json());
+    if(res&&res.ok===false){showToast('❌ '+(res.error||'Error al guardar'),true);}
+    else{
+      dronesCriterios=criterios;
+      renderCriteriosBotonesDrones();
+      document.getElementById('drones-criterios-editor').style.display='none';
+      showToast('✅ Criterios guardados');
+    }
+  }catch(e){showToast('❌ Error de red al guardar criterios',true);}
+  loading(false);
 }
 
 // Recalcula c.tiempo/c.esDNF/c.puntos de un participante de Drones a partir
