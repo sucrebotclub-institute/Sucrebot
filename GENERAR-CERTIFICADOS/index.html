@@ -256,8 +256,23 @@ document.addEventListener('componentsLoaded', async () => {
   // generar cualquier diploma real (buildCertHTML ya arranca con el cache
   // local aplicado de forma síncrona, esto solo refresca si cambió algo).
   await precargarCertificadoConfig();
+  await precargarFechaEdicion();
   cargarDatos().then(irACategoriaDeUrl);
 });
+
+// La fecha del evento viene de CONFIGURACION -> Ediciones (guardarFechaEvento),
+// así que este input arranca con el valor de la edición activa en vez del
+// texto fijo del HTML. Sigue siendo editable a mano por si hace falta un
+// override puntual para un certificado suelto.
+async function precargarFechaEdicion() {
+  try {
+    const qs = new URLSearchParams({ action: 'getInfoEdicion', staffToken: localStorage.getItem('sucrebot_staff_token') || '' });
+    const info = await fetch(GAS_URL + '?' + qs, { cache: 'no-store' }).then(r => r.json());
+    if (info && info.fecha_evento) {
+      document.getElementById('fecha-evento').value = info.fecha_evento;
+    }
+  } catch (e) { /* si falla, se queda el valor por defecto del HTML */ }
+}
 
 // Si se llegó con ?categoria=ms_a (link desde RESULTADOS), hace scroll y
 // resalta ese bloque para que el staff lo ubique entre las 13 categorías.

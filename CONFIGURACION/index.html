@@ -1866,7 +1866,10 @@
     }
     const draft = leerDraftCertificadoDesdeFormulario();
     setCertificadoConfigDraft(draft);
-    previewCertificado(null, 'Nombre de Ejemplo', { categoria: 'Categoría de Ejemplo' }, 0, '1er', new Date().toLocaleDateString('es-EC'));
+    // Fecha real de la edición activa (la misma que usa GENERAR-CERTIFICADOS) en vez
+    // de "hoy" -- evita que la vista previa muestre una fecha distinta a la final.
+    const fechaEdicion = (document.getElementById('edic-fecha').value || '').trim();
+    previewCertificado(null, 'Nombre de Ejemplo', { categoria: 'Categoría de Ejemplo' }, 0, '1er', fechaEdicion || new Date().toLocaleDateString('es-EC'));
   }
 
   function leerDatosCertificadoTercero() {
