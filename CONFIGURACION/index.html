@@ -625,15 +625,12 @@
               <input type="text" id="cert-3ro-rol" class="form-control" placeholder="Frase grande (rol)">
               <textarea id="cert-3ro-palabras" class="form-control" rows="3" placeholder="Texto de agradecimiento/reconocimiento"></textarea>
               <input type="text" id="cert-3ro-fecha" class="form-control" placeholder="Fecha (ej. '16 de julio de 2026')">
-              <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="btn-personal-add" id="btn-cert-3ro-descargar" onclick="descargarCertificadoTerceroUI()">📥 Descargar PDF</button>
-                <button class="btn-toggle" onclick="previsualizarCertificadoTerceroUI()">👁️ Vista previa</button>
-              </div>
+              <button class="btn-toggle" onclick="previsualizarCertificadoTerceroUI()">👁️ Vista previa</button>
             </div>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;border-top:1px solid var(--border,#2a3550);padding-top:20px;">
               <button class="btn-personal-add" id="btn-cert-cfg3-guardar" onclick="guardarCertificadoConfigTercerosUI()">💾 Guardar diseño</button>
-              <button class="btn-toggle" onclick="previsualizarDisenoCertificadoTercerosUI()">👁️ Vista previa del diseño</button>
+              <button class="btn-personal-add" id="btn-cert-3ro-descargar" onclick="descargarCertificadoTerceroUI()">📥 Descargar PDF</button>
             </div>
             </div>
           </div>
@@ -2075,18 +2072,7 @@
     }
   }
 
-  function previsualizarDisenoCertificadoTercerosUI() {
-    if (typeof previewCertificadoPersonalizado !== 'function' || typeof setCertificadoConfigDraftTerceros !== 'function') {
-      showToast('⚠️ No se pudo cargar la vista previa', true);
-      return;
-    }
-    const draft = leerDraftCertificadoTercerosDesdeFormulario();
-    setCertificadoConfigDraftTerceros(draft);
-    const fechaEdicion = (document.getElementById('edic-fecha').value || '').trim();
-    previewCertificadoPersonalizado('Nombre de Ejemplo', 'Se otorga el presente reconocimiento a', 'ROL DE EJEMPLO', 'Texto de agradecimiento de ejemplo.', fechaEdicion || new Date().toLocaleDateString('es-EC'));
-  }
-
-  function leerDatosCertificadoTercero() {
+function leerDatosCertificadoTercero() {
     return {
       nombre: document.getElementById('cert-3ro-nombre').value.trim(),
       chica: document.getElementById('cert-3ro-chica').value.trim(),
@@ -2125,13 +2111,19 @@
     }
   }
 
+  // Único botón de vista previa de Cert. Terceros: aplica el diseño tal
+  // como está en el formulario ahora mismo (aunque todavía no se haya
+  // guardado) sobre los datos reales cargados en "Generar certificado" --
+  // cubre tanto revisar el diseño como revisar el contenido con un solo botón.
   function previsualizarCertificadoTerceroUI() {
     const d = leerDatosCertificadoTercero();
-    if (typeof previewCertificadoPersonalizado !== 'function') {
+    if (typeof previewCertificadoPersonalizado !== 'function' || typeof setCertificadoConfigDraftTerceros !== 'function') {
       showToast('⚠️ No se pudo cargar la vista previa', true);
       return;
     }
-    previewCertificadoPersonalizado(d.nombre || 'Nombre de Ejemplo', d.chica, d.rol || 'ROL', d.palabras || 'Texto de reconocimiento', d.fecha || new Date().toLocaleDateString('es-EC'));
+    setCertificadoConfigDraftTerceros(leerDraftCertificadoTercerosDesdeFormulario());
+    const fechaEdicion = (document.getElementById('edic-fecha').value || '').trim();
+    previewCertificadoPersonalizado(d.nombre || 'Nombre de Ejemplo', d.chica, d.rol || 'ROL', d.palabras || 'Texto de reconocimiento', d.fecha || fechaEdicion || new Date().toLocaleDateString('es-EC'));
   }
 
   // ── Roles guardados de certificado para terceros ────────────────────
