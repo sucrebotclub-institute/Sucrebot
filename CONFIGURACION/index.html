@@ -456,12 +456,6 @@
             </div>
 
             <div class="estado-label" style="margin:26px 0 10px;">Fecha y firmas</div>
-            <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:8px;">
-              <div>
-                <div class="estado-label" style="margin-bottom:4px;font-size:.72rem;">Ciudad (antes de la fecha, ej. "Quito D.M.")</div>
-                <input type="text" id="cert-cfg-ciudad" class="form-control" placeholder="Quito D.M.">
-              </div>
-            </div>
             <div style="display:flex;flex-wrap:wrap;gap:16px;">
               <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:14px;flex:1;min-width:260px;">
                 <div class="estado-label" style="margin-bottom:8px;">Firma 1</div>
@@ -1755,7 +1749,6 @@
     document.getElementById('cert-cfg-color-acento').value = _certCfgActual.colorAcento || CERT_CONFIG_DEFAULT.colorAcento;
     document.getElementById('cert-cfg-mostrar-logos').checked = _certCfgActual.mostrarLogosHeader !== false;
 
-    document.getElementById('cert-cfg-ciudad').value = _certCfgActual.ciudadEvento || CERT_CONFIG_DEFAULT.ciudadEvento;
     document.getElementById('cert-cfg-firma1-nombre').value = _certCfgActual.firma1Nombre || CERT_CONFIG_DEFAULT.firma1Nombre;
     document.getElementById('cert-cfg-firma1-cargo').value = _certCfgActual.firma1Cargo || CERT_CONFIG_DEFAULT.firma1Cargo;
     document.getElementById('cert-cfg-firma2-nombre').value = _certCfgActual.firma2Nombre || CERT_CONFIG_DEFAULT.firma2Nombre;
@@ -1827,7 +1820,7 @@
       colorAcento: document.getElementById('cert-cfg-color-acento').value,
       fondoImagenUrl: _certCfgActual.fondoImagenUrl || '',
       mostrarLogosHeader: document.getElementById('cert-cfg-mostrar-logos').checked,
-      ciudadEvento: document.getElementById('cert-cfg-ciudad').value.trim(),
+      ciudadEvento: (_certCfgActual && _certCfgActual.ciudadEvento) || CERT_CONFIG_DEFAULT.ciudadEvento,
       firma1Nombre: document.getElementById('cert-cfg-firma1-nombre').value.trim(),
       firma1Cargo: document.getElementById('cert-cfg-firma1-cargo').value.trim(),
       firma2Nombre: document.getElementById('cert-cfg-firma2-nombre').value.trim(),
