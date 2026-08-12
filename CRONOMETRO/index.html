@@ -772,7 +772,7 @@ _nombresCopiaFetch.then(nombres => {
   if (!nombres) return;
   guardarCache(NOMBRES_COPIA_CACHE_KEY, nombres);
   if (_nombresCopiaCacheInicial && JSON.stringify(nombres) !== JSON.stringify(_nombresCopiaCacheInicial)) {
-    renderCopiasCategorias().then(aplicarCategoriasActivasCronometro);
+    renderCopiasCategorias().then(aplicarCategoriasActivasCronometro).then(aplicarEmojisCategoriaCronometro);
   }
 });
 const RUTAS = {
@@ -870,6 +870,35 @@ async function aplicarCategoriasActivasCronometro(){
       guardarCache(CATS_ACTIVAS_CACHE_KEY,activas);
     }
   }catch(e){ /* sin conexión, se queda con el cache (o todas visibles si no había) */ }
+}
+
+// Emoji editable por categoría (CONFIGURACION → Categorías de edición).
+// Mismo patrón cache-first que aplicarCategoriasActivasCronometro: aplica
+// de una la última respuesta conocida sin esperar red, y revalida en
+// segundo plano -- si no hay cache ni red, se queda con el emoji
+// hardcodeado que ya trae cada tarjeta en el HTML.
+const EMOJIS_CATEGORIA_CACHE_KEY='sucrebot_cache_emojis_cat_crono';
+function aplicarListaEmojisCronometro(emojis){
+  if(!emojis)return;
+  document.querySelectorAll('#catGrid .cat-btn[data-cat]').forEach(el=>{
+    const cat=el.dataset.cat;
+    const base=cat.replace(/\s*\[Copia\]\s*$/,'');
+    const emoji=emojis[cat]||emojis[base];
+    if(!emoji)return;
+    const iconEl=el.querySelector('.cat-btn-icon');
+    if(iconEl)iconEl.textContent=emoji;
+  });
+}
+async function aplicarEmojisCategoriaCronometro(){
+  const cache=leerCache(EMOJIS_CATEGORIA_CACHE_KEY);
+  if(cache)aplicarListaEmojisCronometro(cache);
+  try{
+    const emojis=await fetch(GAS_URL+'?action=getEmojisCategoria',{cache:'no-store'}).then(r=>r.json());
+    if(emojis&&typeof emojis==='object'){
+      aplicarListaEmojisCronometro(emojis);
+      guardarCache(EMOJIS_CATEGORIA_CACHE_KEY,emojis);
+    }
+  }catch(e){ /* sin conexión, se queda con el cache (o el emoji del HTML si no había) */ }
 }
 
 let categoriaActual=null,participanteActual=null,pollingInterval=null,cronoInterval=null,cronoInicio=null;
@@ -2039,7 +2068,7 @@ document.addEventListener('componentsLoaded',async function(){
     loading(true);
     setTimeout(()=>loading(false),4000); // resguardo: si algo falla, no se queda tapado para siempre
   }
-  renderCopiasCategorias().then(aplicarCategoriasActivasCronometro).finally(()=>loading(false));
+  renderCopiasCategorias().then(aplicarCategoriasActivasCronometro).then(aplicarEmojisCategoriaCronometro).finally(()=>loading(false));
   const savedUser=localStorage.getItem('sucrebot_user');if(!savedUser){window.location.href='../INICIO/';return;}
   const catGuardada=localStorage.getItem('cronometro_categoria_activa');
   if(catGuardada&&RUTAS[catGuardada]){

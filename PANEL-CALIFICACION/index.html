@@ -436,7 +436,7 @@
         if (!nombres) return;
         window._guardarCache(NOMBRES_COPIA_CACHE_KEY, nombres);
         if (_nombresCopiaCacheInicial && JSON.stringify(nombres) !== JSON.stringify(_nombresCopiaCacheInicial)) {
-          renderCopiasCategoriasCalificacion().then(aplicarCategoriasActivasCalificacion);
+          renderCopiasCategoriasCalificacion().then(aplicarCategoriasActivasCalificacion).then(aplicarEmojisCategoriaCalificacion);
         }
       });
       // ── Categorías copia (independientes, mismo flujo que su base) ──
@@ -848,6 +848,33 @@ async function aplicarCategoriasActivasCalificacion(){
       window._guardarCache(CATS_ACTIVAS_CACHE_KEY,activas);
     }
   }catch(e){ /* sin conexión, se queda con el cache (o todas visibles si no había) */ }
+}
+
+// Emoji editable por categoría (CONFIGURACION → Categorías de edición).
+// Mismo patrón cache-first que aplicarCategoriasActivasCalificacion.
+const EMOJIS_CATEGORIA_CACHE_KEY='sucrebot_cache_emojis_cat_calif';
+function aplicarListaEmojisCalificacion(emojis){
+  if(!emojis)return;
+  document.querySelectorAll('.cat-cards-grid .cat-card[data-catcodigo]').forEach(el=>{
+    const nombreCompleto=CAT_NOMBRES[el.dataset.catcodigo];
+    if(!nombreCompleto)return;
+    const base=nombreCompleto.replace(/\s*\[Copia\]\s*$/,'');
+    const emoji=emojis[nombreCompleto]||emojis[base];
+    if(!emoji)return;
+    const iconEl=el.querySelector('.cat-card-emoji');
+    if(iconEl)iconEl.textContent=emoji;
+  });
+}
+async function aplicarEmojisCategoriaCalificacion(){
+  const cache=window._leerCache(EMOJIS_CATEGORIA_CACHE_KEY);
+  if(cache)aplicarListaEmojisCalificacion(cache);
+  try{
+    const emojis=await fetch(CONFIG.GAS_URL()+'?action=getEmojisCategoria',{cache:'no-store'}).then(r=>r.json());
+    if(emojis&&typeof emojis==='object'){
+      aplicarListaEmojisCalificacion(emojis);
+      window._guardarCache(EMOJIS_CATEGORIA_CACHE_KEY,emojis);
+    }
+  }catch(e){ /* sin conexión, se queda con el cache (o el emoji del HTML si no había) */ }
 }
 
 // Nombre a mostrar en pantalla (títulos, toasts, confirmaciones) -- para
@@ -3036,6 +3063,7 @@ document.addEventListener('componentsLoaded', async () => {
   if (!huboCache) setTimeout(() => loading(false), 4000); // resguardo: si algo falla, no se queda tapado para siempre
   if (typeof renderCopiasCategoriasCalificacion === 'function') await renderCopiasCategoriasCalificacion();
   await aplicarCategoriasActivasCalificacion();
+  await aplicarEmojisCategoriaCalificacion();
   loading(false);
   await intentarRestaurarSesionCal();
 });

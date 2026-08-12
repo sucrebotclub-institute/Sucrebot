@@ -102,6 +102,10 @@
     .color-card .color-swatch { width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer; background: none; padding: 0; }
     .color-card .color-cat-nombre { font-family: 'Exo 2'; font-size: 12px; font-weight: 600; color: #c8d8f0; line-height: 1.3; }
     .color-card .color-cat-hex { font-family: 'DM Mono'; font-size: 10px; color: #4a7a9a; }
+    .color-card.cat-inactiva { opacity: .5; }
+    .color-card-check { display: flex; align-items: center; gap: 6px; align-self: flex-start; font-family: 'Exo 2'; font-size: 11px; font-weight: 600; color: #9fb4d4; }
+    .color-card-check input { width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+    .color-card-emoji-input { width: 64px; height: 44px; text-align: center; font-size: 22px; background: #0a1826; border: 1px solid #1a3a5a; border-radius: 8px; color: #fff; padding: 0; }
     .color-card .btn-personal-add { width: 100%; flex: none; height: 34px; font-size: 11px; padding: 0 10px; }
 
     .pers-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0d1f33; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid #1a3a5a; flex-wrap: wrap; }
@@ -174,7 +178,7 @@
             <button class="config-nav-item" data-section="ediciones" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
             <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
             <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
-            <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Colores</button>
+            <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Categorías de edición</button>
             <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
             <button class="config-nav-item" data-section="auspiciantes" onclick="mostrarSeccion('auspiciantes')"><span class="config-nav-icon">🤝</span> Auspiciantes</button>
             <button class="config-nav-item" data-section="clubes" onclick="mostrarSeccion('clubes')"><span class="config-nav-icon">🏟️</span> Clubes</button>
@@ -269,14 +273,9 @@
               </div>
             </div>
 
-            <div style="margin-top:24px;border-top:1px solid var(--border,#2a3550);padding-top:18px;">
-              <div class="estado-label" style="margin-bottom:6px;">Categorías de esta edición</div>
-              <div class="config-card-desc" style="margin-bottom:10px;">
-                Desmarcá las que esta edición no va a ofrecer (ej. no hay Robot Soccer esta vez).
-                El número de "Categorías" en INICIO refleja exactamente lo que quede marcado acá.
-              </div>
-              <div id="edic-cats-lista" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;"></div>
-              <button class="btn-personal-add" onclick="guardarCategoriasEdicionUI()">💾 Guardar categorías</button>
+            <div class="config-card-desc" style="margin-top:10px;">
+              ¿Buscás activar/desactivar categorías, cambiar su color o su emoji? Eso se movió a
+              <strong>🎨 Categorías de edición</strong> en el menú de la izquierda.
             </div>
 
             <div style="margin-top:24px;border-top:1px solid var(--border,#2a3550);padding-top:18px;">
@@ -321,15 +320,24 @@
         </div>
 
         <div class="config-card config-section" data-section="colores">
-          <div class="config-card-title">🎨 Colores de categoría</div>
+          <div class="config-card-title">🎨 Categorías de edición</div>
           <div class="config-card-desc">
-            Un solo color por categoría, usado en MANILLAS, PARTICIPANTES_REGISTRADOS
-            y el cronograma (PANTALLA). Cambiarlo acá lo actualiza en las tres páginas
-            sin tener que tocar código.
+            Por categoría: si está <strong>activa</strong> esta edición (desmarcala si esta vez
+            no se ofrece, ej. no hay Robot Soccer), su <strong>color</strong> (usado en MANILLAS,
+            PARTICIPANTES_REGISTRADOS y el cronograma de PANTALLA) y su <strong>emoji</strong>
+            (usado en las tarjetas de selección de CRONOMETRO, PANEL-BRACKET y
+            PANEL-CALIFICACION). Cada tarjeta se guarda por separado con su propio botón.
           </div>
 
           <div id="colores-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
           <div id="colores-lista" class="color-grid" style="display:none;"></div>
+          <div id="colores-activas-wrap" style="display:none;margin-top:16px;border-top:1px solid var(--border,#2a3550);padding-top:16px;">
+            <div class="config-card-desc" style="margin-bottom:10px;">
+              Los checks de "Activa esta edición" no se guardan solos con cada tarjeta —
+              tocá este botón después de marcar/desmarcar las que quieras.
+            </div>
+            <button class="btn-personal-add" onclick="guardarCategoriasActivasUI()">💾 Guardar categorías activas</button>
+          </div>
         </div>
 
         <div class="config-card config-section" data-section="limpiar">
@@ -986,7 +994,7 @@
       document.getElementById('edic-actual').textContent = 'Edición ' + (info.edicion_actual || '—');
       document.getElementById('edic-fecha').value = info.fecha_evento || '';
       renderHistorialEdiciones(info.ediciones || {}, info.edicion_actual);
-      renderCategoriasEdicion(Array.isArray(info.categorias_activas) ? info.categorias_activas : CATEGORIAS);
+      _categoriasActivasCache = Array.isArray(info.categorias_activas) ? info.categorias_activas : CATEGORIAS;
       document.getElementById('edic-loading').style.display = 'none';
       document.getElementById('edic-contenido').style.display = 'block';
 
@@ -1003,24 +1011,18 @@
   // sin nombre todavía no "existe" para el sitio, así que no aparece acá
   // tampoco -- ponerle nombre en la pestaña "Categorías copia" es lo que
   // la habilita en todos lados, incluida esta lista.
-  function renderCategoriasEdicion(activas) {
-    const set = new Set(activas);
-    const cont = document.getElementById('edic-cats-lista');
-    cont.innerHTML = categoriasParaSelect().map(({ valor: nombre, label }) => {
-      const id = 'edic-cat-' + nombre.replace(/[^a-zA-Z0-9]/g, '');
-      const checked = set.has(nombre);
-      return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--border,#2a3550);border-radius:8px;padding:6px 10px;font-size:.82rem;cursor:pointer;">' +
-        '<input type="checkbox" id="' + id + '" value="' + nombre.replace(/"/g, '&quot;') + '" ' + (checked ? 'checked' : '') + '> ' + label +
-      '</label>';
-    }).join('');
-  }
+  // Set de categorías activas de la edición actual -- llenado por
+  // cargarInfoEdicion(), leído por renderColoresCategoria() al armar la
+  // grilla fusionada de "Categorías de edición" (activo + color + emoji).
+  let _categoriasActivasCache = null;
 
-  async function guardarCategoriasEdicionUI() {
-    const seleccionadas = [...document.querySelectorAll('#edic-cats-lista input:checked')].map(i => i.value);
+  async function guardarCategoriasActivasUI() {
+    const seleccionadas = [...document.querySelectorAll('#colores-lista input[type="checkbox"]:checked')].map(i => i.value);
     if (!seleccionadas.length) { showToast('⚠️ Tiene que quedar al menos una categoría marcada', true); return; }
     try {
       const resp = await gasPost({ action: 'guardarCategoriasEdicion', categorias: seleccionadas });
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      _categoriasActivasCache = seleccionadas;
       showToast('✅ Categorías de esta edición actualizadas (' + seleccionadas.length + ')');
     } catch(e) {
       showToast('⚠️ Error al guardar categorías: ' + e.message, true);
@@ -1376,6 +1378,7 @@
   // usan MANILLAS/PARTICIPANTES_REGISTRADOS/PANTALLA), pero guardar en esa
   // fila desde acá la vuelve independiente.
   let _coloresCategoria = {};
+  let _emojisCategoria = {};
 
   function colorEfectivo(valor) {
     if (_coloresCategoria[valor]) return _coloresCategoria[valor];
@@ -1383,27 +1386,65 @@
     return _coloresCategoria[base] || '#4A5568';
   }
 
+  function emojiEfectivo(valor) {
+    if (_emojisCategoria[valor]) return _emojisCategoria[valor];
+    const base = valor.replace(/\s*\[Copia\]\s*$/, '');
+    return _emojisCategoria[base] || '🔁';
+  }
+
   async function cargarColoresCategoria() {
     // Necesita _nombresCopiaGlobal para saber qué copias ya tienen nombre
     // (y por lo tanto deben listarse acá) -- cargarEstado() también la pide,
     // pedirla de nuevo acá es gratis (ya cacheada o en curso) y evita una
-    // carrera si esta función corre antes que esa.
+    // carrera si esta función corre antes que esa. También espera a que
+    // _categoriasActivasCache esté listo (cargarInfoEdicion, disparada en
+    // paralelo por componentsLoaded) -- si no, la grilla arrancaría
+    // mostrando todo desmarcado un instante antes de corregirse.
     await cargarNombresCopiaGlobal();
-    try { _coloresCategoria = await gasGet({ action: 'getColoresCategoria' }); }
-    catch (e) { _coloresCategoria = {}; showToast('⚠️ Error al cargar colores de categoría', true); }
+    if (window._infoEdicionPromise) await window._infoEdicionPromise;
+    try {
+      [_coloresCategoria, _emojisCategoria] = await Promise.all([
+        gasGet({ action: 'getColoresCategoria' }),
+        gasGet({ action: 'getEmojisCategoria' })
+      ]);
+    } catch (e) {
+      _coloresCategoria = _coloresCategoria || {};
+      _emojisCategoria = _emojisCategoria || {};
+      showToast('⚠️ Error al cargar colores/emojis de categoría', true);
+    }
     renderColoresCategoria();
     document.getElementById('colores-loading').style.display = 'none';
     document.getElementById('colores-lista').style.display = 'grid';
+    document.getElementById('colores-activas-wrap').style.display = 'block';
   }
 
   function renderColoresCategoria() {
     const cont = document.getElementById('colores-lista');
     cont.innerHTML = '';
+    const activas = new Set(_categoriasActivasCache || CATEGORIAS);
     categoriasParaSelect().forEach(({ valor, label }) => {
       const color = colorEfectivo(valor);
+      const emoji = emojiEfectivo(valor);
+      const activa = activas.has(valor);
 
       const card = document.createElement('div');
-      card.className = 'color-card';
+      card.className = 'color-card' + (activa ? '' : ' cat-inactiva');
+
+      const checkLabel = document.createElement('label');
+      checkLabel.className = 'color-card-check';
+      const check = document.createElement('input');
+      check.type = 'checkbox';
+      check.checked = activa;
+      check.value = valor;
+      check.addEventListener('change', () => card.classList.toggle('cat-inactiva', !check.checked));
+      checkLabel.appendChild(check);
+      checkLabel.appendChild(document.createTextNode('Activa esta edición'));
+
+      const emojiInput = document.createElement('input');
+      emojiInput.type = 'text';
+      emojiInput.className = 'color-card-emoji-input';
+      emojiInput.value = emoji;
+      emojiInput.maxLength = 4;
 
       const picker = document.createElement('input');
       picker.type = 'color';
@@ -1422,8 +1463,10 @@
       const btnGuardar = document.createElement('button');
       btnGuardar.className = 'btn-personal-add';
       btnGuardar.textContent = '💾 Guardar';
-      btnGuardar.addEventListener('click', () => guardarColorCategoriaUI(valor, picker, btnGuardar));
+      btnGuardar.addEventListener('click', () => guardarColorEmojiCategoriaUI(valor, picker, emojiInput, btnGuardar));
 
+      card.appendChild(checkLabel);
+      card.appendChild(emojiInput);
       card.appendChild(picker);
       card.appendChild(nombre);
       card.appendChild(hex);
@@ -1432,13 +1475,20 @@
     });
   }
 
-  async function guardarColorCategoriaUI(categoria, inputEl, btnEl) {
+  async function guardarColorEmojiCategoriaUI(categoria, colorInput, emojiInput, btnEl) {
     btnEl.disabled = true;
     try {
-      const resp = await gasPost({ action: 'guardarColorCategoria', categoria, color: inputEl.value });
-      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      _coloresCategoria = resp.colores || _coloresCategoria;
-      showToast('✅ Color de "' + categoria + '" guardado');
+      const emoji = emojiInput.value.trim();
+      if (!emoji) throw new Error('El emoji no puede quedar vacío');
+      const [respColor, respEmoji] = await Promise.all([
+        gasPost({ action: 'guardarColorCategoria', categoria, color: colorInput.value }),
+        gasPost({ action: 'guardarEmojiCategoria', categoria, emoji })
+      ]);
+      if (!respColor.ok) throw new Error(respColor.error || 'Error al guardar color');
+      if (!respEmoji.ok) throw new Error(respEmoji.error || 'Error al guardar emoji');
+      _coloresCategoria = respColor.colores || _coloresCategoria;
+      _emojisCategoria = respEmoji.emojis || _emojisCategoria;
+      showToast('✅ "' + categoria + '" guardada (color + emoji)');
     } catch (e) {
       showToast('⚠️ Error al guardar: ' + e.message, true);
     }

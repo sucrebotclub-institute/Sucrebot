@@ -1566,5 +1566,33 @@ El backend real (sin el `Code.gs` nuevo desplegado todavía) responde **`{}`** �
 
 ---
 
+### Sprint 12 ago 2026 — fusión "Categorías de edición" (activo+color+emoji) + emoji editable en tarjetas de categoría
+
+**Contexto**: Raku pidió fusionar en una sola página el checklist "Categorías de esta edición" (activo/inactivo, vivía dentro de la pestaña Ediciones) con "Colores de categoría" (pestaña aparte), y de paso agregar edición del **emoji** que aparece en las tarjetas de selección de categoría de CRONOMETRO/PANEL-BRACKET/PANEL-CALIFICACION — hasta ahora hardcodeado en el HTML de cada página, sin forma de cambiarlo sin tocar código.
+
+#### Backend (`Code.gs`, en `sucrebot-gas-local`)
+- Nueva fila `config_emojis_categoria` en `estados` (mismo patrón exacto que `config_colores_categoria`): JSON `{nombreCategoria: '🤖'}`. `EMOJIS_CATEGORIA_DEFAULT` con los 14 emoji que ya estaban hardcodeados en cada página (Insectos 🐜, Trepador 🧗, Seguidor 〰️, Minisumo Autónomo 🤖, Minisumo RC 🎮, Bailarín 🩺, Batalla 🥊, Impacto Tecnológico 💡, Robot soccer ⚽, Cubo Rubik 🧩, Lego Kids 🧱, Drones 🚁).
+- Acciones `getEmojisCategoria` (GET, pública) / `guardarEmojiCategoria` (POST, staffToken) — mismo esqueleto que `getColoresCategoria`/`guardarColorCategoria`.
+- Agregada a la lista de filas que `generarNuevaEdicionHelper` copia tal cual a una edición nueva (junto a `config_nombres_categorias`/`config_colores_categoria`) — es branding del club, no dato del torneo.
+- Deploy confirmado el mismo día: Deployment ID `AKfycbxxMV7orNEYbIlzXfQE1cU__wlLEZhBDSDS_g4FLrJnAnTWfJLLsQPD_ukYKYwY1t80xQ`, verificado en vivo (`getEmojisCategoria` devuelve los 14 default, `getColoresCategoria`/`getInfoEdicion` siguen respondiendo bien, `guardarEmojiCategoria` probado con un valor idéntico al existente). `shared/js/config.js` actualizado localmente (sin pushear todavía).
+
+#### CONFIGURACION → "🎨 Categorías de edición" (antes "Colores")
+- El checklist de activo/inactivo se sacó de la pestaña Ediciones (que ahora solo tiene fecha del evento + generar edición nueva + historial, con una nota apuntando a la pestaña nueva) y se fusionó con la grilla de colores.
+- Cada categoría es una tarjeta con: checkbox "Activa esta edición", input de texto para el emoji (con preview en vivo), color picker + hex, un solo botón "💾 Guardar" que persiste color+emoji juntos (2 POST en paralelo). El checkbox de activo/inactivo NO se guarda con ese botón — hay un botón aparte "💾 Guardar categorías activas" al pie de toda la grilla (mismo mecanismo que antes, `guardarCategoriasEdicion` con el array completo de marcados), con una nota explicándolo para que no sea sorpresa.
+- Tarjeta con opacidad reducida (`.cat-inactiva`) si está desmarcada, para que se note de un vistazo cuáles categorías no se ofrecen esta edición sin tener que leer cada checkbox.
+
+#### CRONOMETRO / PANEL-BRACKET / PANEL-CALIFICACION — emoji cache-first
+Mismo patrón exacto que ya usaban estas 3 páginas para categorías activas (`aplicarCategoriasActivasCronometro`/`...Bracket`/`...Calificacion`): cache-first en `localStorage` (aplica de una la última respuesta conocida, revalida en segundo plano contra `getEmojisCategoria`), encadenado en el mismo `.then()` chain que ya arma las tarjetas de categorías copia y filtra por activas — corre siempre DESPUÉS de que las tarjetas (reales + copia) ya existen en el DOM. Si no hay cache ni respuesta de red (ej. antes de que Raku despliegue el `Code.gs` nuevo), la tarjeta se queda con el emoji que ya trae hardcodeado en el HTML — cero riesgo de romper nada mientras tanto.
+- CRONOMETRO/PANEL-CALIFICACION: emoji guardado por nombre completo de categoría, con fallback de copia→base (`'Trepador (Pro) [Copia]'` → `'Trepador (Pro)'` si la copia no tiene emoji propio asignado), igual que ya hacía el color.
+- PANEL-BRACKET: las tarjetas usan código corto (`ms_a`, `soc`, etc.) en el DOM, pero el emoji se guarda por nombre completo en `Code.gs` — se resuelve con `CAT_INFO[codigo].gasNombre` (mapeo que la página ya tenía para otras cosas).
+
+**Verificado**: `node --check` sobre los bloques `<script>` extraídos de los 4 archivos tocados; navegador de pruebas (servidor local puerto 8899, sesión admin simulada por `localStorage`) contra producción real (solo lecturas — nunca se clickeó ningún botón "Guardar" para no escribir datos reales sin necesidad): la grilla fusionada de CONFIGURACION renderiza 27 tarjetas con checkbox/color/emoji reales del Sheet, el checklist viejo desapareció de Ediciones, y las 3 páginas de paneles cargan sus tarjetas sin errores de consola nuevos (emoji cayendo al hardcodeado del HTML, como se espera hasta que se despliegue el `Code.gs`).
+
+#### Principios reafirmados
+- **Al fusionar dos configuraciones en una sola tarjeta por ítem, no todos los controles necesitan el mismo botón de guardado** — activo/inactivo (una acción de lista completa) y color/emoji (una acción por categoría) tienen shapes de guardado distintos en el backend; forzarlos al mismo botón hubiera significado reescribir `guardarCategoriasEdicion` para aceptar un solo ítem a la vez sin necesidad real. Mantener 2 mecanismos de guardado visualmente unificados en una tarjeta es más simple que unificar el backend.
+- **Un emoji en un `<input type="text">` no necesita ningún picker especial** — el teclado nativo de emoji del SO (Win+. en Windows) ya lo resuelve, no hace falta reinventar un selector de emoji en HTML.
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 09 agosto 2026**
+**SKILL.md actualizado por última vez: 12 agosto 2026**

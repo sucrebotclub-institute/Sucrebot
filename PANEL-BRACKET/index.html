@@ -727,7 +727,7 @@
       if (!nombres) return;
       window._guardarCache(NOMBRES_COPIA_CACHE_KEY, nombres);
       if (_nombresCopiaCacheInicial && JSON.stringify(nombres) !== JSON.stringify(_nombresCopiaCacheInicial)) {
-        renderCopiasCategoriasBracket().then(aplicarCategoriasActivasBracket);
+        renderCopiasCategoriasBracket().then(aplicarCategoriasActivasBracket).then(aplicarEmojisCategoriaBracket);
       }
     });
     // ── Categorías copia (independientes, mismo motor que su base) ──
@@ -868,6 +868,35 @@ async function aplicarCategoriasActivasBracket(){
       window._guardarCache(CATS_ACTIVAS_CACHE_KEY,activas);
     }
   }catch(e){ /* sin conexión, se queda con el cache (o todas visibles si no había) */ }
+}
+
+// Emoji editable por categoría (CONFIGURACION → Categorías de edición).
+// Mismo patrón cache-first que aplicarCategoriasActivasBracket. El emoji
+// se guarda en Code.gs por nombre completo de categoría (gasNombre), no
+// por código corto -- CAT_INFO ya tiene ese mapeo.
+const EMOJIS_CATEGORIA_CACHE_KEY='sucrebot_cache_emojis_cat_bracket';
+function aplicarListaEmojisBracket(emojis){
+  if(!emojis)return;
+  document.querySelectorAll('#panel-1 .cat-grid .cat-btn[data-catcodigo]').forEach(el=>{
+    const info2=CAT_INFO[el.dataset.catcodigo];
+    if(!info2)return;
+    const base=info2.gasNombre.replace(/\s*\[Copia\]\s*$/,'');
+    const emoji=emojis[info2.gasNombre]||emojis[base];
+    if(!emoji)return;
+    const iconEl=el.querySelector('.cat-btn-icon');
+    if(iconEl)iconEl.textContent=emoji;
+  });
+}
+async function aplicarEmojisCategoriaBracket(){
+  const cache=window._leerCache(EMOJIS_CATEGORIA_CACHE_KEY);
+  if(cache)aplicarListaEmojisBracket(cache);
+  try{
+    const emojis=await fetch(GAS+'?action=getEmojisCategoria',{cache:'no-store'}).then(r=>r.json());
+    if(emojis&&typeof emojis==='object'){
+      aplicarListaEmojisBracket(emojis);
+      window._guardarCache(EMOJIS_CATEGORIA_CACHE_KEY,emojis);
+    }
+  }catch(e){ /* sin conexión, se queda con el cache (o el emoji del HTML si no había) */ }
 }
 
 // Nombre a mostrar en pantalla para la categoría dada -- para una copia
@@ -2922,7 +2951,7 @@ async function msFinalizarCombate() {
   loading(false);
 }
 
-document.addEventListener('componentsLoaded',async ()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} const huboCache=!!window._leerCache(CATS_ACTIVAS_CACHE_KEY); if(!huboCache)setTimeout(()=>loading(false),4000); if(typeof renderCopiasCategoriasBracket==='function')await renderCopiasCategoriasBracket(); await aplicarCategoriasActivasBracket(); loading(false); });
+document.addEventListener('componentsLoaded',async ()=>{ const savedUser=localStorage.getItem('sucrebot_user'); if(!savedUser){window.location.href='../INICIO/';return;} const huboCache=!!window._leerCache(CATS_ACTIVAS_CACHE_KEY); if(!huboCache)setTimeout(()=>loading(false),4000); if(typeof renderCopiasCategoriasBracket==='function')await renderCopiasCategoriasBracket(); await aplicarCategoriasActivasBracket(); await aplicarEmojisCategoriaBracket(); loading(false); });
 </script>
 
 <!-- PANTALLA COMPLETA (tecla F) -->
