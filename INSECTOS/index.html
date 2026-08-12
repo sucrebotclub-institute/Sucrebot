@@ -642,6 +642,10 @@
   // ============================================================
   // UTILS
   // ============================================================
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
   function fmtMs(ms) {
     // Formato visual con centésimos: 00:02:56
     if (ms === null || ms === undefined) return '–';
@@ -721,8 +725,8 @@
       <div class="part-item" id="pi${i}">
         <div class="part-check" id="pc${i}"></div>
         <div class="part-info">
-          <div class="part-name">${p.nombre}</div>
-          <div class="part-robot">${p.robot}</div>
+          <div class="part-name">${escapeHtml(p.nombre)}</div>
+          <div class="part-robot">${escapeHtml(p.robot)}</div>
         </div>
       </div>`).join('');
     participantes.forEach((_, i) => {
@@ -794,7 +798,7 @@
       resetCronF();
       const fi = document.getElementById('finalInfo');
       if (fi) fi.innerHTML = `<b>${clasificados.length} participantes directos a la final:</b> ` +
-        clasificados.map(p => `<span style="color:var(--cyan)">${p.robot}</span>`).join(', ');
+        clasificados.map(p => `<span style="color:var(--cyan)">${escapeHtml(p.robot)}</span>`).join(', ');
       renderCarrilesFinal();
       renderRankingFinal();
       return;
@@ -874,8 +878,8 @@
         const mejor = mejores[p.id];
         div.innerHTML = `
           <div class="carril-num">CARRIL ${ci+1}</div>
-          <div class="carril-robot">${p.robot}</div>
-          <div class="carril-equipo">${p.nombre}</div>
+          <div class="carril-robot">${escapeHtml(p.robot)}</div>
+          <div class="carril-equipo">${escapeHtml(p.nombre)}</div>
           <div class="carril-tiempo" id="ct${ci}">–</div>
           <div class="carril-mejor">${mejor ? 'MEJOR: <span>' + fmtMs(mejor.tiempo) + '</span>' : '<span style="opacity:.4">sin tiempo aún</span>'}</div>
           <div class="carril-btns">
@@ -1149,7 +1153,7 @@
     return `<div class="rank-tags">${lista.map(x => {
       const esMejor = !x.dnf && mejor && x.tiempo === mejor.tiempo;
       const txt = x.dnf ? 'DNF' : fmtMs(x.tiempo);
-      return `<span class="tag-intento">T${x.turno + 1}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="btn-editar-intento" title="Corregir turno ${x.turno + 1} de ${p.robot}" onclick="abrirEditorIntento('clas','${p.id}',${x.turno})">🔧</button></span>`;
+      return `<span class="tag-intento">T${x.turno + 1}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="btn-editar-intento" title="Corregir turno ${x.turno + 1} de ${escapeHtml(p.robot)}" onclick="abrirEditorIntento('clas','${p.id}',${x.turno})">🔧</button></span>`;
     }).join('')}</div>`;
   }
 
@@ -1161,7 +1165,7 @@
         const tieneTags = (intentos[r.p.id] || []).length > 0;
         return `<div class="rank-row${tieneTags ? ' has-tags' : ''}">
             <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
-            <div class="rank-robot">${r.p.robot}<span style="font-size:.7rem;color:var(--muted);margin-left:6px">${r.p.nombre}</span></div>
+            <div class="rank-robot">${escapeHtml(r.p.robot)}<span style="font-size:.7rem;color:var(--muted);margin-left:6px">${escapeHtml(r.p.nombre)}</span></div>
             <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo !== null ? fmtMs(r.tiempo) : (r.intentado ? 'DNF' : '—')}</div>
           </div>${tagsIntentosClas(r.p)}`;
       }).join('')}
@@ -1193,7 +1197,7 @@
 
     // info box
     const info = document.getElementById('finalInfo');
-    info.innerHTML = `<b>${clasificados.length} clasificados a la final:</b> ${clasificados.map(p=>`<span style="color:var(--cyan)">${p.robot}</span>`).join(', ')}`;
+    info.innerHTML = `<b>${clasificados.length} clasificados a la final:</b> ${clasificados.map(p=>`<span style="color:var(--cyan)">${escapeHtml(p.robot)}</span>`).join(', ')}`;
 
     // carriles final
     renderCarrilesFinal();
@@ -1206,7 +1210,7 @@
       rpf.innerHTML = `<div class="ranking-mini"><h4>📊 RANKING CLAS.</h4>` +
         rk.map((r,i) => `<div class="rank-row">
           <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
-          <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
+          <div class="rank-robot" style="font-size:.75rem">${escapeHtml(r.p.robot)}</div>
           <div class="rank-tiempo ${r.tiempo===null&&r.intentado?'rank-dnf':''}" ${r.tiempo===null&&!r.intentado?'style="opacity:.4"':''}>${r.tiempo!==null?fmtMs(r.tiempo):(r.intentado?'DNF':'—')}</div>
         </div>`).join('') + '</div>';
     }
@@ -1233,8 +1237,8 @@
           : '–';
         div.innerHTML = `
           <div class="carril-num">CARRIL ${ci+1}</div>
-          <div class="carril-robot">${p.robot}</div>
-          <div class="carril-equipo">${p.nombre}</div>
+          <div class="carril-robot">${escapeHtml(p.robot)}</div>
+          <div class="carril-equipo">${escapeHtml(p.nombre)}</div>
           <div class="carril-tiempo" id="tdF-c${ci}">${tdHtml}</div>
           <div class="carril-mejor">${mej ? 'MEJOR CLAS: <span style="color:var(--yellow)">' + fmtMs(mej.tiempo) + '</span>' : ''}</div>
           <div class="carril-mejor" id="mjF-c${ci}">${mejF ? (mejF.dnf ? 'MEJOR FINAL: DNF' : 'MEJOR FINAL: <span style="color:var(--yellow)">' + fmtMs(mejF.tiempo) + '</span>') : ''}</div>
@@ -1349,7 +1353,7 @@
     return `<div class="rank-tags">${lista.map(x => {
       const esMejor = !x.dnf && mejor && !mejor.dnf && x.tiempo === mejor.tiempo;
       const txt = x.dnf ? 'DNF' : fmtMs(x.tiempo);
-      return `<span class="tag-intento">Int.${x.turno + 1}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="btn-editar-intento" title="Corregir intento ${x.turno + 1} de ${p.robot}" onclick="abrirEditorIntento('final','${p.id}',${x.turno})">🔧</button></span>`;
+      return `<span class="tag-intento">Int.${x.turno + 1}: <span class="tag-val${x.dnf ? ' dnf' : ''}">${txt}${esMejor ? ' ★' : ''}</span><button class="btn-editar-intento" title="Corregir intento ${x.turno + 1} de ${escapeHtml(p.robot)}" onclick="abrirEditorIntento('final','${p.id}',${x.turno})">🔧</button></span>`;
     }).join('')}</div>`;
   }
 
@@ -1372,7 +1376,7 @@
         const tieneTags = (intentosFinal[r.p.id] || []).length > 0;
         return `<div class="rank-row${tieneTags ? ' has-tags' : ''}">
           <div class="rank-pos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
-          <div class="rank-robot" style="font-size:.75rem">${r.p.robot}</div>
+          <div class="rank-robot" style="font-size:.75rem">${escapeHtml(r.p.robot)}</div>
           <div class="rank-tiempo ${r.dnf?'rank-dnf':''}" style="${!r.registrado?'color:var(--muted)':''}">
             ${r.dnf ? 'DNF' : r.tiempo !== null ? fmtMs(r.tiempo) : '–'}
           </div>
@@ -1519,7 +1523,7 @@
       notaHtml += `<div class="info-box">✏️ <b>Podio ajustado manualmente</b> por el staff — no refleja necesariamente el orden automático por tiempo.</div>`;
     }
     if (sinMeta.length) {
-      notaHtml += `<div class="alert-box"><b>Reglamento 4.6:</b> Los siguientes robots no cruzaron la meta y no califican para 2do/3er lugar: ${sinMeta.map(p=>`<b>${p.robot}</b>`).join(', ')}</div>`;
+      notaHtml += `<div class="alert-box"><b>Reglamento 4.6:</b> Los siguientes robots no cruzaron la meta y no califican para 2do/3er lugar: ${sinMeta.map(p=>`<b>${escapeHtml(p.robot)}</b>`).join(', ')}</div>`;
     }
     if (conMeta.length < 2 && !manual) {
       notaHtml += `<div class="info-box">⚠️ Solo ${conMeta.length} robot${conMeta.length!==1?'s':''} cruzó la meta. Posiciones 2do/3er lugar quedan vacantes.</div>`;
@@ -1535,7 +1539,7 @@
     const selects = ['selPodio1','selPodio2','selPodio3'].map(id => document.getElementById(id));
     selects.forEach((sel, i) => {
       sel.innerHTML = '<option value="">— (vacío) —</option>' +
-        pool.map(p => `<option value="${p.id}">${p.robot} — ${p.nombre}</option>`).join('');
+        pool.map(p => `<option value="${p.id}">${escapeHtml(p.robot)} — ${escapeHtml(p.nombre)}</option>`).join('');
       const preset = podioManualOverride ? (podioManualOverride[i] || '') : (auto[i] ? auto[i].id : '');
       sel.value = preset;
     });
