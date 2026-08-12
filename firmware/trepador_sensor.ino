@@ -4,7 +4,7 @@ const int LED_ROJO  = 26;
 
 bool estadoAnterior      = HIGH;
 unsigned long ultimoDebounce = 0;
-const int DEBOUNCE_MS    = 50;
+const int DEBOUNCE_MS    = 1000;
 
 bool cronoActivo = false;
 byte dato        = 0;
