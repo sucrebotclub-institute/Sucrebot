@@ -451,6 +451,11 @@
         </div>
       </div>
 
+      <label style="display:flex;align-items:flex-start;gap:8px;margin:10px 2px 0;font-size:13px;color:#4a5568;cursor:pointer;">
+        <input type="checkbox" id="f-comprobante-multiple" style="margin-top:2px;flex-shrink:0;">
+        <span>Este comprobante también cubre otros robots que ya inscribí o voy a inscribir (un solo depósito para varios robots)</span>
+      </label>
+
       <button class="btn-register" onclick="registrarParticipante()" tabindex="15">
         <svg style="width:17px;height:17px;flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h12.6a6 6 0 0 1-.6-9.1c-.8-.06-1.6-.1-2.4-.1zm9.6 1.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2zm-.6 5.4l-1.8-1.8.85-.85.95.95 2.15-2.15.85.85-3 3z"/></svg>
         REGISTRAR PARTICIPANTE
@@ -770,6 +775,7 @@
     const archivo      = archivoInput.files[0] || null;
     const logoArchivo  = logoInput.files[0] || null;
     const equipo       = document.getElementById('f-equipo').value.trim();
+    const comprobanteMultiple = document.getElementById('f-comprobante-multiple').checked;
 
     if (!nombre)      { showToast('El nombre completo es obligatorio', true); return; }
     if (!institucion) { showToast('La institución es obligatoria', true); return; }
@@ -808,11 +814,11 @@
       const respRegistro = await gasPost({
         action: 'setParticipante',
         id: '', nombre, institucion, ciudad, robot, contacto, correo, categoria,
-        miembro2, comprobante, archivoUrl, logoUrl, equipo
+        miembro2, comprobante, archivoUrl, logoUrl, equipo, comprobanteMultiple
       });
       if (!respRegistro.ok || !respRegistro.id) {
         if (respRegistro.error === 'COMPROBANTE_DUPLICADO') {
-          throw new Error('Este comprobante ya ha sido registrado' + (respRegistro.nombre ? ' (usado por ' + respRegistro.nombre + ')' : ''));
+          throw new Error('Este comprobante ya ha sido registrado' + (respRegistro.nombre ? ' (usado por ' + respRegistro.nombre + ')' : '') + '. Si es un solo depósito para varios robots, marca la casilla debajo del comprobante.');
         }
         if (respRegistro.error === 'CATEGORIA_CERRADA') {
           throw new Error(respRegistro.mensaje || 'Esa categoría tiene las inscripciones agotadas');

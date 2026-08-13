@@ -398,6 +398,11 @@
           <a id="rev-comprobante-link" href="" target="_blank" style="display:none;">🔗 Ver en tamaño completo</a>
         </div>
       </div>
+      <div class="modal-section" id="rev-otros-robots-wrap" style="display:none;">
+        <div class="modal-section-title">🧾 Otros robots con este mismo N° de comprobante</div>
+        <div id="rev-otros-robots-lista" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <button class="modal-btn modal-btn-aprobar" id="btn-aprobar-otros" style="display:none;margin-top:10px;width:100%;" onclick="aprobarOtrosDelComprobante()">✔ Aprobar también estos robots</button>
+      </div>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-eliminar" id="btn-eliminar" onclick="noCumpleRequisitos()">✖ No cumple</button>
         <button class="modal-btn modal-btn-aprobar" id="btn-aprobar" onclick="aprobarParticipante()">✔ Aprobar y enviar QR</button>
@@ -788,6 +793,7 @@
     else{imgEl.style.display='none';linkEl.style.display='none';}
     const numComprobante=strVal(p.comprobante);
     document.getElementById('rev-comprobante-numero').textContent=numComprobante?('N° '+numComprobante):'N° —';
+    renderOtrosRobotsComprobante(p);
     const aprobado=p.aprobado==='APROBADO';
     document.getElementById('btn-eliminar').style.display=aprobado?'none':'flex';
     document.getElementById('btn-aprobar').style.display=aprobado?'none':'flex';
@@ -831,6 +837,65 @@
       localStorage.setItem(CACHE_KEY,JSON.stringify(_participantesIndex));
       cerrarModalRevisar();cargarListaLocal();showToast('✔ Aprobado — QR enviado a '+p.correo);
     }catch(e){btn.disabled=false;btn.innerHTML='✔ Aprobar y enviar QR';showToast('Error: '+(e.message||JSON.stringify(e)),true);}
+  }
+
+  function renderOtrosRobotsComprobante(p){
+    const wrap=document.getElementById('rev-otros-robots-wrap');
+    const lista=document.getElementById('rev-otros-robots-lista');
+    const btnTodos=document.getElementById('btn-aprobar-otros');
+    const numComprobante=strVal(p.comprobante);
+    lista.innerHTML='';
+    if(!numComprobante){wrap.style.display='none';btnTodos.style.display='none';return;}
+    const otros=_participantesIndex.filter(x=>x.id!==p.id&&strVal(x.comprobante)===numComprobante);
+    if(!otros.length){wrap.style.display='none';btnTodos.style.display='none';return;}
+    wrap.style.display='block';
+    otros.forEach(o=>{
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;background:#f7fafd;border:1px solid #e2ecf7;border-radius:8px;font-size:13px;';
+      const estadoTxt=o.aprobado==='APROBADO'?'✔ Aprobado':(o.aprobado==='NO CUMPLE'?'✖ No cumple':'⏳ En revisión');
+      const info=document.createElement('span');
+      const strong=document.createElement('strong');
+      strong.textContent=o.robot||'—';
+      info.appendChild(strong);
+      info.appendChild(document.createTextNode(' — '+(o.nombre||'—')+' ('+estadoTxt+')'));
+      const btnVer=document.createElement('button');
+      btnVer.textContent='Ver';
+      btnVer.style.cssText='padding:5px 10px;border-radius:6px;border:1px solid #1a5ca8;background:#fff;color:#1a5ca8;font-size:12px;cursor:pointer;flex-shrink:0;';
+      btnVer.onclick=()=>abrirModalRevisar(o);
+      row.appendChild(info);
+      row.appendChild(btnVer);
+      lista.appendChild(row);
+    });
+    const pendientes=otros.filter(o=>o.aprobado!=='APROBADO');
+    if(pendientes.length){
+      btnTodos.style.display='block';
+      btnTodos.textContent='✔ Aprobar también estos '+pendientes.length+' robot'+(pendientes.length>1?'s':'');
+    } else {
+      btnTodos.style.display='none';
+    }
+  }
+
+  async function aprobarOtrosDelComprobante(){
+    if(!participanteEnRevision)return;
+    const numComprobante=strVal(participanteEnRevision.comprobante);
+    const pendientes=_participantesIndex.filter(x=>x.id!==participanteEnRevision.id&&strVal(x.comprobante)===numComprobante&&x.aprobado!=='APROBADO');
+    if(!pendientes.length)return;
+    const btn=document.getElementById('btn-aprobar-otros');btn.disabled=true;btn.innerHTML='⏳ Aprobando...';
+    let fallos=0;
+    for(const o of pendientes){
+      try{
+        await gasGet({action:'aprobarParticipante',id:o.id});
+        await gasPost({action:'enviarQR',correo:o.correo,nombre:o.nombre,robot:o.robot,categoria:o.categoria,institucion:o.institucion,ciudad:o.ciudad,qrUrl:generarUrlQR(o),id:o.id});
+        const idx=_participantesIndex.findIndex(x=>x.id===o.id);
+        if(idx>=0)_participantesIndex[idx].aprobado='APROBADO';
+      }catch(e){fallos++;}
+    }
+    localStorage.setItem(CACHE_KEY,JSON.stringify(_participantesIndex));
+    cargarListaLocal();
+    renderOtrosRobotsComprobante(participanteEnRevision);
+    btn.disabled=false;
+    if(fallos>0)showToast('⚠️ Aprobados con '+fallos+' error(es) — revisa manualmente',true);
+    else showToast('✔ Robots aprobados y QR enviados');
   }
 
   async function reenviarQR(){
