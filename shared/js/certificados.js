@@ -18,7 +18,8 @@ const CODIGO_POR_NOMBRE_INTERNO_CERT = {
   'Insectos [Copia]':'ins2','Trepador (Amateur) [Copia]':'trp_a2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2',
   'Seguidor de línea ST (Pro) [Copia]':'sl_p2','Minisumo Autónomo [Copia]':'ms_a2','Minisumo RC [Copia]':'ms_rc2',
   'Bailarín [Copia]':'bai2','Batalla [Copia]':'bat2','Impacto Tecnológico [Copia]':'dev2',
-  'Trepador (Pro) [Copia]':'trp_p2','Robot soccer [Copia]':'soc2','Cubo Rubik [Copia]':'cr2','Lego Kids [Copia]':'lk2'
+  'Trepador (Pro) [Copia]':'trp_p2','Robot soccer [Copia]':'soc2','Cubo Rubik [Copia]':'cr2','Lego Kids [Copia]':'lk2',
+  'Drones [Copia]':'dro2'
 };
 let _nombresCopiaCert = {};
 async function precargarNombresCopiaCert() {

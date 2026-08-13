@@ -778,7 +778,7 @@ _nombresCopiaFetch.then(nombres => {
 const RUTAS = {
   'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr','Drones':'dro',
   // Categorías copia (independientes, mismo hardware/flujo que su base — ver CONFIGURACION → Duplicar categoría)
-  'Trepador (Amateur) [Copia]':'trp_a2','Trepador (Pro) [Copia]':'trp_p2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2','Seguidor de línea ST (Pro) [Copia]':'sl_p2','Cubo Rubik [Copia]':'cr2'
+  'Trepador (Amateur) [Copia]':'trp_a2','Trepador (Pro) [Copia]':'trp_p2','Seguidor de línea ST (Amateur) [Copia]':'sl_a2','Seguidor de línea ST (Pro) [Copia]':'sl_p2','Cubo Rubik [Copia]':'cr2','Drones [Copia]':'dro2'
 };
 const CATS_SENSOR   = ['Trepador (Amateur)','Trepador (Pro)','Seguidor de línea ST (Amateur)','Seguidor de línea ST (Pro)','Trepador (Amateur) [Copia]','Trepador (Pro) [Copia]','Seguidor de línea ST (Amateur) [Copia]','Seguidor de línea ST (Pro) [Copia]'];
 const CATS_PULSADOR = ['Cubo Rubik','Cubo Rubik [Copia]'];
@@ -788,7 +788,7 @@ const CATS_SERIAL   = [...CATS_SENSOR,...CATS_PULSADOR];
 // mientras el intento corre. Ranking: quienes completan la pista van
 // primero (ordenados por puntos desc, tiempo asc como desempate);
 // quienes no completan (DNF) quedan debajo, también por puntos desc.
-const CATS_PUNTOS   = ['Drones'];
+const CATS_PUNTOS   = ['Drones','Drones [Copia]'];
 const AVISO_SENSOR  = {
   'Trepador (Amateur)':             {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
   'Trepador (Pro)':                 {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
@@ -813,7 +813,8 @@ const COPIAS_CRONOMETRO = [
   { nombreInterno: 'Seguidor de línea ST (Amateur) [Copia]',   codigo: 'sl_a2',  icono: '〰️' },
   { nombreInterno: 'Seguidor de línea ST (Pro) [Copia]',       codigo: 'sl_p2',  icono: '〰️' },
   { nombreInterno: 'Cubo Rubik [Copia]',                       codigo: 'cr2',    icono: '🧩' },
-  { nombreInterno: 'Insectos [Copia]',                         codigo: 'ins2',   icono: '🐜', esInsectos: true }
+  { nombreInterno: 'Insectos [Copia]',                         codigo: 'ins2',   icono: '🐜', esInsectos: true },
+  { nombreInterno: 'Drones [Copia]',                           codigo: 'dro2',   icono: '🚁' }
 ];
 async function renderCopiasCategorias(){
   const grid=document.getElementById('catGrid');
@@ -1033,7 +1034,7 @@ async function elegirCategoria(cat,ev){
   loading(true,'Verificando categoría...');
 
   try{
-    if(CATS_PUNTOS.includes(cat))cargarCriteriosDrones();
+    if(CATS_PUNTOS.includes(cat))cargarCriteriosDrones(RUTAS[cat]||'dro');
     if(!modoOffline){
       const bloqueada=await verificarBloqueo(cat);
       const userData=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');
@@ -1224,16 +1225,20 @@ function actualizarPuntosUI(){
 // ── DRONES — criterios de puntos editables (nombre + valor) ─────
 // Reusa el mismo backend genérico de criterios de PANEL-CALIFICACION
 // (acciones getCriterios/guardarCriterios, hoja criterios_calificacion)
-// con categoria:'dro' — no requiere tocar Code.gs. A diferencia de
-// PANEL-CALIFICACION (que fuerza peso mínimo 1, son puntos de un
-// puntaje total), acá el peso puede ser negativo (ej. penalización),
-// cada criterio es un botón que suma/resta su valor en vivo.
+// con categoria:'dro'/'dro2' (código corto real de RUTAS, para que la
+// copia tenga sus propios criterios, independientes de la base — no
+// requiere tocar Code.gs. A diferencia de PANEL-CALIFICACION (que fuerza
+// peso mínimo 1, son puntos de un puntaje total), acá el peso puede ser
+// negativo (ej. penalización), cada criterio es un botón que suma/resta
+// su valor en vivo.
 const DRONES_CRITERIOS_DEFAULT=[{nombre:'Punto',peso:1},{nombre:'Penalización',peso:-1}];
 let dronesCriterios=DRONES_CRITERIOS_DEFAULT.map(c=>({...c}));
+let dronesCriteriosRuta='dro';
 
-async function cargarCriteriosDrones(){
+async function cargarCriteriosDrones(ruta){
+  dronesCriteriosRuta=ruta||'dro';
   try{
-    const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getCriterios',categoria:'dro'}),{cache:'no-store'});
+    const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getCriterios',categoria:dronesCriteriosRuta}),{cache:'no-store'});
     const res=await r.json();
     dronesCriterios=(res&&res.ok&&Array.isArray(res.criterios)&&res.criterios.length)
       ?res.criterios.map(c=>({nombre:c.nombre||'',peso:Number(c.peso)||0}))
@@ -1300,7 +1305,7 @@ async function guardarCriteriosDrones(){
   if(!criterios.length){showToast('⚠️ Define al menos un criterio',true);return;}
   loading(true,'GUARDANDO CRITERIOS...');
   try{
-    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'guardarCriterios',categoria:'dro',criterios,staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).then(r=>r.json());
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'guardarCriterios',categoria:dronesCriteriosRuta,criterios,staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).then(r=>r.json());
     if(res&&res.ok===false){showToast('❌ '+(res.error||'Error al guardar'),true);}
     else{
       dronesCriterios=criterios;
