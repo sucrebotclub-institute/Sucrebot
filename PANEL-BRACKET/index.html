@@ -937,7 +937,7 @@ function setStep(n) {
   });
   window.scrollTo({top:0,behavior:'smooth'});
 }
-async function gasGet(params) { const r=await fetch(GAS+'?'+new URLSearchParams(params), { cache: 'no-store' }); return r.json(); }
+async function gasGet(params) { const r=await fetch(GAS+'?'+new URLSearchParams({ ...params, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }), { cache: 'no-store' }); return r.json(); }
 async function gasPost(body) { const r=await fetch(GAS,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,staffToken:localStorage.getItem('sucrebot_staff_token')||''}),redirect:'follow',keepalive:true}); return r.json(); }
 
 let _modalCb=null;

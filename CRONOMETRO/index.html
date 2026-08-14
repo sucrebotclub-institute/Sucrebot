@@ -1046,7 +1046,7 @@ async function elegirCategoria(cat,ev){
     if(modoOffline){
       lista=OfflineExcel.getParticipantes(cat);
     }else{
-      const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}),{cache:'no-store'});
+      const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes',staffToken:localStorage.getItem('sucrebot_staff_token')||''}),{cache:'no-store'});
       const todos=await r.json();
       lista=(Array.isArray(todos)?todos:(todos.participantes||[])).filter(p=>p.categoria===cat&&p.aprobado==='APROBADO');
     }
@@ -2093,7 +2093,7 @@ document.addEventListener('componentsLoaded',async function(){
       if(typeof mostrarBotonSerial==='function')setTimeout(()=>window.mostrarBotonSerial(CATS_SERIAL.includes(catGuardada)),300);
       cargarEstado(catGuardada);if(!modoOffline)iniciarPolling();setStep(3);actualizarPuntosUI();showToast('✅ Categoría "'+catGuardada+'" restaurada');
       try{
-        const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes'}),{cache:'no-store'});const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
+        const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes',staffToken:localStorage.getItem('sucrebot_staff_token')||''}),{cache:'no-store'});const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
         presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
       }catch(e){console.warn('No se pudieron recargar presentes tras F5:',e);}
     }
@@ -2383,7 +2383,7 @@ document.addEventListener('componentsLoaded',async function(){
       if (window.OfflineExcel && OfflineExcel.estaActivo()) {
         participantes = OfflineExcel.getParticipantes(categoriaActiva);
       } else {
-        const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' }),{cache:'no-store'}).then(r => r.json());
+        const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes', staffToken: localStorage.getItem('sucrebot_staff_token') || '' }),{cache:'no-store'}).then(r => r.json());
         const todos = Array.isArray(res) ? res : (res.participantes || []);
         participantes = todos.filter(p => p.categoria === categoriaActiva && p.aprobado === 'APROBADO');
       }

@@ -703,7 +703,7 @@
   async function cargarParticipantes() {
     loading(true, 'Cargando participantes...');
     try {
-      const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes' })).then(r => r.json());
+      const res = await fetch(CONFIG.GAS_URL() + '?' + new URLSearchParams({ action: 'getParticipantes', staffToken: localStorage.getItem('sucrebot_staff_token') || '' })).then(r => r.json());
       const todos = Array.isArray(res) ? res : (res.participantes || []);
       participantes = todos.filter(p => p.categoria === 'Insectos' && p.aprobado === 'APROBADO');
       renderLista();

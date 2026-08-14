@@ -357,7 +357,7 @@
     document.getElementById('screen-notfound').style.display = 'none';
     document.getElementById('screen-ficha').style.display    = 'none';
     try {
-      const qs = new URLSearchParams({ action: 'getParticipantes' }).toString();
+      const qs = new URLSearchParams({ action: 'buscarMiParticipante', correo: correo }).toString();
       const r = await fetch(GAS_URL + '?' + qs, { redirect: 'follow' });
       const lista = await r.json();
       const p = lista.find(x => x.correo && x.correo.toLowerCase() === correo.toLowerCase());

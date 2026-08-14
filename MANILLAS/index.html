@@ -277,7 +277,8 @@
   };
 
   async function gasGet(params) {
-    const r = await fetch(GAS_URL + '?' + new URLSearchParams(params), { cache: 'no-store' });
+    const qs = new URLSearchParams({ ...params, staffToken: localStorage.getItem('sucrebot_staff_token') || '' });
+    const r = await fetch(GAS_URL + '?' + qs, { cache: 'no-store' });
     return r.json();
   }
   async function gasPost(data) {

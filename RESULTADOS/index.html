@@ -292,7 +292,7 @@
     document.getElementById('tv-hora').textContent = hora();
 
     async function fetchJSON(action, params) {
-      const qs = new URLSearchParams(Object.assign({ action: action }, params || {})).toString();
+      const qs = new URLSearchParams(Object.assign({ action: action, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }, params || {})).toString();
       const r = await fetch(GAS_URL + '?' + qs, { cache: 'no-store' });
       return r.json();
     }

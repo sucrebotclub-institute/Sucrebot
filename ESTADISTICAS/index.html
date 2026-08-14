@@ -184,7 +184,7 @@
   const _nombresCopiaPromise = fetch(GAS_URL + '?action=getNombresCategorias').then(r => r.json()).then(n => { NOMBRES_COPIA = n || {}; }).catch(() => {});
 
   function gasGet(params) {
-    const qs = new URLSearchParams(params).toString();
+    const qs = new URLSearchParams({ ...params, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }).toString();
     return fetch(GAS_URL + '?' + qs).then(r => r.json());
   }
 
