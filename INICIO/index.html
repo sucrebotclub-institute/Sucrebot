@@ -148,15 +148,26 @@
 </section>
 
 <div class="ausp-marquee-outer">
-  <div class="ausp-marquee-title">Con el apoyo de</div>
+  <button class="btn-inicio-editar inicio-ausptitulo-editar" onclick="abrirModalAuspTitulo()">🔧 Editar</button>
+  <div class="ausp-marquee-title" id="auspMarqueeTitulo">Con el apoyo de</div>
   <div class="ausp-marquee-wrapper">
     <div class="ausp-marquee-track" id="auspMarqueeTrack"></div>
   </div>
 </div>
 
 <style>
-.ausp-marquee-outer{background:#0e2a5a;padding:30px 0;}
-.ausp-marquee-title{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:rgba(255,255,255,0.45);text-transform:uppercase;text-align:center;margin-bottom:14px;}
+.ausp-marquee-outer{background:#0e2a5a;padding:30px 0;position:relative;}
+.ausp-marquee-title{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  font-family:'Orbitron',monospace;font-size:14px;font-weight:700;letter-spacing:4px;
+  color:#5bc8f0;text-transform:uppercase;text-align:center;margin-bottom:18px;
+  text-shadow:0 0 16px rgba(91,200,240,0.5);
+}
+.ausp-marquee-title::before,.ausp-marquee-title::after{
+  content:'';flex:1;max-width:70px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(91,200,240,0.6));
+}
+.ausp-marquee-title::after{background:linear-gradient(90deg,rgba(91,200,240,0.6),transparent);}
 .ausp-marquee-wrapper{overflow:hidden;position:relative;}
 .ausp-marquee-wrapper::before,.ausp-marquee-wrapper::after{content:'';position:absolute;top:0;bottom:0;width:60px;z-index:2;pointer-events:none;}
 .ausp-marquee-wrapper::before{left:0;background:linear-gradient(to right,#0e2a5a,transparent);}
@@ -170,6 +181,8 @@ div.ausp-pill{cursor:default;}
 .ausp-pill img{max-height:110px;max-width:320px;width:auto;height:auto;object-fit:contain;display:block;}
 @media (max-width: 640px) {
   .ausp-marquee-outer{padding:18px 0;}
+  .ausp-marquee-title{font-size:11px;letter-spacing:2.5px;gap:10px;}
+  .ausp-marquee-title::before,.ausp-marquee-title::after{max-width:36px;}
   .ausp-pill{height:64px;padding:10px 18px;border-radius:10px;}
   .ausp-pill img{max-height:44px;max-width:150px;}
   .ausp-marquee-track{gap:12px;}
@@ -563,6 +576,12 @@ body.staff-mode .btn-inicio-editar { display: inline-flex; }
   top: 20px; right: 20px;
 }
 .btn-inicio-editar.inicio-hero-editar:hover { background: rgba(255,255,255,0.28); }
+/* Misma variante clara, para la barra oscura de "Con el apoyo de" */
+.btn-inicio-editar.inicio-ausptitulo-editar {
+  background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.35);
+  top: 10px; right: 16px;
+}
+.btn-inicio-editar.inicio-ausptitulo-editar:hover { background: rgba(255,255,255,0.28); }
 @media (max-width: 640px) {
   .btn-inicio-editar { position: static; margin: 0 auto 14px; display: none; }
   body.staff-mode .btn-inicio-editar { display: inline-flex; }
@@ -780,6 +799,20 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
   </div>
 </div>
 
+<!-- Modal: Título de la barra de auspiciantes ("Con el apoyo de") -->
+<div class="inicio-modal-overlay" id="inicioModalAuspTitulo">
+  <div class="inicio-modal">
+    <h4>Editar texto de la barra de auspiciantes</h4>
+    <label>Texto</label>
+    <input type="text" id="modalAuspTitulo">
+
+    <div class="inicio-modal-guardar-wrap">
+      <button class="inicio-btn-guardar-todo" id="btnGuardarAuspTitulo" onclick="guardarModalAuspTitulo()">💾 Guardar cambios</button>
+    </div>
+    <button class="inicio-modal-cerrar" onclick="cerrarModalInicio('inicioModalAuspTitulo')">Cerrar</button>
+  </div>
+</div>
+
 <!-- Modal: Aviso de registro CMI -->
 <div class="inicio-modal-overlay" id="inicioModalAviso">
   <div class="inicio-modal">
@@ -911,6 +944,7 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
     textoBoton: '📋 Formulario de acceso CMI',
     textoAgradecimiento: 'Agradecemos su comprensión y colaboración.'
   };
+  const AUSP_TITULO_DEFAULT = 'Con el apoyo de';
 
   function leerCache() {
     try { const raw = localStorage.getItem(CACHE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
@@ -925,7 +959,8 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
   let config = leerCache() || {
     heroTitulo: HERO_TITULO_DEFAULT, heroSubtitulo: HERO_SUBTITULO_DEFAULT, heroTag: HERO_TAG_DEFAULT,
     heroImagenFondo: HERO_IMAGEN_FONDO_DEFAULT, heroImagenLogo: HERO_IMAGEN_LOGO_DEFAULT,
-    seccionExploraTitulo: SECCION_EXPLORA_DEFAULT, quickCards: QUICK_CARDS_DEFAULT, avisoCmi: AVISO_DEFAULT
+    seccionExploraTitulo: SECCION_EXPLORA_DEFAULT, quickCards: QUICK_CARDS_DEFAULT, avisoCmi: AVISO_DEFAULT,
+    auspiciantesTitulo: AUSP_TITULO_DEFAULT
   };
 
   function lineasConUltimaDestacada(texto, claseSpan) {
@@ -951,6 +986,10 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
     document.getElementById('seccionExploraTitulo').innerHTML = lineasConUltimaDestacada(config.seccionExploraTitulo || SECCION_EXPLORA_DEFAULT, '');
   }
 
+  function renderAuspTitulo() {
+    document.getElementById('auspMarqueeTitulo').textContent = config.auspiciantesTitulo || AUSP_TITULO_DEFAULT;
+  }
+
   function renderQuickCards() {
     const cards = (config.quickCards && config.quickCards.length === 6) ? config.quickCards : QUICK_CARDS_DEFAULT;
     cards.forEach(function(c, i) {
@@ -968,7 +1007,7 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
     // del hero/sección) -- una línea por renglón.
     document.getElementById('regAsistTitulo').innerHTML = String(a.titulo || '').split('\n').map(function(l) { return escapeHtml(l.trim()); }).filter(Boolean).join('<br>');
     document.getElementById('regAsistTexto').textContent = a.texto || '';
-    document.getElementById('regAsistFechaLimite').textContent = '⏳ Fecha límite: ' + (a.fechaLimiteTexto || '');
+    document.getElementById('regAsistFechaLimite').textContent = 'Fecha límite: ' + (a.fechaLimiteTexto || '');
     document.getElementById('regAsistExplicacion').textContent = a.textoExplicacion || '';
     document.getElementById('regAsistAdvertencia').textContent = '⚠️ ' + (a.textoAdvertencia || '');
     const btn = document.getElementById('regAsistBoton');
@@ -991,6 +1030,7 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
     renderSeccion();
     renderQuickCards();
     renderAviso();
+    renderAuspTitulo();
   }
 
   renderTodo(); // pinta con cache (o los defaults hardcodeados) antes de cualquier fetch
@@ -1062,7 +1102,8 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
       heroImagenFondo: config.heroImagenFondo, heroImagenLogo: config.heroImagenLogo,
       seccionExploraTitulo: config.seccionExploraTitulo,
       quickCards: config.quickCards || QUICK_CARDS_DEFAULT,
-      avisoCmi: Object.assign({}, AVISO_DEFAULT, config.avisoCmi || {})
+      avisoCmi: Object.assign({}, AVISO_DEFAULT, config.avisoCmi || {}),
+      auspiciantesTitulo: config.auspiciantesTitulo || AUSP_TITULO_DEFAULT
     }, overrides);
   }
 
@@ -1142,6 +1183,30 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
       config.seccionExploraTitulo = payload.seccionExploraTitulo;
       guardarCache(config);
       renderSeccion();
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error al guardar: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  // -- Modal: Texto de la barra "Con el apoyo de" --
+  function abrirModalAuspTitulo() {
+    document.getElementById('modalAuspTitulo').value = config.auspiciantesTitulo || AUSP_TITULO_DEFAULT;
+    document.getElementById('inicioModalAuspTitulo').classList.add('show');
+  }
+
+  async function guardarModalAuspTitulo() {
+    const btn = document.getElementById('btnGuardarAuspTitulo');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const payload = payloadCompleto({ auspiciantesTitulo: document.getElementById('modalAuspTitulo').value });
+      const resp = await gasPostInicio(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      config.auspiciantesTitulo = payload.auspiciantesTitulo;
+      guardarCache(config);
+      renderAuspTitulo();
       botonExito(btn, textoOriginal);
     } catch (e) {
       alert('Error al guardar: ' + e.message);
@@ -1240,6 +1305,8 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
   window.guardarModalTarjetas = guardarModalTarjetas;
   window.abrirModalAviso = abrirModalAviso;
   window.guardarModalAviso = guardarModalAviso;
+  window.abrirModalAuspTitulo = abrirModalAuspTitulo;
+  window.guardarModalAuspTitulo = guardarModalAuspTitulo;
   window.cerrarModalInicio = cerrarModalInicio;
 
   // -- Detección de staff (mismo patrón que INSTITUCION/REGLAMENTO) --
