@@ -1594,5 +1594,49 @@ Mismo patrón exacto que ya usaban estas 3 páginas para categorías activas (`a
 
 ---
 
+---
+
+### Sprint 14 ago 2026 — Vault de Obsidian + auditoría de seguridad de `Code.gs` (7 vulnerabilidades reales)
+
+**Contexto**: sesión arrancó armando un vault de Obsidian (`C:\Users\raku\SucreBot-Vault\`, fuera del repo) documentando el proyecto completo desde el código real. Al llegar a "Problemas Conocidos" se pidió resolver el ítem de seguridad "el backend no valida el staff token en ninguna acción" — escaló a una auditoría completa, y después a una segunda pasada explícita ("revisá los demás módulos por bugs similares").
+
+#### Hallazgo #0 — la afirmación original estaba desactualizada
+No era cierto que "ninguna acción" valida `staffToken`: todas las acciones de **escritura** (POST) ya lo hacían correctamente. El problema real estaba acotado a acciones de **lectura** (GET), que en general nunca lo pedían.
+
+#### 4 fugas de PII corregidas (acciones de lectura)
+1. **`getParticipantes`** — devolvía teléfono/WhatsApp (`contacto`), correo y N° de comprobante de TODOS los participantes a cualquiera que llamara la URL pública, sin login. Fix: exige `staffToken`. Nueva acción pública `buscarMiParticipante(correo)` (filtra server-side, devuelve solo la fila que coincide) para que MI-REGISTRO deje de bajar la base completa y filtrar en el navegador.
+2. **`getPuntuaciones`** — exponía `juez_email`. Solo la usa PANEL-CALIFICACION (staff). Fix: exige `staffToken`.
+3. **`obtenerTodosCertificados`** — exponía `correo` de cada participante con certificado. La página pública CERTIFICADOS la descarga pero **nunca usa ni muestra ese campo** (confirmado leyendo el código antes de tocar nada) — GENERAR-CERTIFICADOS (staff) sí lo necesita para reconstruir el HTML del diploma. Fix: redacta `correo` (`''`) si no hay `staffToken` válido, lo mantiene completo si lo hay.
+4. Consecuencia práctica: como casi ninguna página mandaba el token en sus lecturas (solo lo mandaban en sus escrituras), hubo que agregarlo al `gasGet`/`fetchJSON` de **8 páginas staff** (ESCANER, CRONOMETRO ×3 call sites, INSECTOS, MANILLAS, ESTADISTICAS, PANEL-CALIFICACION, PANEL-BRACKET, RESULTADOS, GENERAR-CERTIFICADOS) — todas ya tenían el token guardado en `localStorage.sucrebot_staff_token` desde el login, solo faltaba mandarlo también en el `GET`, no solo en el `POST`.
+
+#### 3 fallas de integridad corregidas (segunda pasada, más graves que las de arriba)
+5. **`setParticipante`** (🔴 la más grave — es la acción de inscripción original de REGISTRO, 100% pública por diseño): si se mandaba un `id` de un participante **ya existente**, sobrescribía la fila completa (nombre/institución/robot/categoría/comprobante/logo) y reseteaba `aprobado`→`EN REVISION` + borraba `manilla`, sin ninguna verificación de identidad. Los ids son secuenciales y predecibles (`sb-V-trp_a-001`, `-002`, ...) — explotable adivinando el patrón, sin login ni conocer nada del participante real.
+6. **`actualizarParticipante`** (edición desde MI-REGISTRO) — mismo problema exacto.
+7. **`enviarQR`** (rama de reenvío manual, la que usa PARTICIPANTES_REGISTRADOS) — armaba el correo con `correo`/`nombre`/`robot`/etc. tal como los mandaba el llamador, SIN verificarlos contra el participante real — permitía mandar mails con remitente institucional "SucreBot" a cualquier dirección con contenido inventado (relay de spam/phishing). La rama de auto-envío tras un registro nuevo (`modoRevision:true`) ya era segura — pullea los datos reales desde la hoja por `id`, nunca confía en el llamador.
+8. **`renombrarLogo`** (llamada tras `uploadLogo`/`uploadComprobante` en REGISTRO) — aceptaba cualquier `fileId` de Drive sin verificar dueño; se podía tomar el fileId público de un logo de auspiciante/club (visible como `<img src>` en INICIO/INSTITUCION) y renombrarlo.
+
+**Fix de #5 y #6** (mismo patrón en ambas): exigir que el `correo` mandado coincida (case-insensitive) con el correo ya guardado en la fila del `id` pedido, antes de aceptar cualquier escritura sobre un registro existente — mismo criterio de identidad que ya usa `buscarMiParticipante`. **Confirmado sin riesgo de romper nada**: REGISTRO/REGISTRO-DEV siempre mandan `id:''` en una inscripción nueva (nunca activan la rama nueva), y MI-REGISTRO ya conocía el correo real del participante logueado — no hizo falta ningún cambio de frontend para `setParticipante`, y solo un `correo: participanteActual.correo` agregado al payload de `actualizarParticipante` en MI-REGISTRO.
+
+**Fix de #7**: exige `staffToken` en la rama manual (PARTICIPANTES_REGISTRADOS ya lo manda en sus `gasPost`, sin cambio de frontend necesario).
+
+**Fix de #8**: solo permite renombrar archivos cuyo padre en Drive sea `SucreBot-Logos` o `SucreBot-Comprobantes` (las carpetas de subida de participantes) — nunca `SucreBot-Auspiciantes`/`SucreBot-Clubes`/`SucreBot-Institucion`/`SucreBot-Certificado-Fondo`/`SucreBot-Galeria`/`SucreBot-Diplomas`.
+
+#### Efecto colateral no relacionado con código — Pages se cae con repo privado
+A mitad de sesión Raku puso el repo en privado (para resolver el pendiente viejo "repo no es privado"). **GitHub Pages se desactivó solo** — el plan gratuito de GitHub no soporta Pages con repo privado (requiere Pro/Team/Enterprise). El sitio completo quedó caído (`sucrebotclub-institute.github.io` → página oficial "Site not found · GitHub Pages", no un 404 normal). Se revirtió a público el mismo día, pero **volver a público no reactiva Pages automáticamente** — hubo que volver a seleccionar la rama `main` en Settings → Pages a mano para que reconstruya. Decisión final: repo público.
+
+#### Metodología de verificación (sin acceso directo a script.google.com)
+- `Code.gs` se edita en una copia local espejo (`C:\Users\raku\sucrebot-gas-local\Code.gs`, confirmada por Raku como igual a producción) — se edita ahí, se valida con `node --check` (vía copia temporal `.js`, `node` no reconoce `.gs`), y Raku pega el archivo completo en script.google.com + "Nueva versión" del deployment existente (nunca deployment nuevo, para no cambiar la URL/Deployment ID... salvo que Google sí generó un ID nuevo cada vez en esta sesión — confirmar con Raku si eso es normal en su flujo o un cambio de comportamiento).
+- Cada deploy nuevo se verificó con `curl` directo contra la URL de `exec` **antes** de avisar "listo": casos de rechazo esperado (`No autorizado`) y, cuando fue seguro sin mutar datos reales, casos de éxito. Ojo con `curl -X POST -d`: dispara `411 Length Required` contra Apps Script en este entorno — usar `curl "$URL" -H "Content-Type: ..." --data-raw '...'` (sin `-X POST` explícito) en su lugar.
+- No se mutaron datos reales de prueba en producción a propósito (ej. no se completó el "camino feliz" de sobrescribir `setParticipante` con el correo correcto, solo el rechazo con correo incorrecto) — se prefirió confiar en la revisión de código + `node --check` para el camino que sí requeriría escribir.
+- 3 commits separados, cada uno con su propio ciclo deploy→config.js→push→esperar propagación de CDN (`until curl ... | grep -q DEPLOYMENT_ID; do sleep 15; done` en background, en vez de sleeps largos en foreground) antes de confirmar terminado.
+
+#### Principios nuevos
+- **"El backend no valida el token en ninguna acción" es una generalización peligrosa de auditar literalmente** — la realidad casi siempre es más matizada (acá: escrituras protegidas, lecturas no). Verificar acción por acción antes de diseñar el fix, no asumir que un hallazgo viejo describe el estado actual completo.
+- **Un `id` secuencial y predecible + una acción de escritura sin verificación de identidad = vulnerabilidad real**, incluso si la acción está documentada como "pública a propósito" — "pública" (sin token de staff) no es lo mismo que "sin ninguna verificación de identidad". El fix de exigir que un campo ya conocido por el dueño legítimo (acá, `correo`) coincida con el registro real preserva el autoservicio sin abrir la puerta a terceros.
+- **Al auditar un patrón de seguridad, revisar también las acciones "vecinas" en el código**, no solo la que motivó la auditoría — 3 de las 7 vulnerabilidades de esta sesión se encontraron mirando código alrededor del primer fix, no por una lista pre-armada.
+- **Pasar un repo de público a privado en GitHub Pages (plan gratuito) apaga el sitio** — evaluar esto ANTES de cambiar visibilidad si el repo sirve un sitio en producción, no después.
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 12 agosto 2026**
+**SKILL.md actualizado por última vez: 14 agosto 2026**
