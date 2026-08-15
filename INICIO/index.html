@@ -18,12 +18,14 @@
 
 <style>
 .reg-asist-overlay {
+  display: none;
   position: fixed; inset: 0; z-index: 100000;
   background: rgba(9, 12, 22, 0.88);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center;
+  align-items: center; justify-content: center;
   padding: 20px; opacity: 1; transition: opacity .35s ease;
 }
+.reg-asist-overlay.show { display: flex; }
 .reg-asist-overlay.hide { opacity: 0; pointer-events: none; }
 .reg-asist-card {
   position: relative; width: 100%; max-width: 480px;
@@ -80,33 +82,20 @@
   <div class="reg-asist-card">
     <button class="reg-asist-close" onclick="cerrarModalRegistroAsistentes()" aria-label="Cerrar">&times;</button>
     <div class="reg-asist-tag">📢 Aviso importante</div>
-    <div class="reg-asist-title">Registro obligatorio de asistentes<br>— SUCREBOT 2026</div>
-    <p class="reg-asist-body">Toda persona que asistirá a la IV Edición del Concurso Nacional de Robótica SUCREBOT 2026 deberá registrarse previamente.</p>
-    <div class="reg-asist-box">⏳ <strong>Fecha límite: 13 de julio de 2026</strong> (impostergable)</div>
-    <p class="reg-asist-body">El registro es obligatorio debido a que el listado de asistentes debe ser enviado para su revisión y autorización previa por parte de la administración del edificio de la Ex UNASUR, actual CMI.</p>
-    <div class="reg-asist-box warn">⚠️ No se podrán incorporar asistentes después de la fecha límite.</div>
-    <a class="reg-asist-cta" href="https://forms.gle/BTph45fZaJ6RW74T6" target="_blank" rel="noopener">📋 Formulario de acceso CMI</a>
-    <p class="reg-asist-thanks">Agradecemos su comprensión y colaboración.</p>
+    <div class="reg-asist-title" id="regAsistTitulo"></div>
+    <p class="reg-asist-body" id="regAsistTexto"></p>
+    <div class="reg-asist-box">⏳ <strong id="regAsistFechaLimite"></strong> (impostergable)</div>
+    <p class="reg-asist-body" id="regAsistExplicacion"></p>
+    <div class="reg-asist-box warn" id="regAsistAdvertencia"></div>
+    <a class="reg-asist-cta" id="regAsistBoton" href="#" target="_blank" rel="noopener"></a>
+    <p class="reg-asist-thanks" id="regAsistGracias"></p>
   </div>
 </div>
 
-<script>
-(function() {
-  var DEADLINE = new Date('2026-07-14T00:00:00-05:00'); // fin del 13 de julio 2026, hora Ecuador
-  var overlay = document.getElementById('regAsistOverlay');
-  if (!overlay) return;
-  if (new Date() >= DEADLINE) { overlay.remove(); return; }
-  document.body.style.overflow = 'hidden';
-})();
-
-function cerrarModalRegistroAsistentes() {
-  var overlay = document.getElementById('regAsistOverlay');
-  if (!overlay) return;
-  overlay.classList.add('hide');
-  document.body.style.overflow = '';
-  setTimeout(function() { overlay.remove(); }, 400);
-}
-</script>
+<!-- Botón flotante -- único punto de entrada al editor del aviso CMI, ya que
+     el aviso mismo no se ve cuando "activo" es false (no hay forma de picarle
+     un botón "Editar" que viva DENTRO del modal si el modal nunca se muestra). -->
+<button class="btn-aviso-editar-float" id="btnAvisoEditarFloat" onclick="abrirModalAviso()">📢 Editar aviso CMI</button>
 
 <div class="sticky-header">
   <div data-include="../shared/components/topbar.html"></div>
@@ -114,18 +103,19 @@ function cerrarModalRegistroAsistentes() {
   <div data-include="../shared/components/nav.html"></div>
 </div>
 
-<section class="hero" id="inicio" style="background: linear-gradient(135deg, rgba(18, 20, 26, 0.92) 0%, rgba(26, 92, 168, 0.85) 50%, rgba(18, 20, 26, 0.92) 100%), url('../shared/images/fondo.jpg') center 35%/cover no-repeat;">
+<section class="hero" id="inicio" style="--inicio-hero-img: url('../shared/images/fondo.jpg'); background: linear-gradient(135deg, rgba(18, 20, 26, 0.92) 0%, rgba(26, 92, 168, 0.85) 50%, rgba(18, 20, 26, 0.92) 100%), var(--inicio-hero-img) center 35%/cover no-repeat;">
+  <button class="btn-inicio-editar inicio-hero-editar" onclick="abrirModalHero()">🔧 Editar portada</button>
   <div class="hero-grid" style="display:none;"></div>
   <div class="hero-blob1" style="display:none;"></div>
   <div class="hero-blob2" style="display:none;"></div>
-  
+
   <div class="hero-content">
     <div class="hero-tag" style="background: rgba(0, 0, 0, 0.6); border-color: rgba(91, 200, 240, 0.8);">
       <div class="hero-tag-dot"></div>
-      Club de Robótica — Instituto Superior Universitario Sucre
+      <span id="heroTagText">Club de Robótica — Instituto Superior Universitario Sucre</span>
     </div>
-    <h1 class="hero-title" style="text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.5);">Bienvenido al<br><span class="hl">SUCREBOT</span></h1>
-    <p class="hero-sub" style="text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9); color: #e8f0ff;">Innovación, tecnología y robótica<br>para transformar el futuro desde el Instituto Sucre.</p>
+    <h1 class="hero-title" id="heroTituloText" style="text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.5);">Bienvenido al<br><span class="hl">SUCREBOT</span></h1>
+    <p class="hero-sub" id="heroSubtituloText" style="text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9); color: #e8f0ff;">Innovación, tecnología y robótica<br>para transformar el futuro desde el Instituto Sucre.</p>
     <div>
       <button class="btn-primary" onclick="window.location.href='../REGISTRO/index.html'" style="background: linear-gradient(135deg, #00d4ff, #0088ff); box-shadow: 0 4px 12px rgba(0, 136, 255, 0.5);">Registrarse</button>
       <button class="btn-ghost" onclick="window.location.href='../FAQ/index.html'" style="background: rgba(0, 0, 0, 0.5); border-color: #00d4ff; color: #00d4ff; backdrop-filter: blur(4px);">Preguntas Frecuentes</button>
@@ -152,7 +142,7 @@ function cerrarModalRegistroAsistentes() {
   
   <div class="hero-right">
     <div class="hero-logo-big" style="width:auto !important; height:auto !important; background:none !important; box-shadow:none !important; border-radius:0 !important; border:none !important; animation:none !important;">
-      <img src="../shared/images/pumatronix_sucrebot.png" alt="SucreBot - Pumatronix" style="max-width:280px !important; height:auto !important; width:auto !important; filter:none !important;" />
+      <img id="heroLogoImg" src="../shared/images/pumatronix_sucrebot.png" alt="SucreBot - Pumatronix" style="max-width:280px !important; height:auto !important; width:auto !important; filter:none !important;" />
     </div>
   </div>
 </section>
@@ -553,6 +543,112 @@ div.ausp-pill{cursor:default;}
     gap: 12px;
   }
 }
+
+/* ── Edición inline (solo visible para staff logueado) ──────────────
+   Mismo patrón que INSTITUCION/REGLAMENTO: body.staff-mode revela los
+   controles, nunca se cargan datos de edición hasta confirmar el rol. ── */
+.btn-inicio-editar {
+  display: none;
+  position: absolute; top: 16px; right: 16px;
+  background: #e8f0ff; color: #1a5ca8; border: 1px solid rgba(26,92,168,0.25);
+  border-radius: 6px; padding: 6px 14px;
+  font-family: 'Exo 2', sans-serif; font-size: 11px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; z-index: 5;
+}
+.btn-inicio-editar:hover { background: #d8e6ff; }
+body.staff-mode .btn-inicio-editar { display: inline-flex; }
+/* Variante clara sobre el fondo oscuro del hero */
+.btn-inicio-editar.inicio-hero-editar {
+  background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.35);
+  top: 20px; right: 20px;
+}
+.btn-inicio-editar.inicio-hero-editar:hover { background: rgba(255,255,255,0.28); }
+@media (max-width: 640px) {
+  .btn-inicio-editar { position: static; margin: 0 auto 14px; display: none; }
+  body.staff-mode .btn-inicio-editar { display: inline-flex; }
+  .btn-inicio-editar.inicio-hero-editar { display: none; position: absolute; top: 12px; right: 12px; margin: 0; }
+  body.staff-mode .btn-inicio-editar.inicio-hero-editar { display: inline-flex; }
+}
+
+.btn-aviso-editar-float {
+  display: none;
+  position: fixed; bottom: 20px; right: 20px; z-index: 9000;
+  background: #1a5ca8; color: #fff; border: 1px solid #00d4ff;
+  border-radius: 24px; padding: 10px 18px;
+  font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: center; gap: 6px; }
+.btn-aviso-editar-float:hover { background: #1e6ec0; }
+
+/* ── Modales de edición (mismo esquema visual que INSTITUCION) ── */
+.inicio-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(14,18,30,0.7); backdrop-filter: blur(4px);
+  z-index: 99999; align-items: center; justify-content: center; padding: 20px;
+}
+.inicio-modal-overlay.show { display: flex; }
+.inicio-modal {
+  background: #fff; border-radius: 14px;
+  width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+  padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.inicio-modal h4 {
+  font-family: 'Orbitron', sans-serif; font-size: 1.1rem;
+  letter-spacing: .5px; color: #1a3a6e; margin: 0 0 18px;
+}
+.inicio-modal label {
+  display: block;
+  font-family: 'Orbitron', monospace; font-size: .62rem;
+  letter-spacing: 1.5px; color: #1a5ca8; text-transform: uppercase;
+  margin: 14px 0 6px;
+}
+.inicio-modal label:first-of-type { margin-top: 0; }
+.inicio-modal input[type="text"],
+.inicio-modal input[type="file"],
+.inicio-modal textarea {
+  display: block; width: 100%; box-sizing: border-box;
+  border: 1px solid #d5dae5; border-radius: 8px;
+  padding: 10px 12px; font-family: 'Exo 2', sans-serif;
+  font-size: .9rem; color: #1a1c28; background: #fff;
+}
+.inicio-modal textarea { resize: vertical; font-family: inherit; }
+.inicio-modal-check {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Exo 2', sans-serif; font-size: .88rem; color: #1a1c28;
+  margin-top: 14px; cursor: pointer;
+}
+.inicio-modal-seccion { border-top: 1px solid #eef1f7; padding-top: 14px; margin-top: 16px; }
+.inicio-modal-tarjeta { border-top: 1px solid #eef1f7; padding-top: 14px; margin-top: 16px; }
+.inicio-modal-tarjeta:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+.inicio-modal-tarjeta-titulo {
+  font-family: 'Exo 2', sans-serif; font-weight: 800; font-size: .82rem; color: #1a5ca8;
+}
+.inicio-modal-guardar-wrap { border-top: 1px solid #eef1f7; padding-top: 18px; margin-top: 18px; }
+.inicio-btn-guardar-todo {
+  width: 100%; padding: 14px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #1a5ca8, #2472c8);
+  color: #fff; font-family: 'Exo 2', sans-serif; font-weight: 800;
+  font-size: .95rem; letter-spacing: .3px; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(26,92,168,0.35);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.inicio-btn-guardar-todo:hover {
+  background: linear-gradient(135deg, #1e6ec0, #2d8bf0);
+  box-shadow: 0 8px 20px rgba(26,92,168,0.45); transform: translateY(-1px);
+}
+.inicio-btn-guardar-todo:disabled { opacity: .6; cursor: default; transform: none; box-shadow: none; }
+.inicio-btn-guardar-todo.inicio-btn-guardado {
+  background: linear-gradient(135deg, #1e9e5a, #27ae60);
+  box-shadow: 0 6px 16px rgba(39,174,96,0.4);
+}
+.inicio-modal-cerrar {
+  width: 100%; margin-top: 10px; padding: 12px;
+  border-radius: 8px; background: #ffffff; color: #1a5ca8;
+  border: 2px solid #1a5ca8; font-family: 'Exo 2', sans-serif; font-weight: 700;
+  font-size: .88rem; cursor: pointer;
+}
+.inicio-modal-cerrar:hover { background: #1a5ca8; color: #ffffff; }
 </style>
 
 <div class="stats">
@@ -564,54 +660,58 @@ div.ausp-pill{cursor:default;}
 
 <div style="background:#ffffff;padding:48px 0 56px;">
 
-<div class="sec-head" id="sobre">
-  <h2 style="color:#12141a;">Explora el mundo del <span>SucreBot</span></h2>
+<div class="sec-head" id="sobre" style="position:relative;">
+  <button class="btn-inicio-editar inicio-seccion-editar" onclick="abrirModalSeccion()">🔧 Editar título</button>
+  <h2 style="color:#12141a;" id="seccionExploraTitulo">Explora el mundo del <span>SucreBot</span></h2>
 </div>
 <div style="width:64px;height:2px;background:var(--cyan);margin:12px auto 36px;border-radius:1px;"></div>
 
-<div class="quick-cards">
-  <a class="quick-card" href="../REGISTRO/index.html">
-    <div class="quick-card-icon">📝</div>
-    <h3>Registro</h3>
-    <p>Inscríbete en la competencia SucreBot 2026.</p>
-    <span class="quick-card-arrow">→</span>
-  </a>
-  <a class="quick-card" href="../CERTIFICADOS/index.html">
-    <div class="quick-card-icon">🏅</div>
-    <h3>Certificados</h3>
-    <p>Descarga tu diploma de participación o podio.</p>
-    <span class="quick-card-arrow">→</span>
-  </a>
-  <a class="quick-card" href="../REGLAMENTO/index.html">
-    <div class="quick-card-icon">📋</div>
-    <h3>Reglamentos</h3>
-    <p>Reglas y bases oficiales del torneo.</p>
-    <span class="quick-card-arrow">→</span>
-  </a>
-  <a class="quick-card" href="https://www.instagram.com/carrera_electronica_sucre" target="_blank" rel="noopener">
-    <div class="quick-card-icon">
-      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#E1306C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-    </div>
-    <h3>Instagram</h3>
-    <p>Fotos y novedades del evento.</p>
-    <span class="quick-card-arrow">→</span>
-  </a>
-  <a class="quick-card" href="https://www.tiktok.com/@carrera.electronica.isu" target="_blank" rel="noopener">
-    <div class="quick-card-icon">
-      <svg viewBox="0 0 24 24" width="36" height="36" fill="#00d4ff"><path d="M16.5 2h-3.2v13.6a2.9 2.9 0 1 1-2.1-2.79V9.5a6.1 6.1 0 1 0 5.3 6.05V8.4a8.2 8.2 0 0 0 4.6 1.4V6.6a4.9 4.9 0 0 1-4.6-4.6z"></path></svg>
-    </div>
-    <h3>TikTok</h3>
-    <p>Videos y detrás de cámaras.</p>
-    <span class="quick-card-arrow">→</span>
-  </a>
-  <a class="quick-card" href="https://www.facebook.com/share/1EBgWRJaZn/" target="_blank" rel="noopener">
-    <div class="quick-card-icon">
-      <svg viewBox="0 0 24 24" width="36" height="36" fill="#1877F2"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"></path></svg>
-    </div>
-    <h3>Facebook</h3>
-    <p>Únete a nuestra comunidad.</p>
-    <span class="quick-card-arrow">→</span>
-  </a>
+<div class="quick-cards-wrap" style="position:relative;max-width:1500px;margin:0 auto;">
+  <button class="btn-inicio-editar inicio-cards-editar" onclick="abrirModalTarjetas()">🔧 Editar tarjetas</button>
+  <div class="quick-cards">
+    <a class="quick-card" id="quickCard0" href="../REGISTRO/index.html">
+      <div class="quick-card-icon">📝</div>
+      <h3>Registro</h3>
+      <p>Inscríbete en la competencia SucreBot.</p>
+      <span class="quick-card-arrow">→</span>
+    </a>
+    <a class="quick-card" id="quickCard1" href="../CERTIFICADOS/index.html">
+      <div class="quick-card-icon">🏅</div>
+      <h3>Certificados</h3>
+      <p>Descarga tu diploma de participación o podio.</p>
+      <span class="quick-card-arrow">→</span>
+    </a>
+    <a class="quick-card" id="quickCard2" href="../REGLAMENTO/index.html">
+      <div class="quick-card-icon">📋</div>
+      <h3>Reglamentos</h3>
+      <p>Reglas y bases oficiales del torneo.</p>
+      <span class="quick-card-arrow">→</span>
+    </a>
+    <a class="quick-card" id="quickCard3" href="https://www.instagram.com/carrera_electronica_sucre" target="_blank" rel="noopener">
+      <div class="quick-card-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#E1306C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+      </div>
+      <h3>Instagram</h3>
+      <p>Fotos y novedades del evento.</p>
+      <span class="quick-card-arrow">→</span>
+    </a>
+    <a class="quick-card" id="quickCard4" href="https://www.tiktok.com/@carrera.electronica.isu" target="_blank" rel="noopener">
+      <div class="quick-card-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="#00d4ff"><path d="M16.5 2h-3.2v13.6a2.9 2.9 0 1 1-2.1-2.79V9.5a6.1 6.1 0 1 0 5.3 6.05V8.4a8.2 8.2 0 0 0 4.6 1.4V6.6a4.9 4.9 0 0 1-4.6-4.6z"></path></svg>
+      </div>
+      <h3>TikTok</h3>
+      <p>Videos y detrás de cámaras.</p>
+      <span class="quick-card-arrow">→</span>
+    </a>
+    <a class="quick-card" id="quickCard5" href="https://www.facebook.com/share/1EBgWRJaZn/" target="_blank" rel="noopener">
+      <div class="quick-card-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="#1877F2"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"></path></svg>
+      </div>
+      <h3>Facebook</h3>
+      <p>Únete a nuestra comunidad.</p>
+      <span class="quick-card-arrow">→</span>
+    </a>
+  </div>
 </div>
 
 <div class="sec-head" style="margin-top:56px;">
@@ -622,6 +722,95 @@ div.ausp-pill{cursor:default;}
 <div class="clubes-grid" id="clubes-grid"></div>
 
 </div><!-- /seccion blanca -->
+
+<!-- Modal: Portada (tag/título/subtítulo/fondo/logo) -->
+<div class="inicio-modal-overlay" id="inicioModalHero">
+  <div class="inicio-modal">
+    <h4>Editar portada</h4>
+    <label>Tag superior</label>
+    <input type="text" id="modalHeroTag">
+    <label>Título (una línea por renglón — la última sale destacada en celeste)</label>
+    <textarea id="modalHeroTitulo" rows="2"></textarea>
+    <label>Subtítulo (una línea por renglón)</label>
+    <textarea id="modalHeroSubtitulo" rows="2"></textarea>
+
+    <div class="inicio-modal-seccion">
+      <label>Imagen de fondo</label>
+      <img id="modalHeroImgFondoActual" style="max-width:100%;max-height:140px;border-radius:8px;display:block;margin-bottom:10px;">
+      <input type="file" id="modalHeroImgFondoFile" accept="image/*">
+    </div>
+
+    <div class="inicio-modal-seccion">
+      <label>Logo grande (derecha de la portada)</label>
+      <img id="modalHeroImgLogoActual" style="max-width:220px;max-height:140px;border-radius:8px;display:block;margin-bottom:10px;">
+      <input type="file" id="modalHeroImgLogoFile" accept="image/*">
+    </div>
+
+    <div class="inicio-modal-guardar-wrap">
+      <button class="inicio-btn-guardar-todo" id="btnGuardarHeroInicio" onclick="guardarModalHero()">💾 Guardar cambios</button>
+    </div>
+    <button class="inicio-modal-cerrar" onclick="cerrarModalInicio('inicioModalHero')">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal: Título de la sección "Explora el mundo del SucreBot" -->
+<div class="inicio-modal-overlay" id="inicioModalSeccion">
+  <div class="inicio-modal">
+    <h4>Editar título de sección</h4>
+    <label>Título (una línea por renglón — la última sale destacada)</label>
+    <textarea id="modalSeccionTitulo" rows="2"></textarea>
+
+    <div class="inicio-modal-guardar-wrap">
+      <button class="inicio-btn-guardar-todo" id="btnGuardarSeccion" onclick="guardarModalSeccion()">💾 Guardar cambios</button>
+    </div>
+    <button class="inicio-modal-cerrar" onclick="cerrarModalInicio('inicioModalSeccion')">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal: 6 tarjetas de acceso rápido (solo texto/link -- íconos fijos) -->
+<div class="inicio-modal-overlay" id="inicioModalTarjetas">
+  <div class="inicio-modal" style="max-width:640px;">
+    <h4>Editar tarjetas de acceso rápido</h4>
+    <div id="modalTarjetasCont"></div>
+
+    <div class="inicio-modal-guardar-wrap">
+      <button class="inicio-btn-guardar-todo" id="btnGuardarTarjetas" onclick="guardarModalTarjetas()">💾 Guardar cambios</button>
+    </div>
+    <button class="inicio-modal-cerrar" onclick="cerrarModalInicio('inicioModalTarjetas')">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal: Aviso de registro CMI -->
+<div class="inicio-modal-overlay" id="inicioModalAviso">
+  <div class="inicio-modal">
+    <h4>Editar aviso de registro CMI</h4>
+    <label class="inicio-modal-check" style="margin-top:0;">
+      <input type="checkbox" id="modalAvisoActivo"> Aviso activo (se muestra a todos los visitantes al abrir INICIO)
+    </label>
+
+    <label>Título</label>
+    <textarea id="modalAvisoTitulo" rows="2"></textarea>
+    <label>Texto principal</label>
+    <textarea id="modalAvisoTexto" rows="3"></textarea>
+    <label>Fecha límite (texto a mostrar, ej. "Fecha límite: 13 de julio de 2026")</label>
+    <input type="text" id="modalAvisoFechaLimite">
+    <label>Texto de explicación</label>
+    <textarea id="modalAvisoExplicacion" rows="3"></textarea>
+    <label>Texto de advertencia</label>
+    <textarea id="modalAvisoAdvertencia" rows="2"></textarea>
+    <label>Link del formulario</label>
+    <input type="text" id="modalAvisoLink">
+    <label>Texto del botón</label>
+    <input type="text" id="modalAvisoBoton">
+    <label>Texto de agradecimiento</label>
+    <input type="text" id="modalAvisoGracias">
+
+    <div class="inicio-modal-guardar-wrap">
+      <button class="inicio-btn-guardar-todo" id="btnGuardarAviso" onclick="guardarModalAviso()">💾 Guardar cambios</button>
+    </div>
+    <button class="inicio-modal-cerrar" onclick="cerrarModalInicio('inicioModalAviso')">Cerrar</button>
+  </div>
+</div>
 
 <div data-include="../shared/components/footer.html"></div>
 
@@ -682,6 +871,384 @@ div.ausp-pill{cursor:default;}
   const grid = document.getElementById('clubes-grid');
   clubRenderGrid(grid); // pinta de una con el cache síncrono (o vacío la primera visita)
   document.addEventListener('clubesListos', function() { clubRenderGrid(grid); });
+})();
+</script>
+
+<script>
+// ── Contenido de INICIO (portada/hero, tarjetas de acceso rápido, título de
+// "Explora el mundo del SucreBot", aviso de registro CMI), editable en la
+// misma página por staff logueado -- mismo patrón exacto que INSTITUCION
+// (14-ago-2026): body.staff-mode revela botones "🔧 Editar" que abren un
+// modal con un solo "Guardar cambios". Cache-first: se pinta con la última
+// respuesta conocida (localStorage) de forma síncrona apenas carga el
+// script, y se revalida en segundo plano -- mismo principio que
+// auspiciantes.js/clubes.js/INSTITUCION.
+(function() {
+  const CACHE_KEY = 'sucrebot_inicio_config_cache';
+
+  const HERO_TAG_DEFAULT = 'Club de Robótica — Instituto Superior Universitario Sucre';
+  const HERO_TITULO_DEFAULT = 'Bienvenido al\nSUCREBOT';
+  const HERO_SUBTITULO_DEFAULT = 'Innovación, tecnología y robótica\npara transformar el futuro desde el Instituto Sucre.';
+  const HERO_IMAGEN_FONDO_DEFAULT = '../shared/images/fondo.jpg';
+  const HERO_IMAGEN_LOGO_DEFAULT = '../shared/images/pumatronix_sucrebot.png';
+  const SECCION_EXPLORA_DEFAULT = 'Explora el mundo del\nSucreBot';
+  const QUICK_CARDS_DEFAULT = [
+    { titulo: 'Registro', descripcion: 'Inscríbete en la competencia SucreBot.', link: '../REGISTRO/index.html' },
+    { titulo: 'Certificados', descripcion: 'Descarga tu diploma de participación o podio.', link: '../CERTIFICADOS/index.html' },
+    { titulo: 'Reglamentos', descripcion: 'Reglas y bases oficiales del torneo.', link: '../REGLAMENTO/index.html' },
+    { titulo: 'Instagram', descripcion: 'Fotos y novedades del evento.', link: 'https://www.instagram.com/carrera_electronica_sucre' },
+    { titulo: 'TikTok', descripcion: 'Videos y detrás de cámaras.', link: 'https://www.tiktok.com/@carrera.electronica.isu' },
+    { titulo: 'Facebook', descripcion: 'Únete a nuestra comunidad.', link: 'https://www.facebook.com/share/1EBgWRJaZn/' }
+  ];
+  const AVISO_DEFAULT = {
+    activo: false,
+    titulo: 'Registro obligatorio de asistentes\n— SUCREBOT',
+    texto: 'Toda persona que asistirá al evento deberá registrarse previamente.',
+    fechaLimiteTexto: '13 de julio de 2026',
+    textoExplicacion: 'El registro es obligatorio debido a que el listado de asistentes debe ser enviado para su revisión y autorización previa por parte de la administración del edificio de la Ex UNASUR, actual CMI.',
+    textoAdvertencia: 'No se podrán incorporar asistentes después de la fecha límite.',
+    linkForm: 'https://forms.gle/BTph45fZaJ6RW74T6',
+    textoBoton: '📋 Formulario de acceso CMI',
+    textoAgradecimiento: 'Agradecemos su comprensión y colaboración.'
+  };
+
+  function leerCache() {
+    try { const raw = localStorage.getItem(CACHE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  function guardarCache(val) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(val)); } catch (e) {}
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  let config = leerCache() || {
+    heroTitulo: HERO_TITULO_DEFAULT, heroSubtitulo: HERO_SUBTITULO_DEFAULT, heroTag: HERO_TAG_DEFAULT,
+    heroImagenFondo: HERO_IMAGEN_FONDO_DEFAULT, heroImagenLogo: HERO_IMAGEN_LOGO_DEFAULT,
+    seccionExploraTitulo: SECCION_EXPLORA_DEFAULT, quickCards: QUICK_CARDS_DEFAULT, avisoCmi: AVISO_DEFAULT
+  };
+
+  function lineasConUltimaDestacada(texto, claseSpan) {
+    const lineas = String(texto || '').split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+    return lineas.map(function(linea, i) {
+      const esc = escapeHtml(linea);
+      return i === lineas.length - 1 ? '<span' + (claseSpan ? ' class="' + claseSpan + '"' : '') + '>' + esc + '</span>' : esc;
+    }).join('<br>');
+  }
+
+  function renderHero() {
+    document.getElementById('heroTagText').textContent = config.heroTag || HERO_TAG_DEFAULT;
+    document.getElementById('heroTituloText').innerHTML = lineasConUltimaDestacada(config.heroTitulo || HERO_TITULO_DEFAULT, 'hl');
+    document.getElementById('heroSubtituloText').innerHTML = String(config.heroSubtitulo || HERO_SUBTITULO_DEFAULT)
+      .split('\n').map(function(l) { return escapeHtml(l.trim()); }).filter(Boolean).join('<br>');
+    const heroEl = document.getElementById('inicio');
+    const fondo = config.heroImagenFondo || HERO_IMAGEN_FONDO_DEFAULT;
+    heroEl.style.setProperty('--inicio-hero-img', 'url("' + fondo.replace(/"/g, '') + '")');
+    document.getElementById('heroLogoImg').src = config.heroImagenLogo || HERO_IMAGEN_LOGO_DEFAULT;
+  }
+
+  function renderSeccion() {
+    document.getElementById('seccionExploraTitulo').innerHTML = lineasConUltimaDestacada(config.seccionExploraTitulo || SECCION_EXPLORA_DEFAULT, '');
+  }
+
+  function renderQuickCards() {
+    const cards = (config.quickCards && config.quickCards.length === 6) ? config.quickCards : QUICK_CARDS_DEFAULT;
+    cards.forEach(function(c, i) {
+      const el = document.getElementById('quickCard' + i);
+      if (!el) return;
+      el.querySelector('h3').textContent = c.titulo || QUICK_CARDS_DEFAULT[i].titulo;
+      el.querySelector('p').textContent = c.descripcion || QUICK_CARDS_DEFAULT[i].descripcion;
+      el.setAttribute('href', c.link || QUICK_CARDS_DEFAULT[i].link);
+    });
+  }
+
+  function renderAviso() {
+    const a = Object.assign({}, AVISO_DEFAULT, config.avisoCmi || {});
+    // Título del aviso usa <br> simple (sin resaltado especial, a diferencia
+    // del hero/sección) -- una línea por renglón.
+    document.getElementById('regAsistTitulo').innerHTML = String(a.titulo || '').split('\n').map(function(l) { return escapeHtml(l.trim()); }).filter(Boolean).join('<br>');
+    document.getElementById('regAsistTexto').textContent = a.texto || '';
+    document.getElementById('regAsistFechaLimite').textContent = '⏳ Fecha límite: ' + (a.fechaLimiteTexto || '');
+    document.getElementById('regAsistExplicacion').textContent = a.textoExplicacion || '';
+    document.getElementById('regAsistAdvertencia').textContent = '⚠️ ' + (a.textoAdvertencia || '');
+    const btn = document.getElementById('regAsistBoton');
+    btn.href = a.linkForm || AVISO_DEFAULT.linkForm;
+    btn.textContent = a.textoBoton || AVISO_DEFAULT.textoBoton;
+    document.getElementById('regAsistGracias').textContent = a.textoAgradecimiento || '';
+
+    const overlay = document.getElementById('regAsistOverlay');
+    if (a.activo) {
+      overlay.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    } else {
+      overlay.classList.remove('show');
+      if (document.body.style.overflow === 'hidden') document.body.style.overflow = '';
+    }
+  }
+
+  function renderTodo() {
+    renderHero();
+    renderSeccion();
+    renderQuickCards();
+    renderAviso();
+  }
+
+  renderTodo(); // pinta con cache (o los defaults hardcodeados) antes de cualquier fetch
+
+  if (typeof CONFIG !== 'undefined') {
+    fetch(CONFIG.GAS_URL() + '?action=getInicioConfig', { cache: 'no-store' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        // Un backend que todavía no tiene esta acción desplegada responde
+        // '{}' (JSON válido, sin campo 'error') en vez de fallar -- chequear
+        // la forma real del objeto, no solo que exista, para no pisar la
+        // cache buena/los defaults con una respuesta vacía.
+        if (!data || data.error || typeof data.heroTitulo !== 'string') return;
+        config = data;
+        guardarCache(config);
+        renderTodo();
+      }).catch(function() {});
+  }
+
+  function cerrarModalRegistroAsistentes() {
+    const overlay = document.getElementById('regAsistOverlay');
+    overlay.classList.add('hide');
+    document.body.style.overflow = '';
+    setTimeout(function() { overlay.classList.remove('show', 'hide'); }, 400);
+  }
+  window.cerrarModalRegistroAsistentes = cerrarModalRegistroAsistentes;
+
+  // ── Edición inline para staff (mismo patrón que INSTITUCION) ────────
+  function gasPostInicio(body) {
+    return fetch(CONFIG.GAS_URL(), {
+      method: 'POST',
+      body: JSON.stringify(Object.assign({}, body, { staffToken: localStorage.getItem('sucrebot_staff_token') || '' })),
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    }).then(function(r) { return r.json(); });
+  }
+
+  function toBase64Inicio(file) {
+    return new Promise(function(resolve, reject) {
+      const r = new FileReader();
+      r.onload = function() { resolve(r.result.split(',')[1]); };
+      r.onerror = function() { reject(new Error('No se pudo leer el archivo "' + file.name + '"')); };
+      r.readAsDataURL(file);
+    });
+  }
+
+  function cerrarModalInicio(id) {
+    document.getElementById(id).classList.remove('show');
+  }
+
+  function botonExito(btn, textoOriginal) {
+    btn.textContent = '✅ Guardado';
+    btn.classList.add('inicio-btn-guardado');
+    setTimeout(function() {
+      btn.textContent = textoOriginal;
+      btn.classList.remove('inicio-btn-guardado');
+      btn.disabled = false;
+    }, 1400);
+  }
+
+  // Cualquier guardado manda el objeto COMPLETO (portada + tarjetas + sección
+  // + aviso), mezclando lo editado en ese modal con lo que ya había en
+  // memoria -- guardarInicioConfig pisa la fila entera, igual que
+  // guardarInstitucionConfig.
+  function payloadCompleto(overrides) {
+    return Object.assign({
+      action: 'guardarInicioConfig',
+      heroTitulo: config.heroTitulo, heroSubtitulo: config.heroSubtitulo, heroTag: config.heroTag,
+      heroImagenFondo: config.heroImagenFondo, heroImagenLogo: config.heroImagenLogo,
+      seccionExploraTitulo: config.seccionExploraTitulo,
+      quickCards: config.quickCards || QUICK_CARDS_DEFAULT,
+      avisoCmi: Object.assign({}, AVISO_DEFAULT, config.avisoCmi || {})
+    }, overrides);
+  }
+
+  // -- Modal: Portada --
+  function abrirModalHero() {
+    document.getElementById('modalHeroTag').value = config.heroTag || HERO_TAG_DEFAULT;
+    document.getElementById('modalHeroTitulo').value = config.heroTitulo || HERO_TITULO_DEFAULT;
+    document.getElementById('modalHeroSubtitulo').value = config.heroSubtitulo || HERO_SUBTITULO_DEFAULT;
+    document.getElementById('modalHeroImgFondoActual').src = config.heroImagenFondo || HERO_IMAGEN_FONDO_DEFAULT;
+    document.getElementById('modalHeroImgLogoActual').src = config.heroImagenLogo || HERO_IMAGEN_LOGO_DEFAULT;
+    document.getElementById('modalHeroImgFondoFile').value = '';
+    document.getElementById('modalHeroImgLogoFile').value = '';
+    document.getElementById('inicioModalHero').classList.add('show');
+  }
+
+  async function guardarModalHero() {
+    const btn = document.getElementById('btnGuardarHeroInicio');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      let heroImagenFondo = config.heroImagenFondo || HERO_IMAGEN_FONDO_DEFAULT;
+      let heroImagenLogo = config.heroImagenLogo || HERO_IMAGEN_LOGO_DEFAULT;
+      const fileFondo = document.getElementById('modalHeroImgFondoFile').files[0];
+      const fileLogo = document.getElementById('modalHeroImgLogoFile').files[0];
+      if (fileFondo) {
+        btn.textContent = 'Subiendo fondo...';
+        const b64 = await toBase64Inicio(fileFondo);
+        const respUp = await gasPostInicio({ action: 'uploadImagenInicio', base64: b64, mimeType: fileFondo.type, fileName: fileFondo.name });
+        if (!respUp.ok || !respUp.url) throw new Error(respUp.error || 'Error al subir la imagen de fondo');
+        heroImagenFondo = respUp.url;
+      }
+      if (fileLogo) {
+        btn.textContent = 'Subiendo logo...';
+        const b64 = await toBase64Inicio(fileLogo);
+        const respUp = await gasPostInicio({ action: 'uploadImagenInicio', base64: b64, mimeType: fileLogo.type, fileName: fileLogo.name });
+        if (!respUp.ok || !respUp.url) throw new Error(respUp.error || 'Error al subir el logo');
+        heroImagenLogo = respUp.url;
+      }
+      btn.textContent = 'Guardando...';
+      const payload = payloadCompleto({
+        heroTag: document.getElementById('modalHeroTag').value,
+        heroTitulo: document.getElementById('modalHeroTitulo').value,
+        heroSubtitulo: document.getElementById('modalHeroSubtitulo').value,
+        heroImagenFondo: heroImagenFondo, heroImagenLogo: heroImagenLogo
+      });
+      const resp = await gasPostInicio(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      config.heroTag = payload.heroTag; config.heroTitulo = payload.heroTitulo; config.heroSubtitulo = payload.heroSubtitulo;
+      config.heroImagenFondo = heroImagenFondo; config.heroImagenLogo = heroImagenLogo;
+      guardarCache(config);
+      renderHero();
+      document.getElementById('modalHeroImgFondoActual').src = heroImagenFondo;
+      document.getElementById('modalHeroImgLogoActual').src = heroImagenLogo;
+      document.getElementById('modalHeroImgFondoFile').value = '';
+      document.getElementById('modalHeroImgLogoFile').value = '';
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  // -- Modal: Título de sección --
+  function abrirModalSeccion() {
+    document.getElementById('modalSeccionTitulo').value = config.seccionExploraTitulo || SECCION_EXPLORA_DEFAULT;
+    document.getElementById('inicioModalSeccion').classList.add('show');
+  }
+
+  async function guardarModalSeccion() {
+    const btn = document.getElementById('btnGuardarSeccion');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const payload = payloadCompleto({ seccionExploraTitulo: document.getElementById('modalSeccionTitulo').value });
+      const resp = await gasPostInicio(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      config.seccionExploraTitulo = payload.seccionExploraTitulo;
+      guardarCache(config);
+      renderSeccion();
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error al guardar: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  // -- Modal: 6 tarjetas de acceso rápido --
+  function abrirModalTarjetas() {
+    const cards = (config.quickCards && config.quickCards.length === 6) ? config.quickCards : QUICK_CARDS_DEFAULT;
+    const cont = document.getElementById('modalTarjetasCont');
+    cont.innerHTML = cards.map(function(c, i) {
+      return '<div class="inicio-modal-tarjeta">' +
+        '<div class="inicio-modal-tarjeta-titulo">Tarjeta ' + (i + 1) + '</div>' +
+        '<label>Título</label><input type="text" data-i="' + i + '" data-campo="titulo" value="' + escapeHtml(c.titulo || '').replace(/"/g, '&quot;') + '">' +
+        '<label>Descripción</label><input type="text" data-i="' + i + '" data-campo="descripcion" value="' + escapeHtml(c.descripcion || '').replace(/"/g, '&quot;') + '">' +
+        '<label>Link</label><input type="text" data-i="' + i + '" data-campo="link" value="' + escapeHtml(c.link || '').replace(/"/g, '&quot;') + '">' +
+      '</div>';
+    }).join('');
+    document.getElementById('inicioModalTarjetas').classList.add('show');
+  }
+
+  async function guardarModalTarjetas() {
+    const btn = document.getElementById('btnGuardarTarjetas');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const cards = (config.quickCards && config.quickCards.length === 6) ? config.quickCards.slice() : QUICK_CARDS_DEFAULT.slice();
+      document.querySelectorAll('#modalTarjetasCont input').forEach(function(inp) {
+        const i = parseInt(inp.dataset.i, 10);
+        const campo = inp.dataset.campo;
+        cards[i] = Object.assign({}, cards[i], { [campo]: inp.value.trim() });
+      });
+      const payload = payloadCompleto({ quickCards: cards });
+      const resp = await gasPostInicio(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      config.quickCards = cards;
+      guardarCache(config);
+      renderQuickCards();
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error al guardar: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  // -- Modal: Aviso de registro CMI --
+  function abrirModalAviso() {
+    const a = Object.assign({}, AVISO_DEFAULT, config.avisoCmi || {});
+    document.getElementById('modalAvisoActivo').checked = !!a.activo;
+    document.getElementById('modalAvisoTitulo').value = a.titulo || '';
+    document.getElementById('modalAvisoTexto').value = a.texto || '';
+    document.getElementById('modalAvisoFechaLimite').value = a.fechaLimiteTexto || '';
+    document.getElementById('modalAvisoExplicacion').value = a.textoExplicacion || '';
+    document.getElementById('modalAvisoAdvertencia').value = a.textoAdvertencia || '';
+    document.getElementById('modalAvisoLink').value = a.linkForm || '';
+    document.getElementById('modalAvisoBoton').value = a.textoBoton || '';
+    document.getElementById('modalAvisoGracias').value = a.textoAgradecimiento || '';
+    document.getElementById('inicioModalAviso').classList.add('show');
+  }
+
+  async function guardarModalAviso() {
+    const btn = document.getElementById('btnGuardarAviso');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const avisoCmi = {
+        activo: document.getElementById('modalAvisoActivo').checked,
+        titulo: document.getElementById('modalAvisoTitulo').value,
+        texto: document.getElementById('modalAvisoTexto').value,
+        fechaLimiteTexto: document.getElementById('modalAvisoFechaLimite').value,
+        textoExplicacion: document.getElementById('modalAvisoExplicacion').value,
+        textoAdvertencia: document.getElementById('modalAvisoAdvertencia').value,
+        linkForm: document.getElementById('modalAvisoLink').value,
+        textoBoton: document.getElementById('modalAvisoBoton').value,
+        textoAgradecimiento: document.getElementById('modalAvisoGracias').value
+      };
+      const payload = payloadCompleto({ avisoCmi: avisoCmi });
+      const resp = await gasPostInicio(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      config.avisoCmi = avisoCmi;
+      guardarCache(config);
+      renderAviso();
+      botonExito(btn, textoOriginal);
+    } catch (e) {
+      alert('Error al guardar: ' + e.message);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }
+  }
+
+  window.abrirModalHero = abrirModalHero;
+  window.guardarModalHero = guardarModalHero;
+  window.abrirModalSeccion = abrirModalSeccion;
+  window.guardarModalSeccion = guardarModalSeccion;
+  window.abrirModalTarjetas = abrirModalTarjetas;
+  window.guardarModalTarjetas = guardarModalTarjetas;
+  window.abrirModalAviso = abrirModalAviso;
+  window.guardarModalAviso = guardarModalAviso;
+  window.cerrarModalInicio = cerrarModalInicio;
+
+  // -- Detección de staff (mismo patrón que INSTITUCION/REGLAMENTO) --
+  (async function() {
+    if (window.esperarRol) await window.esperarRol();
+    if (window.esStaffCompleto && window.esStaffCompleto()) {
+      document.body.classList.add('staff-mode');
+    }
+  })();
 })();
 </script>
 </body>
