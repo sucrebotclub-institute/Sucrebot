@@ -301,7 +301,7 @@ function show(id) { document.getElementById(id).style.display = 'block'; }
 async function cargarDatos() {
   document.getElementById('cats-container').innerHTML = '<div class="vacio">⏳ Cargando...</div>';
   try {
-    const raw = await fetch(GAS_URL + '?action=obtenerTodosCertificados').then(r => r.json());
+    const raw = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'obtenerTodosCertificados', staffToken: localStorage.getItem('sucrebot_staff_token') || '' })).then(r => r.json());
     const certs = Array.isArray(raw) ? raw : [];
 
     estado = {};
