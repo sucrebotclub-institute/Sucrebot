@@ -248,6 +248,12 @@
     .reg-modal textarea { resize: vertical; font-family: inherit; min-height: 90px; }
     .reg-modal-seccion { border-top: 1px solid #eef1f7; padding-top: 14px; margin-top: 16px; }
     .reg-modal-periodo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .reg-modal-check {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Exo 2', sans-serif; font-size: .85rem; color: #1a1c28;
+      margin-top: 10px; cursor: pointer;
+    }
+    .reg-modal-check input { width: 16px; height: 16px; flex-shrink: 0; }
     .reg-modal-guardar-wrap { border-top: 1px solid #eef1f7; padding-top: 18px; margin-top: 18px; }
     .reg-btn-guardar-todo {
       width: 100%; padding: 14px; border: none; border-radius: 10px;
@@ -646,6 +652,9 @@
     <div class="reg-modal-seccion">
       <label>Aviso "📋 Información importante" (una línea por párrafo)</label>
       <textarea id="modalAvisoTextoReg" rows="4"></textarea>
+      <label class="reg-modal-check">
+        <input type="checkbox" id="modalOcultoAvisoReg"> Ocultar "Información importante"
+      </label>
     </div>
 
     <div class="reg-modal-seccion">
@@ -655,6 +664,9 @@
       <textarea id="modalWaCaptionReg" rows="2"></textarea>
       <label>Reemplazar imagen del QR (opcional)</label>
       <input type="file" id="modalWaQrFileReg" accept="image/*">
+      <label class="reg-modal-check">
+        <input type="checkbox" id="modalOcultoWaReg"> Ocultar tarjeta de WhatsApp
+      </label>
     </div>
 
     <div class="reg-modal-guardar-wrap">
@@ -682,6 +694,7 @@
           <div><label>Desde</label><input type="date" id="modalPrecioDesde1"></div>
           <div><label>Hasta</label><input type="date" id="modalPrecioHasta1"></div>
         </div>
+        <label class="reg-modal-check"><input type="checkbox" id="modalPrecioOculto1"> Ocultar este período</label>
       </div>
       <div class="reg-modal-seccion">
         <label>Período 2 — texto</label>
@@ -694,6 +707,7 @@
           <div><label>Desde</label><input type="date" id="modalPrecioDesde2"></div>
           <div><label>Hasta</label><input type="date" id="modalPrecioHasta2"></div>
         </div>
+        <label class="reg-modal-check"><input type="checkbox" id="modalPrecioOculto2"> Ocultar este período</label>
       </div>
       <div class="reg-modal-seccion">
         <label>Período 3 — texto</label>
@@ -706,6 +720,7 @@
           <div><label>Desde</label><input type="date" id="modalPrecioDesde3"></div>
           <div><label>Hasta</label><input type="date" id="modalPrecioHasta3"></div>
         </div>
+        <label class="reg-modal-check"><input type="checkbox" id="modalPrecioOculto3"> Ocultar este período</label>
       </div>
     </div>
 
@@ -784,7 +799,9 @@
     cuentaPago: {
       banco: 'Banco Pichincha', tipo: 'Cuenta de Ahorros',
       numeroCuenta: '2215952522', ci: '1719651190', titular: 'Christian Ortega'
-    }
+    },
+    ocultoAviso: false,
+    ocultoWa: false
   };
   const AVISO_TEXTO_FALLBACK_REG = 'Nombre completo: escríbelo tal como aparecerá en tu diploma de participación.\nCorreo electrónico: verifica que esté bien escrito — a esa dirección se enviará tu código QR de acceso al evento.\n¿No recibiste el correo? Revisa tu carpeta de spam o escríbenos a sucrebotclub@tecnologicosucre.edu.ec';
   let preciosReg   = { periodos: [] };
@@ -813,6 +830,18 @@
         if (el && cp[campo]) el.textContent = cp[campo];
       });
     }
+    // Oculto para el público (display:none); staff sigue viéndolo atenuado
+    // para saber que existe y poder destaparlo desde el mismo modal.
+    aplicarVisibilidadReg(document.querySelector('.reg-aviso'), contenidoReg.ocultoAviso === true);
+    aplicarVisibilidadReg(document.querySelector('.wa-card'), contenidoReg.ocultoWa === true);
+  }
+
+  function aplicarVisibilidadReg(el, oculto) {
+    if (!el) return;
+    const staffMode = document.body.classList.contains('staff-mode');
+    if (oculto && !staffMode) { el.style.display = 'none'; el.style.opacity = ''; }
+    else if (oculto && staffMode) { el.style.display = ''; el.style.opacity = '.45'; }
+    else { el.style.display = ''; el.style.opacity = ''; }
   }
 
   // 'desde'/'hasta' son fechas yyyy-mm-dd (input type=date) -- se comparan
@@ -828,11 +857,16 @@
   }
 
   function renderPreciosReg() {
-    const periodos = preciosReg.periodos || [];
+    const staffMode = document.body.classList.contains('staff-mode');
+    // Staff sigue viendo los períodos ocultos (atenuados, con etiqueta) para
+    // saber que existen y poder destaparlos desde el modal; el público no
+    // los ve directamente.
+    const periodos = (preciosReg.periodos || []).filter(p => !p.oculto || staffMode);
     const cardHtml = p => {
       const clase = precioEstadoClaseReg(p);
-      const badge = clase === 'activo' ? '<div class="precio-badge-activo">ACTIVO</div>' : clase === 'vencido' ? '<div class="precio-badge-vencido">FINALIZADA</div>' : '';
-      return '<div class="precio-item ' + clase + '"><div class="precio-periodo">' + escapeHtmlReg(p.periodo || '') + '</div><div class="precio-valor">' + escapeHtmlReg(p.valor || '') + '</div><div class="precio-desc">' + escapeHtmlReg(p.desc || '') + '</div>' + badge + '</div>';
+      const badge = p.oculto ? '<div class="precio-badge-vencido">OCULTO</div>' : clase === 'activo' ? '<div class="precio-badge-activo">ACTIVO</div>' : clase === 'vencido' ? '<div class="precio-badge-vencido">FINALIZADA</div>' : '';
+      const estilo = p.oculto ? ' style="opacity:.45;"' : '';
+      return '<div class="precio-item ' + clase + '"' + estilo + '><div class="precio-periodo">' + escapeHtmlReg(p.periodo || '') + '</div><div class="precio-valor">' + escapeHtmlReg(p.valor || '') + '</div><div class="precio-desc">' + escapeHtmlReg(p.desc || '') + '</div>' + badge + '</div>';
     };
     const panel = document.getElementById('precios-panel');
     const preciosPanelTituloHtml = '<div class="precios-panel-title"><span>💰 Precios de inscripción</span><button class="btn-reg-editar btn-reg-editar-claro" onclick="abrirModalPrecios()">🔧 Editar</button></div>';
@@ -884,6 +918,8 @@
     document.getElementById('modalWaTituloReg').value      = contenidoReg.waTitulo || '';
     document.getElementById('modalWaCaptionReg').value     = contenidoReg.waCaption || '';
     document.getElementById('modalWaQrFileReg').value      = '';
+    document.getElementById('modalOcultoAvisoReg').checked = contenidoReg.ocultoAviso === true;
+    document.getElementById('modalOcultoWaReg').checked    = contenidoReg.ocultoWa === true;
     document.getElementById('regModalContenido').classList.add('show');
   }
 
@@ -908,7 +944,9 @@
         avisoTexto: document.getElementById('modalAvisoTextoReg').value,
         waTitulo: document.getElementById('modalWaTituloReg').value,
         waCaption: document.getElementById('modalWaCaptionReg').value,
-        waQrUrl: waQrUrl
+        waQrUrl: waQrUrl,
+        ocultoAviso: document.getElementById('modalOcultoAvisoReg').checked,
+        ocultoWa: document.getElementById('modalOcultoWaReg').checked
       };
       const resp = await gasPostReg({ action: 'guardarRegistroContenido', contenido: nuevo });
       if (!resp.ok) throw new Error(resp.error || 'Error al guardar');
@@ -924,7 +962,7 @@
   }
 
   function abrirModalPrecios() {
-    const base = { periodo: '', valor: '', desc: '', desde: '', hasta: '' };
+    const base = { periodo: '', valor: '', desc: '', desde: '', hasta: '', oculto: false };
     const periodos = (preciosReg.periodos && preciosReg.periodos.length ? preciosReg.periodos : [1,2,3].map(id => Object.assign({ id }, base)));
     periodos.forEach((p, i) => {
       const n = i + 1;
@@ -933,6 +971,7 @@
       document.getElementById('modalPrecioDesc' + n).value    = p.desc || '';
       document.getElementById('modalPrecioDesde' + n).value   = p.desde || '';
       document.getElementById('modalPrecioHasta' + n).value   = p.hasta || '';
+      document.getElementById('modalPrecioOculto' + n).checked = p.oculto === true;
     });
     document.getElementById('regModalPrecios').classList.add('show');
   }
@@ -948,7 +987,8 @@
         valor: document.getElementById('modalPrecioValor' + n).value.trim(),
         desc: document.getElementById('modalPrecioDesc' + n).value.trim(),
         desde: document.getElementById('modalPrecioDesde' + n).value,
-        hasta: document.getElementById('modalPrecioHasta' + n).value
+        hasta: document.getElementById('modalPrecioHasta' + n).value,
+        oculto: document.getElementById('modalPrecioOculto' + n).checked
       }));
       const resp = await gasPostReg({ action: 'guardarPreciosRegistro', periodos: periodos });
       if (!resp.ok) throw new Error(resp.error || 'Error al guardar');
@@ -1003,6 +1043,12 @@
     if (window.esperarRol) await window.esperarRol();
     if (window.esStaffCompleto && window.esStaffCompleto()) {
       document.body.classList.add('staff-mode');
+      // La detección de staff es async -- si algo ya se ocultó por completo
+      // en el primer render (público), hay que volver a aplicar la
+      // visibilidad ahora que se sabe que es staff (atenuado, no oculto).
+      aplicarVisibilidadReg(document.querySelector('.reg-aviso'), contenidoReg.ocultoAviso === true);
+      aplicarVisibilidadReg(document.querySelector('.wa-card'), contenidoReg.ocultoWa === true);
+      renderPreciosReg();
     }
   })();
   // Único punto que decide qué opciones del <select> se ven: primero
