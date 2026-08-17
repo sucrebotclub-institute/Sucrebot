@@ -1403,6 +1403,7 @@ function confirmarIntentoDrones(){
   const btnConfirmar=document.getElementById('btn-confirmar-drones');
   if(btnConfirmar)btnConfirmar.style.display='none';
   registrarIntento(tiempo);
+  if(tiempo==='DNF'&&participanteActual)showToast('⛔ DNF — '+participanteActual.robot);
 }
 
 // ── REINICIAR CRONÓMETRO ─────────────────────────────────────────
@@ -1657,8 +1658,21 @@ function marcarDNF(){
   if(intentosLog.length>=maxIntentos){showToast('⚠️ '+participanteActual.robot+' ya completó sus intentos',true);return;}
   if(!cronoInterval){showToast('⚠️ Inicia el cronómetro antes de marcar DNF',true);return;}
   clearInterval(cronoInterval);cronoInterval=null;
-  document.getElementById('crono-display').className='crono-display dnf';document.getElementById('cronometro').textContent='DNF';document.getElementById('crono-status').textContent='DID NOT FINISH';document.getElementById('btn-dnf').style.display='none';
-  bloquearBtn();registrarIntento('DNF');enviarSerial('S');showToast('⛔ DNF — '+participanteActual.robot);
+  document.getElementById('crono-display').className='crono-display dnf';document.getElementById('cronometro').textContent='DNF';document.getElementById('btn-dnf').style.display='none';
+  bloquearBtn();
+  if(CATS_PUNTOS.includes(categoriaActual)){
+    // Mismo criterio que detenerCrono(): tampoco se registra todavía --
+    // un DNF (ej. drone se estrelló) puede seguir sumando puntos por lo
+    // que sí alcanzó a hacer antes de fallar.
+    tiempoDronesPendiente='DNF';
+    document.getElementById('crono-status').textContent='DNF · Agrega los puntos y confirma';
+    const btnConfirmar=document.getElementById('btn-confirmar-drones');
+    if(btnConfirmar)btnConfirmar.style.display='block';
+    enviarSerial('S');
+    return;
+  }
+  document.getElementById('crono-status').textContent='DID NOT FINISH';
+  registrarIntento('DNF');enviarSerial('S');showToast('⛔ DNF — '+participanteActual.robot);
 }
 
 function tickCrono(){if(!cronoInicio)return;const t=Date.now()-cronoInicio;const cs=Math.floor((t%1000)/10);const sg=Math.floor((t/1000)%60);const mn=Math.floor(t/60000);document.getElementById('cronometro').textContent=String(mn).padStart(2,'0')+':'+String(sg).padStart(2,'0')+':'+String(cs).padStart(2,'0');}
