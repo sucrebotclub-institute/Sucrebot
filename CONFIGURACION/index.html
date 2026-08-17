@@ -182,6 +182,7 @@
             <button class="config-nav-item" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
             <button class="config-nav-item" data-section="ediciones" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
             <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">✏️</span> Editar participante</button>
+            <button class="config-nav-item" data-section="correos" onclick="mostrarSeccion('correos')"><span class="config-nav-icon">📧</span> Correos</button>
             <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
             <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Categorías de edición</button>
             <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
@@ -316,6 +317,51 @@
           <div id="cambcat-resultados"></div>
 
           <div id="cambcat-seleccionado" style="display:none;"></div>
+        </div>
+
+        <div class="config-card config-section" data-section="correos">
+          <div class="config-card-title">📧 Correos</div>
+          <div class="config-card-desc">
+            Texto, asunto y color de acento de los 2 correos automáticos que recibe un
+            participante: al inscribirse (⏳ En revisión) y al ser aprobado (✅ con su
+            código QR). El resto del diseño (logos, layout, tabla de datos, caja del QR)
+            queda fijo. Usá <code>{{nombre}}</code> en el asunto para que se reemplace por
+            el nombre real de cada participante.
+          </div>
+
+          <div id="correos-loading" class="loading-msg"><span class="spinner"></span> Cargando...</div>
+
+          <div id="correos-contenido" style="display:none;flex-direction:column;gap:20px;">
+
+            <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;">
+              <div class="estado-label" style="margin-bottom:10px;">⏳ Correo "En revisión" (al inscribirse)</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <input type="text" id="correo-rev-asunto" class="form-control" placeholder="Asunto">
+                <textarea id="correo-rev-intro" class="form-control" rows="3" placeholder="Texto principal"></textarea>
+                <textarea id="correo-rev-pie" class="form-control" rows="2" placeholder="Texto de pie (opcional, se oculta si queda vacío)"></textarea>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span class="estado-label" style="margin:0;font-size:.72rem;">Color de acento</span>
+                  <input type="color" id="correo-rev-color" class="color-swatch">
+                </div>
+              </div>
+              <button class="btn-personal-add" id="btn-correo-rev-guardar" onclick="guardarEmailRevisionUI()" style="margin-top:12px;">💾 Guardar</button>
+            </div>
+
+            <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;">
+              <div class="estado-label" style="margin-bottom:10px;">✅ Correo "Aprobado" (con código QR)</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <input type="text" id="correo-apr-asunto" class="form-control" placeholder="Asunto">
+                <textarea id="correo-apr-intro" class="form-control" rows="3" placeholder="Texto principal"></textarea>
+                <textarea id="correo-apr-pie" class="form-control" rows="2" placeholder="Texto de pie (opcional, se oculta si queda vacío)"></textarea>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span class="estado-label" style="margin:0;font-size:.72rem;">Color de acento</span>
+                  <input type="color" id="correo-apr-color" class="color-swatch">
+                </div>
+              </div>
+              <button class="btn-personal-add" id="btn-correo-apr-guardar" onclick="guardarEmailAprobadoUI()" style="margin-top:12px;">💾 Guardar</button>
+            </div>
+
+          </div>
         </div>
 
         <div class="config-card config-section" data-section="dupcat">
@@ -706,6 +752,7 @@
     cargarCertificadoConfig();
     cargarCertificadoConfigTerceros();
     cargarCertificadoRoles();
+    cargarEmailsRegistro();
   });
 
   function mostrarSeccion(id) {
@@ -2059,6 +2106,88 @@
     if (window._infoEdicionPromise) await window._infoEdicionPromise;
     const fechaEdicion = (document.getElementById('edic-fecha').value || '').trim();
     previewCertificado(null, 'Nombre de Ejemplo', { categoria: 'Categoría de Ejemplo' }, 0, '1er', fechaEdicion || new Date().toLocaleDateString('es-EC'));
+  }
+
+  // ── Correos de registro (En revisión / Aprobado) — texto/asunto/color editables ──
+  var EMAIL_REV_DEFAULT = {
+    asunto: '⏳ SucreBot — Registro recibido · {{nombre}}',
+    textoIntro: 'Recibimos tu inscripción al Torneo SucreBot. Nuestro equipo revisará tu comprobante de pago y aprobará tu registro en los próximos días. Una vez aprobado, recibirás un segundo correo con tu código QR de acceso al evento.',
+    textoPie: '',
+    colorAcento: '#1a5ca8'
+  };
+  var EMAIL_APR_DEFAULT = {
+    asunto: '✅ SucreBot — Registro aprobado · {{nombre}}',
+    textoIntro: 'Tu inscripción al Torneo SucreBot ha sido revisada y aprobada. A continuación encontrarás tu código QR personal — preséntalo el día del evento para acceder a la competencia.',
+    textoPie: 'Recuerda presentar este código QR a la entrada del evento. Si tienes alguna consulta escríbenos a sucrebotclub@tecnologicosucre.edu.ec',
+    colorAcento: '#1a5ca8'
+  };
+
+  async function cargarEmailsRegistro() {
+    let datos = null;
+    try { datos = await gasGet({ action: 'getEmailsRegistro' }); } catch (e) {}
+    const rev = (datos && datos.revision && typeof datos.revision === 'object') ? datos.revision : EMAIL_REV_DEFAULT;
+    const apr = (datos && datos.aprobado && typeof datos.aprobado === 'object') ? datos.aprobado : EMAIL_APR_DEFAULT;
+
+    document.getElementById('correo-rev-asunto').value = rev.asunto || EMAIL_REV_DEFAULT.asunto;
+    document.getElementById('correo-rev-intro').value = rev.textoIntro || EMAIL_REV_DEFAULT.textoIntro;
+    document.getElementById('correo-rev-pie').value = rev.textoPie || '';
+    document.getElementById('correo-rev-color').value = rev.colorAcento || EMAIL_REV_DEFAULT.colorAcento;
+
+    document.getElementById('correo-apr-asunto').value = apr.asunto || EMAIL_APR_DEFAULT.asunto;
+    document.getElementById('correo-apr-intro').value = apr.textoIntro || EMAIL_APR_DEFAULT.textoIntro;
+    document.getElementById('correo-apr-pie').value = apr.textoPie || '';
+    document.getElementById('correo-apr-color').value = apr.colorAcento || EMAIL_APR_DEFAULT.colorAcento;
+
+    document.getElementById('correos-loading').style.display = 'none';
+    document.getElementById('correos-contenido').style.display = 'flex';
+  }
+
+  async function guardarEmailRevisionUI() {
+    const btn = document.getElementById('btn-correo-rev-guardar');
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = '⏳ Guardando...';
+    try {
+      const payload = {
+        action: 'guardarEmailRevision',
+        asunto: document.getElementById('correo-rev-asunto').value.trim(),
+        textoIntro: document.getElementById('correo-rev-intro').value.trim(),
+        textoPie: document.getElementById('correo-rev-pie').value.trim(),
+        colorAcento: document.getElementById('correo-rev-color').value
+      };
+      const resp = await gasPost(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Correo "En revisión" guardado');
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  }
+
+  async function guardarEmailAprobadoUI() {
+    const btn = document.getElementById('btn-correo-apr-guardar');
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = '⏳ Guardando...';
+    try {
+      const payload = {
+        action: 'guardarEmailAprobado',
+        asunto: document.getElementById('correo-apr-asunto').value.trim(),
+        textoIntro: document.getElementById('correo-apr-intro').value.trim(),
+        textoPie: document.getElementById('correo-apr-pie').value.trim(),
+        colorAcento: document.getElementById('correo-apr-color').value
+      };
+      const resp = await gasPost(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Correo "Aprobado" guardado');
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
   }
 
   // ── Diseño del certificado para terceros (independiente del de
