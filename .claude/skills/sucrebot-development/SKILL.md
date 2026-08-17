@@ -3,7 +3,7 @@ name: sucrebot-development
 description: Use this skill when working on SucreBot, the robotics competition management platform for Instituto Superior Universitario Sucre. Triggers include requests to modify SucreBot pages (INICIO, REGISTRO, REGISTRO-DEV, MI-REGISTRO, PARTICIPANTES_REGISTRADOS, ESC-NER, CRONOMETRO, INSECTOS, PANEL-CALIFICACION, PANEL-BRACKET, PANTALLA, RESULTADOS, CERTIFICADOS, GENERAR-CERTIFICADOS, MANILLAS, FAQ, REGLAMENTO, INSTITUCION), fix bugs in registration/scanner/timing/results/certificate/scoring/bracket/manillas/insectos systems, update Google Apps Script backend, adjust UI styling (institutional blue #1a5ca8, Bebas Neue/Exo 2/Orbitron/DM Mono fonts), integrate with Google Sheets/Google Drive APIs, work with the staff-token auth system, troubleshoot QR scanning/category locking/Web Serial/bracket issues, or write console test/cleanup scripts.
 ---
 
-# SucreBot Development Skill (actualizado 6-ago-2026)
+# SucreBot Development Skill (actualizado 17-ago-2026)
 
 ## Project Overview
 
@@ -1692,5 +1692,61 @@ Mismo patrón exacto que `config_colores_categoria`/`config_emojis_categoria` (s
 
 ---
 
+---
+
+### Sprint 17 ago 2026 — Drones DNF+puntos, "Editar participante", bug de grid sitewide, header editable
+
+**Contexto**: sesión de varios pedidos sueltos en cadena, sin un tema único — arrancó como continuación de la feature de puntos-después-de-detener de Drones (sprint anterior) y derivó en varios fixes de UI/UX y una nueva feature global de header.
+
+#### CRONOMETRO — Drones/copia: DNF también permite agregar puntos después
+El fix previo (agregar puntos después de "Detener") no cubría el flujo de `marcarDNF()`, que seguía registrando el intento de inmediato. Se aplicó el mismo patrón de confirmación pendiente (`tiempoDronesPendiente='DNF'`, botón "✅ Confirmar intento" antes de llamar a `registrarIntento`) — ahora un dron que se estrelló puede seguir sumando los puntos que sí alcanzó a hacer antes de fallar. La regla de ranking pedida ("completados arriba, DNF abajo ordenados entre sí por puntos") **ya estaba correctamente implementada** en las 4 vistas relevantes (ronda actual, ranking general, Excel, guardado de podio) desde el sprint anterior — no hizo falta tocar nada ahí.
+
+#### CRONOMETRO — editor "Corregir intento": ahora también edita puntos
+El modal de corrección de un intento ya registrado (🔧 junto a cada intento) solo permitía tiempo manual/DNF/borrar/volver a correr — sin forma de ajustar el puntaje de un intento de Drones ya confirmado. Nuevo botón "🎯 Editar puntos" (solo visible si `CATS_PUNTOS.includes(categoriaActual)`), precarga el valor actual, guarda manteniendo el mismo tiempo/intento (borra y re-envía la fila a GAS con los puntos nuevos vía `eliminarResultadoGAS`+`guardarResultadoGAS`).
+
+#### Bug real encontrado: CRONOMETRO reportó podio "no aparece en RESULTADOS"
+Investigación completa (ver metodología abajo) confirmó que el código cliente arma y envía correctamente `publicarPodioCalificacion` con la categoría y el ranking real — no había ningún bug de código. Un segundo intento de "Guardar Podio" sí publicó bien. Conclusión: hipo transitorio de red/conexión, no bug — documentado para no repetir la investigación completa si vuelve a pasar (revisar primero con un segundo intento).
+
+**Metodología usada para descartar el bug sin tocar producción**: `curl` con token incorrecto a propósito contra la acción sospechosa (confirma que la acción existe y está desplegada, sin mutar nada — distingue "no autorizado" de "acción no reconocida"); prueba en navegador con `window.fetch` interceptado (registra el payload real que arma el cliente, sin pegarle a la red real) para confirmar que el JS arma la petición correcta; lectura directa vía GET pública (`getPodioPublicado`, `getResultadosPublicados`) para confirmar el estado real en el Sheet antes/después.
+
+#### INICIO — botones "Editar portada"/"Editar tarjetas": el reporte era de escritorio, no mobile
+Primer intento de fix asumió que el problema era mobile (spacing insuficiente) — corregido igual (mejora real), pero el usuario aclaró después que las capturas eran de escritorio. Investigando ahí se encontró un bug real y más grande:
+
+**Bug sitewide: el nav fijo (`.sticky-header`) mide 209px en escritorio pero `body { padding-top: 174px }` (shared/css/styles.css) — desfase de 35px preexistente desde el diseño original, nunca actualizado cuando el header creció.** Tapaba los primeros 35px de cualquier sección bajo el nav **en las ~21 páginas del sitio**, no solo INICIO — se notaba más en "Editar portada" (quedaba cortado a la mitad) porque cae justo en esa franja. Fix: `padding-top: 210px`. Verificado con `getBoundingClientRect()` en varios anchos (900/1024/1280px) antes y después del fix — el desfase era constante en todos, no dependía del ancho.
+
+De paso, "Editar tarjetas" (INICIO) se superponía directamente sobre la primera tarjeta (Instagram/Facebook según el ancho) en escritorio — sin espacio reservado arriba del botón absoluto. Fix: `padding-top` en `.quick-cards-wrap`, con reset a 0 en mobile (donde el botón ya es `position:static`).
+
+#### CONFIGURACION — "Cambiar categoría" → "Editar participante" (edición completa + eliminar)
+Extendida de solo-categoría a los 8 campos del participante (nombre/institución/ciudad/robot/contacto/correo/categoría/subcapitán), reutilizando `actualizarParticipanteStaff` (ya existía, del sprint 16-ago). Nuevo botón "🗑️ Eliminar participante" sobre la acción `eliminarParticipante` — **ya existía en `Code.gs` desde antes pero no tenía ningún botón en ninguna página** (`grep` del repo completo confirmó cero usos antes de este sprint). Ningún cambio de backend necesario para ninguna de las dos cosas.
+
+Panel reorganizado en 2 secciones con título y etiqueta fija sobre cada campo (antes filas sueltas solo con placeholder, difícil de escanear con 8 campos) — mismo patrón que ya usa el modal de PARTICIPANTES_REGISTRADOS, adaptado al tema oscuro de CONFIGURACION.
+
+El menú lateral de CONFIGURACION (`.config-sidebar`) dejó de ser `position:sticky` — con la cantidad de secciones actual (12+), quedarse fijo tapaba espacio útil al scrollear una sección larga; ahora se desplaza con la página.
+
+#### Bug de CSS Grid encontrado y corregido en 3 lugares (mismo patrón)
+Al reorganizar el panel de "Editar participante" en un grid de 2 columnas, el `<select>` de categoría (con nombres largos tipo "Seguidor de línea ST (Amateur) [Copia]") empujaba su columna más allá del ancho disponible, arrastrando las filas de abajo (subcapitán, botones, "Eliminar participante") fuera del borde de la tarjeta. **Causa: un item de CSS Grid no se achica por debajo del ancho mínimo de su contenido (`min-width:auto` por default) salvo que se fuerce `min-width:0` explícitamente** — un `<select>` con opciones largas puede inflar toda una columna `1fr` más allá de lo que el layout esperaría. `box-sizing:border-box`/`width:100%` en el input/select **no alcanza** para evitarlo si el contenedor grid item no tiene `min-width:0` — el bug está un nivel más arriba de lo que parece a simple vista.
+
+Auditado el resto del sitio buscando el mismo patrón (grid de columnas fijas + `<select>` de categoría compartiendo fila): encontrado también en **MI-REGISTRO** (`.form-field`, edición de datos del participante) y **PARTICIPANTES_REGISTRADOS** (`.modal-field`, modal "Editar datos" del sprint 16-ago) — ninguno se veía roto todavía con los datos reales actuales (los nombres de categoría en juego no eran lo bastante largos a 640px de ancho), pero es el mismo bug latente, corregido preventivamente. `REGISTRO`/`REGISTRO-DEV` tienen su select de categoría en un grid de una sola columna (sin riesgo); `CERTIFICADOS` usa una barra flex con `overflow-x:auto` en vez de grid (sin riesgo).
+
+**Cómo se reprodujo sin depender de un participante real con nombre largo**: se extrajo el HTML/CSS real de PARTICIPANTES_REGISTRADOS vía `fetch()` en el navegador de pruebas y se reconstruyó el modal aislado (mismo `.modal-card` a 640px, mismo `<select>` completo con las 25 opciones reales) para medir `getBoundingClientRect()` del grid vs. el campo — más confiable que adivinar por inspección visual.
+
+#### Header — nuevo texto editable entre los dos logos (todas las páginas)
+`shared/components/header.html` se incluye vía `data-include` en las ~21 páginas del sitio — agregar el HTML/CSS/JS ahí mismo (en vez de duplicar en cada página) alcanza para que la feature aparezca en todo el sitio de una. `load-components.js` sí ejecuta `<script>` inyectados dentro de un componente incluido (los reconstruye con `createElement('script')` y los appendea a `body`), así que un componente compartido puede traer su propia lógica sin tocar el loader.
+
+Nuevo botón "🔧" (solo staff, mismo patrón `esperarRol`/`esStaffCompleto`) abre un modal con: texto, tamaño de letra (px), color, tipo de letra (Orbitron/Exo 2/DM Mono — las 3 fuentes ya cargadas en el sitio) y un checkbox "Ocultar" que esconde el texto pero **deja el botón de editar visible** (si no, nadie podría revertir el ocultamiento sin editar el Sheet a mano). Se oculta automáticamente en mobile (`<640px`) para no apretar el header junto a los logos.
+
+**Bug real encontrado en la propia implementación, durante la prueba**: `function gasUrl(){ return (window.CONFIG && CONFIG.GAS_URL) ? ... }` — nunca funcionaba, porque **una variable `const`/`let` declarada a nivel superior de un `<script>` clásico (no-module) NO se convierte en propiedad de `window`**, aunque sí sea accesible como identificador global suelto (`CONFIG` a secas funciona, `window.CONFIG` no). Patrón correcto ya usado en otros archivos del proyecto (`shared/js/clubes.js`): `typeof CONFIG === 'undefined'`. Confirmado con `typeof window.CONFIG` (`"undefined"`) vs `typeof CONFIG` (`"object"`) en la consola del navegador de pruebas.
+
+Backend: 2 acciones nuevas en `Code.gs` (`getHeaderSubtitulo` pública, `guardarHeaderSubtitulo` con `staffToken`), mismo patrón `estados`/`config_*` que el resto de contenido editable del sitio (`config_header_subtitulo`). Desplegado y verificado con `curl` contra producción antes de avisar terminado — nuevo Deployment ID `AKfycby1PL-OnvIQmQV_qDvUM3Z0uvJ76yO4tqe4g7BLa4e4Nu3ohS_fQsQ5M04yBAnU7K2K7Q`.
+
+#### Principios nuevos
+- **Un reporte de bug con captura puede tener el dispositivo equivocado si no se pregunta explícitamente** — el primer fix (mobile) fue una mejora real pero no el bug que realmente se estaba reportando (escritorio). Cuando el fix "parece" resolver el síntoma pero el usuario no lo confirma visualmente antes de seguir, vale la pena preguntar en qué dispositivo/resolución vio el problema, sobre todo si el primer intento de fix fue una suposición.
+- **Un desfase de layout que "siempre estuvo ahí" puede pasar desapercibido durante meses si nadie mira justo esa franja de la pantalla** — el bug del `padding-top` de 35px llevaba ahí desde el diseño original; recién se notó cuando se agregó un botón de edición que cae justo en esa zona ciega.
+- **`min-width:0` en el item de un CSS Grid (no en el input/select de adentro) es la forma correcta de evitar que contenido largo infle una columna `1fr`** — buscar este patrón (grid de columnas fijas + un `<select>` u otro contenido de ancho variable) proactivamente al reorganizar cualquier formulario en grid, no solo reaccionar cuando ya se ve roto con datos reales.
+- **Componentes compartidos (`shared/components/*.html`) son el lugar correcto para features que deben aparecer en TODO el sitio** — evita duplicar HTML/JS en 21 páginas, y `load-components.js` ya soporta `<script>` embebidos sin cambios.
+- **`const`/`let` de nivel superior en un script clásico no cuelga de `window`** — al escribir código nuevo que necesita chequear si una variable global (`CONFIG`, `AUSPICIANTES`, etc.) está disponible, usar `typeof X !== 'undefined'`, nunca `window.X`, salvo que se sepa con certeza que esa variable en particular se declaró con `var` o se asignó explícitamente a `window`.
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 16 agosto 2026**
+**SKILL.md actualizado por última vez: 17 agosto 2026**
