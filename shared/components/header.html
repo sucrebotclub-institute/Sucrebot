@@ -2,5 +2,146 @@
   <div class="logo-wrap">
     <img src="../shared/images/club-robotica-fondo-blanco.png" alt="Club de Robótica Sucre" style="height:72px;width:auto;object-fit:contain;" />
   </div>
+  <div id="headerSubtituloWrap" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;padding:0 12px;">
+    <span id="headerSubtitulo" style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1a5ca8;text-align:center;line-height:1.4;"></span>
+    <button id="btnEditarHeaderSub" onclick="abrirModalHeaderSub()" style="display:none;flex-shrink:0;background:#e8f0ff;color:#1a5ca8;border:1px solid rgba(26,92,168,0.25);border-radius:6px;padding:5px 10px;font-family:'Exo 2',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">🔧</button>
+  </div>
   <img src="../shared/images/logosucre.png" alt="Instituto Superior Universitario Sucre" style="height:58px;width:auto;max-width:260px;object-fit:contain;" />
 </header>
+
+<div id="modalHeaderSub" style="display:none;position:fixed;inset:0;background:rgba(10,15,25,0.7);z-index:99998;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0d1f33;border:1px solid rgba(91,200,240,0.35);border-radius:14px;padding:24px;max-width:420px;width:100%;font-family:'Exo 2',sans-serif;">
+    <div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:1px;color:#5bc8f0;text-transform:uppercase;margin-bottom:16px;">🔧 Editar texto del header</div>
+
+    <label style="display:block;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;color:#4a7a9a;margin-bottom:5px;">Texto</label>
+    <textarea id="hsTexto" rows="2" style="width:100%;box-sizing:border-box;background:#0a1526;border:1px solid #1a3a5a;border-radius:8px;color:#e0eaff;font-family:'Exo 2',sans-serif;font-size:13px;padding:10px;margin-bottom:14px;resize:vertical;"></textarea>
+
+    <div style="display:flex;gap:12px;margin-bottom:14px;">
+      <div style="flex:1;">
+        <label style="display:block;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;color:#4a7a9a;margin-bottom:5px;">Tamaño (px)</label>
+        <input id="hsTamano" type="number" min="8" max="32" style="width:100%;box-sizing:border-box;background:#0a1526;border:1px solid #1a3a5a;border-radius:8px;color:#e0eaff;font-family:'Exo 2',sans-serif;font-size:13px;padding:9px 10px;">
+      </div>
+      <div style="flex:1;">
+        <label style="display:block;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;color:#4a7a9a;margin-bottom:5px;">Color</label>
+        <input id="hsColor" type="color" style="width:100%;box-sizing:border-box;height:36px;background:#0a1526;border:1px solid #1a3a5a;border-radius:8px;padding:2px;cursor:pointer;">
+      </div>
+    </div>
+
+    <label style="display:block;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;color:#4a7a9a;margin-bottom:5px;">Tipo de letra</label>
+    <select id="hsFuente" style="width:100%;box-sizing:border-box;background:#0a1526;border:1px solid #1a3a5a;border-radius:8px;color:#e0eaff;font-family:'Exo 2',sans-serif;font-size:13px;padding:9px 10px;margin-bottom:14px;">
+      <option value="'Orbitron',monospace">Orbitron</option>
+      <option value="'Exo 2',sans-serif">Exo 2</option>
+      <option value="'DM Mono',monospace">DM Mono</option>
+    </select>
+
+    <label style="display:flex;align-items:center;gap:8px;color:#c8d8f0;font-size:12.5px;margin-bottom:20px;cursor:pointer;">
+      <input id="hsOculto" type="checkbox" style="width:16px;height:16px;cursor:pointer;">
+      Ocultar (no mostrar en el header de ninguna página)
+    </label>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="guardarHeaderSub()" id="hsBtnGuardar" style="flex:1;height:42px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:8px;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">✅ Guardar</button>
+      <button onclick="cerrarModalHeaderSub()" style="background:transparent;border:1px solid #1a3a5a;color:#6a8aaa;border-radius:8px;padding:0 16px;height:42px;font-family:'Exo 2',sans-serif;font-size:12px;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media (max-width: 640px) {
+    #headerSubtituloWrap { display: none !important; }
+  }
+</style>
+<script>
+(function(){
+  function gasUrl(){ return (typeof CONFIG !== 'undefined' && CONFIG.GAS_URL) ? CONFIG.GAS_URL() : null; }
+  var CACHE_KEY = 'sucrebot_header_subtitulo_cache';
+  var DEFAULTS = { texto: '', fontSize: 12, fontFamily: "'Orbitron',monospace", color: '#1a5ca8', oculto: false };
+  var _actual = Object.assign({}, DEFAULTS);
+
+  function aplicar(cfg){
+    _actual = Object.assign({}, DEFAULTS, cfg || {});
+    var wrap = document.getElementById('headerSubtituloWrap');
+    var el = document.getElementById('headerSubtitulo');
+    if (!el || !wrap) return;
+    el.textContent = _actual.texto || '';
+    el.style.fontSize = _actual.fontSize + 'px';
+    el.style.fontFamily = _actual.fontFamily;
+    el.style.color = _actual.color;
+    // El texto se oculta si "oculto" está marcado, pero el botón de editar
+    // (fuera de este span) sigue visible para staff -- si no, nadie podría
+    // volver a des-ocultarlo sin editar el Sheet a mano.
+    el.style.display = _actual.oculto ? 'none' : '';
+  }
+
+  async function cargarHeaderSubtitulo(){
+    var url = gasUrl();
+    var cache = null;
+    try { var raw = localStorage.getItem(CACHE_KEY); if (raw) cache = JSON.parse(raw); } catch(e) {}
+    if (cache) aplicar(cache);
+    if (!url) return;
+    try {
+      var r = await fetch(url + '?action=getHeaderSubtitulo', { cache: 'no-store' });
+      var d = await r.json();
+      if (d && typeof d.texto === 'string') {
+        aplicar(d);
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch(e) {}
+      }
+    } catch(e) { /* sin conexión, se queda con el cache */ }
+  }
+
+  window.abrirModalHeaderSub = function(){
+    document.getElementById('hsTexto').value = _actual.texto || '';
+    document.getElementById('hsTamano').value = _actual.fontSize;
+    document.getElementById('hsColor').value = _actual.color;
+    document.getElementById('hsFuente').value = _actual.fontFamily;
+    document.getElementById('hsOculto').checked = !!_actual.oculto;
+    document.getElementById('modalHeaderSub').style.display = 'flex';
+  };
+
+  window.cerrarModalHeaderSub = function(){
+    document.getElementById('modalHeaderSub').style.display = 'none';
+  };
+
+  window.guardarHeaderSub = async function(){
+    var nuevo = {
+      texto: document.getElementById('hsTexto').value.trim(),
+      fontSize: parseInt(document.getElementById('hsTamano').value, 10) || DEFAULTS.fontSize,
+      color: document.getElementById('hsColor').value,
+      fontFamily: document.getElementById('hsFuente').value,
+      oculto: document.getElementById('hsOculto').checked
+    };
+    var btn = document.getElementById('hsBtnGuardar');
+    btn.disabled = true;
+    try {
+      var url = gasUrl();
+      var r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ action: 'guardarHeaderSubtitulo', staffToken: localStorage.getItem('sucrebot_staff_token') || '' }, nuevo))
+      });
+      var d = await r.json();
+      if (!d.ok) throw new Error(d.error || 'Error desconocido');
+      aplicar(nuevo);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(nuevo)); } catch(e) {}
+      cerrarModalHeaderSub();
+    } catch(e) {
+      alert('⚠️ No se pudo guardar: ' + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  async function revisarStaffHeaderSub(){
+    if (window.esperarRol) await window.esperarRol();
+    if (window.esStaffCompleto && window.esStaffCompleto()) {
+      var btn = document.getElementById('btnEditarHeaderSub');
+      if (btn) btn.style.display = 'inline-flex';
+    }
+  }
+
+  document.addEventListener('componentsLoaded', function(){
+    cargarHeaderSubtitulo();
+    revisarStaffHeaderSub();
+  });
+})();
+</script>
