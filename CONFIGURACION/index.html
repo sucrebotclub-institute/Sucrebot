@@ -334,6 +334,19 @@
           <div id="correos-contenido" style="display:none;flex-direction:column;gap:20px;">
 
             <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;">
+              <div class="estado-label" style="margin-bottom:4px;">🏷️ Encabezado (compartido por los 2 correos)</div>
+              <div class="config-card-desc" style="margin:0 0 10px;">
+                El título grande y el subtítulo chico que aparecen arriba de los 2 correos, sobre
+                el fondo de color de acento — mismo texto en ambos.
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <input type="text" id="correo-hdr-titulo" class="form-control" style="flex:1;min-width:160px;" placeholder="Título (ej. SUCREBOT)">
+                <input type="text" id="correo-hdr-subtitulo" class="form-control" style="flex:1;min-width:160px;" placeholder="Subtítulo (ej. Torneo de Robótica)">
+              </div>
+              <button class="btn-personal-add" id="btn-correo-hdr-guardar" onclick="guardarEmailHeaderUI()" style="margin-top:12px;">💾 Guardar</button>
+            </div>
+
+            <div style="background:rgba(255,255,255,.03);border:1px solid var(--border,#2a3550);border-radius:10px;padding:16px;">
               <div class="estado-label" style="margin-bottom:10px;">⏳ Correo "En revisión" (al inscribirse)</div>
               <div style="display:flex;flex-direction:column;gap:8px;">
                 <input type="text" id="correo-rev-asunto" class="form-control" placeholder="Asunto">
@@ -2121,12 +2134,17 @@
     textoPie: 'Recuerda presentar este código QR a la entrada del evento. Si tienes alguna consulta escríbenos a sucrebotclub@tecnologicosucre.edu.ec',
     colorAcento: '#1a5ca8'
   };
+  var EMAIL_HDR_DEFAULT = { titulo: 'SUCREBOT', subtitulo: 'Torneo de Robótica' };
 
   async function cargarEmailsRegistro() {
     let datos = null;
     try { datos = await gasGet({ action: 'getEmailsRegistro' }); } catch (e) {}
     const rev = (datos && datos.revision && typeof datos.revision === 'object') ? datos.revision : EMAIL_REV_DEFAULT;
     const apr = (datos && datos.aprobado && typeof datos.aprobado === 'object') ? datos.aprobado : EMAIL_APR_DEFAULT;
+    const hdr = (datos && datos.header && typeof datos.header === 'object') ? datos.header : EMAIL_HDR_DEFAULT;
+
+    document.getElementById('correo-hdr-titulo').value = hdr.titulo || EMAIL_HDR_DEFAULT.titulo;
+    document.getElementById('correo-hdr-subtitulo').value = hdr.subtitulo || '';
 
     document.getElementById('correo-rev-asunto').value = rev.asunto || EMAIL_REV_DEFAULT.asunto;
     document.getElementById('correo-rev-intro').value = rev.textoIntro || EMAIL_REV_DEFAULT.textoIntro;
@@ -2140,6 +2158,28 @@
 
     document.getElementById('correos-loading').style.display = 'none';
     document.getElementById('correos-contenido').style.display = 'flex';
+  }
+
+  async function guardarEmailHeaderUI() {
+    const btn = document.getElementById('btn-correo-hdr-guardar');
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = '⏳ Guardando...';
+    try {
+      const payload = {
+        action: 'guardarEmailHeader',
+        titulo: document.getElementById('correo-hdr-titulo').value.trim(),
+        subtitulo: document.getElementById('correo-hdr-subtitulo').value.trim()
+      };
+      const resp = await gasPost(payload);
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      showToast('✅ Encabezado guardado');
+    } catch (e) {
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
   }
 
   async function guardarEmailRevisionUI() {
