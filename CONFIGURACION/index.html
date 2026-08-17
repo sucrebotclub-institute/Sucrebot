@@ -176,7 +176,7 @@
             <button class="config-nav-item" data-section="categorias" onclick="mostrarSeccion('categorias')"><span class="config-nav-icon">🏷️</span> Categorías</button>
             <button class="config-nav-item" data-section="personal" onclick="mostrarSeccion('personal')"><span class="config-nav-icon">👥</span> Personal</button>
             <button class="config-nav-item" data-section="ediciones" onclick="mostrarSeccion('ediciones')"><span class="config-nav-icon">🏆</span> Ediciones</button>
-            <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">🔄</span> Cambiar categoría</button>
+            <button class="config-nav-item" data-section="cambcat" onclick="mostrarSeccion('cambcat')"><span class="config-nav-icon">✏️</span> Editar participante</button>
             <button class="config-nav-item" data-section="dupcat" onclick="mostrarSeccion('dupcat')"><span class="config-nav-icon">🧬</span> Duplicar categoría</button>
             <button class="config-nav-item" data-section="colores" onclick="mostrarSeccion('colores')"><span class="config-nav-icon">🎨</span> Categorías de edición</button>
             <button class="config-nav-item" data-section="limpiar" onclick="mostrarSeccion('limpiar')"><span class="config-nav-icon">🧹</span> Limpiar Sheet</button>
@@ -296,12 +296,13 @@
         </div>
 
         <div class="config-card config-section" data-section="cambcat">
-          <div class="config-card-title">🔄 Cambiar categoría de un participante</div>
+          <div class="config-card-title">✏️ Editar participante</div>
           <div class="config-card-desc">
-            Corrige la categoría de un participante ya registrado. Esto <strong>no</strong>
-            cambia su estado de aprobación ni actualiza manillas, certificados o brackets
-            que ya se hayan generado con la categoría anterior — revisá esos aparte si
-            corresponde.
+            Corrige los datos de un participante ya registrado (nombre, institución,
+            ciudad, robot, contacto, correo, categoría, subcapitán) o eliminalo por
+            completo. Esto <strong>no</strong> cambia su estado de aprobación ni
+            actualiza manillas, certificados o brackets que ya se hayan generado —
+            revisá esos aparte si corresponde.
           </div>
 
           <input type="text" id="cambcat-buscar" class="form-control" style="width:100%; margin-bottom:14px;" placeholder="Buscar por nombre, robot, institución o ID...">
@@ -1216,11 +1217,25 @@
     panel.innerHTML =
       '<div class="cambcat-panel">' +
         '<div class="cambcat-panel-nombre">' + (p.nombre || '—') + (p.robot ? ' · ' + p.robot : '') + '</div>' +
-        '<div class="cambcat-panel-sub">' + (p.institucion || '—') + ' · ID ' + p.id + ' · categoría actual: <strong>' + (p.categoria ? resolverNombreParaMostrar(p.categoria) : '—') + '</strong></div>' +
+        '<div class="cambcat-panel-sub">ID ' + p.id + '</div>' +
+        '<div class="cambcat-panel-row">' +
+          '<input type="text" id="cambcat-nombre" class="form-control" placeholder="Nombre" value="' + esc(p.nombre) + '">' +
+          '<input type="text" id="cambcat-institucion" class="form-control" placeholder="Institución" value="' + esc(p.institucion) + '">' +
+          '<input type="text" id="cambcat-ciudad" class="form-control" placeholder="Ciudad" value="' + esc(p.ciudad) + '">' +
+        '</div>' +
+        '<div class="cambcat-panel-row">' +
+          '<input type="text" id="cambcat-robot" class="form-control" placeholder="Robot" value="' + esc(p.robot) + '">' +
+          '<input type="text" id="cambcat-contacto" class="form-control" placeholder="Contacto" value="' + esc(p.contacto) + '">' +
+          '<input type="text" id="cambcat-correo" class="form-control" placeholder="Correo" value="' + esc(p.correo) + '">' +
+        '</div>' +
         '<div class="cambcat-panel-row">' +
           '<select id="cambcat-nueva" class="form-control"></select>' +
-          '<button class="btn-cambcat-guardar" id="btn-cambcat-guardar">✅ Guardar</button>' +
+          '<input type="text" id="cambcat-miembro2" class="form-control" placeholder="Subcapitán (opcional)" value="' + esc(p.miembro2) + '">' +
+        '</div>' +
+        '<div class="cambcat-panel-row">' +
+          '<button class="btn-cambcat-guardar" id="btn-cambcat-guardar">✅ Guardar cambios</button>' +
           '<button class="btn-cambcat-cancelar" onclick="cancelarCambCat()">Cancelar</button>' +
+          '<button class="btn-toggle cerrar" id="btn-cambcat-eliminar" style="margin-left:auto;">🗑️ Eliminar participante</button>' +
         '</div>' +
       '</div>';
 
@@ -1231,7 +1246,12 @@
       if (nombre === p.categoria) opt.selected = true;
       sel.appendChild(opt);
     });
-    document.getElementById('btn-cambcat-guardar').addEventListener('click', guardarCambioCategoria);
+    document.getElementById('btn-cambcat-guardar').addEventListener('click', guardarEdicionCambCat);
+    document.getElementById('btn-cambcat-eliminar').addEventListener('click', eliminarParticipanteCambCat);
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/"/g, '&quot;');
   }
 
   function cancelarCambCat() {
@@ -1240,25 +1260,53 @@
     document.getElementById('cambcat-seleccionado').innerHTML = '';
   }
 
-  async function guardarCambioCategoria() {
+  async function guardarEdicionCambCat() {
     const p = _cambcatSeleccionado;
     if (!p) return;
-    const nuevaCategoria = document.getElementById('cambcat-nueva').value;
-    if (nuevaCategoria === p.categoria) { showToast('Esa ya es su categoría actual', true); return; }
-    if (!confirm('¿Cambiar la categoría de ' + (p.nombre || p.id) + ' de "' + resolverNombreParaMostrar(p.categoria || '—') + '" a "' + resolverNombreParaMostrar(nuevaCategoria) + '"?\n\nEsto no actualiza manillas, certificados ni brackets ya generados con la categoría anterior.')) return;
+    const nuevo = {
+      nombre:      document.getElementById('cambcat-nombre').value.trim(),
+      institucion: document.getElementById('cambcat-institucion').value.trim(),
+      ciudad:      document.getElementById('cambcat-ciudad').value.trim(),
+      robot:       document.getElementById('cambcat-robot').value.trim(),
+      contacto:    document.getElementById('cambcat-contacto').value.trim(),
+      correo:      document.getElementById('cambcat-correo').value.trim(),
+      categoria:   document.getElementById('cambcat-nueva').value,
+      miembro2:    document.getElementById('cambcat-miembro2').value.trim()
+    };
+    if (!nuevo.nombre || !nuevo.institucion || !nuevo.correo || !nuevo.robot) { showToast('⚠️ Nombre, institución, correo y robot no pueden quedar vacíos', true); return; }
+    if (!confirm('¿Guardar los cambios de ' + (p.nombre || p.id) + '?\n\nEsto no actualiza manillas, certificados ni brackets ya generados con los datos anteriores.')) return;
 
     const btn = document.getElementById('btn-cambcat-guardar');
     btn.disabled = true;
     try {
-      const resp = await gasPost({ action: 'cambiarCategoriaParticipante', id: p.id, categoria: nuevaCategoria });
+      const resp = await gasPost({ action: 'actualizarParticipanteStaff', id: p.id, ...nuevo });
       if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
-      p.categoria = nuevaCategoria;
+      Object.assign(p, nuevo);
       const idx = _cambcatParticipantes.findIndex(x => x.id === p.id);
-      if (idx >= 0) _cambcatParticipantes[idx].categoria = nuevaCategoria;
-      showToast('✅ Categoría de ' + (p.nombre || p.id) + ' actualizada a ' + resolverNombreParaMostrar(nuevaCategoria));
+      if (idx >= 0) Object.assign(_cambcatParticipantes[idx], nuevo);
+      showToast('✅ Datos de ' + (nuevo.nombre || p.id) + ' actualizados');
       cancelarCambCat();
     } catch(e) {
-      showToast('⚠️ Error al cambiar la categoría: ' + e.message, true);
+      showToast('⚠️ Error al guardar: ' + e.message, true);
+      btn.disabled = false;
+    }
+  }
+
+  async function eliminarParticipanteCambCat() {
+    const p = _cambcatSeleccionado;
+    if (!p) return;
+    if (!confirm('¿ELIMINAR por completo a ' + (p.nombre || p.id) + ' (' + (p.robot || '—') + ')?\n\nEsta acción no se puede deshacer. No borra manillas, certificados ni brackets ya generados a su nombre — revisá esos aparte si corresponde.')) return;
+
+    const btn = document.getElementById('btn-cambcat-eliminar');
+    btn.disabled = true;
+    try {
+      const resp = await gasGet({ action: 'eliminarParticipante', id: p.id });
+      if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+      _cambcatParticipantes = _cambcatParticipantes.filter(x => x.id !== p.id);
+      showToast('🗑️ ' + (p.nombre || p.id) + ' eliminado');
+      cancelarCambCat();
+    } catch(e) {
+      showToast('⚠️ Error al eliminar: ' + e.message, true);
       btn.disabled = false;
     }
   }
