@@ -130,15 +130,20 @@
 
     .cambcat-panel { background: #0d1f33; border: 1px solid rgba(91,200,240,0.35); border-radius: 12px; padding: 20px; margin-top: 16px; }
     .cambcat-panel-nombre { font-family: 'Exo 2'; font-size: 15px; font-weight: 700; color: #e0eaff; margin-bottom: 2px; }
-    .cambcat-panel-sub { font-family: 'DM Mono'; font-size: 12px; color: #6a8aaa; margin-bottom: 16px; }
-    .cambcat-panel-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-    .cambcat-panel-row .form-control { flex: 1 1 220px; }
-    .btn-cambcat-guardar { flex: 0 1 140px; box-sizing: border-box; height: 44px; background: linear-gradient(135deg,#16a34a,#22c55e); color: #fff; border: none; border-radius: 8px; padding: 0 18px; font-family: 'Exo 2'; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: filter .15s, transform .1s; }
+    .cambcat-panel-sub { font-family: 'DM Mono'; font-size: 12px; color: #6a8aaa; margin-bottom: 18px; }
+    .cambcat-section-title { font-family: 'Orbitron', monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #5bc8f0; margin: 22px 0 12px; padding-bottom: 6px; border-bottom: 1px solid rgba(91,200,240,0.2); }
+    .cambcat-section-title:first-of-type { margin-top: 0; }
+    .cambcat-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+    .cambcat-field { display: flex; flex-direction: column; gap: 5px; }
+    .cambcat-field-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: #4a7a9a; }
+    .cambcat-panel-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(91,200,240,0.15); }
+    .btn-cambcat-guardar { flex: 0 1 160px; box-sizing: border-box; height: 44px; background: linear-gradient(135deg,#16a34a,#22c55e); color: #fff; border: none; border-radius: 8px; padding: 0 18px; font-family: 'Exo 2'; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: filter .15s, transform .1s; }
     .btn-cambcat-guardar:hover { filter: brightness(1.12); }
     .btn-cambcat-guardar:active { transform: scale(0.98); }
     .btn-cambcat-guardar:disabled { opacity: .5; pointer-events: none; }
     .btn-cambcat-cancelar { background: transparent; border: 1px solid #1a3a5a; color: #6a8aaa; border-radius: 8px; padding: 0 14px; height: 44px; font-family: 'Exo 2'; font-size: 12px; cursor: pointer; transition: all .15s; }
     .btn-cambcat-cancelar:hover { border-color: #4a7a9a; color: #c8d8f0; }
+    @media (max-width: 640px) { .cambcat-panel-grid { grid-template-columns: 1fr; } }
 
     .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px); background: #0f2035; border: 1px solid rgba(91,200,240,0.4); border-radius: 10px; padding: 14px 22px; font-family: 'Exo 2'; font-size: 13px; font-weight: 600; color: #c8d8f0; box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 99999; max-width: calc(100vw - 40px); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -1218,20 +1223,23 @@
       '<div class="cambcat-panel">' +
         '<div class="cambcat-panel-nombre">' + (p.nombre || '—') + (p.robot ? ' · ' + p.robot : '') + '</div>' +
         '<div class="cambcat-panel-sub">ID ' + p.id + '</div>' +
-        '<div class="cambcat-panel-row">' +
-          '<input type="text" id="cambcat-nombre" class="form-control" placeholder="Nombre" value="' + esc(p.nombre) + '">' +
-          '<input type="text" id="cambcat-institucion" class="form-control" placeholder="Institución" value="' + esc(p.institucion) + '">' +
-          '<input type="text" id="cambcat-ciudad" class="form-control" placeholder="Ciudad" value="' + esc(p.ciudad) + '">' +
+
+        '<div class="cambcat-section-title">📝 Datos personales</div>' +
+        '<div class="cambcat-panel-grid">' +
+          '<div class="cambcat-field"><span class="cambcat-field-label">Nombre</span><input type="text" id="cambcat-nombre" class="form-control" value="' + esc(p.nombre) + '"></div>' +
+          '<div class="cambcat-field"><span class="cambcat-field-label">Institución</span><input type="text" id="cambcat-institucion" class="form-control" value="' + esc(p.institucion) + '"></div>' +
+          '<div class="cambcat-field"><span class="cambcat-field-label">Ciudad</span><input type="text" id="cambcat-ciudad" class="form-control" value="' + esc(p.ciudad) + '"></div>' +
+          '<div class="cambcat-field"><span class="cambcat-field-label">Correo</span><input type="text" id="cambcat-correo" class="form-control" value="' + esc(p.correo) + '"></div>' +
+          '<div class="cambcat-field"><span class="cambcat-field-label">Contacto</span><input type="text" id="cambcat-contacto" class="form-control" value="' + esc(p.contacto) + '"></div>' +
         '</div>' +
-        '<div class="cambcat-panel-row">' +
-          '<input type="text" id="cambcat-robot" class="form-control" placeholder="Robot" value="' + esc(p.robot) + '">' +
-          '<input type="text" id="cambcat-contacto" class="form-control" placeholder="Contacto" value="' + esc(p.contacto) + '">' +
-          '<input type="text" id="cambcat-correo" class="form-control" placeholder="Correo" value="' + esc(p.correo) + '">' +
+
+        '<div class="cambcat-section-title">🤖 Robot y categoría</div>' +
+        '<div class="cambcat-panel-grid">' +
+          '<div class="cambcat-field"><span class="cambcat-field-label">Robot</span><input type="text" id="cambcat-robot" class="form-control" value="' + esc(p.robot) + '"></div>' +
+          '<div class="cambcat-field"><span class="cambcat-field-label">Categoría</span><select id="cambcat-nueva" class="form-control"></select></div>' +
+          '<div class="cambcat-field" style="grid-column:1/-1;"><span class="cambcat-field-label">Subcapitán (opcional)</span><input type="text" id="cambcat-miembro2" class="form-control" value="' + esc(p.miembro2) + '"></div>' +
         '</div>' +
-        '<div class="cambcat-panel-row">' +
-          '<select id="cambcat-nueva" class="form-control"></select>' +
-          '<input type="text" id="cambcat-miembro2" class="form-control" placeholder="Subcapitán (opcional)" value="' + esc(p.miembro2) + '">' +
-        '</div>' +
+
         '<div class="cambcat-panel-row">' +
           '<button class="btn-cambcat-guardar" id="btn-cambcat-guardar">✅ Guardar cambios</button>' +
           '<button class="btn-cambcat-cancelar" onclick="cancelarCambCat()">Cancelar</button>' +
