@@ -582,6 +582,11 @@ body.staff-mode .btn-inicio-editar { display: inline-flex; }
   top: 10px; right: 16px;
 }
 .btn-inicio-editar.inicio-ausptitulo-editar:hover { background: rgba(255,255,255,0.28); }
+/* El botón "Editar tarjetas" es absoluto dentro de quick-cards-wrap y, sin
+   este espacio reservado arriba, queda encima de la primera tarjeta
+   (Instagram/Facebook según el ancho). Solo importa con staff-mode, pero
+   reservar el espacio siempre evita saltos de layout al iniciar sesión. */
+.quick-cards-wrap { padding-top: 46px; }
 @media (max-width: 640px) {
   .btn-inicio-editar { position: static; margin: 0 auto 22px; display: none; }
   body.staff-mode .btn-inicio-editar { display: inline-flex; }
@@ -590,6 +595,9 @@ body.staff-mode .btn-inicio-editar { display: inline-flex; }
   /* Con el botón "Editar portada" visible (solo staff), el tag de la portada
      necesita bajar un poco para no quedar tapado por el botón. */
   body.staff-mode .hero-content { margin-top: 30px; }
+  /* En mobile "Editar tarjetas" pasa a position:static (ver regla de arriba),
+     así que el padding-top reservado para la versión absoluta ya no hace falta. */
+  .quick-cards-wrap { padding-top: 0; }
 }
 
 .btn-aviso-editar-float {
