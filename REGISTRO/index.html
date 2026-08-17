@@ -589,7 +589,7 @@
         </div>
       </div>
 
-      <label style="display:flex;align-items:flex-start;gap:8px;margin:10px 2px 0;font-size:13px;color:#4a5568;cursor:pointer;">
+      <label style="display:flex;align-items:flex-start;gap:8px;margin:10px 2px 0;font-size:13px;color:#ffffff;cursor:pointer;">
         <input type="checkbox" id="f-comprobante-multiple" style="margin-top:2px;flex-shrink:0;">
         <span>Este comprobante también cubre otros robots que ya inscribí o voy a inscribir (un solo depósito para varios robots)</span>
       </label>
@@ -873,6 +873,14 @@
     if (panel) panel.innerHTML = preciosPanelTituloHtml + periodos.map(cardHtml).join('');
     const grid = document.getElementById('precios-movil-grid');
     if (grid) grid.innerHTML = periodos.map(cardHtml).join('');
+    // Si no queda ningún período visible (para el público, "todos ocultos" --
+    // para staff solo pasaría si de verdad no hay ningún período configurado)
+    // no tiene sentido dejar el título "Precios de inscripción" solo, sin
+    // ninguna tarjeta debajo -- se oculta el bloque completo.
+    const wrap = document.querySelector('.precios-panel-wrap');
+    const movil = document.getElementById('precios-movil');
+    if (wrap) wrap.style.display = periodos.length ? '' : 'none';
+    if (movil) movil.style.display = periodos.length ? '' : 'none';
   }
 
   function gasPostReg(body) {
