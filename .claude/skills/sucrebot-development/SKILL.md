@@ -1638,5 +1638,59 @@ A mitad de sesión Raku puso el repo en privado (para resolver el pendiente viej
 
 ---
 
+### Sprint 16 ago 2026 — PARTICIPANTES_REGISTRADOS: edición inline de datos del participante (staff)
+
+**Contexto**: último pendiente de la ronda de "página editable en vivo" (INICIO/INSTITUCION en sprints anteriores) — hasta ahora el modal "REVISAR PARTICIPANTE" solo mostraba los datos en modo lectura (aprobar/no cumple/reenviar QR/manilla), sin forma de corregir un typo de nombre/institución/robot/etc. sin pedirle al participante que lo edite él mismo desde MI-REGISTRO.
+
+#### Backend — nueva acción `actualizarParticipanteStaff`
+Agregada en `sucrebot-gas-local/Code.gs`, junto a `cambiarCategoriaParticipante` (mismo criterio): requiere `staffToken` (no `correo` — el staff ya está autenticado), edita `nombre/institucion/ciudad/robot/contacto/correo/categoria/miembro2` en una sola escritura, y **no resetea `aprobado`** — a diferencia de `actualizarParticipante` (la acción pública que usa MI-REGISTRO), que sí lo resetea a `EN REVISION` porque ahí el cambio lo hace el propio participante antes de ser aprobado. Corregir un dato desde staff no debe desaprobar a alguien que ya tiene manilla/certificado.
+
+#### Bug real encontrado y corregido de paso: fusión de institución rota desde el 14-ago
+`guardarInstitucion()` (botón "✏ Editar / Fusionar" del panel "Gestionar Instituciones/Clubes") llamaba a `actualizarParticipante` (la acción pública) **sin mandar `correo`** — desde el fix de seguridad del 14-ago esa acción exige que `correo` coincida con el registro real antes de aceptar cualquier escritura, así que la fusión venía fallando en silencio con "No autorizado" para cada participante desde entonces (el `catch` solo incrementaba un contador de errores, sin mostrar el motivo real). Fix: la función ahora usa `actualizarParticipanteStaff` (POST, staffToken, sin exigir correo) — mismo problema de raíz que motivó crear la acción nueva.
+
+#### Frontend — modo edición en el modal "REVISAR PARTICIPANTE"
+- Botón "✏️ Editar datos" en la sección "ID del Sistema" del modal. Al activarlo: los `.modal-field-value` (texto) se ocultan y aparecen inputs prefilled (`nombre`, `institución`, `ciudad`, `correo`, `contacto`, `robot`, `miembro2`) + un `<select>` de categoría (reutiliza el mismo árbol de opciones que el filtro de categoría de la página, con las 26 categorías incluidas copias — `aplicarNombresCopiaFiltro()` generalizada de un solo optgroup a `document.querySelectorAll('.copias-optgroup')` para que también resuelva los nombres reales de las copias en este segundo select).
+- La sección "Integrantes del Equipo" (Miembro 2/Subcapitán) se fuerza visible en modo edición aunque esté vacía, para poder agregar un subcapitán que faltó al inscribirse — en modo lectura sigue oculta si no hay dato, sin cambios.
+- Los botones de acción normales (Aprobar/No cumple/Reenviar/Desaprobar) se ocultan mientras se edita, para no mezclar una aprobación con una edición a medio hacer.
+- `guardarEdicionParticipante()`: valida que nombre/institución/correo/robot no queden vacíos, llama a `actualizarParticipanteStaff`, actualiza el objeto en memoria + `_participantesIndex` + cache de `localStorage`, y vuelve a abrir el modal ya en modo lectura con los datos nuevos (sin cerrar/reabrir el modal completo).
+- Reusa la clase CSS `.inst-modal-input` (ya existente para el modal de fusión de institución) para los inputs nuevos — cero CSS de inputs duplicado.
+
+**Verificado**: `node --check` sobre el bloque `<script>` extraído; navegador de pruebas (servidor levantado desde `C:\Users\raku`, no desde `Sucrebot`, con el prefijo `/Sucrebot/` — necesario para que `load-components.js` resuelva bien `../shared/js/auth.js`, ver `reference-servidor-pruebas-locales`) con sesión admin simulada por `localStorage` y un participante `[DEV]` inyectado en memoria: entrar a modo edición prellena los inputs y oculta los valores/botones de acción correctos, cancelar revierte todo, y guardar (con `fetch` interceptado para no tocar producción) arma el payload exacto esperado por el backend y refresca el modal con los datos nuevos. Sin errores de consola en ningún paso. `Code.gs` **todavía no está pegado en script.google.com** — pendiente que Raku lo despliegue.
+
+#### Principios nuevos
+- **Una acción de auto-corrección pública (correo debe coincidir con el registro) y una de corrección por staff (ya autenticado por token) son necesariamente dos acciones de backend distintas**, aunque escriban las mismas columnas — la de staff no debe exigir `correo` (el staff corrige datos de otros por definición) y no debe resetear el estado de aprobación (la de auto-corrección sí, porque ahí el cambio lo hizo el dueño del registro antes de que un humano lo revise de nuevo).
+- **Un `catch` que solo cuenta errores sin mostrar el mensaje real puede esconder un fallo sistemático durante semanas** — la fusión de institución llevaba roto desde el 14-ago y el único síntoma visible era un toast genérico "⚠️ X/Y actualizados" que no decía por qué fallaban; revisar sistemáticamente qué otras acciones de escritura quedaron con el mismo hueco tras un cambio de auth amplio (como la auditoría de seguridad), no solo la que motivó el pedido original.
+
+---
+
+### Sprint 16 ago 2026 (2) — REGISTRO: precios, textos generales y WhatsApp editables en vivo
+
+**Contexto**: Raku pidió que REGISTRO también fuera editable como INSTITUCION. Al revisar el archivo se encontró que **los cuadros de precios ya no existían en el HTML** — el CSS (`.precios-panel`, `.precio-item`, badges activo/vencido) y el script que compara fechas (`periodos` hardcodeado, referenciando `id="precio-1/2/3"`) seguían ahí, pero el `<div>` real con las tarjetas había sido borrado del cuerpo en algún momento — código muerto apuntando a elementos inexistentes. Confirmado con Raku: reconstruir el panel, esta vez editable.
+
+#### Backend — 2 configs nuevas en `estados` + 1 acción de upload
+Mismo patrón exacto que `config_colores_categoria`/`config_emojis_categoria` (sprint 07/12-ago): fila en `estados`, JSON en la columna 2.
+- `config_precios_registro` — `{ periodos: [{id, periodo, valor, desc, desde, hasta}, x3] }`. `desde`/`hasta` son fechas `yyyy-mm-dd` (mismo formato que un `<input type="date">`); el frontend arma el `Date` completo y compara contra "ahora" para decidir ACTIVO/FINALIZADA — reemplaza al array `periodos` que antes vivía hardcodeado en el JS de la página.
+- `config_registro_contenido` — `{ heroTitulo, heroSubtitulo, avisoTexto, waTitulo, waCaption, waQrUrl }`.
+- Acciones: `getPreciosRegistro`/`getRegistroContenido` (GET, públicas — REGISTRO las necesita sin sesión de staff) y `guardarPreciosRegistro`/`guardarRegistroContenido` (POST, staffToken, `LockService`, guardan el objeto completo cada vez — mismo principio ya documentado para INSTITUCION: cualquier modal que dispare la acción debe reenviar TODOS los campos, no solo el que edita, o resetea el resto al valor anterior en memoria).
+- `uploadImagenRegistro` (staffToken) — mismo patrón que `uploadImagenInstitucion`, sube a una carpeta de Drive propia (`SucreBot-Registro`) y devuelve URL `lh3.googleusercontent.com/d/FILEID` (no `drive.google.com/uc?...`, que Google bloquea como `<img>` cross-origin — bug ya documentado y corregido en auspiciantes, aplicado aquí desde el principio).
+- Las 2 claves nuevas se agregaron a la lista de `estados` que `generarNuevaEdicionHelper` copia tal cual a cada edición nueva (junto a `config_nombres_categorias`/`config_colores_categoria`/`config_emojis_categoria`) — es contenido de la página, no dato del torneo; arrancar una edición nueva sin ningún precio visible sería peor que heredar los de la anterior.
+
+#### Frontend — cache-first, mismo patrón que categorías activas/nav (sprint 06-ago)
+- `REGISTRO/index.html`: nuevas variables `contenidoReg`/`preciosReg` con defaults que **coinciden exactamente con el HTML estático ya presente** (así aplicarlos de entrada no cambia nada visualmente) — con una excepción a propósito: `avisoTexto` se deja vacío en el default de render (no en el del modal, ver abajo), porque el bloque "📋 Información importante" tiene negritas/emoji/link en el HTML original que un render en texto plano (`<p>` por línea) no reproduce. Hasta que exista una config guardada de verdad (cache o fetch), ese bloque se queda con el markup original más prolijo en vez de degradarse a texto plano de forma silenciosa.
+- IIFE síncrona apenas carga el script: aplica la última respuesta conocida de `localStorage` antes que nada (sin esperar red), después `cargarContenidoYPreciosReg()` revalida en segundo plano contra GAS y vuelve a pintar solo si cambió algo — mismo principio anti-flash que categorías/colores/emojis de sesiones anteriores.
+- 3 tarjetas de precio (`.precio-item`) reconstruidas dinámicamente tanto en `.precios-panel` (desktop, flotante) como en `.precios-movil-grid` (mobile) desde el mismo array `preciosReg.periodos` — antes eran HTML fijo, ahora una sola función `renderPreciosReg()` arma ambos.
+- Botones "🔧 Editar" (clase `.btn-reg-editar`, mismo patrón `body.staff-mode` que INSTITUCION/REGLAMENTO) en: portada (hero), precios, aviso, tarjeta de WhatsApp — los 3 últimos abren el mismo modal "Editar textos" (`guardarRegistroContenido` guarda todo junto), precios abre un modal aparte con los 3 períodos.
+- **Hueco de UX encontrado y corregido antes de terminar**: el modal de "Editar textos" usaba el mismo objeto `contenidoReg` tanto para pintar la página como para prellenar el formulario — con `avisoTexto` vacío por diseño (ver arriba), el modal se abría con ese campo en blanco en vez de mostrar el texto real. Fix: constante aparte `AVISO_TEXTO_FALLBACK_REG` (mismo contenido que el default del backend, en texto plano) usada solo para prellenar el modal, nunca para el render de la página — la página sigue mostrando el HTML original con formato hasta el primer guardado real; el modal muestra el texto real desde el primer clic.
+
+**Verificado**: `node --check` sobre el bloque `<script>`; navegador de pruebas (servidor levantado desde `C:\Users\raku`, prefijo `/Sucrebot/`, sesión admin simulada) con datos de precios inyectados a mano (ya que el `Code.gs` con las acciones nuevas todavía no está desplegado) — las 3 tarjetas renderizan bien con los estados ACTIVO (dorado, glow)/FINALIZADA (gris, tachado)/normal correctos; abrir "Editar textos" prellena el aviso con el texto real; guardar ambos modales (con `fetch` interceptado) arma el payload exacto esperado por el backend y refresca el DOM sin recargar la página. Sin errores de consola en ningún paso.
+
+**Pendiente**: como con la acción de PARTICIPANTES_REGISTRADOS del mismo día, el `Code.gs` local (`sucrebot-gas-local/Code.gs`) todavía no está pegado en script.google.com — las 5 acciones nuevas (`getPreciosRegistro`, `getRegistroContenido`, `guardarPreciosRegistro`, `guardarRegistroContenido`, `uploadImagenRegistro`) más `actualizarParticipanteStaff` del sprint anterior van todas en el mismo deploy pendiente.
+
+#### Principios nuevos
+- **Un CSS/JS que sigue en el archivo pero cuyo HTML target ya no existe es indistinguible de una feature activa hasta que se prueba de verdad** — el panel de precios "parecía" existir (la mayoría del código seguía ahí) pero llevaba tiempo muerto; grep por el `id` que el JS espera encontrar (`precio-1`) es más confiable que grep por la clase CSS para confirmar si un bloque sigue vivo.
+- **Cuando un valor por defecto en el frontend sirve dos propósitos distintos** (prellenar un formulario de edición vs. decidir si renderizar sobre un fallback más rico) **puede hacer falta separarlo en dos constantes** — un único default "razonable" para ambos casos puede degradar silenciosamente un HTML bien formateado a texto plano apenas carga la página, mucho antes de que el staff toque nada.
+
+---
+
 **Event date: July 16, 2026 · sucrebotclub-institute.github.io/Sucrebot/**
-**SKILL.md actualizado por última vez: 14 agosto 2026**
+**SKILL.md actualizado por última vez: 16 agosto 2026**

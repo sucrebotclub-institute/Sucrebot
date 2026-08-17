@@ -169,6 +169,84 @@
     .success-btn-secondary { display: block; width: 100%; background: transparent; border: 1.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.55); font-family: 'Exo 2', sans-serif; font-size: 13px; padding: 12px; border-radius: 10px; cursor: pointer; text-decoration: none; transition: border-color .2s, color .2s; box-sizing: border-box; }
     .success-btn-secondary:hover { border-color: rgba(255,255,255,0.35); color: #ffffff; }
 
+    /* ── Edición en vivo (staff) — mismo patrón que INSTITUCION/REGLAMENTO:
+       body.staff-mode revela los botones, nunca se cargan datos de edición
+       hasta confirmar el rol. ── */
+    .btn-reg-editar {
+      display: none;
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(255,255,255,0.12); color: #90dcff; border: 1px solid rgba(144,220,255,0.4);
+      border-radius: 6px; padding: 5px 12px;
+      font-family: 'Exo 2', sans-serif; font-size: 10px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; z-index: 4;
+    }
+    .btn-reg-editar:hover { background: rgba(255,255,255,0.22); }
+    body.staff-mode .btn-reg-editar { display: inline-flex; }
+    .page-hero { position: relative; }
+    .page-hero .btn-reg-editar { top: 4px; right: 0; background: rgba(26,92,168,0.12); color: #1a5ca8; border-color: rgba(26,92,168,0.3); }
+    .reg-aviso, .wa-card, .precios-panel-wrap { position: relative; }
+    .precios-panel-wrap .btn-reg-editar { top: -6px; right: -6px; }
+
+    .reg-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(14,18,30,0.7); backdrop-filter: blur(4px);
+      z-index: 99999; align-items: center; justify-content: center; padding: 20px;
+    }
+    .reg-modal-overlay.show { display: flex; }
+    .reg-modal {
+      background: #fff; border-radius: 14px;
+      width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+      padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .reg-modal h4 {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+      letter-spacing: 1px; color: #1a3a6e; margin: 0 0 18px;
+    }
+    .reg-modal label {
+      display: block;
+      font-family: 'Orbitron', monospace; font-size: .62rem;
+      letter-spacing: 1.5px; color: #1a5ca8; text-transform: uppercase;
+      margin: 14px 0 6px;
+    }
+    .reg-modal label:first-of-type { margin-top: 0; }
+    .reg-modal input[type="text"],
+    .reg-modal input[type="file"],
+    .reg-modal input[type="date"],
+    .reg-modal textarea {
+      display: block; width: 100%; box-sizing: border-box;
+      border: 1px solid #d5dae5; border-radius: 8px;
+      padding: 10px 12px; font-family: 'Exo 2', sans-serif;
+      font-size: .9rem; color: #1a1c28; background: #fff;
+    }
+    .reg-modal textarea { resize: vertical; font-family: inherit; min-height: 90px; }
+    .reg-modal-seccion { border-top: 1px solid #eef1f7; padding-top: 14px; margin-top: 16px; }
+    .reg-modal-periodo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .reg-modal-guardar-wrap { border-top: 1px solid #eef1f7; padding-top: 18px; margin-top: 18px; }
+    .reg-btn-guardar-todo {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #1a5ca8, #2472c8);
+      color: #fff; font-family: 'Exo 2', sans-serif; font-weight: 800;
+      font-size: .95rem; letter-spacing: .3px; cursor: pointer;
+      box-shadow: 0 6px 16px rgba(26,92,168,0.35);
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .reg-btn-guardar-todo:hover {
+      background: linear-gradient(135deg, #1e6ec0, #2d8bf0);
+      box-shadow: 0 8px 20px rgba(26,92,168,0.45); transform: translateY(-1px);
+    }
+    .reg-btn-guardar-todo:disabled { opacity: .6; cursor: default; transform: none; box-shadow: none; }
+    .reg-btn-guardar-todo.reg-btn-guardado {
+      background: linear-gradient(135deg, #1e9e5a, #27ae60);
+      box-shadow: 0 6px 16px rgba(39,174,96,0.4);
+    }
+    .reg-modal-cerrar {
+      width: 100%; margin-top: 10px; padding: 12px;
+      border-radius: 8px; background: #ffffff; color: #1a5ca8;
+      border: 2px solid #1a5ca8; font-family: 'Exo 2', sans-serif; font-weight: 700;
+      font-size: .88rem; cursor: pointer;
+    }
+    .reg-modal-cerrar:hover { background: #1a5ca8; color: #ffffff; }
+
     @media (min-width: 1261px) { .precios-movil { display: none !important; } }
     @media (min-width: 769px) and (max-width: 1260px) { .precios-panel { display: none; } .precios-movil { display: none !important; } }
     @media (max-width: 1000px) { .reg-layout { flex-direction: column; align-items: center; } .reg-robot { flex: 0 0 auto; } .form-card { width: 100%; max-width: 700px; } }
@@ -213,31 +291,46 @@
 
 <div class="wrapper">
   <div class="page-hero">
+    <button class="btn-reg-editar" onclick="abrirModalContenido()">🔧 Editar textos</button>
     <div class="page-hero-badge">
       <div class="page-hero-badge-dot"></div>
       SUCREBOT 2026 · TORNEO DE ROBÓTICA
     </div>
-    <h2>REGISTRO DE <span>PARTICIPANTES</span></h2>
-    <p>INSCRIPCIÓN AL TORNEO SUCREBOT 2026</p>
+    <h2 id="reg-hero-titulo">REGISTRO DE <span>PARTICIPANTES</span></h2>
+    <p id="reg-hero-subtitulo">INSCRIPCIÓN AL TORNEO SUCREBOT</p>
   </div>
 
   <div class="reg-layout">
     <div class="reg-robot">
+      <div class="precios-panel-wrap" style="position:relative;">
+        <button class="btn-reg-editar" onclick="abrirModalPrecios()">🔧 Editar precios</button>
+        <div class="precios-panel" id="precios-panel">
+          <div class="precios-panel-title">💰 Precios de inscripción</div>
+        </div>
+      </div>
+      <div class="precios-movil" id="precios-movil">
+        <div class="precios-movil-title">💰 Precios de inscripción</div>
+        <div class="precios-movil-grid" id="precios-movil-grid"></div>
+      </div>
       <img class="reg-robot-img" src="../shared/images/robot-inss.png" alt="Robot inscribiendo" />
       <div class="reg-aviso">
+        <button class="btn-reg-editar" onclick="abrirModalContenido()">🔧 Editar</button>
         <div class="reg-aviso-title">📋 Información importante</div>
-        <p><strong>📛 Nombre completo:</strong> Escríbelo tal como aparecerá en tu diploma de participación.</p>
-        <p><strong>📧 Correo electrónico:</strong> Verifica que esté bien escrito — a esa dirección se enviará tu <strong>código QR</strong> de acceso al evento.</p>
-        <p><strong style="color:#1a5ca8;">✅ ¿No recibiste el correo?</strong> Revisa tu carpeta de <em>spam</em> o escríbenos a<br><span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span></p>
+        <div id="reg-aviso-body">
+          <p><strong>📛 Nombre completo:</strong> Escríbelo tal como aparecerá en tu diploma de participación.</p>
+          <p><strong>📧 Correo electrónico:</strong> Verifica que esté bien escrito — a esa dirección se enviará tu <strong>código QR</strong> de acceso al evento.</p>
+          <p><strong style="color:#1a5ca8;">✅ ¿No recibiste el correo?</strong> Revisa tu carpeta de <em>spam</em> o escríbenos a<br><span class="aviso-email">sucrebotclub@tecnologicosucre.edu.ec</span></p>
+        </div>
       </div>
       <div class="wa-card">
+        <button class="btn-reg-editar" onclick="abrirModalContenido()">🔧 Editar</button>
         <div class="wa-card-title">
           <svg style="width:13px;height:13px;fill:#25d366;flex-shrink:0;" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-          GRUPO WHATSAPP · CAPITANES
+          <span id="reg-wa-titulo">GRUPO WHATSAPP · CAPITANES</span>
         </div>
         <div class="wa-card-body">
-          <img src="../shared/images/whatsapp-qr.png" alt="QR Grupo WhatsApp Capitanes" />
-          <p>Escanea para unirte al grupo de<br><strong>capitanes participantes</strong></p>
+          <img id="reg-wa-qr" src="../shared/images/whatsapp-qr.png" alt="QR Grupo WhatsApp Capitanes" />
+          <p id="reg-wa-caption">Escanea para unirte al grupo de<br><strong>capitanes participantes</strong></p>
         </div>
       </div>
     </div>
@@ -490,6 +583,91 @@
   <span id="toast-msg"></span>
 </div>
 
+<!-- Modal edición: textos generales (portada, aviso, WhatsApp) -->
+<div class="reg-modal-overlay" id="regModalContenido">
+  <div class="reg-modal">
+    <h4>🔧 Editar textos de REGISTRO</h4>
+
+    <div class="reg-modal-seccion" style="border-top:none; margin-top:0; padding-top:0;">
+      <label>Título de portada (una línea por renglón — la última sale destacada)</label>
+      <textarea id="modalHeroTituloReg" rows="2"></textarea>
+      <label>Subtítulo de portada</label>
+      <input type="text" id="modalHeroSubtituloReg">
+    </div>
+
+    <div class="reg-modal-seccion">
+      <label>Aviso "📋 Información importante" (una línea por párrafo)</label>
+      <textarea id="modalAvisoTextoReg" rows="4"></textarea>
+    </div>
+
+    <div class="reg-modal-seccion">
+      <label>Título de la tarjeta de WhatsApp</label>
+      <input type="text" id="modalWaTituloReg">
+      <label>Texto bajo el QR (una línea por renglón)</label>
+      <textarea id="modalWaCaptionReg" rows="2"></textarea>
+      <label>Reemplazar imagen del QR (opcional)</label>
+      <input type="file" id="modalWaQrFileReg" accept="image/*">
+    </div>
+
+    <div class="reg-modal-guardar-wrap">
+      <button class="reg-btn-guardar-todo" id="btnGuardarContenidoReg" onclick="guardarModalContenido()">💾 Guardar cambios</button>
+    </div>
+    <button class="reg-modal-cerrar" onclick="cerrarModalReg('regModalContenido')">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal edición: precios (3 períodos) -->
+<div class="reg-modal-overlay" id="regModalPrecios">
+  <div class="reg-modal">
+    <h4>🔧 Editar precios de inscripción</h4>
+
+    <div id="regModalPreciosPeriodos">
+      <!-- Período 1..3, generado igual (misma estructura), repetido a mano por simplicidad -->
+      <div class="reg-modal-seccion" style="border-top:none; margin-top:0; padding-top:0;">
+        <label>Período 1 — texto (ej. "Inscripción anticipada")</label>
+        <input type="text" id="modalPrecioPeriodo1">
+        <div class="reg-modal-periodo-grid">
+          <div><label>Precio</label><input type="text" id="modalPrecioValor1" placeholder="$15"></div>
+          <div><label>Etiqueta</label><input type="text" id="modalPrecioDesc1" placeholder="PRECIO REGULAR"></div>
+        </div>
+        <div class="reg-modal-periodo-grid">
+          <div><label>Desde</label><input type="date" id="modalPrecioDesde1"></div>
+          <div><label>Hasta</label><input type="date" id="modalPrecioHasta1"></div>
+        </div>
+      </div>
+      <div class="reg-modal-seccion">
+        <label>Período 2 — texto</label>
+        <input type="text" id="modalPrecioPeriodo2">
+        <div class="reg-modal-periodo-grid">
+          <div><label>Precio</label><input type="text" id="modalPrecioValor2" placeholder="$18"></div>
+          <div><label>Etiqueta</label><input type="text" id="modalPrecioDesc2" placeholder="SUBE EL PRECIO"></div>
+        </div>
+        <div class="reg-modal-periodo-grid">
+          <div><label>Desde</label><input type="date" id="modalPrecioDesde2"></div>
+          <div><label>Hasta</label><input type="date" id="modalPrecioHasta2"></div>
+        </div>
+      </div>
+      <div class="reg-modal-seccion">
+        <label>Período 3 — texto</label>
+        <input type="text" id="modalPrecioPeriodo3">
+        <div class="reg-modal-periodo-grid">
+          <div><label>Precio</label><input type="text" id="modalPrecioValor3" placeholder="$20"></div>
+          <div><label>Etiqueta</label><input type="text" id="modalPrecioDesc3" placeholder="ÚLTIMO PRECIO"></div>
+        </div>
+        <div class="reg-modal-periodo-grid">
+          <div><label>Desde</label><input type="date" id="modalPrecioDesde3"></div>
+          <div><label>Hasta</label><input type="date" id="modalPrecioHasta3"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reg-modal-guardar-wrap">
+      <button class="reg-btn-guardar-todo" id="btnGuardarPreciosReg" onclick="guardarModalPrecios()">💾 Guardar cambios</button>
+    </div>
+    <button class="reg-modal-cerrar" onclick="cerrarModalReg('regModalPrecios')">Cerrar</button>
+  </div>
+</div>
+
 <div data-include="../shared/components/footer.html"></div>
 <script src="../shared/js/load-components.js"></script>
 <script src="../shared/js/auth.js"></script>
@@ -512,6 +690,203 @@
   function guardarCacheReg(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
   const NOMBRES_COPIA_CACHE_KEY_REG = 'sucrebot_cache_nombres_copia_registro';
   const CATS_ACTIVAS_CACHE_KEY_REG  = 'sucrebot_cache_cats_activas_registro';
+
+  // ── Contenido editable (staff): precios + textos generales ──────
+  // Mismo patrón cache-first que las categorías copia/activas de arriba:
+  // aplica la última respuesta conocida en localStorage de forma síncrona
+  // apenas carga el script, revalida en segundo plano contra GAS.
+  const CONTENIDO_CACHE_KEY_REG = 'sucrebot_cache_contenido_registro';
+  const PRECIOS_CACHE_KEY_REG   = 'sucrebot_cache_precios_registro';
+  // heroTitulo/heroSubtitulo/waTitulo/waCaption por defecto coinciden con
+  // el HTML estático ya presente en la página -- aplicarlos de una no
+  // cambia nada visualmente. 'avisoTexto' se deja vacío a propósito: el
+  // HTML estático tiene negritas/emoji/enlace que el render en texto
+  // plano NO reproduce, así que hasta que exista una config guardada de
+  // verdad (cache o fetch), el bloque de aviso se queda con el markup
+  // original más lindo -- ver AVISO_TEXTO_FALLBACK_REG para el modal.
+  let contenidoReg = {
+    heroTitulo: 'REGISTRO DE\nPARTICIPANTES',
+    heroSubtitulo: 'INSCRIPCIÓN AL TORNEO SUCREBOT',
+    avisoTexto: '',
+    waTitulo: 'GRUPO WHATSAPP · CAPITANES',
+    waCaption: 'Escanea para unirte al grupo de\ncapitanes participantes',
+    waQrUrl: ''
+  };
+  const AVISO_TEXTO_FALLBACK_REG = 'Nombre completo: escríbelo tal como aparecerá en tu diploma de participación.\nCorreo electrónico: verifica que esté bien escrito — a esa dirección se enviará tu código QR de acceso al evento.\n¿No recibiste el correo? Revisa tu carpeta de spam o escríbenos a sucrebotclub@tecnologicosucre.edu.ec';
+  let preciosReg   = { periodos: [] };
+
+  function escapeHtmlReg(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function renderContenidoReg() {
+    const lineas = (contenidoReg.heroTitulo || '').split('\n').map(l => l.trim()).filter(Boolean);
+    if (lineas.length) {
+      document.getElementById('reg-hero-titulo').innerHTML = lineas.map((l, i) => {
+        const esc = escapeHtmlReg(l);
+        return i === lineas.length - 1 ? '<span>' + esc + '</span>' : esc;
+      }).join('<br>');
+    }
+    if (contenidoReg.heroSubtitulo) document.getElementById('reg-hero-subtitulo').textContent = contenidoReg.heroSubtitulo;
+    if (contenidoReg.avisoTexto) {
+      document.getElementById('reg-aviso-body').innerHTML = contenidoReg.avisoTexto.split('\n').filter(Boolean).map(l => '<p>' + escapeHtmlReg(l) + '</p>').join('');
+    }
+    if (contenidoReg.waTitulo) document.getElementById('reg-wa-titulo').textContent = contenidoReg.waTitulo;
+    if (contenidoReg.waCaption) document.getElementById('reg-wa-caption').innerHTML = contenidoReg.waCaption.split('\n').map(escapeHtmlReg).join('<br>');
+    if (contenidoReg.waQrUrl) document.getElementById('reg-wa-qr').src = contenidoReg.waQrUrl;
+  }
+
+  // 'desde'/'hasta' son fechas yyyy-mm-dd (input type=date) -- se comparan
+  // contra "ahora" igual que hacía el array 'periodos' hardcodeado antes.
+  function precioEstadoClaseReg(p) {
+    if (!p.desde || !p.hasta) return '';
+    const hoy   = new Date();
+    const desde = new Date(p.desde + 'T00:00:00');
+    const hasta = new Date(p.hasta + 'T23:59:59');
+    if (hoy >= desde && hoy <= hasta) return 'activo';
+    if (hoy > hasta) return 'vencido';
+    return '';
+  }
+
+  function renderPreciosReg() {
+    const periodos = preciosReg.periodos || [];
+    const cardHtml = p => {
+      const clase = precioEstadoClaseReg(p);
+      const badge = clase === 'activo' ? '<div class="precio-badge-activo">ACTIVO</div>' : clase === 'vencido' ? '<div class="precio-badge-vencido">FINALIZADA</div>' : '';
+      return '<div class="precio-item ' + clase + '"><div class="precio-periodo">' + escapeHtmlReg(p.periodo || '') + '</div><div class="precio-valor">' + escapeHtmlReg(p.valor || '') + '</div><div class="precio-desc">' + escapeHtmlReg(p.desc || '') + '</div>' + badge + '</div>';
+    };
+    const panel = document.getElementById('precios-panel');
+    if (panel) panel.innerHTML = '<div class="precios-panel-title">💰 Precios de inscripción</div>' + periodos.map(cardHtml).join('');
+    const grid = document.getElementById('precios-movil-grid');
+    if (grid) grid.innerHTML = periodos.map(cardHtml).join('');
+  }
+
+  function gasPostReg(body) {
+    return fetch(GAS_URL, { method: 'POST', body: JSON.stringify(Object.assign({}, body, { staffToken: localStorage.getItem('sucrebot_staff_token') || '' })), redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } }).then(r => r.json());
+  }
+  function toBase64Reg(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload  = () => resolve(r.result.split(',')[1]);
+      r.onerror = () => reject(new Error('No se pudo leer el archivo "' + file.name + '"'));
+      r.readAsDataURL(file);
+    });
+  }
+
+  (function() {
+    try { const c = leerCacheReg(CONTENIDO_CACHE_KEY_REG); if (c) { contenidoReg = Object.assign({}, contenidoReg, c); renderContenidoReg(); } } catch (e) {}
+    try { const p = leerCacheReg(PRECIOS_CACHE_KEY_REG); if (p && Array.isArray(p.periodos)) { preciosReg = p; renderPreciosReg(); } } catch (e) {}
+  })();
+
+  async function cargarContenidoYPreciosReg() {
+    try {
+      const c = await fetch(GAS_URL + '?action=getRegistroContenido', { cache: 'no-store' }).then(r => r.json());
+      if (c && typeof c === 'object' && typeof c.heroSubtitulo === 'string') {
+        contenidoReg = c; renderContenidoReg(); guardarCacheReg(CONTENIDO_CACHE_KEY_REG, c);
+      }
+    } catch (e) {}
+    try {
+      const p = await fetch(GAS_URL + '?action=getPreciosRegistro', { cache: 'no-store' }).then(r => r.json());
+      if (p && Array.isArray(p.periodos)) {
+        preciosReg = p; renderPreciosReg(); guardarCacheReg(PRECIOS_CACHE_KEY_REG, p);
+      }
+    } catch (e) {}
+  }
+  cargarContenidoYPreciosReg();
+
+  // ── Modales de edición (staff) ───────────────────────────────────
+  function cerrarModalReg(id) { document.getElementById(id).classList.remove('show'); }
+
+  function abrirModalContenido() {
+    document.getElementById('modalHeroTituloReg').value    = contenidoReg.heroTitulo || '';
+    document.getElementById('modalHeroSubtituloReg').value = contenidoReg.heroSubtitulo || '';
+    document.getElementById('modalAvisoTextoReg').value    = contenidoReg.avisoTexto || AVISO_TEXTO_FALLBACK_REG;
+    document.getElementById('modalWaTituloReg').value      = contenidoReg.waTitulo || '';
+    document.getElementById('modalWaCaptionReg').value     = contenidoReg.waCaption || '';
+    document.getElementById('modalWaQrFileReg').value      = '';
+    document.getElementById('regModalContenido').classList.add('show');
+  }
+
+  async function guardarModalContenido() {
+    const btn = document.getElementById('btnGuardarContenidoReg');
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      let waQrUrl = contenidoReg.waQrUrl || '';
+      const file = document.getElementById('modalWaQrFileReg').files[0];
+      if (file) {
+        btn.textContent = 'Subiendo QR...';
+        const base64 = await toBase64Reg(file);
+        const respUp = await gasPostReg({ action: 'uploadImagenRegistro', base64: base64, mimeType: file.type, fileName: file.name });
+        if (!respUp.ok || !respUp.url) throw new Error(respUp.error || 'Error al subir la imagen');
+        waQrUrl = respUp.url;
+      }
+      btn.textContent = 'Guardando...';
+      const nuevo = {
+        heroTitulo: document.getElementById('modalHeroTituloReg').value,
+        heroSubtitulo: document.getElementById('modalHeroSubtituloReg').value,
+        avisoTexto: document.getElementById('modalAvisoTextoReg').value,
+        waTitulo: document.getElementById('modalWaTituloReg').value,
+        waCaption: document.getElementById('modalWaCaptionReg').value,
+        waQrUrl: waQrUrl
+      };
+      const resp = await gasPostReg({ action: 'guardarRegistroContenido', contenido: nuevo });
+      if (!resp.ok) throw new Error(resp.error || 'Error al guardar');
+      contenidoReg = resp.contenido;
+      renderContenidoReg();
+      guardarCacheReg(CONTENIDO_CACHE_KEY_REG, contenidoReg);
+      btn.textContent = '✅ Guardado';
+      setTimeout(() => { cerrarModalReg('regModalContenido'); btn.textContent = original; btn.disabled = false; }, 1000);
+    } catch (e) {
+      alert('Error: ' + (e.message || 'Desconocido'));
+      btn.disabled = false; btn.textContent = original;
+    }
+  }
+
+  function abrirModalPrecios() {
+    const base = { periodo: '', valor: '', desc: '', desde: '', hasta: '' };
+    const periodos = (preciosReg.periodos && preciosReg.periodos.length ? preciosReg.periodos : [1,2,3].map(id => Object.assign({ id }, base)));
+    periodos.forEach((p, i) => {
+      const n = i + 1;
+      document.getElementById('modalPrecioPeriodo' + n).value = p.periodo || '';
+      document.getElementById('modalPrecioValor' + n).value   = p.valor || '';
+      document.getElementById('modalPrecioDesc' + n).value    = p.desc || '';
+      document.getElementById('modalPrecioDesde' + n).value   = p.desde || '';
+      document.getElementById('modalPrecioHasta' + n).value   = p.hasta || '';
+    });
+    document.getElementById('regModalPrecios').classList.add('show');
+  }
+
+  async function guardarModalPrecios() {
+    const btn = document.getElementById('btnGuardarPreciosReg');
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const periodos = [1, 2, 3].map(n => ({
+        id: n,
+        periodo: document.getElementById('modalPrecioPeriodo' + n).value.trim(),
+        valor: document.getElementById('modalPrecioValor' + n).value.trim(),
+        desc: document.getElementById('modalPrecioDesc' + n).value.trim(),
+        desde: document.getElementById('modalPrecioDesde' + n).value,
+        hasta: document.getElementById('modalPrecioHasta' + n).value
+      }));
+      const resp = await gasPostReg({ action: 'guardarPreciosRegistro', periodos: periodos });
+      if (!resp.ok) throw new Error(resp.error || 'Error al guardar');
+      preciosReg = resp.precios;
+      renderPreciosReg();
+      guardarCacheReg(PRECIOS_CACHE_KEY_REG, preciosReg);
+      btn.textContent = '✅ Guardado';
+      setTimeout(() => { cerrarModalReg('regModalPrecios'); btn.textContent = original; btn.disabled = false; }, 1000);
+    } catch (e) {
+      alert('Error: ' + (e.message || 'Desconocido'));
+      btn.disabled = false; btn.textContent = original;
+    }
+  }
+
+  (async function() {
+    if (window.esperarRol) await window.esperarRol();
+    if (window.esStaffCompleto && window.esStaffCompleto()) {
+      document.body.classList.add('staff-mode');
+    }
+  })();
   // Único punto que decide qué opciones del <select> se ven: primero
   // nombres (una copia sin nombre asignado no existe), después activas
   // (solo entre las que ya pasaron el paso anterior) -- se puede llamar
