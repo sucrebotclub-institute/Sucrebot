@@ -737,6 +737,9 @@
     <div id="edit-intento-manual-wrap" style="display:none;margin-bottom:16px;">
       <input type="text" id="edit-intento-manual-input" class="modal-input" placeholder="MM:SS:CS (ej. 00:04:32)" maxlength="8">
     </div>
+    <div id="edit-intento-puntos-wrap" style="display:none;margin-bottom:16px;">
+      <input type="number" step="1" id="edit-intento-puntos-input" class="modal-input" placeholder="Puntos">
+    </div>
     <div class="modal-btns edit-intento-grid" id="edit-intento-btns"></div>
   </div>
 </div>
@@ -1511,16 +1514,21 @@ function abrirEditorIntento(ts, ronda, intento){
   if(intento<1||intento>tiempos.length){showToast('⚠️ Este intento ya no existe — cierra y vuelve a abrir para ver el estado actual',true);renderRondas();return;}
   const hayPosteriores=intento<tiempos.length;
   const esRondaActual=ronda===rondaActual;
-  editorIntentoCtx={id:c.id,ts,ronda,intento,robot:c.robot,tiempoActual:tiempos[intento-1],totalIntentos:tiempos.length,esRondaActual};
-  document.getElementById('edit-intento-info').textContent=c.robot+' — Ronda '+ronda+', intento '+intento+' (actual: '+editorIntentoCtx.tiempoActual+')'+(hayPosteriores?' · hay '+(tiempos.length-intento)+' intento(s) después — al Borrar/Volver a correr se recorren un lugar':'');
+  const esPuntos=CATS_PUNTOS.includes(categoriaActual);
+  const puntosActual=esPuntos?((c.puntosPorIntento||[])[intento-1]||0):0;
+  editorIntentoCtx={id:c.id,ts,ronda,intento,robot:c.robot,tiempoActual:tiempos[intento-1],puntosActual,totalIntentos:tiempos.length,esRondaActual,esPuntos};
+  document.getElementById('edit-intento-info').textContent=c.robot+' — Ronda '+ronda+', intento '+intento+' (actual: '+editorIntentoCtx.tiempoActual+(esPuntos?', '+puntosActual+' pts':'')+')'+(hayPosteriores?' · hay '+(tiempos.length-intento)+' intento(s) después — al Borrar/Volver a correr se recorren un lugar':'');
   document.getElementById('edit-intento-manual-wrap').style.display='none';
   document.getElementById('edit-intento-manual-input').value='';
+  document.getElementById('edit-intento-puntos-wrap').style.display='none';
+  document.getElementById('edit-intento-puntos-input').value='';
   mostrarBotonesEditorIntento();
   document.getElementById('modal-editar-intento').classList.add('show');
 }
 
 function mostrarBotonesEditorIntento(){
   const esRondaActual=editorIntentoCtx&&editorIntentoCtx.esRondaActual;
+  const esPuntos=editorIntentoCtx&&editorIntentoCtx.esPuntos;
   // "Volver a correr" solo se ofrece si la ronda del intento es la ronda activa
   // ahora mismo — para una ronda anterior ya no tiene sentido "correr en vivo"
   // bajo el reloj de una ronda distinta a la que está en curso.
@@ -1528,6 +1536,7 @@ function mostrarBotonesEditorIntento(){
   document.getElementById('edit-intento-btns').innerHTML=
     '<button class="modal-btn cancel full" onclick="cerrarModal(\'modal-editar-intento\')">Cancelar</button>'+
     '<button class="modal-btn confirm btn-manual" onclick="mostrarManualIntento()">✏️ Tiempo manual</button>'+
+    (esPuntos?'<button class="modal-btn confirm btn-manual" onclick="mostrarPuntosIntento()">🎯 Editar puntos</button>':'')+
     '<button class="modal-btn confirm btn-marcar-dnf" onclick="confirmarEditorIntento(\'dnf\')">⛔ Marcar DNF</button>'+
     (esRondaActual?'<button class="modal-btn confirm btn-rodar" onclick="confirmarEditorIntento(\'rodar\')">🔁 Volver a correr</button>':'<span></span>')+
     '<button class="modal-btn confirm btn-borrar" onclick="confirmarEditorIntento(\'borrar\')">🗑️ Borrar</button>';
@@ -1542,16 +1551,32 @@ function mostrarManualIntento(){
   document.getElementById('edit-intento-manual-input').focus();
 }
 
+function mostrarPuntosIntento(){
+  document.getElementById('edit-intento-puntos-wrap').style.display='block';
+  document.getElementById('edit-intento-puntos-input').value=editorIntentoCtx?editorIntentoCtx.puntosActual:0;
+  document.getElementById('edit-intento-btns').className='modal-btns edit-intento-grid';
+  document.getElementById('edit-intento-btns').innerHTML=
+    '<button class="modal-btn cancel" onclick="mostrarBotonesEditorIntento()">← Volver</button>'+
+    '<button class="modal-btn confirm btn-manual" onclick="confirmarEditorIntento(\'puntos\')">💾 Guardar puntos</button>';
+  document.getElementById('edit-intento-puntos-input').focus();
+}
+
 async function confirmarEditorIntento(modo){
   if(!editorIntentoCtx)return;
   const {id,ts,ronda,intento,robot,totalIntentos}=editorIntentoCtx;
   let nuevoTiempo=null;
+  let nuevosPuntos=null;
   if(modo==='dnf'){
     nuevoTiempo='DNF';
   }else if(modo==='manual'){
     const val=document.getElementById('edit-intento-manual-input').value.trim();
     if(!/^\d{2}:\d{2}:\d{2}$/.test(val)){showToast('⚠️ Formato inválido — usa MM:SS:CS (ej. 00:04:32)',true);return;}
     nuevoTiempo=val;
+  }else if(modo==='puntos'){
+    const val=document.getElementById('edit-intento-puntos-input').value.trim();
+    if(val===''||!/^-?\d+$/.test(val)){showToast('⚠️ Ingresa un número de puntos válido',true);return;}
+    nuevoTiempo=editorIntentoCtx.tiempoActual;
+    nuevosPuntos=parseInt(val,10);
   }
   // modo==='borrar' deja nuevoTiempo=null (sin reemplazo)
 
@@ -1588,6 +1613,7 @@ async function confirmarEditorIntento(modo){
     }
     if(nuevoTiempo){
       c.tiempos[intento-1]=nuevoTiempo;
+      if(nuevosPuntos!==null)c.puntosPorIntento[intento-1]=nuevosPuntos;
       await guardarResultadoGAS(nuevoTiempo,{participante:c,ronda,intento,puntos:c.puntosPorIntento[intento-1]});
     }else{
       c.tiempos.pop(); // modo==='borrar' y era el último — sin huecos que recorrer
@@ -1636,7 +1662,7 @@ async function confirmarEditorIntento(modo){
     else{desbloquearBtn();document.getElementById('crono-status').textContent='LISTO · Intento '+intentoActual+' de '+maxIntentos;}
   }
 
-  showToast(modo==='borrar'?'🗑 Intento borrado — '+robot:modo==='dnf'?'⛔ Marcado como DNF — '+robot:'✏️ Tiempo corregido — '+robot);
+  showToast(modo==='borrar'?'🗑 Intento borrado — '+robot:modo==='dnf'?'⛔ Marcado como DNF — '+robot:modo==='puntos'?'🎯 Puntos corregidos — '+robot:'✏️ Tiempo corregido — '+robot);
 }
 
 // Igual que la parte visual de reiniciarCrono() pero sin volver a borrar
