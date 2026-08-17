@@ -522,6 +522,7 @@
             </div>
             <div style="text-align:center;margin:6px 0 10px;"><div id="drones-puntos-valor" style="font-family:'Bebas Neue';font-size:2.2rem;color:var(--text);">0</div></div>
             <div id="drones-criterios-botones" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
+            <button id="btn-confirmar-drones" onclick="confirmarIntentoDrones()" style="display:none;width:100%;margin-top:12px;background:#15803d;border:1px solid #15803d;color:#fff;border-radius:8px;padding:10px;font-family:'Exo 2';font-weight:700;cursor:pointer;">✅ Confirmar intento (tiempo + puntos)</button>
 
             <div id="drones-criterios-editor" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
               <div id="drones-criterios-tbody" style="display:flex;flex-direction:column;gap:6px;"></div>
@@ -913,6 +914,11 @@ let presentes=[],seleccionados=new Set();
 // nuevo, se captura al detener/DNF, y queda guardado por intento en
 // c.puntosPorIntento (paralelo a c.tiempos, mismo índice).
 let puntosIntentoActual=0;
+// Drones: cuando se detiene el cronómetro, el intento NO se registra todavía
+// -- queda "detenido, esperando puntos" (este tiempo pendiente) para que el
+// juez pueda seguir sumando/restando con los botones +1/-1 DESPUÉS de que se
+// acabó el tiempo, y recién se guarda al presionar "✅ Confirmar intento".
+let tiempoDronesPendiente=null;
 
 // Config de intentos (y nombre opcional) por cada ronda — permite que, por ejemplo,
 // la Ronda 1 (Clasificatoria) tenga 2 intentos y la Ronda 2 (Final) tenga 1 solo.
@@ -1144,7 +1150,7 @@ async function volverPaso1Desde3(){
   categoriaActual=null;participanteActual=null;rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
   rondasData={};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);
-  puntosIntentoActual=0;actualizarPuntosUI();
+  resetPuntosDrones();
 }
 
 function getRuta(){return RUTAS[categoriaActual]||null;}
@@ -1196,7 +1202,7 @@ function limpiarParticipante(){
   const strip=document.getElementById('participante-strip');strip.className='participante-strip empty';
   strip.innerHTML='<div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner o selección...</div></div><div class="p-badge">—</div>';
   ocultarBotonesAccion();
-  puntosIntentoActual=0;actualizarPuntosUI();
+  resetPuntosDrones();
   if(categoriaActual)fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
 }
 
@@ -1206,12 +1212,20 @@ function limpiarParticipante(){
 const CATS_ARM_ESPERA=['Trepador (Amateur)','Trepador (Pro)','Trepador (Amateur) [Copia]','Trepador (Pro) [Copia]'];
 
 // ── DRONES — puntos en vivo (+1/-1) ──────────────────────────────
-// Los botones +1/-1 solo suman al puntaje del intento EN CURSO
-// mientras el cronómetro está corriendo (mismo criterio que los
-// botones de asalto de Minisumo: bloqueados hasta iniciar).
+// Los botones +1/-1 suman al puntaje del intento EN CURSO mientras el
+// cronómetro está corriendo, Y TAMBIÉN después de detenerlo (mientras
+// espera confirmación) -- a pedido explícito de Raku: mide el tiempo
+// primero, agrega los puntos recién cuando se acabó. Solo se bloquean
+// si nunca se inició el intento (ni corriendo ni con tiempo pendiente).
 function ajustarPuntosDrones(delta){
-  if(!cronoInterval){showToast('⚠️ Inicia el cronómetro antes de sumar puntos',true);return;}
+  if(!cronoInterval&&tiempoDronesPendiente==null){showToast('⚠️ Inicia el cronómetro antes de sumar puntos',true);return;}
   puntosIntentoActual+=delta;
+  actualizarPuntosUI();
+}
+function resetPuntosDrones(){
+  puntosIntentoActual=0;tiempoDronesPendiente=null;
+  const btnConfirmar=document.getElementById('btn-confirmar-drones');
+  if(btnConfirmar)btnConfirmar.style.display='none';
   actualizarPuntosUI();
 }
 function actualizarPuntosUI(){
@@ -1359,15 +1373,36 @@ async function iniciarCrono(){
   document.getElementById('crono-display').className='crono-display running';
   document.getElementById('crono-status').textContent='EN MARCHA · Intento '+intentoActual+' de '+maxIntentos;
   document.getElementById('btn-dnf').style.display='block';ocultarBotonesAccion();
-  if(CATS_PUNTOS.includes(categoriaActual)){puntosIntentoActual=0;actualizarPuntosUI();}
+  if(CATS_PUNTOS.includes(categoriaActual)){resetPuntosDrones();}
 }
 
 function detenerCrono(){
   if(!cronoInterval)return;clearInterval(cronoInterval);cronoInterval=null;
   const tiempo=document.getElementById('cronometro').textContent;
   if(tiempo==='00:00:00'){document.getElementById('crono-display').className='crono-display';document.getElementById('crono-status').textContent=participanteActual?'LISTO · Intento '+intentoActual+' de '+maxIntentos:'LISTO';document.getElementById('btn-dnf').style.display='none';showToast('⚠️ El cronómetro no arrancó — intento no registrado',true);enviarSerial('S');return;}
-  document.getElementById('crono-display').className='crono-display stopped';document.getElementById('crono-status').textContent='DETENIDO';document.getElementById('btn-dnf').style.display='none';
+  document.getElementById('crono-display').className='crono-display stopped';document.getElementById('btn-dnf').style.display='none';
+  if(CATS_PUNTOS.includes(categoriaActual)){
+    // No se registra todavía -- se espera a que el juez confirme, para poder
+    // seguir ajustando puntos con el tiempo ya detenido.
+    tiempoDronesPendiente=tiempo;
+    document.getElementById('crono-status').textContent='DETENIDO · Agrega los puntos y confirma';
+    bloquearBtn();
+    const btnConfirmar=document.getElementById('btn-confirmar-drones');
+    if(btnConfirmar)btnConfirmar.style.display='block';
+    enviarSerial('S');
+    return;
+  }
+  document.getElementById('crono-status').textContent='DETENIDO';
   registrarIntento(tiempo);enviarSerial('S');
+}
+
+function confirmarIntentoDrones(){
+  if(tiempoDronesPendiente==null)return;
+  const tiempo=tiempoDronesPendiente;
+  tiempoDronesPendiente=null;
+  const btnConfirmar=document.getElementById('btn-confirmar-drones');
+  if(btnConfirmar)btnConfirmar.style.display='none';
+  registrarIntento(tiempo);
 }
 
 // ── REINICIAR CRONÓMETRO ─────────────────────────────────────────
@@ -1409,7 +1444,7 @@ async function reiniciarCrono(){
   document.getElementById('cronometro').textContent='00:00:00';document.getElementById('crono-display').className='crono-display';
   document.getElementById('crono-status').textContent=participanteActual?'LISTO · Intento '+intentoActual+' de '+maxIntentos:'LISTO';document.getElementById('btn-dnf').style.display='none';
   if(CATS_PULSADOR.includes(categoriaActual)||CATS_SEG.includes(categoriaActual))enviarSerial('R');
-  puntosIntentoActual=0;actualizarPuntosUI();
+  resetPuntosDrones();
 }
 
 // Quita un tiempo específico del array `tiempos` de un participante en
@@ -1795,7 +1830,7 @@ async function confirmarCerrarCategoria(){
     categoriaActual=null;participanteActual=null;rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
     rondasData={};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
     reiniciarCrono();limpiarParticipante();actualizarBadges();renderRondas();document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);
-    puntosIntentoActual=0;actualizarPuntosUI();
+    resetPuntosDrones();
     if(desbloqueoOk)showToast('✅ Categoría cerrada');
     else showToast('⚠️ Categoría cerrada acá, pero el servidor no confirmó el desbloqueo — puede seguir marcada "en uso" para otro dispositivo',true);
   }catch(e){showToast('❌ Error al cerrar categoría',true);}
