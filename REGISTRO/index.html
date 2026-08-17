@@ -191,7 +191,13 @@
     body.staff-mode .btn-reg-editar { display: inline-flex; }
     .page-hero { position: relative; }
     .page-hero .btn-reg-editar { top: 4px; right: 0; background: rgba(26,92,168,0.12); color: #1a5ca8; border-color: rgba(26,92,168,0.3); }
-    .reg-aviso, .wa-card, .precios-panel-wrap { position: relative; }
+    /* .reg-robot tiene pointer-events:none (pensado para que la imagen
+       decorativa del robot no bloquee clics) -- pero eso también deshabilita
+       CUALQUIER botón dentro de sus hijos reales (aviso, WhatsApp, precios
+       compactos), no solo en el robot mismo. Sin este pointer-events:auto,
+       "Editar" quedaba muerto al clic en cualquier ancho salvo ≤768px
+       (única media query que reseteaba .reg-robot a pointer-events:auto). */
+    .reg-aviso, .wa-card, .precios-panel-wrap, .precios-movil { position: relative; pointer-events: auto; }
     .precios-panel-wrap .btn-reg-editar { top: -6px; right: -6px; }
 
     .reg-modal-overlay {
@@ -255,7 +261,24 @@
     .reg-modal-cerrar:hover { background: #1a5ca8; color: #ffffff; }
 
     @media (min-width: 1261px) { .precios-movil { display: none !important; } }
-    @media (min-width: 769px) and (max-width: 1260px) { .precios-panel-wrap { display: none; } .precios-movil { display: none !important; } }
+    @media (min-width: 769px) and (max-width: 1260px) { .precios-panel-wrap { display: none; } }
+    /* Antes .precios-movil solo se mostraba en ≤768px, dejando un hueco real
+       de 769-1260px sin ningún precio visible (ni el panel de escritorio
+       -oculto ahí a propósito- ni la versión compacta). Ese mismo hueco se
+       llevaba el botón "Editar precios" (vive dentro de precios-panel-wrap),
+       así que en ese rango de ancho tampoco había forma de editar. */
+    @media (max-width: 1260px) {
+      .precios-movil { display: block; width: 100%; margin: 16px 0; position: relative; }
+      .precios-movil-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #5bc8f0; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+      .precios-movil-title .btn-reg-editar { position: static; }
+      .precios-movil-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .precios-movil .precio-item { padding: 12px 8px; border-radius: 12px; }
+      .precios-movil .precio-periodo { font-size: 9.5px; margin-bottom: 4px; }
+      .precios-movil .precio-valor { font-size: 2rem; margin-bottom: 4px; }
+      .precios-movil .precio-desc { font-size: 8px; padding: 3px 6px; }
+      .precios-movil .precio-badge-activo { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
+      .precios-movil .precio-badge-vencido { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
+    }
     @media (max-width: 1000px) { .reg-layout { flex-direction: column; align-items: center; } .reg-robot { flex: 0 0 auto; } .form-card { width: 100%; max-width: 700px; margin-top: 24px !important; } }
     @media (max-width: 768px) {
       .wrapper { padding: 0 12px 40px; }
@@ -267,15 +290,6 @@
       .reg-aviso { width: 100%; font-size: 12px; }
       .wa-card { width: 100%; margin-top: 16px; }
       .wa-card-body img { width: 160px; height: 160px; }
-      .precios-movil { display: block; width: 100%; margin: 16px 0; }
-      .precios-movil-title { font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; color: #5bc8f0; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-      .precios-movil-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-      .precios-movil .precio-item { padding: 12px 8px; border-radius: 12px; }
-      .precios-movil .precio-periodo { font-size: 9.5px; margin-bottom: 4px; }
-      .precios-movil .precio-valor { font-size: 2rem; margin-bottom: 4px; }
-      .precios-movil .precio-desc { font-size: 8px; padding: 3px 6px; }
-      .precios-movil .precio-badge-activo { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
-      .precios-movil .precio-badge-vencido { font-size: 6px; padding: 2px 5px; top: 6px; right: 6px; }
       .form-card { margin-top: 0 !important; padding: 18px 14px; border-radius: 12px; width: 100%; box-sizing: border-box; }
       .form-grid, .grid-comprobante { grid-template-columns: 1fr !important; }
       .field[style*="grid-column"] { grid-column: 1 / -1 !important; }
@@ -310,7 +324,10 @@
   <div class="reg-layout">
     <div class="reg-robot">
       <div class="precios-movil" id="precios-movil">
-        <div class="precios-movil-title">💰 Precios de inscripción</div>
+        <div class="precios-movil-title">
+          <span>💰 Precios de inscripción</span>
+          <button class="btn-reg-editar" onclick="abrirModalPrecios()">🔧 Editar</button>
+        </div>
         <div class="precios-movil-grid" id="precios-movil-grid"></div>
       </div>
       <img class="reg-robot-img" src="../shared/images/robot-inss.png" alt="Robot inscribiendo" />
