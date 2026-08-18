@@ -504,7 +504,7 @@
         <div class="col-config">
           <div class="card-dark"><div class="card-label">CATEGORÍA ACTIVA</div><div id="cat-activa-label" style="font-family:'Bebas Neue';font-size:1.1rem;color:var(--text);letter-spacing:1px;">—</div></div>
           <div class="aviso-sensor" id="aviso-sensor"><div class="aviso-sensor-icon">🔌</div><div class="aviso-sensor-texto"><b id="aviso-sensor-titulo">CONECTA EL DISPOSITIVO</b><span id="aviso-sensor-desc">Antes de iniciar la competencia, conecta el ESP32 usando el botón de abajo.</span></div></div>
-          <div class="card-dark"><div class="config-title">CONFIG</div><div class="config-row"><label>Rondas:</label><input type="number" class="config-input" id="cfg-rondas" value="1" min="1" max="10" /></div><div style="height:10px"></div><div class="config-title" style="margin-bottom:6px">INTENTOS POR RONDA</div><div id="cfg-fases-wrap"></div></div>
+          <div class="card-dark"><div class="config-title">CONFIG</div><div class="config-row"><label>Rondas:</label><input type="number" class="config-input" id="cfg-rondas" value="1" min="1" max="10" /></div><div class="config-row" id="cfg-tiempo-max-wrap" style="display:none"><label>Tiempo máx. (min):</label><input type="number" class="config-input" id="cfg-tiempo-max" value="" min="0" step="1" placeholder="Sin límite" /></div><div style="height:10px"></div><div class="config-title" style="margin-bottom:6px">INTENTOS POR RONDA</div><div id="cfg-fases-wrap"></div></div>
           <div class="card-dark badges-wrap"><span class="badge-ronda" id="badge-ronda">RONDA 1</span><span class="badge-intento" id="badge-intento">—</span></div>
           <button class="btn-iniciar-comp" id="btn-iniciar-comp" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
           <button class="btn-bloque btn-cerrar-cat" id="btn-cerrar-cat" style="display:none" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
@@ -545,7 +545,7 @@
         </div>
         <div class="col-ranking">
           <div class="ranking-card">
-            <div class="ranking-header"><div class="ranking-title">RANKING</div><div class="ranking-count" id="ranking-count">0</div></div>
+            <div class="ranking-header"><div class="ranking-title">RANKING</div><div style="display:flex;align-items:center;gap:8px"><button id="btn-sync-multijuez" style="display:none;background:none;border:1px solid var(--cyan);color:var(--cyan);border-radius:20px;padding:4px 10px;font-size:.68rem;font-family:var(--font-mono);cursor:pointer" onclick="sincronizarResultadosMultiJuez(true)">🔄 Sincronizar</button><div class="ranking-count" id="ranking-count">0</div></div></div>
             <div id="rondas-container"><p class="ranking-empty">Sin participantes aún</p></div>
           </div>
         </div>
@@ -811,6 +811,53 @@ async function bloquearParticipante(cat,participanteId){
 async function desbloquearParticipante(cat,participanteId){
   if(!participanteId)return;
   try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearCategoria',categoria:cat+'|'+participanteId,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});}catch(e){}
+}
+function mostrarBotonSyncMultiJuez(cat){
+  const btn=document.getElementById('btn-sync-multijuez');
+  if(btn)btn.style.display=esMultiJuez(cat)?'inline-block':'none';
+}
+// Trae de GAS (hoja "resultados", fuente única de verdad) todos los intentos
+// ya registrados para esta ruta — de CUALQUIER dispositivo, no solo el
+// propio — y los fusiona en rondasData. Necesario porque en categorías
+// CATS_MULTI_JUEZ cada dispositivo solo ve localmente lo que ÉL procesó
+// (nunca se bloquea la categoría completa a propósito, ver esMultiJuez).
+// Fusiona por participante+ronda tomando el array MÁS LARGO entre lo local
+// y lo que llegó de GAS (nunca acorta): evita perder, por una carrera de
+// milisegundos, un intento recién guardado localmente que todavía no
+// terminó de llegar al Sheet en el momento exacto de sincronizar.
+async function sincronizarResultadosMultiJuez(mostrarToast){
+  if(!esMultiJuez(categoriaActual))return true;
+  const ruta=getRuta();if(!ruta)return false;
+  try{
+    const r=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getResultados',ruta,staffToken:localStorage.getItem('sucrebot_staff_token')||''}),{cache:'no-store'});
+    const filas=await r.json();
+    if(!Array.isArray(filas)){if(mostrarToast)showToast('⚠️ No se pudo sincronizar con otros dispositivos',true);return false;}
+    const porPart={};
+    filas.forEach(f=>{
+      const key=f.participanteId+'|'+(f.ronda||1);
+      if(!porPart[key])porPart[key]={participanteId:f.participanteId,nombre:f.nombre,robot:f.robot,institucion:f.institucion,ronda:f.ronda||1,intentos:[]};
+      porPart[key].intentos.push({intento:f.intento||1,tiempo:f.tiempo,puntos:f.puntos});
+    });
+    Object.values(porPart).forEach(grp=>{
+      grp.intentos.sort((a,b)=>a.intento-b.intento);
+      const rd=getRonda(grp.ronda);
+      let c=rd.clasificados.find(x=>x.id===grp.participanteId);
+      if(!c){
+        const full=presentes.find(p=>p.id===grp.participanteId)||{};
+        c={id:grp.participanteId,robot:grp.robot||full.robot||'',nombre:grp.nombre||full.nombre||'',institucion:grp.institucion||full.institucion||'',ciudad:full.ciudad||'',categoria:categoriaActual,correo:full.correo||'',miembro2:full.miembro2||'',tiempo:'—',tiempos:[],esDNF:false,avanza:false,ronda:grp.ronda,ts:Date.now()+Math.random()};
+        rd.clasificados.push(c);
+      }
+      const existentes=c.tiempos||[];const existentesPts=c.puntosPorIntento||[];
+      const deGas=grp.intentos.map(i=>i.tiempo);const deGasPts=grp.intentos.map(i=>i.puntos||0);
+      const usarGas=deGas.length>=existentes.length;
+      c.tiempos=usarGas?deGas:existentes;
+      c.puntosPorIntento=usarGas?deGasPts:existentesPts;
+      actualizarMejorDrones(c);
+    });
+    renderRondas();actualizarContador();guardarEstado();
+    if(mostrarToast)showToast('🔄 Sincronizado · '+filas.length+' intento(s) de todos los dispositivos');
+    return true;
+  }catch(e){if(mostrarToast)showToast('⚠️ Error al sincronizar (¿sin conexión?)',true);return false;}
 }
 const AVISO_SENSOR  = {
   'Trepador (Amateur)':             {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
@@ -1152,6 +1199,8 @@ async function confirmarIniciarCrono(){
   document.getElementById('cfg-rondas').disabled=false;
   document.getElementById('cfg-rondas').style.opacity='';
   renderFasesConfig();
+  cargarTiempoMaxUI(catNombre);
+  mostrarBotonSyncMultiJuez(catNombre);
   document.getElementById('btn-iniciar-comp').classList.remove('oculto');
   document.getElementById('btn-excel').classList.remove('visible');
   const bcr=document.getElementById('btn-cerrar-ronda');bcr.disabled=false;bcr.style.opacity='';bcr.style.display='none';bcr.innerHTML='🏁 Cerrar Ronda <span id="cerrar-ronda-num">0</span>';
@@ -1159,6 +1208,7 @@ async function confirmarIniciarCrono(){
   if(CATS_SERIAL.includes(catNombre)){const info=AVISO_SENSOR[catNombre]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32 antes de iniciar.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}else{aviso.classList.remove('visible');}
   if(typeof mostrarBotonSerial==='function')setTimeout(()=>mostrarBotonSerial(CATS_SERIAL.includes(catNombre)),100);
   actualizarBadges();renderRondas();actualizarContador();reiniciarCrono();limpiarParticipante();guardarEstado();if(!(window.OfflineExcel&&OfflineExcel.estaActivo())&&!esMultiJuez(catNombre))iniciarPolling();setStep(3);
+  if(esMultiJuez(catNombre))sincronizarResultadosMultiJuez(false);
   actualizarPuntosUI();
   bloquearBtn();
   showToast('✅ '+selArr.length+' participantes cargados · '+catNombre);
@@ -1254,6 +1304,27 @@ function resetPuntosDrones(){
   const btnConfirmar=document.getElementById('btn-confirmar-drones');
   if(btnConfirmar)btnConfirmar.style.display='none';
   actualizarPuntosUI();
+}
+
+// ── DRONES/PLC — tiempo máximo configurable (opcional, por categoría) ──
+// 0 = sin límite. Guardado por dispositivo en localStorage, por ruta
+// (dro/dro2), para no pedirlo cada vez que se abre la categoría.
+let tiempoMaxDronesMs=0;
+let tiempoMaxDronesAvisado=false; // evita disparar el DNF automático más de una vez por intento
+function tiempoMaxKey(ruta){return 'cronometro_tiempo_max_'+(ruta||'general');}
+function cargarTiempoMaxUI(cat){
+  const wrap=document.getElementById('cfg-tiempo-max-wrap');
+  const input=document.getElementById('cfg-tiempo-max');
+  if(!wrap||!input)return;
+  const esPts=CATS_PUNTOS.includes(cat);
+  wrap.style.display=esPts?'flex':'none';
+  if(esPts){
+    const guardado=localStorage.getItem(tiempoMaxKey(RUTAS[cat]||''));
+    input.value=guardado||'';
+    tiempoMaxDronesMs=guardado?Number(guardado)*60000:0;
+  }else{
+    input.value='';tiempoMaxDronesMs=0;
+  }
 }
 function actualizarPuntosUI(){
   const wrap=document.getElementById('drones-puntos-wrap');
@@ -1396,6 +1467,7 @@ async function iniciarCrono(){
     enviarSerial('R');
   }
   if(cronoInterval)return; // por si detenerCrono() u otro evento llegó durante la espera
+  tiempoMaxDronesAvisado=false;
   cronoInicio=Date.now();cronoInterval=setInterval(tickCrono,10);
   document.getElementById('crono-display').className='crono-display running';
   document.getElementById('crono-status').textContent='EN MARCHA · Intento '+intentoActual+' de '+maxIntentos;
@@ -1725,7 +1797,20 @@ function marcarDNF(){
   registrarIntento('DNF');enviarSerial('S');showToast('⛔ DNF — '+participanteActual.robot);
 }
 
-function tickCrono(){if(!cronoInicio)return;const t=Date.now()-cronoInicio;const cs=Math.floor((t%1000)/10);const sg=Math.floor((t/1000)%60);const mn=Math.floor(t/60000);document.getElementById('cronometro').textContent=String(mn).padStart(2,'0')+':'+String(sg).padStart(2,'0')+':'+String(cs).padStart(2,'0');}
+function tickCrono(){
+  if(!cronoInicio)return;
+  const t=Date.now()-cronoInicio;
+  // Tiempo máximo configurable (solo CATS_PUNTOS, ej. Gran Reto de PLC) —
+  // al llegar al límite, DNF automático (mismo camino que el botón manual,
+  // así el juez todavía puede sumar los puntos logrados antes del corte).
+  if(tiempoMaxDronesMs>0&&t>=tiempoMaxDronesMs&&!tiempoMaxDronesAvisado){
+    tiempoMaxDronesAvisado=true;
+    showToast('⏱ Tiempo máximo ('+Math.round(tiempoMaxDronesMs/60000)+' min) alcanzado — DNF automático',true);
+    marcarDNF();
+    return;
+  }
+  const cs=Math.floor((t%1000)/10);const sg=Math.floor((t/1000)%60);const mn=Math.floor(t/60000);document.getElementById('cronometro').textContent=String(mn).padStart(2,'0')+':'+String(sg).padStart(2,'0')+':'+String(cs).padStart(2,'0');
+}
 
 function registrarIntento(tiempo){
   if(!participanteActual)return;const esDNF=tiempo==='DNF';
@@ -1950,6 +2035,7 @@ async function guardarResultadoGAS(tiempo,opts){
 }
 
 document.getElementById('cfg-rondas').addEventListener('input',function(){if(competenciaIniciada){showToast('⚠️ No se puede cambiar durante la competencia',true);this.value=maxRondas;return;}maxRondas=parseInt(this.value)||1;renderFasesConfig();guardarEstado();});
+document.getElementById('cfg-tiempo-max').addEventListener('input',function(){const min=parseFloat(this.value);tiempoMaxDronesMs=(min>0)?min*60000:0;localStorage.setItem(tiempoMaxKey(getRuta()||''),this.value||'');});
 
 function construirRankingGeneralData(){
   // Recorre TODAS las rondas en orden ascendente y cada participante (por id, no por
@@ -2091,6 +2177,15 @@ function showToast(msg,error=false){const t=document.getElementById('toast');t.t
 // ── guardarPodioCrono ──
 async function guardarPodioCrono(){
   const catNombre=categoriaActual||'';if(!catNombre){showToast('⚠️ Sin categoría activa',true);return;}
+  // Categorías multi-juez (ej. Gran Reto de PLC): fusiona SIEMPRE con lo que
+  // hicieron los otros dispositivos antes de armar el ranking a guardar —
+  // sin esto, el podio saldría incompleto si el juez que presiona el botón
+  // no vio los equipos que cronometró otro juez en su propio dispositivo.
+  if(esMultiJuez(catNombre)){
+    loading(true,'Sincronizando con otros dispositivos…');
+    await sincronizarResultadosMultiJuez(false);
+    loading(false);
+  }
   const mapaParticipantes=new Map();
   // Se procesan las rondas en orden ascendente y cada participante (por id, no por nombre
   // de robot — dos robots pueden compartir nombre) se SOBREESCRIBE por completo con los
@@ -2200,7 +2295,7 @@ document.addEventListener('componentsLoaded',async function(){
       const aviso=document.getElementById('aviso-sensor');
       if(CATS_SERIAL.includes(catGuardada)){const info=AVISO_SENSOR[catGuardada]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}
       if(typeof mostrarBotonSerial==='function')setTimeout(()=>window.mostrarBotonSerial(CATS_SERIAL.includes(catGuardada)),300);
-      cargarEstado(catGuardada);if(!modoOffline&&!esMultiJuez(catGuardada))iniciarPolling();setStep(3);actualizarPuntosUI();showToast('✅ Categoría "'+catGuardada+'" restaurada');
+      cargarEstado(catGuardada);if(!modoOffline&&!esMultiJuez(catGuardada))iniciarPolling();setStep(3);actualizarPuntosUI();cargarTiempoMaxUI(catGuardada);mostrarBotonSyncMultiJuez(catGuardada);if(esMultiJuez(catGuardada))sincronizarResultadosMultiJuez(false);showToast('✅ Categoría "'+catGuardada+'" restaurada');
       try{
         const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes',staffToken:localStorage.getItem('sucrebot_staff_token')||''}),{cache:'no-store'});const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
         presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
