@@ -793,6 +793,25 @@ const CATS_SERIAL   = [...CATS_SENSOR,...CATS_PULSADOR];
 // primero (ordenados por puntos desc, tiempo asc como desempate);
 // quienes no completan (DNF) quedan debajo, también por puntos desc.
 const CATS_PUNTOS   = ['Drones','Drones [Copia]'];
+// Gran Reto de PLC (Drones [Copia]) — hasta 3 equipos compiten a la vez,
+// cada uno con su propio juez en su propio dispositivo. El bloqueo normal
+// de CRONOMETRO es por CATEGORÍA completa (un solo dispositivo a la vez) —
+// eso bloquearía al 2do/3er juez. Para las categorías de esta lista el
+// bloqueo pasa a ser por CATEGORÍA+PARTICIPANTE (cada juez "toma" solo el
+// equipo que está cronometrando, ver bloquearParticipante/seleccionarCompetido)
+// y se salta el polling de 'activo' (que es un puntero ÚNICO por categoría,
+// se pisaría entre los 3 jueces) — la selección es siempre manual acá.
+const CATS_MULTI_JUEZ = ['Drones [Copia]'];
+function esMultiJuez(cat){return CATS_MULTI_JUEZ.includes(cat);}
+let participanteLockId=null; // id del participante bloqueado por ESTE dispositivo (solo CATS_MULTI_JUEZ)
+async function bloquearParticipante(cat,participanteId){
+  const user=JSON.parse(localStorage.getItem('sucrebot_user')||'{}');
+  try{const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'bloquearCategoria',categoria:cat+'|'+participanteId,usuario:user.email,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});const d=await r.json();return d.ok;}catch(e){return false;}
+}
+async function desbloquearParticipante(cat,participanteId){
+  if(!participanteId)return;
+  try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearCategoria',categoria:cat+'|'+participanteId,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});}catch(e){}
+}
 const AVISO_SENSOR  = {
   'Trepador (Amateur)':             {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
   'Trepador (Pro)':                 {titulo:'SENSOR REQUERIDO (E18-D80NK)',desc:'Conecta el ESP32. El sensor detectará la meta y detendrá el tiempo automáticamente.'},
@@ -1120,7 +1139,7 @@ async function confirmarIniciarCrono(){
   if(!cat){showToast('⚠️ Selecciona una categoría',true);return;}
   const catNombre=Object.keys(RUTAS).find(k=>cat.getAttribute('onclick')?.includes("'"+k+"'"))||'';
   if(!catNombre)return;
-  const ok=(window.OfflineExcel&&OfflineExcel.estaActivo())?true:await bloquearCategoria(catNombre);
+  const ok=(window.OfflineExcel&&OfflineExcel.estaActivo())||esMultiJuez(catNombre)?true:await bloquearCategoria(catNombre);
   if(!ok){showToast('❌ No se pudo bloquear la categoría',true);return;}
   categoriaActual=catNombre;localStorage.setItem('cronometro_categoria_activa',catNombre);
   const selArr=presentes.filter(p=>seleccionados.has(p.id));
@@ -1139,7 +1158,7 @@ async function confirmarIniciarCrono(){
   const aviso=document.getElementById('aviso-sensor');
   if(CATS_SERIAL.includes(catNombre)){const info=AVISO_SENSOR[catNombre]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32 antes de iniciar.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}else{aviso.classList.remove('visible');}
   if(typeof mostrarBotonSerial==='function')setTimeout(()=>mostrarBotonSerial(CATS_SERIAL.includes(catNombre)),100);
-  actualizarBadges();renderRondas();actualizarContador();reiniciarCrono();limpiarParticipante();guardarEstado();if(!(window.OfflineExcel&&OfflineExcel.estaActivo()))iniciarPolling();setStep(3);
+  actualizarBadges();renderRondas();actualizarContador();reiniciarCrono();limpiarParticipante();guardarEstado();if(!(window.OfflineExcel&&OfflineExcel.estaActivo())&&!esMultiJuez(catNombre))iniciarPolling();setStep(3);
   actualizarPuntosUI();
   bloquearBtn();
   showToast('✅ '+selArr.length+' participantes cargados · '+catNombre);
@@ -1149,7 +1168,11 @@ async function volverPaso1Desde3(){
   if(!(await customConfirm('¿Cambiar de categoría? Se perderá el progreso no guardado en GAS.')))return;
   if(cronoInterval){clearInterval(cronoInterval);cronoInterval=null;}
   if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
-  if(categoriaActual){desbloquearCategoria(categoriaActual);localStorage.removeItem('cronometro_categoria_activa');}
+  if(categoriaActual){
+    if(esMultiJuez(categoriaActual)){if(participanteLockId){desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}}
+    else desbloquearCategoria(categoriaActual);
+    localStorage.removeItem('cronometro_categoria_activa');
+  }
   categoriaActual=null;participanteActual=null;rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
   rondasData={};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);
@@ -1201,12 +1224,13 @@ function recibirParticipante(p){
 
 function limpiarParticipante(){
   if(participanteActual?.id){ultimoIdLimpiado=participanteActual.id;ultimoIdLimpiadoTs=Date.now();}
+  if(esMultiJuez(categoriaActual)&&participanteLockId){desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}
   participanteActual=null;intentosLog=[];intentoActual=1;esperandoConfirmacionIntento=false;actualizarBadges();
   const strip=document.getElementById('participante-strip');strip.className='participante-strip empty';
   strip.innerHTML='<div><div class="p-robot">Sin participante</div><div class="p-inst">Esperando escáner o selección...</div></div><div class="p-badge">—</div>';
   ocultarBotonesAccion();
   resetPuntosDrones();
-  if(categoriaActual)fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
+  if(categoriaActual&&!esMultiJuez(categoriaActual))fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
 }
 
 // Categorías donde el sensor solo detiene (no arranca) el tiempo —
@@ -1778,10 +1802,19 @@ function toggleAvanza(ts,r){const rd=getRonda(r);const c=rd.clasificados.find(x=
 async function seleccionarCompetido(ts,r){
   const rd=getRonda(r);const c=rd.clasificados.find(x=>x.ts===ts);if(!c)return;
   if(participanteActual&&participanteActual.id!==c.id){if(!(await customConfirm('Ya tienes "'+participanteActual.robot+'". ¿Cambiar a "'+c.robot+'"?')))return;}
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
+  if(esMultiJuez(categoriaActual)){
+    if(participanteActual&&participanteActual.id!==c.id&&participanteLockId){await desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}
+    if(!participanteActual||participanteActual.id!==c.id){
+      const okP=await bloquearParticipante(categoriaActual,c.id);
+      if(!okP){showToast('❌ Ese equipo ya lo está cronometrando otro juez',true);return;}
+      participanteLockId=c.id;
+    }
+  }else{
+    fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
+  }
   participanteActual={id:c.id,robot:c.robot,nombre:c.nombre,institucion:c.institucion,ciudad:c.ciudad,categoria:c.categoria,correo:c.correo||'',miembro2:c.miembro2||''};
   esperandoConfirmacionIntento=false;
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setActivo',ruta:getRuta()||'general',participante:{...participanteActual,timestamp:Date.now()},staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
+  if(!esMultiJuez(categoriaActual))fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setActivo',ruta:getRuta()||'general',participante:{...participanteActual,timestamp:Date.now()},staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
   const tiemposYa=(c.tiempos||[]).filter(t=>t&&t!=='—'&&t!=='00:00:00');
   intentosLog=tiemposYa.map((t,i)=>({ronda:rondaActual,intento:i+1,tiempo:t,esDNF:t==='DNF'}));intentoActual=intentosLog.length+1;
   actualizarBadges();reiniciarCrono();ocultarBotonesAccion();
@@ -1860,7 +1893,8 @@ async function confirmarCerrarCategoria(){
   try{
     let desbloqueoOk=true;
     if(!modoOffline){
-      desbloqueoOk=await desbloquearCategoria(categoriaActual);
+      if(esMultiJuez(categoriaActual)){if(participanteLockId){await desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}}
+      else desbloqueoOk=await desbloquearCategoria(categoriaActual);
       const ruta=getRuta()||'general';
       const staffToken=localStorage.getItem('sucrebot_staff_token')||'';
       await Promise.all([fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta,staffToken})}),fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null,staffToken})})]);
@@ -2154,7 +2188,7 @@ document.addEventListener('componentsLoaded',async function(){
   if(catGuardada&&RUTAS[catGuardada]){
     const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
     let bloqueada=null,puedoRestaurar=false;
-    if(modoOffline){puedoRestaurar=true;}
+    if(modoOffline||esMultiJuez(catGuardada)){puedoRestaurar=true;}
     else{
       bloqueada=await verificarBloqueo(catGuardada);const userData=JSON.parse(savedUser);
       if(bloqueada&&bloqueada.usuario===userData.email){puedoRestaurar=true;}
@@ -2166,7 +2200,7 @@ document.addEventListener('componentsLoaded',async function(){
       const aviso=document.getElementById('aviso-sensor');
       if(CATS_SERIAL.includes(catGuardada)){const info=AVISO_SENSOR[catGuardada]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}
       if(typeof mostrarBotonSerial==='function')setTimeout(()=>window.mostrarBotonSerial(CATS_SERIAL.includes(catGuardada)),300);
-      cargarEstado(catGuardada);if(!modoOffline)iniciarPolling();setStep(3);actualizarPuntosUI();showToast('✅ Categoría "'+catGuardada+'" restaurada');
+      cargarEstado(catGuardada);if(!modoOffline&&!esMultiJuez(catGuardada))iniciarPolling();setStep(3);actualizarPuntosUI();showToast('✅ Categoría "'+catGuardada+'" restaurada');
       try{
         const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes',staffToken:localStorage.getItem('sucrebot_staff_token')||''}),{cache:'no-store'});const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
         presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
