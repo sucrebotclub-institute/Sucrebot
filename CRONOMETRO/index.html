@@ -508,6 +508,7 @@
           <div class="card-dark badges-wrap"><span class="badge-ronda" id="badge-ronda">RONDA 1</span><span class="badge-intento" id="badge-intento">—</span></div>
           <button class="btn-iniciar-comp" id="btn-iniciar-comp" onclick="iniciarCompetencia()">🏁 Iniciar Competencia</button>
           <button class="btn-bloque btn-cerrar-cat" id="btn-cerrar-cat" style="display:none" onclick="pedirCerrarCategoria()">🚪 Cerrar Categoría</button>
+          <button class="btn-bloque" id="btn-resetear-cat" style="display:none;background:linear-gradient(135deg,#dc2626 0%,#991b1b 100%);border-color:#991b1b;color:#fff" onclick="resetearCategoriaResultados()">🔄 Resetear Categoría</button>
           <button class="btn-bloque btn-excel" id="btn-excel" onclick="exportarExcel()">📊 Descargar Excel</button>
           <button class="btn-bloque" id="btn-podio" style="background:linear-gradient(135deg,#f9d423 0%,#e8b800 100%);border-color:#e8b800;color:#78350f;" onclick="guardarPodioCrono()">🏆 Guardar Podio</button>
           <button class="btn-volver-cat" onclick="volverPaso1Desde3()">← Cambiar categoría</button>
@@ -1194,7 +1195,7 @@ async function confirmarIniciarCrono(){
   selArr.forEach((p,i)=>{rondasData[1].clasificados.push({...p,tiempo:'—',tiempos:[],esDNF:false,avanza:false,ronda:1,ts:Date.now()+i});});
   rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;competenciaIniciada=false;intentosLog=[];participanteActual=null;fasesConfig={};
   document.getElementById('cat-activa-label').textContent=catNombre;
-  document.getElementById('btn-cerrar-cat').style.display='block';
+  document.getElementById('btn-cerrar-cat').style.display='block';document.getElementById('btn-resetear-cat').style.display='block';
   document.getElementById('cfg-rondas').value='1';
   document.getElementById('cfg-rondas').disabled=false;
   document.getElementById('cfg-rondas').style.opacity='';
@@ -1995,6 +1996,39 @@ async function confirmarCerrarCategoria(){
   }catch(e){showToast('❌ Error al cerrar categoría',true);}
 }
 
+// Borra TODOS los tiempos/intentos ya guardados en GAS para la ruta activa
+// (útil para limpiar acumulación de pruebas antes del evento real) y cierra
+// la categoría igual que confirmarCerrarCategoria. NO toca certificados,
+// participantes ni otras categorías — solo la hoja "resultados", filtrada
+// por esta ruta.
+async function resetearCategoriaResultados(){
+  if(!categoriaActual)return;
+  const ruta=getRuta();if(!ruta)return;
+  if(!(await customConfirm('⚠️ Esto borra TODOS los tiempos/intentos ya guardados de "'+categoriaActual+'".\n\nNo borra certificados ni otras categorías.\n\nEsta acción NO se puede deshacer. ¿Confirmar?')))return;
+  loading(true,'Reseteando categoría…');
+  try{
+    const staffToken=localStorage.getItem('sucrebot_staff_token')||'';
+    const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'resetearResultadosCategoria',ruta,staffToken})});
+    const d=await r.json();
+    if(!d.ok){loading(false);showToast('❌ '+(d.error||'No se pudo resetear'),true);return;}
+    await Promise.all([
+      fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta,staffToken})}),
+      fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null,staffToken})})
+    ]);
+    if(esMultiJuez(categoriaActual)){if(participanteLockId){await desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}}
+    else await desbloquearCategoria(categoriaActual);
+    localStorage.removeItem(getKey());localStorage.removeItem('cronometro_categoria_activa');
+    if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
+    if(cronoInterval){clearInterval(cronoInterval);cronoInterval=null;}
+    categoriaActual=null;participanteActual=null;rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;fasesConfig={};
+    rondasData={};intentosLog=[];competenciaIniciada=false;presentes=[];seleccionados=new Set();
+    reiniciarCrono();limpiarParticipante();actualizarBadges();renderRondas();document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));setStep(1);
+    resetPuntosDrones();
+    loading(false);
+    showToast('✅ Categoría reseteada · '+(d.borradas||0)+' resultado(s) borrado(s)');
+  }catch(e){loading(false);showToast('❌ Error al resetear (¿sin conexión?)',true);}
+}
+
 function guardarEstado(){if(!categoriaActual)return;const estado={rondaActual,intentoActual,maxRondas,maxIntentos,fasesConfig,rondasData,categoria:categoriaActual,competenciaIniciada};localStorage.setItem(getKey(),JSON.stringify(estado));const ruta=getRuta();if(!ruta)return;fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado,staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});}
 
 function cargarEstado(cat){
@@ -2291,7 +2325,7 @@ document.addEventListener('componentsLoaded',async function(){
       else{localStorage.removeItem('cronometro_categoria_activa');showToast('⚠️ Categoría tomada por '+bloqueada.usuario,true);}
     }
     if(puedoRestaurar){
-      categoriaActual=catGuardada;document.getElementById('cat-activa-label').textContent=catGuardada;document.getElementById('btn-cerrar-cat').style.display='block';
+      categoriaActual=catGuardada;document.getElementById('cat-activa-label').textContent=catGuardada;document.getElementById('btn-cerrar-cat').style.display='block';document.getElementById('btn-resetear-cat').style.display='block';
       const aviso=document.getElementById('aviso-sensor');
       if(CATS_SERIAL.includes(catGuardada)){const info=AVISO_SENSOR[catGuardada]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}
       if(typeof mostrarBotonSerial==='function')setTimeout(()=>window.mostrarBotonSerial(CATS_SERIAL.includes(catGuardada)),300);
