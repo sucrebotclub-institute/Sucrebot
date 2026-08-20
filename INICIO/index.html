@@ -899,7 +899,11 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
     const raw = localStorage.getItem(CACHE_KEY);
     if (raw) {
       const cache = JSON.parse(raw);
-      if (Date.now() - cache.ts < TTL_MS && cache.s) {
+      // Validar la FORMA del caché, no solo que exista -- un caché viejo
+      // (de antes del 20-ago-2026) tiene 'instituciones_historicas' en vez
+      // de 'instituciones_edicion'; sin este chequeo se mostraba en blanco
+      // hasta que el TTL de 6h expirara solo.
+      if (Date.now() - cache.ts < TTL_MS && cache.s && typeof cache.s.instituciones_edicion === 'number') {
         aplicarStats(cache.s);
         return; // cache valido, no llamar GAS
       }
