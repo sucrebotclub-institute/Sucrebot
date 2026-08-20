@@ -780,6 +780,18 @@ _nombresCopiaFetch.then(nombres => {
     renderCopiasCategorias().then(aplicarCategoriasActivasCronometro).then(aplicarEmojisCategoriaCronometro);
   }
 });
+// Resuelve el nombre interno de una categoría copia (ej. "Drones [Copia]")
+// al nombre visible que el admin le asignó desde CONFIGURACION (ej.
+// "Gran Reto de PLC") -- reusa _nombresCopiaPromise (misma caché/fetch
+// que ya arma las tarjetas), así nunca dispara una llamada de red extra.
+// Categorías reales (sin "[Copia]") devuelven su propio nombre tal cual.
+async function resolverNombreCategoria(nombreInterno){
+  if(!nombreInterno||!/\[Copia\]$/.test(nombreInterno))return nombreInterno;
+  const codigo=RUTAS[nombreInterno];
+  if(!codigo)return nombreInterno;
+  const nombres=await _nombresCopiaPromise;
+  return (nombres&&nombres[codigo])||nombreInterno;
+}
 const RUTAS = {
   'Trepador (Amateur)':'trp_a','Trepador (Pro)':'trp_p','Seguidor de línea ST (Amateur)':'sl_a','Seguidor de línea ST (Pro)':'sl_p','Cubo Rubik':'cr','Drones':'dro',
   // Categorías copia (independientes, mismo hardware/flujo que su base — ver CONFIGURACION → Duplicar categoría)
@@ -1128,7 +1140,7 @@ async function elegirCategoria(cat,ev){
     }
     presentes=lista.map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
     seleccionados=new Set(presentes.map(p=>p.id));
-    document.getElementById('paso2Titulo').textContent='Presentes — '+cat+(modoOffline?' (📂 OFFLINE)':'');
+    document.getElementById('paso2Titulo').textContent='Presentes — '+(await resolverNombreCategoria(cat))+(modoOffline?' (📂 OFFLINE)':'');
     document.getElementById('selTotal').textContent=presentes.length;
     renderSeleccion();setStep(2);
   }catch(e){showToast('❌ Error cargando participantes',true);console.error(e);}
@@ -1194,7 +1206,7 @@ async function confirmarIniciarCrono(){
   rondasData={1:{clasificados:[],eliminados:[],cerrada:false}};
   selArr.forEach((p,i)=>{rondasData[1].clasificados.push({...p,tiempo:'—',tiempos:[],esDNF:false,avanza:false,ronda:1,ts:Date.now()+i});});
   rondaActual=1;intentoActual=1;maxRondas=1;maxIntentos=2;competenciaIniciada=false;intentosLog=[];participanteActual=null;fasesConfig={};
-  document.getElementById('cat-activa-label').textContent=catNombre;
+  document.getElementById('cat-activa-label').textContent=await resolverNombreCategoria(catNombre);
   document.getElementById('btn-cerrar-cat').style.display='block';document.getElementById('btn-resetear-cat').style.display='block';
   document.getElementById('cfg-rondas').value='1';
   document.getElementById('cfg-rondas').disabled=false;
@@ -1972,7 +1984,7 @@ function confirmarCerrarRonda(){
   else{const btn=document.getElementById('btn-cerrar-ronda');btn.disabled=true;btn.innerHTML='✓ Competencia finalizada';btn.style.opacity='0.5';renderRondas();limpiarParticipante();guardarEstado();document.getElementById('btn-excel').classList.add('visible');document.getElementById('btn-podio').classList.add('visible');showToast('🏆 ¡Competencia finalizada!');setTimeout(()=>exportarExcel(),500);}
 }
 
-function pedirCerrarCategoria(){if(!categoriaActual)return;document.getElementById('modal-cat-nom').textContent=categoriaActual;document.getElementById('modal-cat').classList.add('show');}
+async function pedirCerrarCategoria(){if(!categoriaActual)return;document.getElementById('modal-cat-nom').textContent=await resolverNombreCategoria(categoriaActual);document.getElementById('modal-cat').classList.add('show');}
 async function confirmarCerrarCategoria(){
   cerrarModal('modal-cat');if(!categoriaActual)return;
   const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
@@ -2004,7 +2016,7 @@ async function confirmarCerrarCategoria(){
 async function resetearCategoriaResultados(){
   if(!categoriaActual)return;
   const ruta=getRuta();if(!ruta)return;
-  if(!(await customConfirm('⚠️ Esto borra TODOS los tiempos/intentos ya guardados de "'+categoriaActual+'".\n\nNo borra certificados ni otras categorías.\n\nEsta acción NO se puede deshacer. ¿Confirmar?')))return;
+  if(!(await customConfirm('⚠️ Esto borra TODOS los tiempos/intentos ya guardados de "'+(await resolverNombreCategoria(categoriaActual))+'".\n\nNo borra certificados ni otras categorías.\n\nEsta acción NO se puede deshacer. ¿Confirmar?')))return;
   loading(true,'Reseteando categoría…');
   try{
     const staffToken=localStorage.getItem('sucrebot_staff_token')||'';
@@ -2325,11 +2337,11 @@ document.addEventListener('componentsLoaded',async function(){
       else{localStorage.removeItem('cronometro_categoria_activa');showToast('⚠️ Categoría tomada por '+bloqueada.usuario,true);}
     }
     if(puedoRestaurar){
-      categoriaActual=catGuardada;document.getElementById('cat-activa-label').textContent=catGuardada;document.getElementById('btn-cerrar-cat').style.display='block';document.getElementById('btn-resetear-cat').style.display='block';
+      categoriaActual=catGuardada;const nombreVisibleRestaurada=await resolverNombreCategoria(catGuardada);document.getElementById('cat-activa-label').textContent=nombreVisibleRestaurada;document.getElementById('btn-cerrar-cat').style.display='block';document.getElementById('btn-resetear-cat').style.display='block';
       const aviso=document.getElementById('aviso-sensor');
       if(CATS_SERIAL.includes(catGuardada)){const info=AVISO_SENSOR[catGuardada]||{titulo:'DISPOSITIVO REQUERIDO',desc:'Conecta el ESP32.'};document.getElementById('aviso-sensor-titulo').textContent=info.titulo;document.getElementById('aviso-sensor-desc').textContent=info.desc;aviso.classList.add('visible');}
       if(typeof mostrarBotonSerial==='function')setTimeout(()=>window.mostrarBotonSerial(CATS_SERIAL.includes(catGuardada)),300);
-      cargarEstado(catGuardada);if(!modoOffline&&!esMultiJuez(catGuardada))iniciarPolling();setStep(3);actualizarPuntosUI();cargarTiempoMaxUI(catGuardada);mostrarBotonSyncMultiJuez(catGuardada);if(esMultiJuez(catGuardada))sincronizarResultadosMultiJuez(false);showToast('✅ Categoría "'+catGuardada+'" restaurada');
+      cargarEstado(catGuardada);if(!modoOffline&&!esMultiJuez(catGuardada))iniciarPolling();setStep(3);actualizarPuntosUI();cargarTiempoMaxUI(catGuardada);mostrarBotonSyncMultiJuez(catGuardada);if(esMultiJuez(catGuardada))sincronizarResultadosMultiJuez(false);showToast('✅ Categoría "'+nombreVisibleRestaurada+'" restaurada');
       try{
         const rp=await fetch(GAS_URL+'?'+new URLSearchParams({action:'getParticipantes',staffToken:localStorage.getItem('sucrebot_staff_token')||''}),{cache:'no-store'});const todos=await rp.json();const lista=Array.isArray(todos)?todos:(todos.participantes||[]);
         presentes=lista.filter(p=>p.categoria===catGuardada&&p.aprobado==='APROBADO').map(p=>({id:p.id,robot:p.robot||p.nombre,nombre:p.nombre||'',institucion:p.institucion||'',ciudad:p.ciudad||'',categoria:p.categoria||'',correo:p.correo||'',miembro2:p.miembro2||'',ts:Date.now()+Math.random()}));
