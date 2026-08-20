@@ -869,15 +869,16 @@ body.staff-mode .btn-aviso-editar-float { display: inline-flex; align-items: cen
   // getParticipantes() contra una URL de GAS vieja hardcodeada acá mismo
   // (no la de config.js) -- se reemplazó por getStatsInicio, que ya
   // devuelve los 3 números listos según la edición activa (ver
-  // CONFIGURACION → Ediciones). "Instituciones" pasó a ser el conteo
-  // histórico (todas las ediciones, nunca vuelve a 0), ya que el conteo
-  // viejo (solo participantes de la edición actual) mostraría 0 apenas
-  // arranca una edición nueva sin nadie inscrito todavía.
+  // CONFIGURACION → Ediciones). "Instituciones" cuenta instituciones ÚNICAS
+  // entre los participantes de la edición ACTIVA (20-ago-2026, a pedido de
+  // Raku) -- no toca la hoja 'instituciones' (permanente, fuente del
+  // autocompletado de REGISTRO/MI-REGISTRO). Muestra 0 en una edición recién
+  // arrancada sin nadie inscrito todavía, a propósito.
   const CACHE_KEY = 'sucrebot_stats_inicio';
   const TTL_MS = 6 * 60 * 60 * 1000; // 6 horas
 
   function aplicarStats(s) {
-    document.getElementById('stat-instituciones').textContent = s.instituciones_historicas;
+    document.getElementById('stat-instituciones').textContent = s.instituciones_edicion;
     document.getElementById('stat-categorias').textContent = s.categorias_activas;
     document.getElementById('stat-edicion').textContent = s.edicion_ordinal;
   }
