@@ -455,6 +455,9 @@
       <div style="font-size:.8rem;color:rgba(232,234,242,.7);margin-bottom:10px;">
         Úsalo si no hay internet. Los tiempos se guardan en un archivo Excel local en este dispositivo y se sincronizan con Google Sheets cuando vuelva la conexión.
       </div>
+      <div id="offlineReabrirAviso" style="display:none;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:#fbbf24;padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:10px;">
+        ⚠️ La página se recargó y se perdió la conexión con tu archivo offline (esto pasa siempre que se recarga — es una limitación del navegador). <strong>Tus datos siguen guardados</strong> en el Excel local, no se perdió nada. Presiona "📂 Abrir archivo offline existente" y selecciona el MISMO archivo para ver tus pendientes y poder sincronizar.
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn-secundario" onclick="prepararArchivoOffline()" style="font-size:.75rem;padding:8px 14px;">🆕 Crear archivo offline (hacer HOY, con internet)</button>
         <button class="btn-secundario" onclick="activarModoOffline()" style="font-size:.75rem;padding:8px 14px;">📂 Abrir archivo offline existente</button>
@@ -1042,11 +1045,13 @@ function leerFasesConfig(){
 
 function setStep(n){[1,2,3].forEach(i=>{document.getElementById('step-dot-'+i).className='step-item'+(i<n?' done':i===n?' active':'');document.getElementById('panel-'+i).className='step-panel'+(i===n?' active':'');});window.scrollTo({top:0,behavior:'smooth'});}
 
+const OFFLINE_FLAG_KEY='sucrebot_cronometro_offline_flag';
 function actualizarBadgeOffline(){
   const badge=document.getElementById('offlineEstadoBadge');
   const btnSync=document.getElementById('btnSincronizarOffline');
   const btnDesactivar=document.getElementById('btnDesactivarOffline');
   const countEl=document.getElementById('offlinePendientesCount');
+  const aviso=document.getElementById('offlineReabrirAviso');
   if(!badge)return;
   if(window.OfflineExcel&&OfflineExcel.estaActivo()){
     const n=OfflineExcel.contarPendientes();
@@ -1055,11 +1060,17 @@ function actualizarBadgeOffline(){
     if(btnSync){btnSync.style.display=n>0?'inline-block':'none';}
     if(btnDesactivar){btnDesactivar.style.display='inline-block';}
     if(countEl)countEl.textContent=n;
+    if(aviso)aviso.style.display='none';
   }else{
     badge.textContent='DESACTIVADO';
     badge.style.background='rgba(148,163,184,.15)';badge.style.borderColor='var(--border2)';badge.style.color='';
     if(btnSync)btnSync.style.display='none';
     if(btnDesactivar)btnDesactivar.style.display='none';
+    // Si el flag quedó marcado pero OfflineExcel ya no está activo, es porque
+    // la página se recargó (el handle del archivo no sobrevive un reload) —
+    // avisar en vez de dejar la insignia en "DESACTIVADO" sin explicación,
+    // que es indistinguible de alguien que nunca activó el modo offline.
+    if(aviso)aviso.style.display=(localStorage.getItem(OFFLINE_FLAG_KEY)==='1')?'block':'none';
   }
 }
 
@@ -1070,6 +1081,7 @@ async function desactivarModoOffline(){
     if(!(await customConfirm('⚠️ Todavía hay '+n+' resultado(s)/podio(s) sin sincronizar.\n\nSi desactivas ahora, quedarán guardados en el Excel local pero el sistema dejará de mostrarlos como pendientes hasta que vuelvas a abrir ese archivo.\n\n¿Seguro que quieres desactivar el modo offline?')))return;
   }
   OfflineExcel.desactivar();
+  localStorage.removeItem(OFFLINE_FLAG_KEY);
   actualizarBadgeOffline();
   showToast('✅ Modo offline desactivado — usando conexión normal');
 }
@@ -1079,9 +1091,10 @@ async function prepararArchivoOffline(){
   showToast('Elige dónde guardar el archivo...');
   const creado=await OfflineExcel.crearNuevo('SucreBot_offline_'+new Date().toISOString().slice(0,10)+'.xlsx');
   if(!creado){showToast('❌ No se creó el archivo',true);return;}
+  localStorage.setItem(OFFLINE_FLAG_KEY,'1');
   showToast('Importando participantes...');
   try{
-    const n=await OfflineExcel.importarParticipantesDesdeGAS(GAS_URL);
+    const n=await OfflineExcel.importarParticipantesDesdeGAS(GAS_URL,localStorage.getItem('sucrebot_staff_token')||'');
     showToast('✓ Archivo listo con '+n+' participantes. Guárdalo en un lugar accesible.');
   }catch(e){showToast('⚠️ Archivo creado pero no se pudo importar participantes (sin internet?)',true);}
   actualizarBadgeOffline();
@@ -1091,7 +1104,7 @@ async function activarModoOffline(){
   if(!window.OfflineExcel||!OfflineExcel.soportado()){showToast('❌ Requiere Chrome o Edge',true);return;}
   showToast('Selecciona el archivo offline...');
   const ok=await OfflineExcel.activar();
-  if(ok){showToast('✅ Modo offline activado');}else{showToast('❌ No se pudo abrir el archivo',true);}
+  if(ok){localStorage.setItem(OFFLINE_FLAG_KEY,'1');showToast('✅ Modo offline activado');}else{showToast('❌ No se pudo abrir el archivo',true);}
   actualizarBadgeOffline();
 }
 

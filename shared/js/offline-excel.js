@@ -127,9 +127,9 @@ window.OfflineExcel = (function () {
   }
 
   // Con internet: llena/actualiza la hoja Participantes desde GAS (getParticipantes)
-  async function importarParticipantesDesdeGAS(gasUrl) {
+  async function importarParticipantesDesdeGAS(gasUrl, staffToken) {
     if (!activo) return false;
-    const r = await fetch(gasUrl + '?' + new URLSearchParams({ action: 'getParticipantes' }));
+    const r = await fetch(gasUrl + '?' + new URLSearchParams({ action: 'getParticipantes', staffToken: staffToken || '' }));
     const todos = await r.json();
     const lista = Array.isArray(todos) ? todos : (todos.participantes || []);
     const rows = [PART_COLS];
