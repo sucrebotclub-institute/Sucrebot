@@ -458,6 +458,9 @@
       <div id="offlineReabrirAviso" style="display:none;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:#fbbf24;padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:10px;">
         ⚠️ La página se recargó y se perdió la conexión con tu archivo offline (esto pasa siempre que se recarga — es una limitación del navegador). <strong>Tus datos siguen guardados</strong> en el Excel local, no se perdió nada. Presiona "📂 Abrir archivo offline existente" y selecciona el MISMO archivo para ver tus pendientes y poder sincronizar.
       </div>
+      <div id="offlineSinConexionAviso" style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#f87171;padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:10px;">
+        🔌 Sin conexión a internet — el botón de sincronizar está bloqueado para no perder ningún dato en el intento. <strong>Tus pendientes siguen guardados</strong> en el Excel local. Se desbloquea solo apenas vuelva la conexión.
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn-secundario" onclick="prepararArchivoOffline()" style="font-size:.75rem;padding:8px 14px;">🆕 Crear archivo offline (hacer HOY, con internet)</button>
         <button class="btn-secundario" onclick="activarModoOffline()" style="font-size:.75rem;padding:8px 14px;">📂 Abrir archivo offline existente</button>
@@ -1061,14 +1064,22 @@ function actualizarBadgeOffline(){
   const countEl=document.getElementById('offlinePendientesCount');
   const aviso=document.getElementById('offlineReabrirAviso');
   if(!badge)return;
+  const avisoSinConexion=document.getElementById('offlineSinConexionAviso');
   if(window.OfflineExcel&&OfflineExcel.estaActivo()){
     const n=OfflineExcel.contarPendientes();
     badge.textContent='✅ ACTIVO'+(n>0?' · '+n+' pendiente(s)':'');
     badge.style.background='rgba(34,197,94,.15)';badge.style.borderColor='rgba(34,197,94,.4)';badge.style.color='#22c55e';
-    if(btnSync){btnSync.style.display=n>0?'inline-block':'none';}
+    const sinConexion=!navigator.onLine;
+    if(btnSync){
+      btnSync.style.display=n>0?'inline-block':'none';
+      btnSync.disabled=sinConexion&&n>0;
+      btnSync.style.opacity=(sinConexion&&n>0)?'0.5':'1';
+      btnSync.style.cursor=(sinConexion&&n>0)?'not-allowed':'pointer';
+    }
     if(btnDesactivar){btnDesactivar.style.display='inline-block';}
     if(countEl)countEl.textContent=n;
     if(aviso)aviso.style.display='none';
+    if(avisoSinConexion)avisoSinConexion.style.display=(sinConexion&&n>0)?'block':'none';
   }else{
     badge.textContent='DESACTIVADO';
     badge.style.background='rgba(148,163,184,.15)';badge.style.borderColor='var(--border2)';badge.style.color='';
@@ -1079,8 +1090,15 @@ function actualizarBadgeOffline(){
     // avisar en vez de dejar la insignia en "DESACTIVADO" sin explicación,
     // que es indistinguible de alguien que nunca activó el modo offline.
     if(aviso)aviso.style.display=(localStorage.getItem(OFFLINE_FLAG_KEY)==='1')?'block':'none';
+    if(avisoSinConexion)avisoSinConexion.style.display='none';
   }
 }
+// Cuando el navegador recupera/pierde la conexión, re-evaluar de una el
+// botón de sincronizar (desbloquear/bloquear) sin que el staff tenga que
+// tocar nada — antes quedaba clicable sin internet y el intento se perdía
+// en silencio hasta que volvía la conexión.
+window.addEventListener('online',actualizarBadgeOffline);
+window.addEventListener('offline',actualizarBadgeOffline);
 
 async function desactivarModoOffline(){
   if(!window.OfflineExcel||!OfflineExcel.estaActivo())return;
@@ -1118,6 +1136,7 @@ async function activarModoOffline(){
 
 async function sincronizarPendientesOffline(){
   if(!window.OfflineExcel||!OfflineExcel.estaActivo()){return;}
+  if(!navigator.onLine){showToast('🔌 Sin conexión — espera a que vuelva el internet',true);actualizarBadgeOffline();return;}
   const n=OfflineExcel.contarPendientes();
   if(n===0){showToast('No hay pendientes');return;}
   showToast('Sincronizando '+n+' resultado(s)...');
