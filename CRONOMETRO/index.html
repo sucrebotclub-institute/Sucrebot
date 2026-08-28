@@ -1067,7 +1067,8 @@ function actualizarBadgeOffline(){
   const avisoSinConexion=document.getElementById('offlineSinConexionAviso');
   if(window.OfflineExcel&&OfflineExcel.estaActivo()){
     const n=OfflineExcel.contarPendientes();
-    badge.textContent='✅ ACTIVO'+(n>0?' · '+n+' pendiente(s)':'');
+    const nPodiosPend=JSON.parse(localStorage.getItem(PODIOS_PENDIENTES_PUBLICAR_KEY)||'[]').length;
+    badge.textContent='✅ ACTIVO'+(n>0?' · '+n+' pendiente(s)':'')+(nPodiosPend>0?' · '+nPodiosPend+' podio(s) por publicar':'');
     badge.style.background='rgba(34,197,94,.15)';badge.style.borderColor='rgba(34,197,94,.4)';badge.style.color='#22c55e';
     const sinConexion=!navigator.onLine;
     if(btnSync){
@@ -1141,7 +1142,15 @@ async function sincronizarPendientesOffline(){
   if(n===0){showToast('No hay pendientes');return;}
   showToast('Sincronizando '+n+' resultado(s)...');
   const r=await OfflineExcel.sincronizar(GAS_URL,(i,total)=>{showToast('Sincronizando '+i+'/'+total+'...');});
-  showToast('✓ '+r.ok+' sincronizado(s)'+(r.fail>0?' · ⚠️ '+r.fail+' fallaron (¿sigue sin internet?)':''));
+  // Reintenta también cualquier "publicar podio en RESULTADOS" que haya
+  // quedado pendiente por falta de internet (ver guardarPodioPendientePublicar) —
+  // sin esto, sincronizar solo sube certificados/tiempos y el podio nunca
+  // llegaba a aparecer en RESULTADOS.
+  const rp=await reintentarPodiosPendientesPublicar();
+  let msg='✓ '+r.ok+' sincronizado(s)'+(r.fail>0?' · ⚠️ '+r.fail+' fallaron (¿sigue sin internet?)':'');
+  if(rp.ok>0)msg+=' · 🏆 '+rp.ok+' podio(s) publicado(s) en RESULTADOS';
+  if(rp.fail>0)msg+=' · ⚠️ '+rp.fail+' podio(s) sin poder publicar todavía';
+  showToast(msg);
   actualizarBadgeOffline();
 }
 
@@ -2337,16 +2346,51 @@ async function guardarPodioCrono(){
   // Publica el ranking en resultados_publicados (mismo mecanismo que ya usa
   // PANEL-CALIFICACION para bai/dev/lk) para que RESULTADOS pueda mostrar el
   // podio de esta categoría — antes CRONOMETRO nunca marcaba podio_publicado.
-  if(!modoOffline){
+  const rutaCorta=getRuta();
+  const rankingParaPublicar=ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo,institucion:p.institucion||'',...(esPuntos?{puntos:p.puntos||0}:{})}));
+  if(modoOffline){
+    // Sin internet no se puede publicar ahora — se guarda la orden de
+    // publicación para reintentarla automáticamente cuando se presione
+    // "Sincronizar pendientes" (ver reintentarPodiosPendientesPublicar).
+    // Antes esto se saltaba en silencio y el podio nunca aparecía en
+    // RESULTADOS ni siquiera después de sincronizar.
+    if(rutaCorta)guardarPodioPendientePublicar(rutaCorta,rankingParaPublicar);
+    showToast('📌 El podio se publicará en RESULTADOS automáticamente al sincronizar');
+  }else{
     try{
-      const rutaCorta=getRuta();
       if(rutaCorta){
-        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:ranking.map(p=>({robot:p.robot,nombre:p.nombre,tiempo:p.tiempo,institucion:p.institucion||'',...(esPuntos?{puntos:p.puntos||0}:{})})),staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
+        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:rutaCorta,ranking:rankingParaPublicar,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
         const d=await r.json();
         if(!d.ok){console.warn('publicarPodioCalificacion rechazado:',d.error);showToast('⚠️ Certificados guardados, pero el podio NO se pudo publicar en RESULTADOS: '+(d.error||'error desconocido'),true);}
       }
     }catch(e){console.warn('No se pudo publicar el podio en RESULTADOS:',e);showToast('⚠️ Certificados guardados, pero el podio NO se pudo publicar en RESULTADOS (sin conexión)',true);}
   }
+}
+
+// Cola de "publicar podio en RESULTADOS" pendiente por falta de internet
+// (guardarPodioCrono en modo offline). Se guarda en localStorage (no en el
+// Excel local — el módulo genérico offline-excel.js no conoce el shape de
+// ranking que necesita publicarPodioCalificacion) y se reintenta completa
+// cada vez que se sincroniza con éxito.
+const PODIOS_PENDIENTES_PUBLICAR_KEY='sucrebot_cronometro_podios_pendientes_publicar';
+function guardarPodioPendientePublicar(categoria,ranking){
+  const lista=JSON.parse(localStorage.getItem(PODIOS_PENDIENTES_PUBLICAR_KEY)||'[]');
+  lista.push({categoria,ranking,ts:Date.now()});
+  localStorage.setItem(PODIOS_PENDIENTES_PUBLICAR_KEY,JSON.stringify(lista));
+}
+async function reintentarPodiosPendientesPublicar(){
+  const lista=JSON.parse(localStorage.getItem(PODIOS_PENDIENTES_PUBLICAR_KEY)||'[]');
+  if(lista.length===0)return{ok:0,fail:0};
+  const pendientes=[];let ok=0,fail=0;
+  for(const item of lista){
+    try{
+      const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'publicarPodioCalificacion',categoria:item.categoria,ranking:item.ranking,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});
+      const d=await r.json();
+      if(d.ok)ok++;else{fail++;pendientes.push(item);}
+    }catch(e){fail++;pendientes.push(item);}
+  }
+  localStorage.setItem(PODIOS_PENDIENTES_PUBLICAR_KEY,JSON.stringify(pendientes));
+  return{ok,fail};
 }
 
 document.addEventListener('componentsLoaded',async function(){
