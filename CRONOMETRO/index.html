@@ -1948,11 +1948,22 @@ async function seleccionarCompetido(ts,r){
   const rd=getRonda(r);const c=rd.clasificados.find(x=>x.ts===ts);if(!c)return;
   if(participanteActual&&participanteActual.id!==c.id){if(!(await customConfirm('Ya tienes "'+participanteActual.robot+'". ¿Cambiar a "'+c.robot+'"?')))return;}
   if(esMultiJuez(categoriaActual)){
-    if(participanteActual&&participanteActual.id!==c.id&&participanteLockId){await desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}
+    // Sin internet no hay forma real de preguntarle a GAS si otro juez ya
+    // tiene el candado — antes esto igual intentaba la llamada, y el fetch
+    // fallido (sin conexión) se interpretaba como "otro juez lo tiene",
+    // un mensaje engañoso que bloqueaba seleccionar participantes en modo
+    // offline. En offline el candado se maneja solo localmente por
+    // dispositivo (nadie más puede verlo hasta sincronizar).
+    const modoOffline=window.OfflineExcel&&OfflineExcel.estaActivo();
+    if(participanteActual&&participanteActual.id!==c.id&&participanteLockId){if(!modoOffline)await desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}
     if(!participanteActual||participanteActual.id!==c.id){
-      const okP=await bloquearParticipante(categoriaActual,c.id);
-      if(!okP){showToast('❌ Ese equipo ya lo está cronometrando otro juez',true);return;}
-      participanteLockId=c.id;
+      if(modoOffline){
+        participanteLockId=c.id;
+      }else{
+        const okP=await bloquearParticipante(categoriaActual,c.id);
+        if(!okP){showToast('❌ Ese equipo ya lo está cronometrando otro juez',true);return;}
+        participanteLockId=c.id;
+      }
     }
   }else{
     fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta:getRuta()||'general',staffToken:localStorage.getItem('sucrebot_staff_token')||''})}).catch(()=>{});
