@@ -458,9 +458,6 @@
       <div id="offlineReabrirAviso" style="display:none;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:#fbbf24;padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:10px;">
         ⚠️ La página se recargó y se perdió la conexión con tu archivo offline (esto pasa siempre que se recarga — es una limitación del navegador). <strong>Tus datos siguen guardados</strong> en el Excel local, no se perdió nada. Presiona "📂 Abrir archivo offline existente" y selecciona el MISMO archivo para ver tus pendientes y poder sincronizar.
       </div>
-      <div id="offlineSinConexionAviso" style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#f87171;padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:10px;">
-        🔌 Sin conexión a internet — el botón de sincronizar está bloqueado para no perder ningún dato en el intento. <strong>Tus pendientes siguen guardados</strong> en el Excel local. Se desbloquea solo apenas vuelva la conexión.
-      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn-secundario" onclick="prepararArchivoOffline()" style="font-size:.75rem;padding:8px 14px;">🆕 Crear archivo offline (hacer HOY, con internet)</button>
         <button class="btn-secundario" onclick="activarModoOffline()" style="font-size:.75rem;padding:8px 14px;">📂 Abrir archivo offline existente</button>
@@ -1064,23 +1061,15 @@ function actualizarBadgeOffline(){
   const countEl=document.getElementById('offlinePendientesCount');
   const aviso=document.getElementById('offlineReabrirAviso');
   if(!badge)return;
-  const avisoSinConexion=document.getElementById('offlineSinConexionAviso');
   if(window.OfflineExcel&&OfflineExcel.estaActivo()){
     const n=OfflineExcel.contarPendientes();
     const nPodiosPend=JSON.parse(localStorage.getItem(PODIOS_PENDIENTES_PUBLICAR_KEY)||'[]').length;
     badge.textContent='✅ ACTIVO'+(n>0?' · '+n+' pendiente(s)':'')+(nPodiosPend>0?' · '+nPodiosPend+' podio(s) por publicar':'');
     badge.style.background='rgba(34,197,94,.15)';badge.style.borderColor='rgba(34,197,94,.4)';badge.style.color='#22c55e';
-    const sinConexion=!navigator.onLine;
-    if(btnSync){
-      btnSync.style.display=n>0?'inline-block':'none';
-      btnSync.disabled=sinConexion&&n>0;
-      btnSync.style.opacity=(sinConexion&&n>0)?'0.5':'1';
-      btnSync.style.cursor=(sinConexion&&n>0)?'not-allowed':'pointer';
-    }
+    if(btnSync){btnSync.style.display=n>0?'inline-block':'none';}
     if(btnDesactivar){btnDesactivar.style.display='inline-block';}
     if(countEl)countEl.textContent=n;
     if(aviso)aviso.style.display='none';
-    if(avisoSinConexion)avisoSinConexion.style.display=(sinConexion&&n>0)?'block':'none';
   }else{
     badge.textContent='DESACTIVADO';
     badge.style.background='rgba(148,163,184,.15)';badge.style.borderColor='var(--border2)';badge.style.color='';
@@ -1137,7 +1126,10 @@ async function activarModoOffline(){
 
 async function sincronizarPendientesOffline(){
   if(!window.OfflineExcel||!OfflineExcel.estaActivo()){return;}
-  if(!navigator.onLine){showToast('🔌 Sin conexión — espera a que vuelva el internet',true);actualizarBadgeOffline();return;}
+  if(!navigator.onLine){
+    const continuar=await customConfirm('🔌 El navegador no detecta conexión a internet.\n\nSi sincronizas ahora, lo más probable es que falle y tus pendientes queden igual (no se pierde nada, se reintenta después).\n\n¿Quieres intentarlo de todas formas?','Sí, intentar','Cancelar');
+    if(!continuar)return;
+  }
   const n=OfflineExcel.contarPendientes();
   if(n===0){showToast('No hay pendientes');return;}
   showToast('Sincronizando '+n+' resultado(s)...');
