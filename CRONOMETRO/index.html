@@ -828,6 +828,14 @@ async function desbloquearParticipante(cat,participanteId){
   if(!participanteId)return;
   try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearCategoria',categoria:cat+'|'+participanteId,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});}catch(e){}
 }
+// Barre TODOS los candados de participante de esta categoría multi-juez,
+// no solo el que ESTE dispositivo recuerda haber bloqueado (participanteLockId
+// se pierde si la página se recarga a mitad de sesión, dejando candados
+// huérfanos de otros dispositivos/sesiones pegados para siempre). Usar al
+// cerrar/resetear la categoría, en vez de (o además de) desbloquearParticipante.
+async function desbloquearTodosLosParticipantes(cat){
+  try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'desbloquearParticipantesCategoria',categoria:cat,staffToken:localStorage.getItem('sucrebot_staff_token')||''})});}catch(e){}
+}
 function mostrarBotonSyncMultiJuez(cat){
   const btn=document.getElementById('btn-sync-multijuez');
   if(btn)btn.style.display=esMultiJuez(cat)?'inline-block':'none';
@@ -2004,7 +2012,7 @@ async function confirmarCerrarCategoria(){
   try{
     let desbloqueoOk=true;
     if(!modoOffline){
-      if(esMultiJuez(categoriaActual)){if(participanteLockId){await desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}}
+      if(esMultiJuez(categoriaActual)){await desbloquearTodosLosParticipantes(categoriaActual);participanteLockId=null;}
       else desbloqueoOk=await desbloquearCategoria(categoriaActual);
       const ruta=getRuta()||'general';
       const staffToken=localStorage.getItem('sucrebot_staff_token')||'';
@@ -2040,7 +2048,7 @@ async function resetearCategoriaResultados(){
       fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'clearActivo',ruta,staffToken})}),
       fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setEstado',ruta,estado:null,staffToken})})
     ]);
-    if(esMultiJuez(categoriaActual)){if(participanteLockId){await desbloquearParticipante(categoriaActual,participanteLockId);participanteLockId=null;}}
+    if(esMultiJuez(categoriaActual)){await desbloquearTodosLosParticipantes(categoriaActual);participanteLockId=null;}
     else await desbloquearCategoria(categoriaActual);
     localStorage.removeItem(getKey());localStorage.removeItem('cronometro_categoria_activa');
     if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
