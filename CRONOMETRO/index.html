@@ -444,27 +444,34 @@
     <div class="step-item" id="step-dot-3"><div class="step-dot">3</div><div class="step-label">Cronómetro</div></div>
   </div>
 
+  <!-- Panel de Modo Offline — FUERA de los step-panel a propósito: antes vivía
+       solo dentro del Paso 1, así que en Paso 2/3 (competencia en curso)
+       desaparecía del todo. La única forma de volver a verlo era "Cambiar
+       categoría"/"Cerrar categoría"/"Resetear categoría", que borran el
+       progreso de la competencia en memoria (rondasData) — un staff que solo
+       quería revisar/sincronizar pendientes terminaba perdiendo su sesión sin
+       necesidad. Ahora es visible en los 3 pasos, sin tocar nada más. -->
+  <div class="pb-card" style="max-width:1000px;margin:0 auto 16px;">
+    <div class="pb-card-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+      <span>📂 Modo Offline (sin internet)</span>
+      <span id="offlineEstadoBadge" style="font-family:'Orbitron';font-size:.65rem;padding:4px 10px;border-radius:10px;background:rgba(148,163,184,.15);border:1px solid var(--border2);">DESACTIVADO</span>
+    </div>
+    <div style="font-size:.8rem;color:rgba(232,234,242,.7);margin-bottom:10px;">
+      Úsalo si no hay internet. Los tiempos se guardan en un archivo Excel local en este dispositivo y se sincronizan con Google Sheets cuando vuelva la conexión.
+    </div>
+    <div id="offlineReabrirAviso" style="display:none;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:#fbbf24;padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:10px;">
+      ⚠️ La página se recargó y se perdió la conexión con tu archivo offline (esto pasa siempre que se recarga — es una limitación del navegador). <strong>Tus datos siguen guardados</strong> en el Excel local, no se perdió nada. Presiona "📂 Abrir archivo offline existente" y selecciona el MISMO archivo para ver tus pendientes y poder sincronizar.
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-secundario" onclick="prepararArchivoOffline()" style="font-size:.75rem;padding:8px 14px;">🆕 Crear archivo offline (hacer HOY, con internet)</button>
+      <button class="btn-secundario" onclick="activarModoOffline()" style="font-size:.75rem;padding:8px 14px;">📂 Abrir archivo offline existente</button>
+      <button class="btn-secundario" id="btnSincronizarOffline" onclick="sincronizarPendientesOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔄 Sincronizar pendientes (<span id="offlinePendientesCount">0</span>)</button>
+      <button class="btn-secundario" id="btnDesactivarOffline" onclick="desactivarModoOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔌 Volver a modo normal (online)</button>
+    </div>
+  </div>
+
   <!-- PASO 1 -->
   <div class="step-panel active" id="panel-1" style="max-width:1000px;margin:0 auto;">
-
-    <div class="pb-card" style="margin-bottom:16px;">
-      <div class="pb-card-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-        <span>📂 Modo Offline (sin internet)</span>
-        <span id="offlineEstadoBadge" style="font-family:'Orbitron';font-size:.65rem;padding:4px 10px;border-radius:10px;background:rgba(148,163,184,.15);border:1px solid var(--border2);">DESACTIVADO</span>
-      </div>
-      <div style="font-size:.8rem;color:rgba(232,234,242,.7);margin-bottom:10px;">
-        Úsalo si no hay internet. Los tiempos se guardan en un archivo Excel local en este dispositivo y se sincronizan con Google Sheets cuando vuelva la conexión.
-      </div>
-      <div id="offlineReabrirAviso" style="display:none;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:#fbbf24;padding:8px 12px;border-radius:8px;font-size:.75rem;margin-bottom:10px;">
-        ⚠️ La página se recargó y se perdió la conexión con tu archivo offline (esto pasa siempre que se recarga — es una limitación del navegador). <strong>Tus datos siguen guardados</strong> en el Excel local, no se perdió nada. Presiona "📂 Abrir archivo offline existente" y selecciona el MISMO archivo para ver tus pendientes y poder sincronizar.
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-secundario" onclick="prepararArchivoOffline()" style="font-size:.75rem;padding:8px 14px;">🆕 Crear archivo offline (hacer HOY, con internet)</button>
-        <button class="btn-secundario" onclick="activarModoOffline()" style="font-size:.75rem;padding:8px 14px;">📂 Abrir archivo offline existente</button>
-        <button class="btn-secundario" id="btnSincronizarOffline" onclick="sincronizarPendientesOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔄 Sincronizar pendientes (<span id="offlinePendientesCount">0</span>)</button>
-        <button class="btn-secundario" id="btnDesactivarOffline" onclick="desactivarModoOffline()" style="font-size:.75rem;padding:8px 14px;display:none;">🔌 Volver a modo normal (online)</button>
-      </div>
-    </div>
 
     <div class="pb-card">
       <div class="pb-card-title">Seleccionar Categoría</div>
