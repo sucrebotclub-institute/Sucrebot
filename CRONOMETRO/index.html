@@ -2087,6 +2087,17 @@ async function resetearCategoriaResultados(){
     ]);
     if(esMultiJuez(categoriaActual)){await desbloquearTodosLosParticipantes(categoriaActual);participanteLockId=null;}
     else await desbloquearCategoria(categoriaActual);
+    // Categorías de puntos (Drones y copias, ej. Gran Reto de PLC) tienen sus
+    // propios criterios editables (⚙️ Editar criterios) guardados en GAS por
+    // ruta -- resetear la categoría debe volverlos al default también, para
+    // no dejar criterios de una prueba anterior pegados a la próxima tanda.
+    if(CATS_PUNTOS.includes(categoriaActual)){
+      try{
+        await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'guardarCriterios',categoria:ruta,criterios:DRONES_CRITERIOS_DEFAULT,staffToken})});
+        dronesCriterios=DRONES_CRITERIOS_DEFAULT.map(c=>({...c}));
+        renderCriteriosBotonesDrones();
+      }catch(e){}
+    }
     localStorage.removeItem(getKey());localStorage.removeItem('cronometro_categoria_activa');
     if(pollingInterval){clearInterval(pollingInterval);pollingInterval=null;}
     if(cronoInterval){clearInterval(cronoInterval);cronoInterval=null;}

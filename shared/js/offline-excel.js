@@ -21,7 +21,7 @@ window.OfflineExcel = (function () {
   const SHEET_PODIO = 'Podio_Offline';
   const SHEET_PUNT = 'Puntuaciones_Offline';
   const PART_COLS = ['id', 'nombre', 'robot', 'institucion', 'ciudad', 'categoria', 'correo', 'miembro2', 'aprobado'];
-  const RES_COLS = ['participanteId', 'nombre', 'robot', 'institucion', 'categoria', 'tiempo', 'ronda', 'intento', 'ruta', 'fecha', 'sincronizado'];
+  const RES_COLS = ['participanteId', 'nombre', 'robot', 'institucion', 'categoria', 'tiempo', 'puntos', 'ronda', 'intento', 'ruta', 'fecha', 'sincronizado'];
   const PODIO_COLS = ['id_participante', 'correo', 'categoria', 'institucion', 'tipo_certificado', 'evento', 'nombre', 'nombre_completo', 'fecha', 'sincronizado'];
   const PUNT_COLS = ['id_participante', 'nombre', 'robot', 'institucion', 'categoria', 'juez_email', 'juez_nombre', 'criterios', 'notas', 'total', 'timestamp', 'sincronizado'];
 
@@ -166,6 +166,7 @@ window.OfflineExcel = (function () {
       institucion: data.institucion || '',
       categoria: data.categoria || '',
       tiempo: data.tiempo,
+      puntos: data.puntos != null ? data.puntos : '',
       ronda: data.ronda,
       intento: data.intento,
       ruta: data.ruta || 'general',
@@ -256,19 +257,29 @@ window.OfflineExcel = (function () {
         const r = data[i];
         if (String(r.sincronizado).toUpperCase() === 'TRUE') continue;
         try {
-          await fetch(gasUrl, {
+          const resp = await fetch(gasUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
               action: 'pushResultado',
               participanteId: r.participanteId, nombre: r.nombre, robot: r.robot,
-              institucion: r.institucion, tiempo: r.tiempo, ronda: r.ronda,
+              institucion: r.institucion, tiempo: r.tiempo,
+              puntos: r.puntos === '' ? undefined : r.puntos,
+              ronda: r.ronda,
               intento: r.intento, ruta: r.ruta, fecha: r.fecha,
               staffToken: localStorage.getItem('sucrebot_staff_token') || ''
             })
           });
-          r.sincronizado = 'TRUE';
-          ok++;
+          const d = await resp.json();
+          // El backend puede responder 200 OK con {ok:false, error:...} (payload
+          // rechazado, token inválido, etc.) -- marcar sincronizado=TRUE solo si
+          // realmente confirmó el guardado. Antes cualquier fetch resuelto (sin
+          // importar el body) se daba por sincronizado, y una fila rechazada por
+          // el servidor quedaba marcada como subida sin haberse guardado nunca,
+          // sin ningún aviso ni forma de reintentar (contarPendientes() ya la
+          // contaba como hecha).
+          if (d && d.ok) { r.sincronizado = 'TRUE'; ok++; }
+          else { fail++; }
         } catch (e) {
           fail++;
         }
@@ -283,7 +294,7 @@ window.OfflineExcel = (function () {
         const r = dataP[i];
         if (String(r.sincronizado).toUpperCase() === 'TRUE') continue;
         try {
-          await fetch(gasUrl, {
+          const resp = await fetch(gasUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
@@ -294,8 +305,9 @@ window.OfflineExcel = (function () {
               staffToken: localStorage.getItem('sucrebot_staff_token') || ''
             })
           });
-          r.sincronizado = 'TRUE';
-          ok++;
+          const d = await resp.json();
+          if (d && d.ok) { r.sincronizado = 'TRUE'; ok++; }
+          else { fail++; }
         } catch (e) {
           fail++;
         }
@@ -310,7 +322,7 @@ window.OfflineExcel = (function () {
         const r = dataQ[i];
         if (String(r.sincronizado).toUpperCase() === 'TRUE') continue;
         try {
-          await fetch(gasUrl, {
+          const resp = await fetch(gasUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
@@ -323,8 +335,9 @@ window.OfflineExcel = (function () {
               staffToken: localStorage.getItem('sucrebot_staff_token') || ''
             })
           });
-          r.sincronizado = 'TRUE';
-          ok++;
+          const d = await resp.json();
+          if (d && d.ok) { r.sincronizado = 'TRUE'; ok++; }
+          else { fail++; }
         } catch (e) {
           fail++;
         }
