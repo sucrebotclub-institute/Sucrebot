@@ -1349,18 +1349,34 @@ function limpiarParticipante(){
 const CATS_ARM_ESPERA=['Trepador (Amateur)','Trepador (Pro)','Trepador (Amateur) [Copia]','Trepador (Pro) [Copia]'];
 
 // ── DRONES — puntos en vivo (+1/-1) ──────────────────────────────
-// Los botones +1/-1 suman al puntaje del intento EN CURSO mientras el
-// cronómetro está corriendo, Y TAMBIÉN después de detenerlo (mientras
+// Cada criterio tiene un puntaje MÁXIMO (ej. /25, /10) y el juez escribe
+// la nota que decida (0..máximo) en un input numérico por criterio —
+// mismo modelo que PANEL-CALIFICACION. El total del intento es la suma
+// de todos los inputs. Los inputs quedan habilitados mientras el
+// cronómetro está corriendo Y TAMBIÉN después de detenerlo (mientras
 // espera confirmación) -- a pedido explícito de Raku: mide el tiempo
-// primero, agrega los puntos recién cuando se acabó. Solo se bloquean
-// si nunca se inició el intento (ni corriendo ni con tiempo pendiente).
-function ajustarPuntosDrones(delta){
-  if(!cronoInterval&&tiempoDronesPendiente==null){showToast('⚠️ Inicia el cronómetro antes de sumar puntos',true);return;}
-  puntosIntentoActual+=delta;
+// primero, califica recién cuando se acabó. Se bloquean si nunca se
+// inició el intento (ni corriendo ni con tiempo pendiente).
+function actualizarPuntosDesdeCriteriosDrones(){
+  const wrap=document.getElementById('drones-criterios-botones');
+  if(!wrap)return;
+  let total=0;
+  wrap.querySelectorAll('input[data-idx]').forEach(inp=>{
+    const idx=parseInt(inp.dataset.idx);
+    const max=(dronesCriterios[idx]&&Number(dronesCriterios[idx].peso))||0;
+    let v=parseFloat(inp.value);
+    if(isNaN(v)||v<0)v=0;
+    if(v>max)v=max;
+    inp.value=v;
+    total+=v;
+  });
+  puntosIntentoActual=total;
   actualizarPuntosUI();
 }
 function resetPuntosDrones(){
   puntosIntentoActual=0;tiempoDronesPendiente=null;
+  const wrap=document.getElementById('drones-criterios-botones');
+  if(wrap)wrap.querySelectorAll('input[data-idx]').forEach(inp=>{inp.value=0;});
   const btnConfirmar=document.getElementById('btn-confirmar-drones');
   if(btnConfirmar)btnConfirmar.style.display='none';
   actualizarPuntosUI();
@@ -1391,19 +1407,23 @@ function actualizarPuntosUI(){
   if(!wrap)return;
   const esDrones=CATS_PUNTOS.includes(categoriaActual);
   wrap.style.display=esDrones?'block':'none';
-  if(esDrones)document.getElementById('drones-puntos-valor').textContent=puntosIntentoActual;
+  if(!esDrones)return;
+  document.getElementById('drones-puntos-valor').textContent=puntosIntentoActual;
+  const activo=!!(cronoInterval||tiempoDronesPendiente!=null);
+  const botonesWrap=document.getElementById('drones-criterios-botones');
+  if(botonesWrap)botonesWrap.querySelectorAll('input[data-idx]').forEach(inp=>{inp.disabled=!activo;});
 }
 
-// ── DRONES — criterios de puntos editables (nombre + valor) ─────
+// ── DRONES — criterios de calificación editables (nombre + máximo) ──
 // Reusa el mismo backend genérico de criterios de PANEL-CALIFICACION
 // (acciones getCriterios/guardarCriterios, hoja criterios_calificacion)
 // con categoria:'dro'/'dro2' (código corto real de RUTAS, para que la
 // copia tenga sus propios criterios, independientes de la base — no
-// requiere tocar Code.gs. A diferencia de PANEL-CALIFICACION (que fuerza
-// peso mínimo 1, son puntos de un puntaje total), acá el peso puede ser
-// negativo (ej. penalización), cada criterio es un botón que suma/resta
-// su valor en vivo.
-const DRONES_CRITERIOS_DEFAULT=[{nombre:'Punto',peso:1},{nombre:'Penalización',peso:-1}];
+// requiere tocar Code.gs). Mismo modelo que PANEL-CALIFICACION: cada
+// criterio tiene un puntaje MÁXIMO (peso, ej. 25 => "/25") y el juez
+// escribe la nota que decida (0..máximo); el total del intento es la
+// suma de todos los criterios.
+const DRONES_CRITERIOS_DEFAULT=[{nombre:'Desempeño técnico',peso:25},{nombre:'Presentación',peso:10}];
 let dronesCriterios=DRONES_CRITERIOS_DEFAULT.map(c=>({...c}));
 let dronesCriteriosRuta='dro';
 
@@ -1422,14 +1442,17 @@ async function cargarCriteriosDrones(ruta){
 function renderCriteriosBotonesDrones(){
   const wrap=document.getElementById('drones-criterios-botones');
   if(!wrap)return;
+  wrap.style.flexDirection='column';wrap.style.alignItems='stretch';
   if(!dronesCriterios.length){wrap.innerHTML='<span style="color:var(--text-dim);font-size:.8rem;">Sin criterios — presiona ⚙️ Editar criterios para agregar</span>';return;}
-  wrap.innerHTML=dronesCriterios.map(c=>{
-    const positivo=c.peso>=0;
-    const color=positivo?'#15803d':'#b91c1c';
-    const signo=positivo?'+':'';
+  wrap.innerHTML=dronesCriterios.map((c,i)=>{
     const nombreSafe=(c.nombre||'').replace(/</g,'&lt;');
-    return '<button class="btn-crono" style="background:'+color+';border-color:'+color+';color:#fff;flex:0 0 auto;" onclick="ajustarPuntosDrones('+c.peso+')">'+nombreSafe+' ('+signo+c.peso+')</button>';
+    const max=Number(c.peso)||0;
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:8px 10px;">'
+      +'<span style="font-size:.82rem;color:var(--text);">'+nombreSafe+' <span style="color:var(--text-dim)">(/'+max+')</span></span>'
+      +'<input type="number" min="0" max="'+max+'" step="1" value="0" data-idx="'+i+'" oninput="actualizarPuntosDesdeCriteriosDrones()" style="width:64px;text-align:center;background:var(--bg,#0e121e);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 4px;font-family:var(--font-mono);">'
+      +'</div>';
   }).join('');
+  actualizarPuntosUI();
 }
 
 function toggleEditorCriteriosDrones(){
@@ -1446,7 +1469,7 @@ function toggleEditorCriteriosDrones(){
 function filaCriterioDronesHTML(idx,nombre,peso){
   return '<div style="display:flex;gap:6px;align-items:center;" data-idx="'+idx+'">'
     +'<input class="config-input" style="width:auto;flex:1;text-align:left;" data-field="nombre" value="'+(nombre||'').replace(/"/g,'&quot;')+'" placeholder="Nombre del criterio">'
-    +'<input class="config-input" style="width:64px;" data-field="peso" type="number" step="1" value="'+(peso??1)+'">'
+    +'<input class="config-input" style="width:70px;" data-field="peso" type="number" min="1" step="1" value="'+(peso??10)+'" title="Puntaje máximo" placeholder="Máx">'
     +'<button onclick="quitarCriterioDrones(this)" style="background:none;border:none;color:#b91c1c;cursor:pointer;font-size:1.1rem;padding:2px 6px;">✕</button>'
     +'</div>';
 }
@@ -1455,7 +1478,7 @@ function renderEditorCriteriosDrones(){
   tbody.innerHTML=dronesCriterios.map((c,i)=>filaCriterioDronesHTML(i,c.nombre,c.peso)).join('');
 }
 function agregarCriterioDrones(){
-  document.getElementById('drones-criterios-tbody').insertAdjacentHTML('beforeend',filaCriterioDronesHTML(Date.now(),'',1));
+  document.getElementById('drones-criterios-tbody').insertAdjacentHTML('beforeend',filaCriterioDronesHTML(Date.now(),'',10));
 }
 function quitarCriterioDrones(btnEl){
   btnEl.closest('div[data-idx]').remove();
@@ -1466,7 +1489,8 @@ function leerEditorCriteriosDrones(){
   const criterios=[];
   filas.forEach(f=>{
     const nombre=f.querySelector('[data-field="nombre"]').value.trim();
-    const peso=parseFloat(f.querySelector('[data-field="peso"]').value)||0;
+    let peso=parseFloat(f.querySelector('[data-field="peso"]').value)||0;
+    if(peso<=0)peso=1;
     if(nombre)criterios.push({nombre,peso});
   });
   return criterios;
