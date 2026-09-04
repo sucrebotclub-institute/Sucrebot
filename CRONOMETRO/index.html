@@ -569,7 +569,7 @@
     <div class="ins-hero" style="padding:20px 20px 24px">
       <button class="ins-btn ins-btn-outline btn-sm" onclick="volverAPaso1DesdeInsectos()" style="margin-bottom:14px">← Cambiar categoría</button>
       <div class="ins-title">CARRERA DE <span>INSECTOS</span></div>
-      <div class="ins-sub">Rondas de eliminación · 2 min por intento · Sensor IR + Web Serial</div>
+      <div class="ins-sub" id="insSub">Rondas de eliminación · 2 min por intento · Sensor IR + Web Serial</div>
     </div>
 
     <div class="stepper-wrap" id="insStepper">
@@ -585,6 +585,7 @@
         <div class="ins-card" style="margin-bottom:16px;">
           <div class="ins-card-title">⚙️ Rondas e intentos</div>
           <div class="config-row"><label>Rondas:</label><input type="number" class="config-input" id="insCfgNumRondas" value="2" min="1" max="6" /></div>
+          <div class="config-row"><label>Tiempo por intento (min):</label><input type="number" class="config-input" id="insCfgTiempoLimite" value="2" min="0.5" step="0.5" /></div>
           <div style="height:10px"></div>
           <div id="insCfgRondasWrap"></div>
         </div>
@@ -2486,8 +2487,12 @@ document.addEventListener('componentsLoaded',async function(){
      ya tenía standalone) en vez de duplicarlos. -->
 <script>
 (function(){
-  const TIEMPO_LIMITE_MS = 120000; // 2 minutos
-  const TIEMPO_MAX_REGLAMENTARIO_MS = 120000;
+  // Tiempo por intento (duración de la cuenta regresiva). Reglamentario:
+  // 2 minutos. Editable desde el paso 1 (⚙️ Rondas e intentos) igual que
+  // el resto de la config de la competencia — se lee al presionar
+  // "INICIAR COMPETENCIA" y queda bloqueado mientras corre, igual que
+  // rondas/intentos.
+  let TIEMPO_LIMITE_MS = 120000; // 2 minutos (default)
   // Categoría real que está corriendo en este panel -- 'Insectos' o
   // 'Insectos [Copia]' (ins2). Todo el resto del módulo reusa las mismas
   // variables de estado sin importar cuál esté activa: abrir() resetea
@@ -2594,7 +2599,7 @@ document.addEventListener('componentsLoaded',async function(){
       const m = val.match(/^(\d{2}):(\d{2}):(\d{2})$/);
       if (!m) { showToast('⚠️ Formato inválido — usa MM:SS:CS (ej. 00:04:32)', true); return; }
       const msManual = parseInt(m[1]) * 60000 + parseInt(m[2]) * 1000 + parseInt(m[3]) * 10;
-      if (msManual > TIEMPO_MAX_REGLAMENTARIO_MS && !confirm(`⚠️ El tiempo ingresado (${fmtMs(msManual)}) supera los 2 minutos reglamentarios.\n\n¿Registrarlo de todas formas?`)) return;
+      if (msManual > TIEMPO_LIMITE_MS && !confirm(`⚠️ El tiempo ingresado (${fmtMs(msManual)}) supera el límite configurado (${fmtCD(TIEMPO_LIMITE_MS)}).\n\n¿Registrarlo de todas formas?`)) return;
       lista[idx].tiempo = msManual;
       lista[idx].dnf = false;
     } else if (modo === 'dnf') {
@@ -2732,6 +2737,13 @@ document.addEventListener('componentsLoaded',async function(){
   }
   document.getElementById('insCfgNumRondas').addEventListener('input', renderRondasConfigUI);
 
+  function actualizarSubtituloIns() {
+    const sub = document.getElementById('insSub');
+    if (!sub) return;
+    const min = TIEMPO_LIMITE_MS / 60000;
+    const minTexto = (min % 1 === 0) ? min : min.toFixed(1);
+    sub.textContent = `Rondas de eliminación · ${minTexto} min por intento · Sensor IR + Web Serial`;
+  }
   function leerConfigRondas() {
     numRondas = Math.max(1, parseInt(document.getElementById('insCfgNumRondas').value) || 2);
     rondasConfig = {};
@@ -2739,15 +2751,23 @@ document.addEventListener('componentsLoaded',async function(){
       const el = document.getElementById('insCfgIntentosR' + i);
       rondasConfig[i] = { intentos: Math.max(1, parseInt(el && el.value) || 2) };
     }
+    const elTiempo = document.getElementById('insCfgTiempoLimite');
+    TIEMPO_LIMITE_MS = Math.max(0.5, parseFloat(elTiempo && elTiempo.value) || 2) * 60000;
     document.getElementById('insCfgNumRondas').disabled = true;
     document.querySelectorAll('#insCfgRondasWrap input').forEach(el => el.disabled = true);
+    if (elTiempo) elTiempo.disabled = true;
+    actualizarSubtituloIns();
   }
   function reiniciarConfigRondas() {
     numRondas = 2;
     rondasConfig = { 1: { intentos: 2 }, 2: { intentos: 2 } };
+    TIEMPO_LIMITE_MS = 120000;
     const elN = document.getElementById('insCfgNumRondas');
     if (elN) { elN.value = 2; elN.disabled = false; }
+    const elTiempo = document.getElementById('insCfgTiempoLimite');
+    if (elTiempo) { elTiempo.value = 2; elTiempo.disabled = false; }
     renderRondasConfigUI();
+    actualizarSubtituloIns();
   }
 
   // ============================================================
@@ -3093,7 +3113,7 @@ document.addEventListener('componentsLoaded',async function(){
     document.getElementById('btnCronStop').disabled = true;
   });
   document.getElementById('btnCronReset').addEventListener('click', () => {
-    if (!confirm('¿Reiniciar este grupo?\n\nSe borrarán los tiempos/DNF ya registrados de este grupo en este intento, y el cronómetro volverá a 02:00.')) return;
+    if (!confirm(`¿Reiniciar este grupo?\n\nSe borrarán los tiempos/DNF ya registrados de este grupo en este intento, y el cronómetro volverá a ${fmtCD(TIEMPO_LIMITE_MS)}.`)) return;
     const g = gruposRonda[grupoActual];
     g.forEach(p => {
       if (!p) return;
