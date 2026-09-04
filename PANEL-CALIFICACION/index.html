@@ -1109,7 +1109,7 @@ function setStep(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 async function gasGet(params) { const r = await fetch(GAS + '?' + new URLSearchParams({ ...params, staffToken: localStorage.getItem('sucrebot_staff_token') || '' }), { cache: 'no-store' }); return r.json(); }
-async function gasPost(body) { const r = await fetch(GAS, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({...body, staffToken:'SucreBot2026-CMI-Sucre-x7k9mQ'}), redirect:'follow', keepalive:true }); return r.json(); }
+async function gasPost(body) { const r = await fetch(GAS, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({...body, staffToken:CONFIG.STAFF_TOKEN}), redirect:'follow', keepalive:true }); return r.json(); }
 
 // ── PRESENCIA DE JUECES (polling) ─────────────────────────────
 // Publica cada 10s qué juez está activo en este dispositivo.

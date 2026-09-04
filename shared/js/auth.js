@@ -150,8 +150,9 @@ window.esAdmin = function() {
   }
 };
 
-// Token compartido con GAS — debe coincidir exactamente con STAFF_TOKEN_VALUE en Code.gs
-const STAFF_TOKEN_VALUE = 'SucreBot2026-CMI-Sucre-x7k9mQ';
+// Token compartido con GAS — fuente única en CONFIG.STAFF_TOKEN (shared/js/config.js),
+// debe coincidir exactamente con STAFF_TOKEN_VALUE en Code.gs.
+const STAFF_TOKEN_VALUE = CONFIG.STAFF_TOKEN;
 
 // ── FUNCIÓN: Parsear JWT de Google
 function parseJwt(token) {
